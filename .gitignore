@@ -1,0 +1,6 @@
+*.o
+*~
+parser*
+scanner*
+Parser.y.output
+compiler
