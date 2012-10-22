@@ -182,6 +182,31 @@ Value* NAssignment::genCode(CodeContext& context)
 	return new StoreInst(rhsExp, lhsVar, context.currBlock());
 }
 
+Value* NLogicalOperator::genCode(CodeContext& context)
+{
+	auto saveBlock = context.currBlock();
+	auto firstBlock = context.createBlock();
+	auto secondBlock = context.createBlock();
+	auto trueBlock = (oper == ParserBase::TT_LOG_AND)? firstBlock : secondBlock;
+	auto falseBlock = (oper == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
+
+	auto lhsExp = lhs->genCode(context);
+	typeCastMatch(lhsExp, Type::getInt1Ty(context.getContext()), context);
+	BranchInst::Create(trueBlock, falseBlock, lhsExp, context.currBlock());
+
+	context.pushBlock(firstBlock);
+	auto rhsExp = rhs->genCode(context);
+	typeCastMatch(rhsExp, Type::getInt1Ty(context.getContext()), context);
+	BranchInst::Create(secondBlock, context.currBlock());
+
+	context.pushBlock(secondBlock);
+	auto result = PHINode::Create(Type::getInt1Ty(context.getContext()), 2, "", context.currBlock());
+	result->addIncoming(lhsExp, saveBlock);
+	result->addIncoming(rhsExp, firstBlock);
+
+	return result;
+}
+
 Value* NCompareOperator::genCode(CodeContext& context)
 {
 	auto lhsExp = lhs->genCode(context);

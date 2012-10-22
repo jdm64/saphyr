@@ -20,7 +20,7 @@
 // qualifiers
 %token <t_int> TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
 // operators
-%token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ
+%token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 // keywords
 %token <t_int> TT_RETURN
 // constants and names
@@ -37,7 +37,7 @@
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
-%type <t_exp> primary_expression function_call
+%type <t_exp> primary_expression function_call logical_or_expression logical_and_expression
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement
 %type <t_varlist> variable_list
@@ -183,12 +183,26 @@ variable_list
 	;
 expression
 	: assignment
-	| equals_expression
+	| logical_or_expression
 	;
 assignment
-	: TT_IDENTIFIER '=' equals_expression
+	: TT_IDENTIFIER '=' logical_or_expression
 	{
 		$$ = new NAssignment(new NVariable($1), $3);
+	}
+	;
+logical_or_expression
+	: logical_and_expression
+	| logical_or_expression TT_LOG_OR logical_and_expression
+	{
+		$$ = new NLogicalOperator(TT_LOG_OR, $1, $3);
+	}
+	;
+logical_and_expression
+	: equals_expression
+	| logical_and_expression TT_LOG_AND equals_expression
+	{
+		$$ = new NLogicalOperator(TT_LOG_AND, $1, $3);
 	}
 	;
 equals_expression
@@ -283,7 +297,7 @@ unary_expression
 	;
 primary_expression
 	: function_call
-	| '(' equals_expression ')'
+	| '(' logical_or_expression ')'
 	{
 		$$ = $2;
 	}

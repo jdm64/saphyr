@@ -17,6 +17,8 @@ LETTER		[a-zA-Z_]
 ">="	{ return ParserBase::TT_GEQ; }
 "!="	{ return ParserBase::TT_NEQ; }
 "=="	{ return ParserBase::TT_EQ; }
+"&&"	{ return ParserBase::TT_LOG_AND; }
+"||"	{ return ParserBase::TT_LOG_OR; }
 
 true		{ return ParserBase::TT_TRUE; }
 false		{ return ParserBase::TT_FALSE; }

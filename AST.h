@@ -31,7 +31,8 @@ class CodeContext;
 enum class NodeType
 {
 	BaseNodeList, Qualifier, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
-	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst
+	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
+	LogicalOp
 };
 
 enum class QualifierType
@@ -329,6 +330,20 @@ public:
 	{
 		delete lhs;
 		delete rhs;
+	}
+};
+
+class NLogicalOperator : public NBinaryOperator
+{
+public:
+	NLogicalOperator(int oper, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(oper, lhs, rhs) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::LogicalOp;
 	}
 };
 
