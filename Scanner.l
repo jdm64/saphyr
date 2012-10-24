@@ -33,7 +33,10 @@ int64		{ return ParserBase::TT_INT64; }
 float		{ return ParserBase::TT_FLOAT; }
 double		{ return ParserBase::TT_DOUBLE; }
 
+break		{ return ParserBase::TT_BREAK; }
+continue	{ return ParserBase::TT_CONTINUE; }
 do		{ return ParserBase::TT_DO; }
+redo		{ return ParserBase::TT_REDO; }
 return		{ return ParserBase::TT_RETURN; }
 until		{ return ParserBase::TT_UNTIL; }
 while		{ return ParserBase::TT_WHILE; }

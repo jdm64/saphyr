@@ -183,6 +183,11 @@ Value* NWhileStatement::genCode(CodeContext& context)
 	auto trueBlock = isUntil? endBlock : bodyBlock;
 	auto falseBlock = isUntil? bodyBlock : endBlock;
 
+	// push loop branch points
+	context.pushContinueBlock(condBlock);
+	context.pushRedoBlock(bodyBlock);
+	context.pushBreakBlock(endBlock);
+
 	BranchInst::Create(startBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
@@ -196,6 +201,51 @@ Value* NWhileStatement::genCode(CodeContext& context)
 
 	context.pushBlock(endBlock);
 
+	// pop loop branch points
+	context.popContinueBlock();
+	context.popRedoBlock();
+	context.popBreakBlock();
+
+	return nullptr;
+}
+
+Value* NLoopBranch::genCode(CodeContext& context)
+{
+	BasicBlock* block;
+	string typeName;
+
+	switch (type) {
+	case ParserBase::TT_CONTINUE:
+		block = context.getContinueBlock();
+		if (!block) {
+			typeName = "continue";
+			goto ret;
+		}
+		break;
+	case ParserBase::TT_REDO:
+		block = context.getRedoBlock();
+		if (!block) {
+			typeName = "redo";
+			goto ret;
+		}
+		break;
+	case ParserBase::TT_BREAK:
+		block = context.getBreakBlock();
+		if (!block) {
+			typeName = "break";
+			goto ret;
+		}
+		break;
+	default:
+		cout << "error: undefined loop branch type " << type << endl;
+		return nullptr;
+	}
+	BranchInst::Create(block, context.currBlock());
+	context.pushBlock(context.createBlock());
+	return nullptr;
+ret:
+	cout << "error: no valid context for " << typeName << " statement" << endl;
+	context.incErrCount();
 	return nullptr;
 }
 

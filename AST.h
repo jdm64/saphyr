@@ -32,7 +32,7 @@ enum class NodeType
 {
 	BaseNodeList, Qualifier, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
 	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
-	LogicalOp, WhileStm
+	LogicalOp, WhileStm, LoopBranch
 };
 
 enum class QualifierType
@@ -314,6 +314,22 @@ public:
 	{
 		delete condition;
 		delete body;
+	}
+};
+
+class NLoopBranch : public NStatement
+{
+	int type;
+
+public:
+	NLoopBranch(int type)
+	: type(type) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::LoopBranch;
 	}
 };
 

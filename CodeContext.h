@@ -38,6 +38,11 @@ class CodeContext
 {
 	vector<BasicBlock*> funcBlocks;
 	map<string, Value*> symtable;
+
+	vector<BasicBlock*> continueBlocks;
+	vector<BasicBlock*> breakBlocks;
+	vector<BasicBlock*> redoBlocks;
+
 	Module* module;
 	int errors;
 
@@ -97,11 +102,59 @@ public:
 	{
 		symtable.clear();
 		funcBlocks.clear();
+		continueBlocks.clear();
+		breakBlocks.clear();
+		redoBlocks.clear();
 	}
 
 	void pushBlock(BasicBlock* block)
 	{
 		funcBlocks.push_back(block);
+	}
+
+	void pushContinueBlock(BasicBlock* block)
+	{
+		continueBlocks.push_back(block);
+	}
+	void popContinueBlock()
+	{
+		continueBlocks.pop_back();
+	}
+	BasicBlock* getContinueBlock()
+	{
+		if (continueBlocks.empty())
+			return nullptr;
+		return continueBlocks.back();
+	}
+
+	void pushBreakBlock(BasicBlock* block)
+	{
+		breakBlocks.push_back(block);
+	}
+	void popBreakBlock()
+	{
+		breakBlocks.pop_back();
+	}
+	BasicBlock* getBreakBlock()
+	{
+		if (breakBlocks.empty())
+			return nullptr;
+		return breakBlocks.back();
+	}
+
+	void pushRedoBlock(BasicBlock* block)
+	{
+		redoBlocks.push_back(block);
+	}
+	void popRedoBlock()
+	{
+		redoBlocks.pop_back();
+	}
+	BasicBlock* getRedoBlock()
+	{
+		if (redoBlocks.empty())
+			return nullptr;
+		return redoBlocks.back();
 	}
 
 	// NOTE: can only be used inside a function to add a new block

@@ -22,7 +22,7 @@
 // operators
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 // keywords
-%token <t_int> TT_RETURN TT_WHILE TT_DO TT_UNTIL
+%token <t_int> TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
 
@@ -33,7 +33,7 @@
 // operators
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
 // statements
-%type <t_stm> statement declaration function_declaration variable_declarations while_loop
+%type <t_stm> statement declaration function_declaration variable_declarations while_loop branch_statement
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
@@ -109,6 +109,7 @@ statement
 	: variable_declarations ';'
 	| expression ';'
 	| while_loop
+	| branch_statement
 	| TT_RETURN expression_or_empty ';'
 	{
 		$$ = new NReturnStatement($2);
@@ -130,6 +131,20 @@ while_loop
 	| TT_DO compound_statement_or_single TT_UNTIL '(' logical_or_expression ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true, true);
+	}
+	;
+branch_statement
+	: TT_CONTINUE ';'
+	{
+		$$ = new NLoopBranch(TT_CONTINUE);
+	}
+	| TT_BREAK ';'
+	{
+		$$ = new NLoopBranch(TT_BREAK);
+	}
+	| TT_REDO ';'
+	{
+		$$ = new NLoopBranch(TT_REDO);
 	}
 	;
 variable_declarations
