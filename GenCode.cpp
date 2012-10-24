@@ -166,6 +166,39 @@ Value* NReturnStatement::genCode(CodeContext& context)
 	return ReturnInst::Create(context.getContext(), returnVal, context.currBlock());
 }
 
+Value* NWhileStatement::genCode(CodeContext& context)
+{
+	BasicBlock* condBlock;
+	BasicBlock* bodyBlock;
+
+	if (isDoWhile) {
+		bodyBlock = context.createBlock();
+		condBlock = context.createBlock();
+	} else {
+		condBlock = context.createBlock();
+		bodyBlock = context.createBlock();
+	}
+	auto endBlock = context.createBlock();
+	auto startBlock = isDoWhile? bodyBlock : condBlock;
+	auto trueBlock = isUntil? endBlock : bodyBlock;
+	auto falseBlock = isUntil? bodyBlock : endBlock;
+
+	BranchInst::Create(startBlock, context.currBlock());
+
+	context.pushBlock(condBlock);
+	auto condValue = condition->genCode(context);
+	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
+	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
+
+	context.pushBlock(bodyBlock);
+	body->genCode(context);
+	BranchInst::Create(condBlock, context.currBlock());
+
+	context.pushBlock(endBlock);
+
+	return nullptr;
+}
+
 Value* NAssignment::genCode(CodeContext& context)
 {
 	auto lhsVar = context.loadVar(lhs->getName());
