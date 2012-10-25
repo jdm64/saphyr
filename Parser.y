@@ -37,11 +37,12 @@
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
-%type <t_exp> primary_expression function_call logical_or_expression logical_and_expression
+%type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
+%type <t_exp> value_expression
 // lists
-%type <t_stmlist> statement_list declaration_list compound_statement
+%type <t_stmlist> statement_list declaration_list compound_statement compound_statement_or_single compound_statement_or_empty
 %type <t_varlist> variable_list
-%type <t_explist> expression_list
+%type <t_explist> expression_list expression_list_or_empty
 %type <t_parlist> parameter_list
 
 %%
@@ -70,6 +71,84 @@ function_declaration
 	: type_qualifier TT_IDENTIFIER '(' parameter_list ')' compound_statement
 	{
 		$$ = new NFunctionDeclaration($1, $2, $4, $6);
+	}
+	;
+compound_statement
+	: '{' compound_statement_or_empty '}'
+	{
+		$$ = $2;
+	}
+	;
+compound_statement_or_empty
+	:
+	{
+		$$ = new NStatementList;
+	}
+	| statement_list
+	;
+compound_statement_or_single
+	: compound_statement
+	| statement
+	{
+		$$ = new NStatementList;
+		$$->addItem($1);
+	}
+	;
+statement_list
+	: statement
+	{
+		$$ = new NStatementList;
+		$$->addItem($1);
+	}
+	| statement_list statement
+	{
+		$1->addItem($2);
+	}
+	;
+statement
+	: variable_declarations ';'
+	| expression ';'
+	| TT_RETURN expression_or_empty ';'
+	{
+		$$ = new NReturnStatement($2);
+	}
+	;
+variable_declarations
+	: type_qualifier variable_list
+	{
+		$$ = new NVariableDeclGroup($1, $2);
+	}
+	;
+variable_list
+	: TT_IDENTIFIER
+	{
+		$$ = new NVariableDeclList;
+		$$->addItem(new NVariableDecl($1));
+	}
+	| variable_list ',' TT_IDENTIFIER
+	{
+		$1->addItem(new NVariableDecl($3));
+	}
+	;
+parameter_list
+	:
+	{
+		$$ = new NParameterList;
+	}
+	| parameter
+	{
+		$$ = new NParameterList;
+		$$->addItem($1);
+	}
+	| parameter_list ',' parameter
+	{
+		$1->addItem($3);
+	}
+	;
+parameter
+	: type_qualifier TT_IDENTIFIER
+	{
+		$$ = new NParameter($1, $2);
 	}
 	;
 type_qualifier
@@ -110,76 +189,30 @@ type_qualifier
 		$$ = new NQualifier(QualifierType::DOUBLE);
 	}
 	;
-parameter_list
-	:
+expression_list
+	: expression
 	{
-		$$ = new NParameterList;
-	}
-	| parameter
-	{
-		$$ = new NParameterList;
+		$$ = new NExpressionList;
 		$$->addItem($1);
 	}
-	| parameter_list ',' parameter
+	| expression_list ',' expression
 	{
 		$1->addItem($3);
 	}
 	;
-parameter
-	: type_qualifier TT_IDENTIFIER
+expression_list_or_empty
+	:
 	{
-		$$ = new NParameter($1, $2);
+		$$ = new NExpressionList;
 	}
+	| expression_list
 	;
-compound_statement
-	: '{' '}'
+expression_or_empty
+	:
 	{
-		$$ = new NStatementList;
+		$$ = nullptr;
 	}
-	| '{' statement_list '}'
-	{
-		$$ = $2;
-	}
-	;
-statement_list
-	: statement
-	{
-		$$ = new NStatementList;
-		$$->addItem($1);
-	}
-	| statement_list statement
-	{
-		$1->addItem($2);
-	}
-	;
-statement
-	: variable_declarations ';'
-	| expression ';'
-	| TT_RETURN ';'
-	{
-		$$ = new NReturnStatement(nullptr);
-	}
-	| TT_RETURN expression ';'
-	{
-		$$ = new NReturnStatement($2);
-	}
-	;
-variable_declarations
-	: type_qualifier variable_list
-	{
-		$$ = new NVariableDeclGroup($1, $2);
-	}
-	;
-variable_list
-	: TT_IDENTIFIER
-	{
-		$$ = new NVariableDeclList;
-		$$->addItem(new NVariableDecl($1));
-	}
-	| variable_list ',' TT_IDENTIFIER
-	{
-		$1->addItem(new NVariableDecl($3));
-	}
+	| expression
 	;
 expression
 	: assignment
@@ -297,11 +330,20 @@ unary_expression
 	;
 primary_expression
 	: function_call
+	| value_expression
 	| '(' logical_or_expression ')'
 	{
 		$$ = $2;
 	}
-	| TT_IDENTIFIER
+	;
+function_call
+	: TT_IDENTIFIER '(' expression_list_or_empty ')'
+	{
+		$$ = new NFunctionCall($1, $3);
+	}
+	;
+value_expression
+	: TT_IDENTIFIER
 	{
 		$$ = new NVariable($1);
 	}
@@ -320,26 +362,5 @@ primary_expression
 	| TT_FALSE
 	{
 		$$ = new NIntConst(new string("0"), QualifierType::BOOL);
-	}
-	;
-function_call
-	: TT_IDENTIFIER '(' expression_list ')'
-	{
-		$$ = new NFunctionCall($1, $3);
-	}
-	| TT_IDENTIFIER '(' ')'
-	{
-		$$ = new NFunctionCall($1, new NExpressionList);
-	}
-	;
-expression_list
-	: expression
-	{
-		$$ = new NExpressionList;
-		$$->addItem($1);
-	}
-	| expression_list ',' expression
-	{
-		$1->addItem($3);
 	}
 	;
