@@ -209,6 +209,44 @@ Value* NWhileStatement::genCode(CodeContext& context)
 	return nullptr;
 }
 
+Value* NForStatement::genCode(CodeContext& context)
+{
+	auto condBlock = context.createBlock();
+	auto bodyBlock = context.createBlock();
+	auto postBlock = context.createBlock();
+	auto endBlock = context.createBlock();
+
+	// push loop branch points
+	context.pushContinueBlock(postBlock);
+	context.pushRedoBlock(bodyBlock);
+	context.pushBreakBlock(endBlock);
+
+	preStm->genCode(context);
+	BranchInst::Create(condBlock, context.currBlock());
+
+	context.pushBlock(condBlock);
+	auto condValue = condition->genCode(context);
+	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
+	BranchInst::Create(bodyBlock, endBlock, condValue, context.currBlock());
+
+	context.pushBlock(bodyBlock);
+	body->genCode(context);
+	BranchInst::Create(postBlock, context.currBlock());
+
+	context.pushBlock(postBlock);
+	postExp->genCode(context);
+	BranchInst::Create(condBlock, context.currBlock());
+
+	context.pushBlock(endBlock);
+
+	// pop loop branch points
+	context.popContinueBlock();
+	context.popRedoBlock();
+	context.popBreakBlock();
+
+	return nullptr;
+}
+
 Value* NLoopBranch::genCode(CodeContext& context)
 {
 	BasicBlock* block;

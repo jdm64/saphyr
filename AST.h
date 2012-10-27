@@ -32,7 +32,7 @@ enum class NodeType
 {
 	BaseNodeList, Qualifier, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
 	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
-	LogicalOp, WhileStm, LoopBranch
+	LogicalOp, WhileStm, LoopBranch, ForStm
 };
 
 enum class QualifierType
@@ -313,6 +313,33 @@ public:
 	~NWhileStatement()
 	{
 		delete condition;
+		delete body;
+	}
+};
+
+class NForStatement : public NStatement
+{
+	NStatementList* preStm;
+	NExpression* condition;
+	NExpressionList* postExp;
+	NStatementList* body;
+
+public:
+	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
+	: preStm(preStm), condition(condition), postExp(postExp), body(body) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::ForStm;
+	}
+
+	~NForStatement()
+	{
+		delete preStm;
+		delete condition;
+		delete postExp;
 		delete body;
 	}
 };

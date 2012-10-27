@@ -36,6 +36,7 @@ double		{ return ParserBase::TT_DOUBLE; }
 break		{ return ParserBase::TT_BREAK; }
 continue	{ return ParserBase::TT_CONTINUE; }
 do		{ return ParserBase::TT_DO; }
+for		{ return ParserBase::TT_FOR; }
 redo		{ return ParserBase::TT_REDO; }
 return		{ return ParserBase::TT_RETURN; }
 until		{ return ParserBase::TT_UNTIL; }
