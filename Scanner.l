@@ -19,6 +19,16 @@ LETTER		[a-zA-Z_]
 "=="	{ return ParserBase::TT_EQ; }
 "&&"	{ return ParserBase::TT_LOG_AND; }
 "||"	{ return ParserBase::TT_LOG_OR; }
+"*="	{ return ParserBase::TT_ASG_MUL; }
+"/="	{ return ParserBase::TT_ASG_DIV; }
+"%="	{ return ParserBase::TT_ASG_MOD; }
+"+="	{ return ParserBase::TT_ASG_ADD; }
+"-="	{ return ParserBase::TT_ASG_SUB; }
+"<<="	{ return ParserBase::TT_ASG_LSH; }
+">>="	{ return ParserBase::TT_ASG_RSH; }
+"&="	{ return ParserBase::TT_ASG_AND; }
+"^="	{ return ParserBase::TT_ASG_OR; }
+"|="	{ return ParserBase::TT_ASG_XOR; }
 
 true		{ return ParserBase::TT_TRUE; }
 false		{ return ParserBase::TT_FALSE; }

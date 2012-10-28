@@ -362,12 +362,13 @@ public:
 
 class NAssignment : public NExpression
 {
+	int oper;
 	NIdentifier* lhs;
 	NExpression* rhs;
 
 public:
-	NAssignment(NIdentifier* lhs, NExpression* rhs)
-	: lhs(lhs), rhs(rhs) {}
+	NAssignment(int oper, NIdentifier* lhs, NExpression* rhs)
+	: oper(oper), lhs(lhs), rhs(rhs) {}
 
 	Value* genCode(CodeContext& context);
 

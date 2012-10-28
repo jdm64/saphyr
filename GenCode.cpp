@@ -299,6 +299,11 @@ Value* NAssignment::genCode(CodeContext& context)
 	if (!(lhsVar && rhsExp))
 		return nullptr;
 
+	if (oper != '=') {
+		Value* lhsLocal = new LoadInst(lhsVar, "", context.currBlock());
+		typeCastUp(lhsLocal, rhsExp, context);
+		rhsExp = BinaryOperator::Create(getOperator(oper, lhsLocal->getType(), context), lhsLocal, rhsExp, "", context.currBlock());
+	}
 	typeCastMatch(rhsExp, lhsVar->getType()->getPointerElementType(), context);
 	return new StoreInst(rhsExp, lhsVar, context.currBlock());
 }

@@ -21,6 +21,8 @@
 %token <t_int> TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
 // operators
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
+%token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
+%token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR
 // keywords
 %token <t_int> TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR
 // constants and names
@@ -32,6 +34,7 @@
 %type <t_param> parameter
 // operators
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
+%type <t_int> assignment_operator
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement
@@ -267,10 +270,23 @@ expression
 	| logical_or_expression
 	;
 assignment
-	: TT_IDENTIFIER '=' logical_or_expression
+	: TT_IDENTIFIER assignment_operator logical_or_expression
 	{
-		$$ = new NAssignment(new NVariable($1), $3);
+		$$ = new NAssignment($2, new NVariable($1), $3);
 	}
+	;
+assignment_operator
+	: '=' { $$ = '='; }
+	| TT_ASG_MUL { $$ = '*'; }
+	| TT_ASG_DIV { $$ = '/'; }
+	| TT_ASG_MOD { $$ = '%'; }
+	| TT_ASG_ADD { $$ = '+'; }
+	| TT_ASG_SUB { $$ = '-'; }
+	| TT_ASG_LSH { $$ = TT_LSHIFT; }
+	| TT_ASG_RSH { $$ = TT_RSHIFT; }
+	| TT_ASG_AND { $$ = '&'; }
+	| TT_ASG_OR  { $$ = '^'; }
+	| TT_ASG_XOR { $$ = '|'; }
 	;
 logical_or_expression
 	: logical_and_expression
