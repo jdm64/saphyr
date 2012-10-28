@@ -20,6 +20,7 @@
 #include <llvm/Value.h>
 #include <llvm/Type.h>
 #include <llvm/Instructions.h>
+#include "Constants.h"
 #include "CodeContext.h"
 
 void typeCastMatch(Value*& value, Type* type, CodeContext& context);
@@ -29,5 +30,7 @@ void typeCastUp(Value*& lhs, Value*& rhs, CodeContext& context);
 Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context);
 
 ICmpInst::Predicate getPredicate(int oper, Type* type, CodeContext& context);
+
+bool isComplexExp(NodeType type);
 
 #endif

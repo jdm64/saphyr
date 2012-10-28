@@ -144,3 +144,15 @@ Predicate getPredicate(int oper, Type* type, CodeContext& context)
 		return Predicate::ICMP_EQ;
 	}
 }
+
+bool isComplexExp(NodeType type)
+{
+	switch (type) {
+	case NodeType::IntConst:
+	case NodeType::FloatConst:
+	case NodeType::Variable:
+		return false;
+	default:
+		return true;
+	}
+}

@@ -373,6 +373,31 @@ public:
 	}
 };
 
+class NTernaryOperator : public NExpression
+{
+	NExpression* condition;
+	NExpression* trueVal;
+	NExpression* falseVal;
+
+public:
+	NTernaryOperator(NExpression* condition, NExpression* trueVal, NExpression* falseVal)
+	: condition(condition), trueVal(trueVal), falseVal(falseVal) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::TernaryOp;
+	}
+
+	~NTernaryOperator()
+	{
+		delete condition;
+		delete trueVal;
+		delete falseVal;
+	}
+};
+
 class NBinaryOperator : public NExpression
 {
 protected:

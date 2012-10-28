@@ -308,6 +308,45 @@ Value* NAssignment::genCode(CodeContext& context)
 	return new StoreInst(rhsExp, lhsVar, context.currBlock());
 }
 
+Value* NTernaryOperator::genCode(CodeContext& context)
+{
+	auto condExp = condition->genCode(context);
+	typeCastMatch(condExp, Type::getInt1Ty(context.getContext()), context);
+
+	Value *trueExp, *falseExp, *retVal;
+	if (isComplexExp(trueVal->getNodeType()) || isComplexExp(falseVal->getNodeType())) {
+		auto trueBlock = context.createBlock();
+		auto falseBlock = context.createBlock();
+		auto endBlock = context.createBlock();
+
+		BranchInst::Create(trueBlock, falseBlock, condExp, context.currBlock());
+
+		context.pushBlock(trueBlock);
+		trueExp = trueVal->genCode(context);
+		BranchInst::Create(endBlock, context.currBlock());
+
+		context.pushBlock(falseBlock);
+		falseExp = falseVal->genCode(context);
+		BranchInst::Create(endBlock, context.currBlock());
+
+		context.pushBlock(endBlock);
+		auto result = PHINode::Create(trueExp->getType(), 2, "", context.currBlock());
+		result->addIncoming(trueExp, trueBlock);
+		result->addIncoming(falseExp, falseBlock);
+		retVal = result;
+	} else {
+		trueExp = trueVal->genCode(context);
+		falseExp = falseVal->genCode(context);
+		retVal = SelectInst::Create(condExp, trueExp, falseExp, "", context.currBlock());
+	}
+
+	if (trueExp->getType() != falseExp->getType()) {
+		cout << "error: return types of ternary must match" << endl;
+		context.incErrCount();
+	}
+	return retVal;
+}
+
 Value* NLogicalOperator::genCode(CodeContext& context)
 {
 	auto saveBlock = context.currBlock();

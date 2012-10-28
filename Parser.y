@@ -42,7 +42,7 @@
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
-%type <t_exp> value_expression
+%type <t_exp> value_expression ternary_expression
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement compound_statement_or_single compound_statement_or_empty
 %type <t_stmlist> declaration_or_expression_list
@@ -267,12 +267,19 @@ declaration_or_expression_list
 	;
 expression
 	: assignment
-	| logical_or_expression
+	| ternary_expression
 	;
 assignment
-	: TT_IDENTIFIER assignment_operator logical_or_expression
+	: TT_IDENTIFIER assignment_operator ternary_expression
 	{
 		$$ = new NAssignment($2, new NVariable($1), $3);
+	}
+	;
+ternary_expression
+	: logical_or_expression
+	| logical_or_expression '?' logical_or_expression ':' logical_or_expression
+	{
+		$$ = new NTernaryOperator($1, $3, $5);
 	}
 	;
 assignment_operator
@@ -395,7 +402,7 @@ unary_expression
 primary_expression
 	: function_call
 	| value_expression
-	| '(' logical_or_expression ')'
+	| '(' ternary_expression ')'
 	{
 		$$ = $2;
 	}
