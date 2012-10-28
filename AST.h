@@ -21,24 +21,13 @@
 #include <llvm/Value.h>
 #include <llvm/Type.h>
 #include <llvm/Instructions.h>
+#include "Constants.h"
 
 using namespace std;
 using namespace llvm;
 
 // forward declaration
 class CodeContext;
-
-enum class NodeType
-{
-	BaseNodeList, Qualifier, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
-	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
-	LogicalOp, WhileStm, LoopBranch, ForStm
-};
-
-enum class QualifierType
-{
-	VOID, BOOL, INT, INT8, INT16, INT32, INT64, FLOAT, DOUBLE
-};
 
 class Node
 {
