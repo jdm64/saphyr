@@ -29,6 +29,8 @@ LETTER		[a-zA-Z_]
 "&="	{ return ParserBase::TT_ASG_AND; }
 "^="	{ return ParserBase::TT_ASG_OR; }
 "|="	{ return ParserBase::TT_ASG_XOR; }
+"++"	{ return ParserBase::TT_INC; }
+"--"	{ return ParserBase::TT_DEC; }
 
 true		{ return ParserBase::TT_TRUE; }
 false		{ return ParserBase::TT_FALSE; }

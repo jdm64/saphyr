@@ -425,6 +425,22 @@ Value* NFunctionCall::genCode(CodeContext& context)
 	return CallInst::Create(func, exp_list, "", context.currBlock());
 }
 
+Value* NIncrement::genCode(CodeContext& context)
+{
+	auto varVal = variable->genCode(context);
+	if (!varVal)
+		return nullptr;
+
+	auto op = getOperator(isIncrement? '+' : '-', varVal->getType(), context);
+	Constant* one = varVal->getType()->isFloatingPointTy()?
+		ConstantFP::get(varVal->getType(), "1.0") :
+		ConstantInt::getSigned(varVal->getType(), 1);
+	auto result = BinaryOperator::Create(op, varVal, one, "", context.currBlock());
+	new StoreInst(result, context.loadVar(variable->getName()), context.currBlock());
+
+	return isPostfix? varVal : result;
+}
+
 Value* NIntConst::genCode(CodeContext& context)
 {
 	int bits;

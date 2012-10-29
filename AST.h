@@ -479,6 +479,29 @@ public:
 	}
 };
 
+class NIncrement : public NExpression
+{
+	NVariable* variable;
+	bool isIncrement;
+	bool isPostfix;
+
+public:
+	NIncrement(NVariable* variable, bool isIncrement, bool isPostfix)
+	: variable(variable), isIncrement(isIncrement), isPostfix(isPostfix) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::Increment;
+	}
+
+	~NIncrement()
+	{
+		delete variable;
+	}
+};
+
 class NConstant : public NExpression
 {
 protected:

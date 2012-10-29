@@ -22,7 +22,7 @@
 // operators
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
-%token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR
+%token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC
 // keywords
 %token <t_int> TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR
 // constants and names
@@ -42,7 +42,7 @@
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
-%type <t_exp> value_expression ternary_expression
+%type <t_exp> value_expression ternary_expression increment_decrement_expression
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement compound_statement_or_single compound_statement_or_empty
 %type <t_stmlist> declaration_or_expression_list
@@ -402,6 +402,7 @@ unary_expression
 primary_expression
 	: function_call
 	| value_expression
+	| increment_decrement_expression
 	| '(' ternary_expression ')'
 	{
 		$$ = $2;
@@ -411,6 +412,24 @@ function_call
 	: TT_IDENTIFIER '(' expression_list_or_empty ')'
 	{
 		$$ = new NFunctionCall($1, $3);
+	}
+	;
+increment_decrement_expression
+	: TT_DEC TT_IDENTIFIER
+	{
+		$$ = new NIncrement(new NVariable($2), false, false);
+	}
+	| TT_INC TT_IDENTIFIER
+	{
+		$$ = new NIncrement(new NVariable($2), true, false);
+	}
+	| TT_IDENTIFIER TT_DEC
+	{
+		$$ = new NIncrement(new NVariable($1), false, true);
+	}
+	| TT_IDENTIFIER TT_INC
+	{
+		$$ = new NIncrement(new NVariable($1), true, true);
 	}
 	;
 value_expression
