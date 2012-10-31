@@ -65,11 +65,15 @@ void typeCastMatch(Value*& value, Type* type, CodeContext& context)
 			value = CastInst::CreateFPCast(value, type, "", context.currBlock());
 		else
 			value = new SIToFPInst(value, type, "", context.currBlock());
+	} else if (type->isIntegerTy(1)) {
+		// cast to bool is value != 0
+		auto pred = getPredicate(ParserBase::TT_NEQ, value->getType(), context);
+		auto op = value->getType()->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
+		value = CmpInst::Create(op, pred, value, Constant::getNullValue(value->getType()), "", context.currBlock());
+	} else if (value->getType()->isFloatingPointTy()) {
+		value = new FPToSIInst(value, type, "", context.currBlock());
 	} else {
-		if (value->getType()->isFloatingPointTy())
-			value = new FPToSIInst(value, type, "", context.currBlock());
-		else
-			value = CastInst::CreateIntegerCast(value, type, true, "", context.currBlock());
+		value = CastInst::CreateIntegerCast(value, type, true, "", context.currBlock());
 	}
 }
 
