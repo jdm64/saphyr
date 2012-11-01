@@ -458,6 +458,36 @@ public:
 	}
 };
 
+class NUnaryOperator : public NExpression
+{
+protected:
+	int oper;
+	NExpression* unary;
+
+public:
+	NUnaryOperator(int oper, NExpression* unary)
+	: oper(oper), unary(unary) {}
+
+	~NUnaryOperator()
+	{
+		delete unary;
+	}
+};
+
+class NUnaryMathOperator : public NUnaryOperator
+{
+public:
+	NUnaryMathOperator(int oper, NExpression* unaryExp)
+	: NUnaryOperator(oper, unaryExp) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::UnaryMath;
+	}
+};
+
 class NFunctionCall : public NIdentifier
 {
 	NExpressionList* arguments;

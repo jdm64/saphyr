@@ -34,7 +34,7 @@
 %type <t_param> parameter
 // operators
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
-%type <t_int> assignment_operator
+%type <t_int> assignment_operator unary_operator
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement
@@ -390,14 +390,16 @@ multiplication_operator
 	;
 unary_expression
 	: primary_expression
-	| '+' primary_expression
+	| unary_operator primary_expression
 	{
-		$$ = new NBinaryMathOperator('+', new NIntConst(new string("0")), $2);
+		$$ = new NUnaryMathOperator($1, $2);
 	}
-	| '-' primary_expression
-	{
-		$$ = new NBinaryMathOperator('-', new NIntConst(new string("0")), $2);
-	}
+	;
+unary_operator
+	: '+' { $$ = '+'; }
+	| '-' { $$ = '-'; }
+	| '!' { $$ = '!'; }
+	| '~' { $$ = '~'; }
 	;
 primary_expression
 	: function_call

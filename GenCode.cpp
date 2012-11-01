@@ -399,6 +399,36 @@ Value* NBinaryMathOperator::genCode(CodeContext& context)
 	return BinaryOperator::Create(getOperator(oper, lhsExp->getType(), context), lhsExp, rhsExp, "", context.currBlock());
 }
 
+Value* NUnaryMathOperator::genCode(CodeContext& context)
+{
+	Value* value;
+	Instruction::BinaryOps llvmOp;
+	Instruction::OtherOps cmpType;
+	CmpInst::Predicate pred;
+
+	auto unaryExp = unary->genCode(context);
+	auto type = unaryExp->getType();
+
+	switch (oper) {
+	case '+':
+	case '-':
+		llvmOp = getOperator(oper, type, context);
+		return BinaryOperator::Create(llvmOp, Constant::getNullValue(type), unaryExp, "", context.currBlock());
+	case '!':
+		pred = getPredicate(ParserBase::TT_EQ, type, context);
+		cmpType = type->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
+		return CmpInst::Create(cmpType, pred, Constant::getNullValue(type), unaryExp, "", context.currBlock());
+	case '~':
+		llvmOp = getOperator('^', type, context);
+		value = Constant::getAllOnesValue(type);
+		return BinaryOperator::Create(llvmOp, value, unaryExp, "", context.currBlock());
+	default:
+		cout << "error: invalid unary operator " << oper << endl;
+		context.incErrCount();
+		return nullptr;
+	}
+}
+
 Value* NFunctionCall::genCode(CodeContext& context)
 {
 	auto func = context.getFunction(name);
