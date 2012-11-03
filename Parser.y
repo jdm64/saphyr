@@ -125,19 +125,19 @@ statement
 	}
 	;
 while_loop
-	: TT_WHILE '(' logical_or_expression ')' compound_statement_or_single
+	: TT_WHILE '(' expression ')' compound_statement_or_single
 	{
 		$$ = new NWhileStatement($3, $5);
 	}
-	| TT_DO compound_statement_or_single TT_WHILE '(' logical_or_expression ')' ';'
+	| TT_DO compound_statement_or_single TT_WHILE '(' expression ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true);
 	}
-	| TT_UNTIL '(' logical_or_expression ')' compound_statement_or_single
+	| TT_UNTIL '(' expression ')' compound_statement_or_single
 	{
 		$$ = new NWhileStatement($3, $5, false, true);
 	}
-	| TT_DO compound_statement_or_single TT_UNTIL '(' logical_or_expression ')' ';'
+	| TT_DO compound_statement_or_single TT_UNTIL '(' expression ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true, true);
 	}
@@ -267,10 +267,10 @@ declaration_or_expression_list
 	;
 expression
 	: assignment
-	| ternary_expression
 	;
 assignment
-	: TT_IDENTIFIER assignment_operator ternary_expression
+	: ternary_expression
+	| TT_IDENTIFIER assignment_operator expression
 	{
 		$$ = new NAssignment($2, new NVariable($1), $3);
 	}
@@ -405,7 +405,7 @@ primary_expression
 	: function_call
 	| value_expression
 	| increment_decrement_expression
-	| '(' ternary_expression ')'
+	| '(' expression ')'
 	{
 		$$ = $2;
 	}

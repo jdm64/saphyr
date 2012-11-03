@@ -305,7 +305,9 @@ Value* NAssignment::genCode(CodeContext& context)
 		rhsExp = BinaryOperator::Create(getOperator(oper, lhsLocal->getType(), context), lhsLocal, rhsExp, "", context.currBlock());
 	}
 	typeCastMatch(rhsExp, lhsVar->getType()->getPointerElementType(), context);
-	return new StoreInst(rhsExp, lhsVar, context.currBlock());
+	new StoreInst(rhsExp, lhsVar, context.currBlock());
+
+	return rhsExp;
 }
 
 Value* NTernaryOperator::genCode(CodeContext& context)
