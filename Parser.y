@@ -7,6 +7,7 @@
 	std::string* t_str;
 	NQualifier* t_qual;
 	NParameter* t_param;
+	NVariableDecl* t_var;
 	NStatement* t_stm;
 	NExpression* t_exp;
 	NStatementList* t_stmlist;
@@ -18,7 +19,7 @@
 // predefined constants
 %token <t_int> TT_FALSE TT_TRUE
 // qualifiers
-%token <t_int> TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
+%token <t_int> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
 // operators
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
@@ -32,6 +33,8 @@
 %type <t_qual> type_qualifier
 // parameter
 %type <t_param> parameter
+// variable
+%type <t_var> variable
 // operators
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
 %type <t_int> assignment_operator unary_operator
@@ -163,14 +166,24 @@ variable_declarations
 	}
 	;
 variable_list
-	: TT_IDENTIFIER
+	: variable
 	{
 		$$ = new NVariableDeclList;
-		$$->addItem(new NVariableDecl($1));
+		$$->addItem($1);
 	}
-	| variable_list ',' TT_IDENTIFIER
+	| variable_list ',' variable
 	{
-		$1->addItem(new NVariableDecl($3));
+		$1->addItem($3);
+	}
+	;
+variable
+	: TT_IDENTIFIER
+	{
+		$$ = new NVariableDecl($1);
+	}
+	| TT_IDENTIFIER '=' expression
+	{
+		$$ = new NVariableDecl($1, $3);
 	}
 	;
 parameter_list
@@ -195,7 +208,11 @@ parameter
 	}
 	;
 type_qualifier
-	: TT_VOID
+	: TT_AUTO
+	{
+		$$ = new NQualifier;
+	}
+	| TT_VOID
 	{
 		$$ = new NQualifier(QualifierType::VOID);
 	}

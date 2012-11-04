@@ -61,8 +61,8 @@ Type* NQualifier::getVarType(CodeContext& context)
 		return Type::getFloatTy(context.getContext());
 	case QualifierType::DOUBLE:
 		return Type::getDoubleTy(context.getContext());
+	case QualifierType::AUTO:
 	default:
-		// should never happen!
 		return nullptr;
 	}
 }
@@ -88,17 +88,47 @@ Value* NParameter::genCode(CodeContext& context)
 	return storeParam;
 }
 
+Value* NVariableDecl::genCode(CodeContext& context)
+{
+	auto name = getName();
+	if (context.loadVar(name) != nullptr) {
+		cout << "error: variable " << *name << " already defined" << endl;
+		context.incErrCount();
+		return nullptr;
+	}
+	auto varType = type->getVarType(context);
+	Value* initValue = nullptr;
+
+	if (!varType) { // auto type
+		if (!initExp) { // auto type requires initialization
+			cout << "error: auto variable type requires initialization" << endl;
+			context.incErrCount();
+			return nullptr;
+		}
+		initValue = initExp->genCode(context);
+		if (!initValue)
+			return nullptr;
+		varType = initValue->getType();
+	}
+	auto var = new AllocaInst(varType, *name, context.currBlock());
+	context.storeVar(var);
+
+	if (initExp) {
+		if (!initValue)
+			initValue = initExp->genCode(context);
+		if (!initValue)
+			return nullptr;
+		typeCastMatch(initValue, var->getType()->getPointerElementType(), context);
+		new StoreInst(initValue, var, context.currBlock());
+	}
+	return nullptr;
+}
+
 Value* NVariableDeclGroup::genCode(CodeContext& context)
 {
-	auto varType = type->getVarType(context);
 	for (auto variable : *variables) {
-		if (context.loadVar(variable->getName()) != nullptr) {
-			cout << "error: variable " << *variable->getName() << " already defined" << endl;
-			context.incErrCount();
-			continue;
-		}
-		auto var = new AllocaInst(varType, *variable->getName(), context.currBlock());
-		context.storeVar(var);
+		variable->setQualifier(type);
+		variable->genCode(context);
 	}
 	return nullptr;
 }

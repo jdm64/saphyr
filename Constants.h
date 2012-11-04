@@ -27,7 +27,7 @@ enum class NodeType
 
 enum class QualifierType
 {
-	VOID, BOOL, INT, INT8, INT16, INT32, INT64, FLOAT, DOUBLE
+	AUTO, VOID, BOOL, INT, INT8, INT16, INT32, INT64, FLOAT, DOUBLE
 };
 
 #endif

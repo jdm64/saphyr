@@ -129,7 +129,7 @@ class NQualifier : public NIdentifier
 	QualifierType type;
 
 public:
-	NQualifier(QualifierType type)
+	NQualifier(QualifierType type = QualifierType::AUTO)
 	: NIdentifier(nullptr), type(type) {}
 
 	Type* getVarType(CodeContext& context);
@@ -147,11 +147,20 @@ public:
 
 class NVariableDecl : public NIdentifier
 {
-public:
-	NVariableDecl(string* name)
-	: NIdentifier(name) {}
+	NExpression* initExp;
+	NQualifier* type;
 
-	Value* genCode(CodeContext& context) {}
+public:
+	NVariableDecl(string* name, NExpression* initExp = nullptr)
+	: NIdentifier(name), initExp(initExp), type(new NQualifier) {}
+
+	// NOTE: must be called before genCode()
+	void setQualifier(NQualifier* qtype)
+	{
+		type = qtype;
+	}
+
+	Value* genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{

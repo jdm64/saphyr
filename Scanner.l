@@ -35,6 +35,7 @@ LETTER		[a-zA-Z_]
 true		{ return ParserBase::TT_TRUE; }
 false		{ return ParserBase::TT_FALSE; }
 
+auto		{ return ParserBase::TT_AUTO; }
 void		{ return ParserBase::TT_VOID; }
 bool		{ return ParserBase::TT_BOOL; }
 int		{ return ParserBase::TT_INT; }
