@@ -1,12 +1,13 @@
 CXX = g++
-CXXFLAGS = `llvm-config --cxxflags` -Wall -Wextra -pedantic -O3 -std=gnu++0x -fexceptions -ggdb
+WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-sign-compare
+CXXFLAGS = -O3 -std=gnu++0x -ggdb `llvm-config --cxxflags` $(WARNINGS) -fexceptions
 LDFLAGS = `llvm-config --ldflags`
 LIBS = `llvm-config --libs`
 
 objs = scanner.o parser.o Util.o GenCode.o main.o
 
 compiler : $(objs)
-	$(CXX) $(objs) $(LIBS) $(LDFLAGS) -o $@
+	$(CXX) $(objs) -o $@ $(LIBS) $(LDFLAGS)
 
 parser :
 	rm -f scanner* parser*
