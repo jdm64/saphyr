@@ -342,6 +342,31 @@ public:
 	}
 };
 
+class NIfStatement : public NStatement
+{
+	NExpression* condition;
+	NStatementList* ifBody;
+	NStatementList* elseBody;
+
+public:
+	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
+	: condition(condition), ifBody(ifBody), elseBody(elseBody) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::IfStm;
+	}
+
+	~NIfStatement()
+	{
+		delete condition;
+		delete ifBody;
+		delete elseBody;
+	}
+};
+
 class NLoopBranch : public NStatement
 {
 	int type;

@@ -25,7 +25,8 @@
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
 %token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC
 // keywords
-%token <t_int> TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR
+%token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
+%left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
 
@@ -118,6 +119,7 @@ statement
 	| expression ';'
 	| while_loop
 	| branch_statement
+	| condition_statement
 	| TT_RETURN expression_or_empty ';'
 	{
 		$$ = new NReturnStatement($2);
@@ -157,6 +159,16 @@ branch_statement
 	| TT_REDO ';'
 	{
 		$$ = new NLoopBranch(TT_REDO);
+	}
+	;
+condition_statement
+	: TT_IF '(' expression ')' compound_statement_or_single
+	{
+		$$ = new NIfStatement($3, $5, nullptr);
+	}
+	| TT_IF '(' expression ')' compound_statement_or_single TT_ELSE compound_statement_or_single
+	{
+		$$ = new NIfStatement($3, $5, $7);
 	}
 	;
 variable_declarations

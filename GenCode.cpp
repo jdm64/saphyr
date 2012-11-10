@@ -277,6 +277,29 @@ Value* NForStatement::genCode(CodeContext& context)
 	return nullptr;
 }
 
+Value* NIfStatement::genCode(CodeContext& context)
+{
+	auto ifBlock = context.createBlock();
+	auto elseBlock = context.createBlock();
+	auto endBlock = context.createBlock();
+
+	auto condValue = condition->genCode(context);
+	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
+	BranchInst::Create(ifBlock, elseBlock, condValue, context.currBlock());
+
+	context.pushBlock(ifBlock);
+	ifBody->genCode(context);
+	BranchInst::Create(endBlock, context.currBlock());
+
+	context.pushBlock(elseBlock);
+	if (elseBody)
+		elseBody->genCode(context);
+	BranchInst::Create(endBlock, context.currBlock());
+
+	context.pushBlock(endBlock);
+	return nullptr;
+}
+
 Value* NLoopBranch::genCode(CodeContext& context)
 {
 	BasicBlock* block;

@@ -49,7 +49,9 @@ double		{ return ParserBase::TT_DOUBLE; }
 break		{ return ParserBase::TT_BREAK; }
 continue	{ return ParserBase::TT_CONTINUE; }
 do		{ return ParserBase::TT_DO; }
+else		{ return ParserBase::TT_ELSE; }
 for		{ return ParserBase::TT_FOR; }
+if		{ return ParserBase::TT_IF; }
 redo		{ return ParserBase::TT_REDO; }
 return		{ return ParserBase::TT_RETURN; }
 until		{ return ParserBase::TT_UNTIL; }
