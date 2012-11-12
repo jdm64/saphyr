@@ -34,11 +34,62 @@ class NodeList;
 class NStatement;
 typedef NodeList<NStatement> NStatementList;
 
-class CodeContext
+class VarTable
+{
+	map<string, AllocaInst*> table;
+
+public:
+	void storeVar(AllocaInst* var, string* name)
+	{
+		table[*name] = var;
+	}
+
+	AllocaInst* loadVar(string* name)
+	{
+		auto varData = table.find(*name);
+		return varData != table.end()? varData->second : nullptr;
+	}
+};
+
+class SymbolTable
+{
+	vector<VarTable> localTable;
+
+public:
+	void storeLocalVar(AllocaInst* var, string* name)
+	{
+		localTable.back().storeVar(var, name);
+	}
+
+	void pushLocalTable()
+	{
+		localTable.push_back(VarTable());
+	}
+
+	void popLocalTable()
+	{
+		localTable.pop_back();
+	}
+
+	void clearLocalTable()
+	{
+		localTable.clear();
+	}
+
+	AllocaInst* loadVar(string* name)
+	{
+		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
+			auto var = it->loadVar(name);
+			if (var)
+				return var;
+		}
+		return nullptr;
+	}
+};
+
+class CodeContext : public SymbolTable
 {
 	vector<BasicBlock*> funcBlocks;
-	map<string, Value*> symtable;
-
 	vector<BasicBlock*> continueBlocks;
 	vector<BasicBlock*> breakBlocks;
 	vector<BasicBlock*> redoBlocks;
@@ -73,20 +124,6 @@ public:
 		errors++;
 	}
 
-	void storeVar(AllocaInst* var, string* name = nullptr)
-	{
-		symtable[name? *name : var->getName().str()] = var;
-	}
-
-	Value* loadVar(string* var)
-	{
-		auto varData = symtable.find(*var);
-
-		if (varData == symtable.end())
-			return nullptr;
-		return varData->second;
-	}
-
 	BasicBlock* currBlock()
 	{
 		return funcBlocks.back();
@@ -94,13 +131,14 @@ public:
 
 	void startFuncBlock(Function* function)
 	{
+		pushLocalTable();
 		funcBlocks.clear();
 		funcBlocks.push_back(BasicBlock::Create(module->getContext(), "", function));
 	}
 
 	void endFuncBlock()
 	{
-		symtable.clear();
+		clearLocalTable();
 		funcBlocks.clear();
 		continueBlocks.clear();
 		breakBlocks.clear();

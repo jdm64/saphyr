@@ -83,7 +83,7 @@ Value* NParameter::genCode(CodeContext& context)
 {
 	auto stackAlloc = new AllocaInst(type->getVarType(context), "", context.currBlock());
 	auto storeParam = new StoreInst(arg, stackAlloc, context.currBlock());
-	context.storeVar(stackAlloc, name);
+	context.storeLocalVar(stackAlloc, name);
 
 	return storeParam;
 }
@@ -111,7 +111,7 @@ Value* NVariableDecl::genCode(CodeContext& context)
 		varType = initValue->getType();
 	}
 	auto var = new AllocaInst(varType, *name, context.currBlock());
-	context.storeVar(var);
+	context.storeLocalVar(var, name);
 
 	if (initExp) {
 		if (!initValue)
@@ -213,7 +213,7 @@ Value* NWhileStatement::genCode(CodeContext& context)
 	auto trueBlock = isUntil? endBlock : bodyBlock;
 	auto falseBlock = isUntil? bodyBlock : endBlock;
 
-	// push loop branch points
+	context.pushLocalTable();
 	context.pushContinueBlock(condBlock);
 	context.pushRedoBlock(bodyBlock);
 	context.pushBreakBlock(endBlock);
@@ -230,8 +230,7 @@ Value* NWhileStatement::genCode(CodeContext& context)
 	BranchInst::Create(condBlock, context.currBlock());
 
 	context.pushBlock(endBlock);
-
-	// pop loop branch points
+	context.popLocalTable();
 	context.popContinueBlock();
 	context.popRedoBlock();
 	context.popBreakBlock();
@@ -246,7 +245,7 @@ Value* NForStatement::genCode(CodeContext& context)
 	auto postBlock = context.createBlock();
 	auto endBlock = context.createBlock();
 
-	// push loop branch points
+	context.pushLocalTable();
 	context.pushContinueBlock(postBlock);
 	context.pushRedoBlock(bodyBlock);
 	context.pushBreakBlock(endBlock);
@@ -268,8 +267,7 @@ Value* NForStatement::genCode(CodeContext& context)
 	BranchInst::Create(condBlock, context.currBlock());
 
 	context.pushBlock(endBlock);
-
-	// pop loop branch points
+	context.popLocalTable();
 	context.popContinueBlock();
 	context.popRedoBlock();
 	context.popBreakBlock();
@@ -283,6 +281,8 @@ Value* NIfStatement::genCode(CodeContext& context)
 	auto elseBlock = context.createBlock();
 	auto endBlock = context.createBlock();
 
+	context.pushLocalTable();
+
 	auto condValue = condition->genCode(context);
 	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(ifBlock, elseBlock, condValue, context.currBlock());
@@ -291,12 +291,17 @@ Value* NIfStatement::genCode(CodeContext& context)
 	ifBody->genCode(context);
 	BranchInst::Create(endBlock, context.currBlock());
 
+	context.popLocalTable();
+	context.pushLocalTable();
+
 	context.pushBlock(elseBlock);
 	if (elseBody)
 		elseBody->genCode(context);
 	BranchInst::Create(endBlock, context.currBlock());
 
 	context.pushBlock(endBlock);
+	context.popLocalTable();
+
 	return nullptr;
 }
 
