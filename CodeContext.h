@@ -85,6 +85,11 @@ public:
 		}
 		return nullptr;
 	}
+
+	AllocaInst* loadVarCurr(string* name)
+	{
+		return localTable.back().loadVar(name);
+	}
 };
 
 class CodeContext : public SymbolTable

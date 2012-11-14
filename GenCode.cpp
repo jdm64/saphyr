@@ -103,7 +103,7 @@ Value* NVariableDecl::genCode(CodeContext& context)
 	}
 
 	auto name = getName();
-	if (context.loadVar(name) != nullptr) {
+	if (context.loadVarCurr(name)) {
 		cout << "error: variable " << *name << " already defined" << endl;
 		context.incErrCount();
 		return nullptr;
