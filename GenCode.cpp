@@ -90,34 +90,29 @@ Value* NParameter::genCode(CodeContext& context)
 
 Value* NVariableDecl::genCode(CodeContext& context)
 {
+	auto initValue = initExp? initExp->genCode(context) : nullptr;
+	auto varType = type->getVarType(context);
+
+	if (!varType) { // auto type
+		if (!initValue) { // auto type requires initialization
+			cout << "error: auto variable type requires initialization" << endl;
+			context.incErrCount();
+			return nullptr;
+		}
+		varType = initValue->getType();
+	}
+
 	auto name = getName();
 	if (context.loadVar(name) != nullptr) {
 		cout << "error: variable " << *name << " already defined" << endl;
 		context.incErrCount();
 		return nullptr;
 	}
-	auto varType = type->getVarType(context);
-	Value* initValue = nullptr;
 
-	if (!varType) { // auto type
-		if (!initExp) { // auto type requires initialization
-			cout << "error: auto variable type requires initialization" << endl;
-			context.incErrCount();
-			return nullptr;
-		}
-		initValue = initExp->genCode(context);
-		if (!initValue)
-			return nullptr;
-		varType = initValue->getType();
-	}
 	auto var = new AllocaInst(varType, *name, context.currBlock());
 	context.storeLocalVar(var, name);
 
-	if (initExp) {
-		if (!initValue)
-			initValue = initExp->genCode(context);
-		if (!initValue)
-			return nullptr;
+	if (initValue) {
 		typeCastMatch(initValue, var->getType()->getPointerElementType(), context);
 		new StoreInst(initValue, var, context.currBlock());
 	}
