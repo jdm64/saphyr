@@ -14,11 +14,12 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
+#include <fstream>
 #include <llvm/Constants.h>
 #include <llvm/PassManager.h>
 #include <llvm/Analysis/Verifier.h>
 #include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Assembly/PrintModulePass.h>
 #include "parserbase.h"
 #include "AST.h"
@@ -36,8 +37,11 @@ void CodeContext::genCode(NStatementList stms)
 	}
 	verifyModule(*module);
 
+	fstream file(filename.substr(0, filename.rfind('.')) + ".ll", fstream::out);
+	raw_os_ostream stream(file);
+
 	PassManager pm;
-	pm.add(createPrintModulePass(&outs()));
+	pm.add(createPrintModulePass(&stream));
 	pm.run(*module);
 }
 

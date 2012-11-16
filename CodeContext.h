@@ -100,10 +100,12 @@ class CodeContext : public SymbolTable
 	vector<BasicBlock*> redoBlocks;
 
 	Module* module;
+	string filename;
 	int errors;
 
 public:
 	CodeContext(string& filename)
+	: filename(filename)
 	{
 		module = new Module(filename, getGlobalContext());
 		errors = 0;
