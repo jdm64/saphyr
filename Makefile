@@ -7,7 +7,7 @@ LIBS = `llvm-config --libs`
 objs = scanner.o parser.o Util.o GenCode.o main.o
 
 compiler : $(objs)
-	$(CXX) $(objs) -o $@ $(LIBS) $(LDFLAGS)
+	$(CXX) $(objs) -o saphyr $(LIBS) $(LDFLAGS)
 
 parser :
 	rm -f scanner* parser*
@@ -23,10 +23,10 @@ parser :
 	sed -i -e '/return d_scanner.lex();/c\	return d_scanner->lex();' parser.ih
 
 clean :
-	rm -f *.o *~
+	rm -f saphyr *.o *~
 
 fullclean : clean
-	rm -f compiler parser* scanner*
+	rm -f parser* scanner*
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

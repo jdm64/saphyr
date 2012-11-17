@@ -3,4 +3,4 @@
 parser*
 scanner*
 Parser.y.output
-compiler
+saphyr
