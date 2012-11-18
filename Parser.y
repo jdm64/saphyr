@@ -48,10 +48,10 @@
 %type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression
 // lists
-%type <t_stmlist> statement_list declaration_list compound_statement compound_statement_or_single compound_statement_or_empty
+%type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list
 %type <t_varlist> variable_list
-%type <t_explist> expression_list expression_list_or_empty
+%type <t_explist> expression_list
 %type <t_parlist> parameter_list
 
 %%
@@ -83,24 +83,28 @@ function_declaration
 	}
 	;
 compound_statement
-	: '{' compound_statement_or_empty '}'
+	: '{' statement_list_or_empty '}'
 	{
 		$$ = $2;
 	}
 	;
-compound_statement_or_empty
+statement_list_or_empty
 	:
 	{
 		$$ = new NStatementList;
 	}
 	| statement_list
 	;
-compound_statement_or_single
+single_statement
 	: compound_statement
 	| statement
 	{
 		$$ = new NStatementList;
 		$$->addItem($1);
+	}
+	| ';'
+	{
+		$$ = new NStatementList;
 	}
 	;
 statement_list
@@ -124,25 +128,25 @@ statement
 	{
 		$$ = new NReturnStatement($2);
 	}
-	| TT_FOR '(' declaration_or_expression_list ';' expression ';' expression_list ')' compound_statement_or_single
+	| TT_FOR '(' declaration_or_expression_list ';' expression ';' expression_list ')' single_statement
 	{
 		$$ = new NForStatement($3, $5, $7, $9);
 	}
 	;
 while_loop
-	: TT_WHILE '(' expression ')' compound_statement_or_single
+	: TT_WHILE '(' expression ')' single_statement
 	{
 		$$ = new NWhileStatement($3, $5);
 	}
-	| TT_DO compound_statement_or_single TT_WHILE '(' expression ')' ';'
+	| TT_DO single_statement TT_WHILE '(' expression ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true);
 	}
-	| TT_UNTIL '(' expression ')' compound_statement_or_single
+	| TT_UNTIL '(' expression ')' single_statement
 	{
 		$$ = new NWhileStatement($3, $5, false, true);
 	}
-	| TT_DO compound_statement_or_single TT_UNTIL '(' expression ')' ';'
+	| TT_DO single_statement TT_UNTIL '(' expression ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true, true);
 	}
@@ -162,11 +166,11 @@ branch_statement
 	}
 	;
 condition_statement
-	: TT_IF '(' expression ')' compound_statement_or_single
+	: TT_IF '(' expression ')' single_statement
 	{
 		$$ = new NIfStatement($3, $5, nullptr);
 	}
-	| TT_IF '(' expression ')' compound_statement_or_single TT_ELSE compound_statement_or_single
+	| TT_IF '(' expression ')' single_statement TT_ELSE single_statement
 	{
 		$$ = new NIfStatement($3, $5, $7);
 	}
@@ -262,7 +266,11 @@ type_qualifier
 	}
 	;
 expression_list
-	: expression
+	:
+	{
+		$$ = new NExpressionList;
+	}
+	| expression
 	{
 		$$ = new NExpressionList;
 		$$->addItem($1);
@@ -271,13 +279,6 @@ expression_list
 	{
 		$1->addItem($3);
 	}
-	;
-expression_list_or_empty
-	:
-	{
-		$$ = new NExpressionList;
-	}
-	| expression_list
 	;
 expression_or_empty
 	:
@@ -440,7 +441,7 @@ primary_expression
 	}
 	;
 function_call
-	: TT_IDENTIFIER '(' expression_list_or_empty ')'
+	: TT_IDENTIFIER '(' expression_list ')'
 	{
 		$$ = new NFunctionCall($1, $3);
 	}
