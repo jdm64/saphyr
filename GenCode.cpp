@@ -220,7 +220,7 @@ Value* NWhileStatement::genCode(CodeContext& context)
 	BranchInst::Create(startBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condValue = condition->genCode(context);
+	auto condValue = condition? condition->genCode(context) : ConstantInt::getTrue(context.getContext());;
 	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
 
@@ -253,7 +253,7 @@ Value* NForStatement::genCode(CodeContext& context)
 	BranchInst::Create(condBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condValue = condition->genCode(context);
+	auto condValue = condition? condition->genCode(context) : ConstantInt::getTrue(context.getContext());
 	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(bodyBlock, endBlock, condValue, context.currBlock());
 

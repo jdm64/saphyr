@@ -128,25 +128,25 @@ statement
 	{
 		$$ = new NReturnStatement($2);
 	}
-	| TT_FOR '(' declaration_or_expression_list ';' expression ';' expression_list ')' single_statement
+	| TT_FOR '(' declaration_or_expression_list ';' expression_or_empty ';' expression_list ')' single_statement
 	{
 		$$ = new NForStatement($3, $5, $7, $9);
 	}
 	;
 while_loop
-	: TT_WHILE '(' expression ')' single_statement
+	: TT_WHILE '(' expression_or_empty ')' single_statement
 	{
 		$$ = new NWhileStatement($3, $5);
 	}
-	| TT_DO single_statement TT_WHILE '(' expression ')' ';'
+	| TT_DO single_statement TT_WHILE '(' expression_or_empty ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true);
 	}
-	| TT_UNTIL '(' expression ')' single_statement
+	| TT_UNTIL '(' expression_or_empty ')' single_statement
 	{
 		$$ = new NWhileStatement($3, $5, false, true);
 	}
-	| TT_DO single_statement TT_UNTIL '(' expression ')' ';'
+	| TT_DO single_statement TT_UNTIL '(' expression_or_empty ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true, true);
 	}
