@@ -49,7 +49,7 @@
 %type <t_exp> value_expression ternary_expression increment_decrement_expression
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
-%type <t_stmlist> declaration_or_expression_list
+%type <t_stmlist> declaration_or_expression_list else_statement
 %type <t_varlist> variable_list
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
@@ -166,13 +166,19 @@ branch_statement
 	}
 	;
 condition_statement
-	: TT_IF '(' expression ')' single_statement
+	: TT_IF '(' expression ')' single_statement else_statement
 	{
-		$$ = new NIfStatement($3, $5, nullptr);
+		$$ = new NIfStatement($3, $5, $6);
 	}
-	| TT_IF '(' expression ')' single_statement TT_ELSE single_statement
+	;
+else_statement
+	:
 	{
-		$$ = new NIfStatement($3, $5, $7);
+		$$ = nullptr;
+	}
+	| TT_ELSE single_statement
+	{
+		$$ = $2;
 	}
 	;
 variable_declarations
