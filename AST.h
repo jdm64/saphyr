@@ -492,6 +492,20 @@ public:
 	}
 };
 
+class NNullCoalescing : public NBinaryOperator
+{
+public:
+	NNullCoalescing(NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(0, lhs, rhs) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::NullCoalescing;
+	}
+};
+
 class NUnaryOperator : public NExpression
 {
 protected:

@@ -458,6 +458,42 @@ Value* NBinaryMathOperator::genCode(CodeContext& context)
 	return BinaryOperator::Create(getOperator(oper, lhsExp->getType(), context), lhsExp, rhsExp, "", context.currBlock());
 }
 
+Value* NNullCoalescing::genCode(CodeContext& context)
+{
+	Value *rhsExp, *retVal;
+	auto lhsExp = lhs->genCode(context);
+	auto condition = lhsExp;
+
+	typeCastMatch(condition, Type::getInt1Ty(context.getContext()), context);
+	if (isComplexExp(rhs->getNodeType())) {
+		auto trueBlock = context.currBlock();
+		auto falseBlock = context.createBlock();
+		auto endBlock = context.createBlock();
+
+		BranchInst::Create(endBlock, falseBlock, condition, context.currBlock());
+
+		context.pushBlock(falseBlock);
+		rhsExp = rhs->genCode(context);
+		BranchInst::Create(endBlock, context.currBlock());
+
+		context.pushBlock(endBlock);
+		auto result = PHINode::Create(lhsExp->getType(), 2, "", context.currBlock());
+		result->addIncoming(lhsExp, trueBlock);
+		result->addIncoming(rhsExp, falseBlock);
+
+		retVal = result;
+	} else {
+		rhsExp = rhs->genCode(context);
+		retVal = SelectInst::Create(condition, lhsExp, rhsExp, "", context.currBlock());
+	}
+
+	if (lhsExp->getType() != rhsExp->getType()) {
+		cout << "error: return types of null coalescing operator must match" << endl;
+		context.incErrCount();
+	}
+	return retVal;
+}
+
 Value* NUnaryMathOperator::genCode(CodeContext& context)
 {
 	Value* value;

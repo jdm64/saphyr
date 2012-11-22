@@ -31,6 +31,7 @@ LETTER		[a-zA-Z_]
 "|="	{ return ParserBase::TT_ASG_XOR; }
 "++"	{ return ParserBase::TT_INC; }
 "--"	{ return ParserBase::TT_DEC; }
+"??"	{ return ParserBase::TT_DQ_MARK; }
 
 true		{ return ParserBase::TT_TRUE; }
 false		{ return ParserBase::TT_FALSE; }

@@ -23,7 +23,7 @@
 // operators
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
-%token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC
+%token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
 %left TT_ELSE
@@ -46,7 +46,7 @@
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
-%type <t_exp> value_expression ternary_expression increment_decrement_expression
+%type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement
@@ -413,8 +413,8 @@ addition_operator
 	| '-' { $$ = '-'; }
 	;
 multiplication_expression
-	: unary_expression
-	| multiplication_expression multiplication_operator unary_expression
+	: null_coalescing_expression
+	| multiplication_expression multiplication_operator null_coalescing_expression
 	{
 		$$ = new NBinaryMathOperator($2, $1, $3);
 	}
@@ -423,6 +423,13 @@ multiplication_operator
 	: '*' { $$ = '*'; }
 	| '/' { $$ = '/'; }
 	| '%' { $$ = '%'; }
+	;
+null_coalescing_expression
+	: unary_expression
+	| unary_expression TT_DQ_MARK unary_expression
+	{
+		$$ = new NNullCoalescing($1, $3);
+	}
 	;
 unary_expression
 	: primary_expression
