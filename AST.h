@@ -20,6 +20,7 @@
 #include <vector>
 #include <llvm/Value.h>
 #include <llvm/Type.h>
+#include <llvm/Function.h>
 #include <llvm/Instructions.h>
 #include "Constants.h"
 
@@ -242,16 +243,49 @@ public:
 	}
 };
 
-class NFunctionDeclaration : public NStatement
+class NFunctionDefinition : public NIdentifier
 {
 	NQualifier* rtype;
-	string* name;
 	NParameterList* params;
+
+public:
+	NFunctionDefinition(string* name, NQualifier* rtype, NParameterList* params)
+	: NIdentifier(name), rtype(rtype), params(params) {}
+
+	Value* genCode(CodeContext& context);
+
+	void genCodeParams(Function* function, CodeContext& context);
+
+	FunctionType* getFunctionType(CodeContext& context)
+	{
+		vector<Type*> args;
+		for (auto item : *params)
+			args.push_back(item->getVarType(context));
+
+		auto returnType = rtype->getVarType(context);
+		return FunctionType::get(returnType, args, false);
+	}
+
+	NodeType getNodeType()
+	{
+		return NodeType::FunctionDef;
+	}
+
+	~NFunctionDefinition()
+	{
+		delete rtype;
+		delete params;
+	}
+};
+
+class NFunctionDeclaration : public NStatement
+{
+	NFunctionDefinition* prototype;
 	NStatementList* body;
 
 public:
-	NFunctionDeclaration(NQualifier* rtype, string* name, NParameterList* params, NStatementList* body)
-	: rtype(rtype), name(name), params(params), body(body) {}
+	NFunctionDeclaration(NFunctionDefinition* prototype, NStatementList* body)
+	: prototype(prototype), body(body) {}
 
 	Value* genCode(CodeContext& context);
 
@@ -262,9 +296,7 @@ public:
 
 	~NFunctionDeclaration()
 	{
-		delete rtype;
-		delete name;
-		delete params;
+		delete prototype;
 		delete body;
 	}
 };

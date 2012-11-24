@@ -132,29 +132,44 @@ Value* NVariableDeclGroup::genCode(CodeContext& context)
 	return nullptr;
 }
 
-Value* NFunctionDeclaration::genCode(CodeContext& context)
+Value* NFunctionDefinition::genCode(CodeContext& context)
 {
-	if (context.getFunction(name)) {
-		cout << "error: function alread defined" << endl;
-		context.incErrCount();
-		return nullptr;
-	}
+	auto function = context.getFunction(name);
+	if (function)
+		return function;
 
-	vector<Type*> args;
-	for (auto item : *params)
-		args.push_back(item->getVarType(context));
+	auto funcType = getFunctionType(context);
+	return Function::Create(funcType, GlobalValue::ExternalLinkage, *name, context.getModule());
+}
 
-	auto returnType = rtype->getVarType(context);
-	auto funcType = FunctionType::get(returnType, args, false);
-	auto function = Function::Create(funcType, GlobalValue::ExternalLinkage, *name, context.getModule());
-
+void NFunctionDefinition::genCodeParams(Function* function, CodeContext& context)
+{
 	int i = 0;
 	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++) {
 		auto param = params->getItem(i++);
 		param->setArgument(arg);
 		arg->setName(*param->getName());
 	}
+	params->genCode(context);
+}
+
+Value* NFunctionDeclaration::genCode(CodeContext& context)
+{
+	auto function = static_cast<Function*>(prototype->genCode(context));
+	if (!function)
+		return nullptr;
+
+	if (!body) {
+		// no body means only function prototype
+		return function;
+	} else if (function->size()) {
+		cout << "error: function " << *prototype->getName() << " already declared" << endl;
+		context.incErrCount();
+		return nullptr;
+	}
+
 	if (body->getLast()->getNodeType() != NodeType::ReturnStm) {
+		auto returnType = function->getFunctionType()->getReturnType();
 		if (returnType->isVoidTy()) {
 			body->addItem(new NReturnStatement);
 		} else {
@@ -163,8 +178,14 @@ Value* NFunctionDeclaration::genCode(CodeContext& context)
 		}
 	}
 
+	if (prototype->getFunctionType(context) != function->getFunctionType()) {
+		cout << "error: function type for " << *prototype->getName() << " doesn't match definition" << endl;
+		context.incErrCount();
+		return nullptr;
+	}
+
 	context.startFuncBlock(function);
-	params->genCode(context);
+	prototype->genCodeParams(function, context);
 	body->genCode(context);
 	context.endFuncBlock();
 

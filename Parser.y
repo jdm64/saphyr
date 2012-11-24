@@ -10,6 +10,7 @@
 	NVariableDecl* t_var;
 	NStatement* t_stm;
 	NExpression* t_exp;
+	NFunctionDefinition* t_func_def;
 	NStatementList* t_stmlist;
 	NExpressionList* t_explist;
 	NParameterList* t_parlist;
@@ -47,9 +48,11 @@
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
+// function definition
+%type <t_func_def> function_definition
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
-%type <t_stmlist> declaration_or_expression_list else_statement
+%type <t_stmlist> declaration_or_expression_list else_statement function_body
 %type <t_varlist> variable_list
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
@@ -77,9 +80,22 @@ declaration
 	: function_declaration
 	;
 function_declaration
-	: type_qualifier TT_IDENTIFIER '(' parameter_list ')' compound_statement
+	: function_definition function_body
 	{
-		$$ = new NFunctionDeclaration($1, $2, $4, $6);
+		$$ = new NFunctionDeclaration($1, $2);
+	}
+	;
+function_definition
+	: type_qualifier TT_IDENTIFIER '(' parameter_list ')'
+	{
+		$$ = new NFunctionDefinition($2, $1, $4);
+	}
+	;
+function_body
+	: compound_statement
+	| ';'
+	{
+		$$ = nullptr;
 	}
 	;
 compound_statement
