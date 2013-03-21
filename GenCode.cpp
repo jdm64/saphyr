@@ -132,7 +132,7 @@ Value* NVariableDeclGroup::genCode(CodeContext& context)
 	return nullptr;
 }
 
-Value* NFunctionDefinition::genCode(CodeContext& context)
+Value* NFunctionPrototype::genCode(CodeContext& context)
 {
 	auto function = context.getFunction(name);
 	if (function)
@@ -142,7 +142,7 @@ Value* NFunctionDefinition::genCode(CodeContext& context)
 	return Function::Create(funcType, GlobalValue::ExternalLinkage, *name, context.getModule());
 }
 
-void NFunctionDefinition::genCodeParams(Function* function, CodeContext& context)
+void NFunctionPrototype::genCodeParams(Function* function, CodeContext& context)
 {
 	int i = 0;
 	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++) {

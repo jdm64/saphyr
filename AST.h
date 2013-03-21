@@ -243,13 +243,13 @@ public:
 	}
 };
 
-class NFunctionDefinition : public NIdentifier
+class NFunctionPrototype : public NIdentifier
 {
 	NQualifier* rtype;
 	NParameterList* params;
 
 public:
-	NFunctionDefinition(string* name, NQualifier* rtype, NParameterList* params)
+	NFunctionPrototype(string* name, NQualifier* rtype, NParameterList* params)
 	: NIdentifier(name), rtype(rtype), params(params) {}
 
 	Value* genCode(CodeContext& context);
@@ -268,10 +268,10 @@ public:
 
 	NodeType getNodeType()
 	{
-		return NodeType::FunctionDef;
+		return NodeType::FunctionProto;
 	}
 
-	~NFunctionDefinition()
+	~NFunctionPrototype()
 	{
 		delete rtype;
 		delete params;
@@ -280,11 +280,11 @@ public:
 
 class NFunctionDeclaration : public NStatement
 {
-	NFunctionDefinition* prototype;
+	NFunctionPrototype* prototype;
 	NStatementList* body;
 
 public:
-	NFunctionDeclaration(NFunctionDefinition* prototype, NStatementList* body)
+	NFunctionDeclaration(NFunctionPrototype* prototype, NStatementList* body)
 	: prototype(prototype), body(body) {}
 
 	Value* genCode(CodeContext& context);

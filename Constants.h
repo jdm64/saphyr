@@ -23,7 +23,7 @@ enum class NodeType
 	BaseNodeList, Qualifier, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
 	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
 	LogicalOp, WhileStm, LoopBranch, ForStm, TernaryOp, Increment, UnaryMath, IfStm,
-	NullCoalescing, FunctionDef
+	NullCoalescing, FunctionProto
 };
 
 enum class QualifierType
