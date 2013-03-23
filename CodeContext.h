@@ -167,9 +167,7 @@ public:
 	}
 	BasicBlock* getContinueBlock()
 	{
-		if (continueBlocks.empty())
-			return nullptr;
-		return continueBlocks.back();
+		return continueBlocks.empty()? nullptr : continueBlocks.back();
 	}
 
 	void pushBreakBlock(BasicBlock* block)
@@ -182,9 +180,7 @@ public:
 	}
 	BasicBlock* getBreakBlock()
 	{
-		if (breakBlocks.empty())
-			return nullptr;
-		return breakBlocks.back();
+		return breakBlocks.empty()? nullptr : breakBlocks.back();
 	}
 
 	void pushRedoBlock(BasicBlock* block)
@@ -197,9 +193,7 @@ public:
 	}
 	BasicBlock* getRedoBlock()
 	{
-		if (redoBlocks.empty())
-			return nullptr;
-		return redoBlocks.back();
+		return redoBlocks.empty()?  nullptr : redoBlocks.back();
 	}
 
 	// NOTE: can only be used inside a function to add a new block
