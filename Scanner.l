@@ -52,6 +52,7 @@ continue	{ return ParserBase::TT_CONTINUE; }
 do		{ return ParserBase::TT_DO; }
 else		{ return ParserBase::TT_ELSE; }
 for		{ return ParserBase::TT_FOR; }
+goto		{ return ParserBase::TT_GOTO; }
 if		{ return ParserBase::TT_IF; }
 redo		{ return ParserBase::TT_REDO; }
 return		{ return ParserBase::TT_RETURN; }

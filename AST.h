@@ -399,6 +399,48 @@ public:
 	}
 };
 
+class NLabelStatement : public NStatement
+{
+	string* name;
+
+public:
+	NLabelStatement(string* name)
+	: name(name) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::Label;
+	}
+
+	~NLabelStatement()
+	{
+		delete name;
+	}
+};
+
+class NGotoStatement : public NStatement
+{
+	string* name;
+
+public:
+	NGotoStatement(string* name)
+	: name(name) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::Goto;
+	}
+
+	~NGotoStatement()
+	{
+		delete name;
+	}
+};
+
 class NLoopBranch : public NStatement
 {
 	int type;

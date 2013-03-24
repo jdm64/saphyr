@@ -325,6 +325,42 @@ Value* NIfStatement::genCode(CodeContext& context)
 	return nullptr;
 }
 
+Value* NLabelStatement::genCode(CodeContext& context)
+{
+	// check if label already declared
+	auto label = context.getLabelBlock(name);
+	if (label) {
+		if (!label->isPlaceholder) {
+			cout << "error: label \"" << *name << "\" already defined" << endl;
+			context.incErrCount();
+			return nullptr;
+		}
+		// a used label is no longer a placeholder
+		label->isPlaceholder = false;
+	} else {
+		label = new LabelBlock(context.createBlock(), false);
+		context.setLabelBlock(name, label);
+	}
+	BranchInst::Create(label->block, context.currBlock());
+	context.pushBlock(label->block);
+	return nullptr;
+}
+
+Value* NGotoStatement::genCode(CodeContext& context)
+{
+	auto skip = context.createBlock();
+	auto label = context.getLabelBlock(name);
+	if (!label) {
+		// trying to jump to a non-existant label. create place holder and
+		// later check if it's used at the end of the function.
+		label = new LabelBlock(context.createBlock(), true);
+		context.setLabelBlock(name, label);
+	}
+	BranchInst::Create(label->block, context.currBlock());
+	context.pushBlock(skip);
+	return nullptr;
+}
+
 Value* NLoopBranch::genCode(CodeContext& context)
 {
 	BasicBlock* block;

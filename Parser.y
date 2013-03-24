@@ -26,7 +26,7 @@
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
 %token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 // keywords
-%token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
+%token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO
 %left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
@@ -140,6 +140,14 @@ statement
 	| while_loop
 	| branch_statement
 	| condition_statement
+	| TT_IDENTIFIER ':'
+	{
+		$$ = new NLabelStatement($1);
+	}
+	| TT_GOTO TT_IDENTIFIER ';'
+	{
+		$$ = new NGotoStatement($2);
+	}
 	| TT_RETURN expression_or_empty ';'
 	{
 		$$ = new NReturnStatement($2);

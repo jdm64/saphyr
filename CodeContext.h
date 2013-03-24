@@ -19,6 +19,7 @@
 
 #include <map>
 #include <stack>
+#include <iostream>
 #include <llvm/Instructions.h>
 #include <llvm/LLVMContext.h>
 #include <llvm/BasicBlock.h>
@@ -33,6 +34,15 @@ template<typename NType>
 class NodeList;
 class NStatement;
 typedef NodeList<NStatement> NStatementList;
+
+struct LabelBlock
+{
+	BasicBlock* block;
+	bool isPlaceholder;
+
+	LabelBlock(BasicBlock* block, bool isPlaceholder)
+	: block(block), isPlaceholder(isPlaceholder) {}
+};
 
 class VarTable
 {
@@ -98,10 +108,21 @@ class CodeContext : public SymbolTable
 	vector<BasicBlock*> continueBlocks;
 	vector<BasicBlock*> breakBlocks;
 	vector<BasicBlock*> redoBlocks;
+	map<string, LabelBlock*> labelBlocks;
 
 	Module* module;
 	string filename;
 	int errors;
+
+	void validateFunction()
+	{
+		for (auto& item : labelBlocks) {
+			if (item.second->isPlaceholder) {
+				cout << "error: label \"" << item.first << "\" not defined" << endl;
+				incErrCount();
+			}
+		}
+	}
 
 public:
 	CodeContext(string& filename)
@@ -145,11 +166,17 @@ public:
 
 	void endFuncBlock()
 	{
+		validateFunction();
+
 		clearLocalTable();
 		funcBlocks.clear();
 		continueBlocks.clear();
 		breakBlocks.clear();
 		redoBlocks.clear();
+
+		for (auto& item : labelBlocks)
+			delete item.second;
+		labelBlocks.clear();
 	}
 
 	void pushBlock(BasicBlock* block)
@@ -194,6 +221,16 @@ public:
 	BasicBlock* getRedoBlock()
 	{
 		return redoBlocks.empty()?  nullptr : redoBlocks.back();
+	}
+
+	LabelBlock* getLabelBlock(string* name)
+	{
+		auto iter = labelBlocks.find(*name);
+		return iter != labelBlocks.end()? iter->second : nullptr;
+	}
+	void setLabelBlock(string* name, LabelBlock* label)
+	{
+		labelBlocks[*name] = label;
 	}
 
 	// NOTE: can only be used inside a function to add a new block
