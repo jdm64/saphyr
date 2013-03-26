@@ -153,7 +153,7 @@ class NVariableDecl : public NIdentifier
 
 public:
 	NVariableDecl(string* name, NExpression* initExp = nullptr)
-	: NIdentifier(name), initExp(initExp), type(new NQualifier) {}
+	: NIdentifier(name), initExp(initExp), type(nullptr) {}
 
 	// NOTE: must be called before genCode()
 	void setQualifier(NQualifier* qtype)
@@ -166,6 +166,12 @@ public:
 	NodeType getNodeType()
 	{
 		return NodeType::VarDecl;
+	}
+
+	~NVariableDecl()
+	{
+		delete initExp;
+		delete type;
 	}
 };
 typedef NodeList<NVariableDecl> NVariableDeclList;
