@@ -36,13 +36,13 @@
 // parameter
 %type <t_param> parameter
 // variable
-%type <t_var> variable
+%type <t_var> variable global_variable
 // operators
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
 %type <t_int> assignment_operator unary_operator
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
-%type <t_stm> variable_declarations condition_statement
+%type <t_stm> variable_declarations condition_statement global_variable_declaration
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
@@ -53,7 +53,7 @@
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
-%type <t_varlist> variable_list
+%type <t_varlist> variable_list global_variable_list
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
 
@@ -78,6 +78,13 @@ declaration_list
 	;
 declaration
 	: function_declaration
+	| global_variable_declaration
+	;
+global_variable_declaration
+	: type_qualifier global_variable_list ';'
+	{
+		$$ = new NVariableDeclGroup($1, $2);
+	}
 	;
 function_declaration
 	: function_prototype function_body
@@ -222,6 +229,17 @@ variable_list
 		$1->addItem($3);
 	}
 	;
+global_variable_list
+	: global_variable
+	{
+		$$ = new NVariableDeclList;
+		$$->addItem($1);
+	}
+	| global_variable_list ',' global_variable
+	{
+		$1->addItem($3);
+	}
+	;
 variable
 	: TT_IDENTIFIER
 	{
@@ -230,6 +248,16 @@ variable
 	| TT_IDENTIFIER '=' expression
 	{
 		$$ = new NVariableDecl($1, $3);
+	}
+	;
+global_variable
+	: TT_IDENTIFIER
+	{
+		$$ = new NGlobalVariableDecl($1);
+	}
+	| TT_IDENTIFIER '=' expression
+	{
+		$$ = new NGlobalVariableDecl($1, $3);
 	}
 	;
 parameter_list

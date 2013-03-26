@@ -123,6 +123,42 @@ Value* NVariableDecl::genCode(CodeContext& context)
 	return nullptr;
 }
 
+Value* NGlobalVariableDecl::genCode(CodeContext& context)
+{
+	if (initExp && initExp->getNodeType() != NodeType::IntConst && initExp->getNodeType() != NodeType::FloatConst) {
+		cout << "error: global variables only support constant value initializer" << endl;
+		context.incErrCount();
+		return nullptr;
+	}
+	auto initValue = initExp? initExp->genCode(context) : nullptr;
+	auto varType = type->getVarType(context);
+
+	if (!varType) { // auto type
+		if (!initValue) { // auto type requires initialization
+			cout << "error: auto variable type requires initialization" << endl;
+			context.incErrCount();
+			return nullptr;
+		}
+		varType = initValue->getType();
+	}
+	if (initValue && varType != initValue->getType()) {
+		cout << "error: global variable initialization requires exact type matching" << endl;
+		context.incErrCount();
+		return nullptr;
+	}
+
+	auto name = getName();
+	if (context.loadVarCurr(name)) {
+		cout << "error: variable " << *name << " already defined" << endl;
+		context.incErrCount();
+		return nullptr;
+	}
+
+	auto var = new GlobalVariable(*context.getModule(), varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue, *name);
+	context.storeGlobalVar(var, name);
+	return nullptr;
+}
+
 Value* NVariableDeclGroup::genCode(CodeContext& context)
 {
 	for (auto variable : *variables) {

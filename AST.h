@@ -148,6 +148,7 @@ public:
 
 class NVariableDecl : public NIdentifier
 {
+protected:
 	NExpression* initExp;
 	NQualifier* type;
 
@@ -175,6 +176,20 @@ public:
 	}
 };
 typedef NodeList<NVariableDecl> NVariableDeclList;
+
+class NGlobalVariableDecl : public NVariableDecl
+{
+public:
+	NGlobalVariableDecl(string* name, NExpression* initExp = nullptr)
+	: NVariableDecl(name, initExp) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::GlobalVarDecl;
+	}
+};
 
 class NVariable : public NIdentifier
 {
