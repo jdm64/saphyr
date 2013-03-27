@@ -118,15 +118,13 @@ class CodeContext : public SymbolTable
 
 	Module* module;
 	string filename;
-	int errors;
+	vector<string> errors;
 
 	void validateFunction()
 	{
 		for (auto& item : labelBlocks) {
-			if (item.second->isPlaceholder) {
-				cout << "error: label \"" << item.first << "\" not defined" << endl;
-				incErrCount();
-			}
+			if (item.second->isPlaceholder)
+				addError("label \"" + item.first + "\" not defined");
 		}
 	}
 
@@ -135,7 +133,6 @@ public:
 	: filename(filename)
 	{
 		module = new Module(filename, getGlobalContext());
-		errors = 0;
 	}
 
 	LLVMContext& getContext()
@@ -153,9 +150,9 @@ public:
 		return module->getFunction(*name);
 	}
 
-	void incErrCount()
+	void addError(string error)
 	{
-		errors++;
+		errors.push_back(error);
 	}
 
 	BasicBlock* currBlock()

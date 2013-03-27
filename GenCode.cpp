@@ -31,8 +31,10 @@ void CodeContext::genCode(NStatementList stms)
 {
 	stms.genCode(*this);
 
-	if (errors) {
-		cout << "found " << errors << " errors" << endl;
+	if (!errors.empty()) {
+		for (auto& error : errors)
+			cout << "error: " << error << endl;
+		cout << "found " << errors.size() << " errors" << endl;
 		return;
 	}
 	verifyModule(*module);
@@ -76,8 +78,7 @@ Value* NVariable::genCode(CodeContext& context)
 	auto var = context.loadVar(name);
 
 	if (!var) {
-		cout << "error: variable " << *name << " not declared" << endl;
-		context.incErrCount();
+		context.addError("variable " + *name + " not declared");
 		return nullptr;
 	}
 	return new LoadInst(var, "", context.currBlock());
@@ -99,8 +100,7 @@ Value* NVariableDecl::genCode(CodeContext& context)
 
 	if (!varType) { // auto type
 		if (!initValue) { // auto type requires initialization
-			cout << "error: auto variable type requires initialization" << endl;
-			context.incErrCount();
+			context.addError("auto variable type requires initialization");
 			return nullptr;
 		}
 		varType = initValue->getType();
@@ -108,8 +108,7 @@ Value* NVariableDecl::genCode(CodeContext& context)
 
 	auto name = getName();
 	if (context.loadVarCurr(name)) {
-		cout << "error: variable " << *name << " already defined" << endl;
-		context.incErrCount();
+		context.addError("variable " + *name + " already defined");
 		return nullptr;
 	}
 
@@ -126,8 +125,7 @@ Value* NVariableDecl::genCode(CodeContext& context)
 Value* NGlobalVariableDecl::genCode(CodeContext& context)
 {
 	if (initExp && initExp->getNodeType() != NodeType::IntConst && initExp->getNodeType() != NodeType::FloatConst) {
-		cout << "error: global variables only support constant value initializer" << endl;
-		context.incErrCount();
+		context.addError("global variables only support constant value initializer");
 		return nullptr;
 	}
 	auto initValue = initExp? initExp->genCode(context) : nullptr;
@@ -135,22 +133,19 @@ Value* NGlobalVariableDecl::genCode(CodeContext& context)
 
 	if (!varType) { // auto type
 		if (!initValue) { // auto type requires initialization
-			cout << "error: auto variable type requires initialization" << endl;
-			context.incErrCount();
+			context.addError("auto variable type requires initialization");
 			return nullptr;
 		}
 		varType = initValue->getType();
 	}
 	if (initValue && varType != initValue->getType()) {
-		cout << "error: global variable initialization requires exact type matching" << endl;
-		context.incErrCount();
+		context.addError("global variable initialization requires exact type matching");
 		return nullptr;
 	}
 
 	auto name = getName();
 	if (context.loadVarCurr(name)) {
-		cout << "error: variable " << *name << " already defined" << endl;
-		context.incErrCount();
+		context.addError("variable " + *name + " already defined");
 		return nullptr;
 	}
 
@@ -199,24 +194,20 @@ Value* NFunctionDeclaration::genCode(CodeContext& context)
 		// no body means only function prototype
 		return function;
 	} else if (function->size()) {
-		cout << "error: function " << *prototype->getName() << " already declared" << endl;
-		context.incErrCount();
+		context.addError("function " + *prototype->getName() + " already declared");
 		return nullptr;
 	}
 
 	if (body->getLast()->getNodeType() != NodeType::ReturnStm) {
 		auto returnType = function->getFunctionType()->getReturnType();
-		if (returnType->isVoidTy()) {
+		if (returnType->isVoidTy())
 			body->addItem(new NReturnStatement);
-		} else {
-			cout << "error: no return for a non-void function" << endl;
-			context.incErrCount();
-		}
+		else
+			context.addError("no return for a non-void function");
 	}
 
 	if (prototype->getFunctionType(context) != function->getFunctionType()) {
-		cout << "error: function type for " << *prototype->getName() << " doesn't match definition" << endl;
-		context.incErrCount();
+		context.addError("function type for " + *prototype->getName() + " doesn't match definition");
 		return nullptr;
 	}
 
@@ -235,15 +226,11 @@ Value* NReturnStatement::genCode(CodeContext& context)
 
 	if (funcReturn->isVoidTy()) {
 		if (value) {
-			cout << "error: " << func->getName().str() << " function declared void,"
-				<< " but non-void return found" << endl;
-			context.incErrCount();
+			context.addError(func->getName().str() + " function declared void, but non-void return found");
 			return nullptr;
 		}
 	} else if (!value) {
-		cout << "error: " << func->getName().str() << " function declared non-void,"
-			<< " but void return found" << endl;
-		context.incErrCount();
+		context.addError(func->getName().str() + " function declared non-void, but void return found");
 		return nullptr;
 	}
 	auto returnVal = value? value->genCode(context) : nullptr;
@@ -367,8 +354,7 @@ Value* NLabelStatement::genCode(CodeContext& context)
 	auto label = context.getLabelBlock(name);
 	if (label) {
 		if (!label->isPlaceholder) {
-			cout << "error: label \"" << *name << "\" already defined" << endl;
-			context.incErrCount();
+			context.addError("label \"" + *name + "\" already defined");
 			return nullptr;
 		}
 		// a used label is no longer a placeholder
@@ -425,15 +411,14 @@ Value* NLoopBranch::genCode(CodeContext& context)
 		}
 		break;
 	default:
-		cout << "error: undefined loop branch type " << type << endl;
+		context.addError("undefined loop branch type: " + type);
 		return nullptr;
 	}
 	BranchInst::Create(block, context.currBlock());
 	context.pushBlock(context.createBlock());
 	return nullptr;
 ret:
-	cout << "error: no valid context for " << typeName << " statement" << endl;
-	context.incErrCount();
+	context.addError("no valid context for " + typeName + " statement");
 	return nullptr;
 }
 
@@ -442,10 +427,8 @@ Value* NAssignment::genCode(CodeContext& context)
 	auto lhsVar = context.loadVar(lhs->getName());
 	auto rhsExp = rhs->genCode(context);
 
-	if (!lhsVar) {
-		cout << "error: variable " << *lhs->getName() << " not declared" << endl;
-		context.incErrCount();
-	}
+	if (!lhsVar)
+		context.addError("variable " + *lhs->getName() + " not declared");
 	if (!(lhsVar && rhsExp))
 		return nullptr;
 
@@ -492,10 +475,8 @@ Value* NTernaryOperator::genCode(CodeContext& context)
 		retVal = SelectInst::Create(condExp, trueExp, falseExp, "", context.currBlock());
 	}
 
-	if (trueExp->getType() != falseExp->getType()) {
-		cout << "error: return types of ternary must match" << endl;
-		context.incErrCount();
-	}
+	if (trueExp->getType() != falseExp->getType())
+		context.addError("return types of ternary must match");
 	return retVal;
 }
 
@@ -580,10 +561,8 @@ Value* NNullCoalescing::genCode(CodeContext& context)
 		retVal = SelectInst::Create(condition, lhsExp, rhsExp, "", context.currBlock());
 	}
 
-	if (lhsExp->getType() != rhsExp->getType()) {
-		cout << "error: return types of null coalescing operator must match" << endl;
-		context.incErrCount();
-	}
+	if (lhsExp->getType() != rhsExp->getType())
+		context.addError("return types of null coalescing operator must match");
 	return retVal;
 }
 
@@ -611,8 +590,7 @@ Value* NUnaryMathOperator::genCode(CodeContext& context)
 		value = Constant::getAllOnesValue(type);
 		return BinaryOperator::Create(llvmOp, value, unaryExp, "", context.currBlock());
 	default:
-		cout << "error: invalid unary operator " << oper << endl;
-		context.incErrCount();
+		context.addError("invalid unary operator " + oper);
 		return nullptr;
 	}
 }
@@ -621,17 +599,14 @@ Value* NFunctionCall::genCode(CodeContext& context)
 {
 	auto func = context.getFunction(name);
 	if (!func) {
-		cout << "error: function " << *name << " not defined" << endl;
-		context.incErrCount();
+		context.addError("function " + *name + " not defined");
 		return nullptr;
 	}
 	auto argCount = arguments->size();
 	auto paramCount = func->getFunctionType()->getNumParams();
-	if (argCount != paramCount) {
-		cout << "error: argument count for " << func->getName().str() << " function invalid, "
-			<< argCount << " arguments given, but " << paramCount << " required." << endl;
-		context.incErrCount();
-	}
+	if (argCount != paramCount)
+		context.addError("argument count for " + func->getName().str() + " function invalid, "
+			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.");
 	auto funcType = func->getFunctionType();
 	vector<Value*> exp_list;
 	int i = 0;

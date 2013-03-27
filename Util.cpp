@@ -14,7 +14,6 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
 #include "Util.h"
 #include "parserbase.h"
 
@@ -91,38 +90,27 @@ Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context)
 	case '-':
 		return type->isFloatingPointTy()? Instruction::FSub : Instruction::Sub;
 	case ParserBase::TT_LSHIFT:
-		if (type->isFloatingPointTy()) {
-			cout << "error: shift operator invalid for float types" << endl;
-			context.incErrCount();
-		}
+		if (type->isFloatingPointTy())
+			context.addError("shift operator invalid for float types");
 		return Instruction::Shl;
 	case ParserBase::TT_RSHIFT:
-		if (type->isFloatingPointTy()) {
-			cout << "error: shift operator invalid for float types" << endl;
-			context.incErrCount();
-		}
+		if (type->isFloatingPointTy())
+			context.addError("shift operator invalid for float types");
 		return Instruction::LShr;
 	case '&':
-		if (type->isFloatingPointTy()) {
-			cout << "error: AND operator invalid for float types" << endl;
-			context.incErrCount();
-		}
+		if (type->isFloatingPointTy())
+			context.addError("AND operator invalid for float types");
 		return Instruction::And;
 	case '|':
-		if (type->isFloatingPointTy()) {
-			cout << "error: OR operator invalid for float types" << endl;
-			context.incErrCount();
-		}
+		if (type->isFloatingPointTy())
+			context.addError("OR operator invalid for float types");
 		return Instruction::Or;
 	case '^':
-		if (type->isFloatingPointTy()) {
-			cout << "error: XOR operator invalid for float types" << endl;
-			context.incErrCount();
-		}
+		if (type->isFloatingPointTy())
+			context.addError("XOR operator invalid for float types");
 		return Instruction::Xor;
 	default:
-		cout << "error: unrecognized operator " << oper << endl;
-		context.incErrCount();
+		context.addError("unrecognized operator " + oper);
 		return Instruction::Add;
 	}
 }
@@ -143,8 +131,7 @@ Predicate getPredicate(int oper, Type* type, CodeContext& context)
 	case ParserBase::TT_EQ:
 		return type->isFloatingPointTy()? Predicate::FCMP_OEQ : Predicate::ICMP_EQ;
 	default:
-		cout << "error: unrecognized predicate " << oper << endl;
-		context.incErrCount();
+		context.addError("unrecognized predicate " + oper);
 		return Predicate::ICMP_EQ;
 	}
 }
