@@ -47,27 +47,27 @@ void CodeContext::genCode(NStatementList stms)
 	pm.run(*module);
 }
 
-Type* NQualifier::getVarType(CodeContext& context)
+Type* NBaseType::getType(CodeContext& context)
 {
 	switch (type) {
-	case QualifierType::VOID:
+	case BaseDataType::VOID:
 		return Type::getVoidTy(context.getContext());
-	case QualifierType::BOOL:
+	case BaseDataType::BOOL:
 		return Type::getInt1Ty(context.getContext());
-	case QualifierType::INT8:
+	case BaseDataType::INT8:
 		return Type::getInt8Ty(context.getContext());
-	case QualifierType::INT16:
+	case BaseDataType::INT16:
 		return Type::getInt16Ty(context.getContext());
-	case QualifierType::INT:
-	case QualifierType::INT32:
+	case BaseDataType::INT:
+	case BaseDataType::INT32:
 		return Type::getInt32Ty(context.getContext());
-	case QualifierType::INT64:
+	case BaseDataType::INT64:
 		return Type::getInt64Ty(context.getContext());
-	case QualifierType::FLOAT:
+	case BaseDataType::FLOAT:
 		return Type::getFloatTy(context.getContext());
-	case QualifierType::DOUBLE:
+	case BaseDataType::DOUBLE:
 		return Type::getDoubleTy(context.getContext());
-	case QualifierType::AUTO:
+	case BaseDataType::AUTO:
 	default:
 		return nullptr;
 	}
@@ -86,7 +86,7 @@ Value* NVariable::genCode(CodeContext& context)
 
 Value* NParameter::genCode(CodeContext& context)
 {
-	auto stackAlloc = new AllocaInst(type->getVarType(context), "", context.currBlock());
+	auto stackAlloc = new AllocaInst(type->getType(context), "", context.currBlock());
 	auto storeParam = new StoreInst(arg, stackAlloc, context.currBlock());
 	context.storeLocalVar(stackAlloc, name);
 
@@ -96,7 +96,7 @@ Value* NParameter::genCode(CodeContext& context)
 Value* NVariableDecl::genCode(CodeContext& context)
 {
 	auto initValue = initExp? initExp->genCode(context) : nullptr;
-	auto varType = type->getVarType(context);
+	auto varType = type->getType(context);
 
 	if (!varType) { // auto type
 		if (!initValue) { // auto type requires initialization
@@ -129,7 +129,7 @@ Value* NGlobalVariableDecl::genCode(CodeContext& context)
 		return nullptr;
 	}
 	auto initValue = initExp? initExp->genCode(context) : nullptr;
-	auto varType = type->getVarType(context);
+	auto varType = type->getType(context);
 
 	if (!varType) { // auto type
 		if (!initValue) { // auto type requires initialization
@@ -157,7 +157,7 @@ Value* NGlobalVariableDecl::genCode(CodeContext& context)
 Value* NVariableDeclGroup::genCode(CodeContext& context)
 {
 	for (auto variable : *variables) {
-		variable->setQualifier(type);
+		variable->setDataType(type);
 		variable->genCode(context);
 	}
 	return nullptr;
@@ -638,20 +638,20 @@ Value* NIntConst::genCode(CodeContext& context)
 {
 	int bits;
 	switch (type) {
-	case QualifierType::BOOL:
+	case BaseDataType::BOOL:
 		bits = 1;
 		break;
-	case QualifierType::INT8:
+	case BaseDataType::INT8:
 		bits = 8;
 		break;
-	case QualifierType::INT16:
+	case BaseDataType::INT16:
 		bits = 16;
 		break;
-	case QualifierType::INT64:
+	case BaseDataType::INT64:
 		bits = 64;
 		break;
-	case QualifierType::INT32:
-	case QualifierType::INT:
+	case BaseDataType::INT32:
+	case BaseDataType::INT:
 	default:
 		bits = 32;
 		break;
@@ -664,10 +664,10 @@ Value* NFloatConst::genCode(CodeContext& context)
 	Type* llvmType;
 	switch (type) {
 	default:
-	case QualifierType::FLOAT:
+	case BaseDataType::FLOAT:
 		llvmType = Type::getFloatTy(context.getContext());
 		break;
-	case QualifierType::DOUBLE:
+	case BaseDataType::DOUBLE:
 		llvmType = Type::getDoubleTy(context.getContext());
 		break;
 	}

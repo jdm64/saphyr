@@ -5,7 +5,7 @@
 %union {
 	int t_int;
 	std::string* t_str;
-	NQualifier* t_qual;
+	NBaseType* t_dtype;
 	NParameter* t_param;
 	NVariableDecl* t_var;
 	NStatement* t_stm;
@@ -31,8 +31,8 @@
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
 
-// qualifiers
-%type <t_qual> type_qualifier
+// data types
+%type <t_dtype> data_type
 // parameter
 %type <t_param> parameter
 // variable
@@ -81,7 +81,7 @@ declaration
 	| global_variable_declaration
 	;
 global_variable_declaration
-	: type_qualifier global_variable_list ';'
+	: data_type global_variable_list ';'
 	{
 		$$ = new NVariableDeclGroup($1, $2);
 	}
@@ -93,7 +93,7 @@ function_declaration
 	}
 	;
 function_prototype
-	: type_qualifier TT_IDENTIFIER '(' parameter_list ')'
+	: data_type TT_IDENTIFIER '(' parameter_list ')'
 	{
 		$$ = new NFunctionPrototype($2, $1, $4);
 	}
@@ -213,7 +213,7 @@ else_statement
 	}
 	;
 variable_declarations
-	: type_qualifier variable_list
+	: data_type variable_list
 	{
 		$$ = new NVariableDeclGroup($1, $2);
 	}
@@ -276,51 +276,51 @@ parameter_list
 	}
 	;
 parameter
-	: type_qualifier TT_IDENTIFIER
+	: data_type TT_IDENTIFIER
 	{
 		$$ = new NParameter($1, $2);
 	}
 	;
-type_qualifier
+data_type
 	: TT_AUTO
 	{
-		$$ = new NQualifier;
+		$$ = new NBaseType;
 	}
 	| TT_VOID
 	{
-		$$ = new NQualifier(QualifierType::VOID);
+		$$ = new NBaseType(BaseDataType::VOID);
 	}
 	| TT_BOOL
 	{
-		$$ = new NQualifier(QualifierType::BOOL);
+		$$ = new NBaseType(BaseDataType::BOOL);
 	}
 	| TT_INT
 	{
-		$$ = new NQualifier(QualifierType::INT);
+		$$ = new NBaseType(BaseDataType::INT);
 	}
 	| TT_INT8
 	{
-		$$ = new NQualifier(QualifierType::INT8);
+		$$ = new NBaseType(BaseDataType::INT8);
 	}
 	| TT_INT16
 	{
-		$$ = new NQualifier(QualifierType::INT16);
+		$$ = new NBaseType(BaseDataType::INT16);
 	}
 	| TT_INT32
 	{
-		$$ = new NQualifier(QualifierType::INT32);
+		$$ = new NBaseType(BaseDataType::INT32);
 	}
 	| TT_INT64
 	{
-		$$ = new NQualifier(QualifierType::INT64);
+		$$ = new NBaseType(BaseDataType::INT64);
 	}
 	| TT_FLOAT
 	{
-		$$ = new NQualifier(QualifierType::FLOAT);
+		$$ = new NBaseType(BaseDataType::FLOAT);
 	}
 	| TT_DOUBLE
 	{
-		$$ = new NQualifier(QualifierType::DOUBLE);
+		$$ = new NBaseType(BaseDataType::DOUBLE);
 	}
 	;
 expression_list
@@ -544,10 +544,10 @@ value_expression
 	}
 	| TT_TRUE
 	{
-		$$ = new NIntConst(new string("1"), QualifierType::BOOL);
+		$$ = new NIntConst(new string("1"), BaseDataType::BOOL);
 	}
 	| TT_FALSE
 	{
-		$$ = new NIntConst(new string("0"), QualifierType::BOOL);
+		$$ = new NIntConst(new string("0"), BaseDataType::BOOL);
 	}
 	;

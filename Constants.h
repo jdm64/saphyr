@@ -20,13 +20,13 @@
 
 enum class NodeType
 {
-	BaseNodeList, Qualifier, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
+	BaseNodeList, BaseType, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
 	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
 	LogicalOp, WhileStm, LoopBranch, ForStm, TernaryOp, Increment, UnaryMath, IfStm,
 	NullCoalescing, FunctionProto, Label, Goto, GlobalVarDecl
 };
 
-enum class QualifierType
+enum class BaseDataType
 {
 	AUTO, VOID, BOOL, INT, INT8, INT16, INT32, INT64, FLOAT, DOUBLE
 };

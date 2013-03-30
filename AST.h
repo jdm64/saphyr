@@ -125,15 +125,15 @@ public:
 	}
 };
 
-class NQualifier : public NIdentifier
+class NBaseType : public NIdentifier
 {
-	QualifierType type;
+	BaseDataType type;
 
 public:
-	NQualifier(QualifierType type = QualifierType::AUTO)
+	NBaseType(BaseDataType type = BaseDataType::AUTO)
 	: NIdentifier(nullptr), type(type) {}
 
-	Type* getVarType(CodeContext& context);
+	Type* getType(CodeContext& context);
 
 	Value* genCode(CodeContext& context)
 	{
@@ -142,7 +142,7 @@ public:
 
 	NodeType getNodeType()
 	{
-		return NodeType::Qualifier;
+		return NodeType::BaseType;
 	}
 };
 
@@ -150,14 +150,14 @@ class NVariableDecl : public NIdentifier
 {
 protected:
 	NExpression* initExp;
-	NQualifier* type;
+	NBaseType* type;
 
 public:
 	NVariableDecl(string* name, NExpression* initExp = nullptr)
 	: NIdentifier(name), initExp(initExp), type(nullptr) {}
 
 	// NOTE: must be called before genCode()
-	void setQualifier(NQualifier* qtype)
+	void setDataType(NBaseType* qtype)
 	{
 		type = qtype;
 	}
@@ -199,7 +199,7 @@ public:
 
 	Value* genCode(CodeContext& context);
 
-	Type* getVarType(CodeContext& context);
+	Type* getType(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -209,11 +209,11 @@ public:
 
 class NParameter : public NIdentifier
 {
-	NQualifier* type;
+	NBaseType* type;
 	Value* arg; // NOTE: not owned by NParameter
 
 public:
-	NParameter(NQualifier* type, string* name)
+	NParameter(NBaseType* type, string* name)
 	: NIdentifier(name), type(type), arg(nullptr) {}
 
 	// NOTE: this must be called before genCode()
@@ -222,9 +222,9 @@ public:
 		arg = argument;
 	}
 
-	Type* getVarType(CodeContext& context)
+	Type* getType(CodeContext& context)
 	{
-		return type->getVarType(context);
+		return type->getType(context);
 	}
 
 	Value* genCode(CodeContext& context);
@@ -243,11 +243,11 @@ typedef NodeList<NParameter> NParameterList;
 
 class NVariableDeclGroup : public NStatement
 {
-	NQualifier* type;
+	NBaseType* type;
 	NVariableDeclList* variables;
 
 public:
-	NVariableDeclGroup(NQualifier* type, NVariableDeclList* variables)
+	NVariableDeclGroup(NBaseType* type, NVariableDeclList* variables)
 	: type(type), variables(variables) {}
 
 	Value* genCode(CodeContext& context);
@@ -266,11 +266,11 @@ public:
 
 class NFunctionPrototype : public NIdentifier
 {
-	NQualifier* rtype;
+	NBaseType* rtype;
 	NParameterList* params;
 
 public:
-	NFunctionPrototype(string* name, NQualifier* rtype, NParameterList* params)
+	NFunctionPrototype(string* name, NBaseType* rtype, NParameterList* params)
 	: NIdentifier(name), rtype(rtype), params(params) {}
 
 	Value* genCode(CodeContext& context);
@@ -281,9 +281,9 @@ public:
 	{
 		vector<Type*> args;
 		for (auto item : *params)
-			args.push_back(item->getVarType(context));
+			args.push_back(item->getType(context));
 
-		auto returnType = rtype->getVarType(context);
+		auto returnType = rtype->getType(context);
 		return FunctionType::get(returnType, args, false);
 	}
 
@@ -678,11 +678,11 @@ public:
 class NConstant : public NExpression
 {
 protected:
-	QualifierType type;
+	BaseDataType type;
 	string* value;
 
 public:
-	NConstant(QualifierType type, string* value)
+	NConstant(BaseDataType type, string* value)
 	: type(type), value(value) {}
 
 	~NConstant()
@@ -694,7 +694,7 @@ public:
 class NIntConst : public NConstant
 {
 public:
-	NIntConst(string* value, QualifierType type = QualifierType::INT)
+	NIntConst(string* value, BaseDataType type = BaseDataType::INT)
 	: NConstant(type, value) {}
 
 	Value* genCode(CodeContext& context);
@@ -708,7 +708,7 @@ public:
 class NFloatConst : public NConstant
 {
 public:
-	NFloatConst(string* value, QualifierType type = QualifierType::FLOAT)
+	NFloatConst(string* value, BaseDataType type = BaseDataType::FLOAT)
 	: NConstant(type, value) {}
 
 	Value* genCode(CodeContext& context);
