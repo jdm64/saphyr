@@ -38,8 +38,25 @@ public:
 	virtual NodeType getNodeType() = 0;
 };
 
+class NStatement : public Node
+{
+public:
+	virtual void genCode(CodeContext& context) = 0;
+};
+
+class NExpression : public NStatement
+{
+public:
+	void genCode(CodeContext& context) final
+	{
+		genValue(context);
+	};
+
+	virtual Value* genValue(CodeContext& context) = 0;
+};
+
 template<typename NType>
-class NodeList : public Node
+class NodeList : public NStatement
 {
 	typedef typename vector<NType*>::iterator NTypeIter;
 
@@ -47,11 +64,10 @@ protected:
 	vector<NType*> list;
 
 public:
-	Value* genCode(CodeContext& context)
+	void genCode(CodeContext& context)
 	{
 		for (auto item : list)
 			item->genCode(context);
-		return nullptr;
 	}
 
 	NodeType getNodeType()
@@ -94,18 +110,10 @@ public:
 		return list[list.size() - 1];
 	}
 };
-
-class NStatement : public Node
-{
-public:
-	virtual Value* genCode(CodeContext& context) = 0;
-};
 typedef NodeList<NStatement> NStatementList;
+typedef NodeList<NExpression> NExpressionList;
 
 extern NStatementList* programBlock;
-
-class NExpression : public NStatement {};
-typedef NodeList<NExpression> NExpressionList;
 
 class NDeclaration : public NStatement
 {
@@ -169,7 +177,7 @@ public:
 		type = qtype;
 	}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -190,7 +198,7 @@ public:
 	NGlobalVariableDecl(string* name, NExpression* initExp = nullptr)
 	: NVariableDecl(name, initExp) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -206,7 +214,7 @@ public:
 	NVariable(string* name)
 	: name(name) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	string* getName()
 	{
@@ -244,7 +252,7 @@ public:
 		return type->getType(context);
 	}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -267,7 +275,7 @@ public:
 	NVariableDeclGroup(NDataType* type, NVariableDeclList* variables)
 	: type(type), variables(variables) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -290,7 +298,9 @@ public:
 	NFunctionPrototype(string* name, NDataType* rtype, NParameterList* params)
 	: NDeclaration(name), rtype(rtype), params(params) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context) final;
+
+	Function* genFunction(CodeContext& context);
 
 	void genCodeParams(Function* function, CodeContext& context);
 
@@ -325,7 +335,7 @@ public:
 	NFunctionDeclaration(NFunctionPrototype* prototype, NStatementList* body)
 	: NDeclaration(prototype->getName()), prototype(prototype), body(body) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -365,7 +375,7 @@ public:
 	NWhileStatement(NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
 	: NConditionStmt(condition, body), isDoWhile(isDoWhile), isUntil(isUntil) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -382,7 +392,7 @@ public:
 	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
 	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -404,7 +414,7 @@ public:
 	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
 	: NConditionStmt(condition, ifBody), elseBody(elseBody) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -425,7 +435,7 @@ public:
 	NLabelStatement(string* name)
 	: name(name) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -451,7 +461,7 @@ public:
 	NReturnStatement(NExpression* value = nullptr)
 	: value(value) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -472,7 +482,7 @@ public:
 	NGotoStatement(string* name)
 	: name(name) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -493,7 +503,7 @@ public:
 	NLoopBranch(int type)
 	: type(type) {}
 
-	Value* genCode(CodeContext& context);
+	void genCode(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -511,7 +521,7 @@ public:
 	NAssignment(int oper, NVariable* lhs, NExpression* rhs)
 	: oper(oper), lhs(lhs), rhs(rhs) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -535,7 +545,7 @@ public:
 	NTernaryOperator(NExpression* condition, NExpression* trueVal, NExpression* falseVal)
 	: condition(condition), trueVal(trueVal), falseVal(falseVal) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -574,7 +584,7 @@ public:
 	NLogicalOperator(int oper, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, lhs, rhs) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -588,7 +598,7 @@ public:
 	NCompareOperator(int oper, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, lhs, rhs) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -602,7 +612,7 @@ public:
 	NBinaryMathOperator(int oper, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, lhs, rhs) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -616,7 +626,7 @@ public:
 	NNullCoalescing(NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(0, lhs, rhs) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -646,7 +656,7 @@ public:
 	NUnaryMathOperator(int oper, NExpression* unaryExp)
 	: NUnaryOperator(oper, unaryExp) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -663,7 +673,7 @@ public:
 	NFunctionCall(string* name, NExpressionList* arguments)
 	: name(name), arguments(arguments) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -686,7 +696,7 @@ public:
 	NIncrement(NVariable* variable, bool isIncrement, bool isPostfix)
 	: variable(variable), isIncrement(isIncrement), isPostfix(isPostfix) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -721,7 +731,7 @@ public:
 	NIntConst(string* value, BaseDataType type = BaseDataType::INT)
 	: NConstant(type, value) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -735,7 +745,7 @@ public:
 	NFloatConst(string* value, BaseDataType type = BaseDataType::FLOAT)
 	: NConstant(type, value) {}
 
-	Value* genCode(CodeContext& context);
+	Value* genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{

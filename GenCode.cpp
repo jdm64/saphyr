@@ -73,7 +73,7 @@ Type* NBaseType::getType(CodeContext& context)
 	}
 }
 
-Value* NVariable::genCode(CodeContext& context)
+Value* NVariable::genValue(CodeContext& context)
 {
 	auto var = context.loadVar(name);
 
@@ -84,24 +84,22 @@ Value* NVariable::genCode(CodeContext& context)
 	return new LoadInst(var, "", context.currBlock());
 }
 
-Value* NParameter::genCode(CodeContext& context)
+void NParameter::genCode(CodeContext& context)
 {
 	auto stackAlloc = new AllocaInst(type->getType(context), "", context.currBlock());
-	auto storeParam = new StoreInst(arg, stackAlloc, context.currBlock());
+	new StoreInst(arg, stackAlloc, context.currBlock());
 	context.storeLocalVar(stackAlloc, name);
-
-	return storeParam;
 }
 
-Value* NVariableDecl::genCode(CodeContext& context)
+void NVariableDecl::genCode(CodeContext& context)
 {
-	auto initValue = initExp? initExp->genCode(context) : nullptr;
+	auto initValue = initExp? initExp->genValue(context) : nullptr;
 	auto varType = type->getType(context);
 
 	if (!varType) { // auto type
 		if (!initValue) { // auto type requires initialization
 			context.addError("auto variable type requires initialization");
-			return nullptr;
+			return;
 		}
 		varType = initValue->getType();
 	}
@@ -109,7 +107,7 @@ Value* NVariableDecl::genCode(CodeContext& context)
 	auto name = getName();
 	if (context.loadVarCurr(name)) {
 		context.addError("variable " + *name + " already defined");
-		return nullptr;
+		return;
 	}
 
 	auto var = new AllocaInst(varType, *name, context.currBlock());
@@ -119,51 +117,53 @@ Value* NVariableDecl::genCode(CodeContext& context)
 		typeCastMatch(initValue, var->getType()->getPointerElementType(), context);
 		new StoreInst(initValue, var, context.currBlock());
 	}
-	return nullptr;
 }
 
-Value* NGlobalVariableDecl::genCode(CodeContext& context)
+void NGlobalVariableDecl::genCode(CodeContext& context)
 {
 	if (initExp && initExp->getNodeType() != NodeType::IntConst && initExp->getNodeType() != NodeType::FloatConst) {
 		context.addError("global variables only support constant value initializer");
-		return nullptr;
+		return;
 	}
-	auto initValue = initExp? initExp->genCode(context) : nullptr;
+	auto initValue = initExp? initExp->genValue(context) : nullptr;
 	auto varType = type->getType(context);
 
 	if (!varType) { // auto type
 		if (!initValue) { // auto type requires initialization
 			context.addError("auto variable type requires initialization");
-			return nullptr;
+			return;
 		}
 		varType = initValue->getType();
 	}
 	if (initValue && varType != initValue->getType()) {
 		context.addError("global variable initialization requires exact type matching");
-		return nullptr;
+		return;
 	}
 
 	auto name = getName();
 	if (context.loadVarCurr(name)) {
 		context.addError("variable " + *name + " already defined");
-		return nullptr;
+		return;
 	}
 
 	auto var = new GlobalVariable(*context.getModule(), varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue, *name);
 	context.storeGlobalVar(var, name);
-	return nullptr;
 }
 
-Value* NVariableDeclGroup::genCode(CodeContext& context)
+void NVariableDeclGroup::genCode(CodeContext& context)
 {
 	for (auto variable : *variables) {
 		variable->setDataType(type);
 		variable->genCode(context);
 	}
-	return nullptr;
 }
 
-Value* NFunctionPrototype::genCode(CodeContext& context)
+void NFunctionPrototype::genCode(CodeContext& context)
+{
+	context.addError("Called NFunctionPrototype::genCode; use genFunction instead.");
+}
+
+Function* NFunctionPrototype::genFunction(CodeContext& context)
 {
 	auto function = context.getFunction(name);
 	if (function)
@@ -184,18 +184,14 @@ void NFunctionPrototype::genCodeParams(Function* function, CodeContext& context)
 	params->genCode(context);
 }
 
-Value* NFunctionDeclaration::genCode(CodeContext& context)
+void NFunctionDeclaration::genCode(CodeContext& context)
 {
-	auto function = static_cast<Function*>(prototype->genCode(context));
-	if (!function)
-		return nullptr;
-
-	if (!body) {
-		// no body means only function prototype
-		return function;
+	auto function = prototype->genFunction(context);
+	if (!function || !body) { // no body means only function prototype
+		return;
 	} else if (function->size()) {
 		context.addError("function " + *prototype->getName() + " already declared");
-		return nullptr;
+		return;
 	}
 
 	if (body->getLast()->getNodeType() != NodeType::ReturnStm) {
@@ -208,18 +204,16 @@ Value* NFunctionDeclaration::genCode(CodeContext& context)
 
 	if (prototype->getFunctionType(context) != function->getFunctionType()) {
 		context.addError("function type for " + *prototype->getName() + " doesn't match definition");
-		return nullptr;
+		return;
 	}
 
 	context.startFuncBlock(function);
 	prototype->genCodeParams(function, context);
 	body->genCode(context);
 	context.endFuncBlock();
-
-	return function;
 }
 
-Value* NReturnStatement::genCode(CodeContext& context)
+void NReturnStatement::genCode(CodeContext& context)
 {
 	auto func = context.currBlock()->getParent();
 	auto funcReturn = func->getReturnType();
@@ -227,19 +221,19 @@ Value* NReturnStatement::genCode(CodeContext& context)
 	if (funcReturn->isVoidTy()) {
 		if (value) {
 			context.addError(func->getName().str() + " function declared void, but non-void return found");
-			return nullptr;
+			return;
 		}
 	} else if (!value) {
 		context.addError(func->getName().str() + " function declared non-void, but void return found");
-		return nullptr;
+		return;
 	}
-	auto returnVal = value? value->genCode(context) : nullptr;
+	auto returnVal = value? value->genValue(context) : nullptr;
 	if (returnVal)
 		typeCastMatch(returnVal, funcReturn, context);
-	return ReturnInst::Create(context.getContext(), returnVal, context.currBlock());
+	ReturnInst::Create(context.getContext(), returnVal, context.currBlock());
 }
 
-Value* NWhileStatement::genCode(CodeContext& context)
+void NWhileStatement::genCode(CodeContext& context)
 {
 	BasicBlock* condBlock;
 	BasicBlock* bodyBlock;
@@ -264,7 +258,7 @@ Value* NWhileStatement::genCode(CodeContext& context)
 	BranchInst::Create(startBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condValue = condition? condition->genCode(context) : ConstantInt::getTrue(context.getContext());;
+	auto condValue = condition? condition->genValue(context) : ConstantInt::getTrue(context.getContext());;
 	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
 
@@ -277,11 +271,9 @@ Value* NWhileStatement::genCode(CodeContext& context)
 	context.popContinueBlock();
 	context.popRedoBlock();
 	context.popBreakBlock();
-
-	return nullptr;
 }
 
-Value* NForStatement::genCode(CodeContext& context)
+void NForStatement::genCode(CodeContext& context)
 {
 	auto condBlock = context.createBlock();
 	auto bodyBlock = context.createBlock();
@@ -297,7 +289,7 @@ Value* NForStatement::genCode(CodeContext& context)
 	BranchInst::Create(condBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condValue = condition? condition->genCode(context) : ConstantInt::getTrue(context.getContext());
+	auto condValue = condition? condition->genValue(context) : ConstantInt::getTrue(context.getContext());
 	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(bodyBlock, endBlock, condValue, context.currBlock());
 
@@ -314,11 +306,9 @@ Value* NForStatement::genCode(CodeContext& context)
 	context.popContinueBlock();
 	context.popRedoBlock();
 	context.popBreakBlock();
-
-	return nullptr;
 }
 
-Value* NIfStatement::genCode(CodeContext& context)
+void NIfStatement::genCode(CodeContext& context)
 {
 	auto ifBlock = context.createBlock();
 	auto elseBlock = context.createBlock();
@@ -326,7 +316,7 @@ Value* NIfStatement::genCode(CodeContext& context)
 
 	context.pushLocalTable();
 
-	auto condValue = condition->genCode(context);
+	auto condValue = condition->genValue(context);
 	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(ifBlock, elseBlock, condValue, context.currBlock());
 
@@ -344,18 +334,16 @@ Value* NIfStatement::genCode(CodeContext& context)
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
-
-	return nullptr;
 }
 
-Value* NLabelStatement::genCode(CodeContext& context)
+void NLabelStatement::genCode(CodeContext& context)
 {
 	// check if label already declared
 	auto label = context.getLabelBlock(name);
 	if (label) {
 		if (!label->isPlaceholder) {
 			context.addError("label \"" + *name + "\" already defined");
-			return nullptr;
+			return;
 		}
 		// a used label is no longer a placeholder
 		label->isPlaceholder = false;
@@ -365,10 +353,9 @@ Value* NLabelStatement::genCode(CodeContext& context)
 	}
 	BranchInst::Create(label->block, context.currBlock());
 	context.pushBlock(label->block);
-	return nullptr;
 }
 
-Value* NGotoStatement::genCode(CodeContext& context)
+void NGotoStatement::genCode(CodeContext& context)
 {
 	auto skip = context.createBlock();
 	auto label = context.getLabelBlock(name);
@@ -380,10 +367,9 @@ Value* NGotoStatement::genCode(CodeContext& context)
 	}
 	BranchInst::Create(label->block, context.currBlock());
 	context.pushBlock(skip);
-	return nullptr;
 }
 
-Value* NLoopBranch::genCode(CodeContext& context)
+void NLoopBranch::genCode(CodeContext& context)
 {
 	BasicBlock* block;
 	string typeName;
@@ -412,20 +398,19 @@ Value* NLoopBranch::genCode(CodeContext& context)
 		break;
 	default:
 		context.addError("undefined loop branch type: " + type);
-		return nullptr;
+		return;
 	}
 	BranchInst::Create(block, context.currBlock());
 	context.pushBlock(context.createBlock());
-	return nullptr;
+	return;
 ret:
 	context.addError("no valid context for " + typeName + " statement");
-	return nullptr;
 }
 
-Value* NAssignment::genCode(CodeContext& context)
+Value* NAssignment::genValue(CodeContext& context)
 {
 	auto lhsVar = context.loadVar(lhs->getName());
-	auto rhsExp = rhs->genCode(context);
+	auto rhsExp = rhs->genValue(context);
 
 	if (!lhsVar)
 		context.addError("variable " + *lhs->getName() + " not declared");
@@ -443,9 +428,9 @@ Value* NAssignment::genCode(CodeContext& context)
 	return rhsExp;
 }
 
-Value* NTernaryOperator::genCode(CodeContext& context)
+Value* NTernaryOperator::genValue(CodeContext& context)
 {
-	auto condExp = condition->genCode(context);
+	auto condExp = condition->genValue(context);
 	typeCastMatch(condExp, Type::getInt1Ty(context.getContext()), context);
 
 	Value *trueExp, *falseExp, *retVal;
@@ -457,11 +442,11 @@ Value* NTernaryOperator::genCode(CodeContext& context)
 		BranchInst::Create(trueBlock, falseBlock, condExp, context.currBlock());
 
 		context.pushBlock(trueBlock);
-		trueExp = trueVal->genCode(context);
+		trueExp = trueVal->genValue(context);
 		BranchInst::Create(endBlock, context.currBlock());
 
 		context.pushBlock(falseBlock);
-		falseExp = falseVal->genCode(context);
+		falseExp = falseVal->genValue(context);
 		BranchInst::Create(endBlock, context.currBlock());
 
 		context.pushBlock(endBlock);
@@ -470,8 +455,8 @@ Value* NTernaryOperator::genCode(CodeContext& context)
 		result->addIncoming(falseExp, falseBlock);
 		retVal = result;
 	} else {
-		trueExp = trueVal->genCode(context);
-		falseExp = falseVal->genCode(context);
+		trueExp = trueVal->genValue(context);
+		falseExp = falseVal->genValue(context);
 		retVal = SelectInst::Create(condExp, trueExp, falseExp, "", context.currBlock());
 	}
 
@@ -480,7 +465,7 @@ Value* NTernaryOperator::genCode(CodeContext& context)
 	return retVal;
 }
 
-Value* NLogicalOperator::genCode(CodeContext& context)
+Value* NLogicalOperator::genValue(CodeContext& context)
 {
 	auto saveBlock = context.currBlock();
 	auto firstBlock = context.createBlock();
@@ -488,12 +473,12 @@ Value* NLogicalOperator::genCode(CodeContext& context)
 	auto trueBlock = (oper == ParserBase::TT_LOG_AND)? firstBlock : secondBlock;
 	auto falseBlock = (oper == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
 
-	auto lhsExp = lhs->genCode(context);
+	auto lhsExp = lhs->genValue(context);
 	typeCastMatch(lhsExp, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(trueBlock, falseBlock, lhsExp, context.currBlock());
 
 	context.pushBlock(firstBlock);
-	auto rhsExp = rhs->genCode(context);
+	auto rhsExp = rhs->genValue(context);
 	typeCastMatch(rhsExp, Type::getInt1Ty(context.getContext()), context);
 	BranchInst::Create(secondBlock, context.currBlock());
 
@@ -505,10 +490,10 @@ Value* NLogicalOperator::genCode(CodeContext& context)
 	return result;
 }
 
-Value* NCompareOperator::genCode(CodeContext& context)
+Value* NCompareOperator::genValue(CodeContext& context)
 {
-	auto lhsExp = lhs->genCode(context);
-	auto rhsExp = rhs->genCode(context);
+	auto lhsExp = lhs->genValue(context);
+	auto rhsExp = rhs->genValue(context);
 
 	if (!(rhsExp && lhsExp))
 		return nullptr;
@@ -520,10 +505,10 @@ Value* NCompareOperator::genCode(CodeContext& context)
 	return CmpInst::Create(op, pred, lhsExp, rhsExp, "", context.currBlock());
 }
 
-Value* NBinaryMathOperator::genCode(CodeContext& context)
+Value* NBinaryMathOperator::genValue(CodeContext& context)
 {
-	auto lhsExp = lhs->genCode(context);
-	auto rhsExp = rhs->genCode(context);
+	auto lhsExp = lhs->genValue(context);
+	auto rhsExp = rhs->genValue(context);
 
 	if (!(lhsExp && rhsExp))
 		return nullptr;
@@ -532,10 +517,10 @@ Value* NBinaryMathOperator::genCode(CodeContext& context)
 	return BinaryOperator::Create(getOperator(oper, lhsExp->getType(), context), lhsExp, rhsExp, "", context.currBlock());
 }
 
-Value* NNullCoalescing::genCode(CodeContext& context)
+Value* NNullCoalescing::genValue(CodeContext& context)
 {
 	Value *rhsExp, *retVal;
-	auto lhsExp = lhs->genCode(context);
+	auto lhsExp = lhs->genValue(context);
 	auto condition = lhsExp;
 
 	typeCastMatch(condition, Type::getInt1Ty(context.getContext()), context);
@@ -547,7 +532,7 @@ Value* NNullCoalescing::genCode(CodeContext& context)
 		BranchInst::Create(endBlock, falseBlock, condition, context.currBlock());
 
 		context.pushBlock(falseBlock);
-		rhsExp = rhs->genCode(context);
+		rhsExp = rhs->genValue(context);
 		BranchInst::Create(endBlock, context.currBlock());
 
 		context.pushBlock(endBlock);
@@ -557,7 +542,7 @@ Value* NNullCoalescing::genCode(CodeContext& context)
 
 		retVal = result;
 	} else {
-		rhsExp = rhs->genCode(context);
+		rhsExp = rhs->genValue(context);
 		retVal = SelectInst::Create(condition, lhsExp, rhsExp, "", context.currBlock());
 	}
 
@@ -566,14 +551,14 @@ Value* NNullCoalescing::genCode(CodeContext& context)
 	return retVal;
 }
 
-Value* NUnaryMathOperator::genCode(CodeContext& context)
+Value* NUnaryMathOperator::genValue(CodeContext& context)
 {
 	Value* value;
 	Instruction::BinaryOps llvmOp;
 	Instruction::OtherOps cmpType;
 	CmpInst::Predicate pred;
 
-	auto unaryExp = unary->genCode(context);
+	auto unaryExp = unary->genValue(context);
 	auto type = unaryExp->getType();
 
 	switch (oper) {
@@ -595,7 +580,7 @@ Value* NUnaryMathOperator::genCode(CodeContext& context)
 	}
 }
 
-Value* NFunctionCall::genCode(CodeContext& context)
+Value* NFunctionCall::genValue(CodeContext& context)
 {
 	auto func = context.getFunction(name);
 	if (!func) {
@@ -611,16 +596,16 @@ Value* NFunctionCall::genCode(CodeContext& context)
 	vector<Value*> exp_list;
 	int i = 0;
 	for (auto arg : *arguments) {
-		auto argExp = arg->genCode(context);
+		auto argExp = arg->genValue(context);
 		typeCastMatch(argExp, funcType->getParamType(i++), context);
 		exp_list.push_back(argExp);
 	}
 	return CallInst::Create(func, exp_list, "", context.currBlock());
 }
 
-Value* NIncrement::genCode(CodeContext& context)
+Value* NIncrement::genValue(CodeContext& context)
 {
-	auto varVal = variable->genCode(context);
+	auto varVal = variable->genValue(context);
 	if (!varVal)
 		return nullptr;
 
@@ -634,7 +619,7 @@ Value* NIncrement::genCode(CodeContext& context)
 	return isPostfix? varVal : result;
 }
 
-Value* NIntConst::genCode(CodeContext& context)
+Value* NIntConst::genValue(CodeContext& context)
 {
 	int bits;
 	switch (type) {
@@ -659,7 +644,7 @@ Value* NIntConst::genCode(CodeContext& context)
 	return ConstantInt::get(Type::getIntNTy(context.getContext(), bits), *value, 10);
 }
 
-Value* NFloatConst::genCode(CodeContext& context)
+Value* NFloatConst::genValue(CodeContext& context)
 {
 	Type* llvmType;
 	switch (type) {
@@ -673,4 +658,3 @@ Value* NFloatConst::genCode(CodeContext& context)
 	}
 	return ConstantFP::get(llvmType, *value);
 }
-
