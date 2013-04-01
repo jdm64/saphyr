@@ -331,7 +331,7 @@ Value* NIfStatement::genCode(CodeContext& context)
 	BranchInst::Create(ifBlock, elseBlock, condValue, context.currBlock());
 
 	context.pushBlock(ifBlock);
-	ifBody->genCode(context);
+	body->genCode(context);
 	BranchInst::Create(endBlock, context.currBlock());
 
 	context.popLocalTable();

@@ -5,7 +5,7 @@
 %union {
 	int t_int;
 	std::string* t_str;
-	NBaseType* t_dtype;
+	NDataType* t_dtype;
 	NParameter* t_param;
 	NVariableDecl* t_var;
 	NStatement* t_stm;
@@ -32,7 +32,7 @@
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
 
 // data types
-%type <t_dtype> data_type
+%type <t_dtype> data_type base_type
 // parameter
 %type <t_param> parameter
 // variable

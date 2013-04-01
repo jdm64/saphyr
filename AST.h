@@ -36,8 +36,6 @@ public:
 	virtual ~Node() {};
 
 	virtual NodeType getNodeType() = 0;
-
-	virtual Value* genCode(CodeContext& context) = 0;
 };
 
 template<typename NType>
@@ -97,7 +95,11 @@ public:
 	}
 };
 
-class NStatement : public Node {};
+class NStatement : public Node
+{
+public:
+	virtual Value* genCode(CodeContext& context) = 0;
+};
 typedef NodeList<NStatement> NStatementList;
 
 extern NStatementList* programBlock;
@@ -105,13 +107,13 @@ extern NStatementList* programBlock;
 class NExpression : public NStatement {};
 typedef NodeList<NExpression> NExpressionList;
 
-class NIdentifier : public NExpression
+class NDeclaration : public NStatement
 {
 protected:
 	string* name;
 
 public:
-	NIdentifier(string* name)
+	NDeclaration(string* name)
 	: name(name) {}
 
 	string* getName()
@@ -119,26 +121,31 @@ public:
 		return name;
 	}
 
-	~NIdentifier()
+	~NDeclaration()
 	{
 		delete name;
 	}
 };
 
-class NBaseType : public NIdentifier
+class NDataType : public Node
 {
+protected:
 	BaseDataType type;
 
 public:
+	NDataType(BaseDataType type)
+	: type(type) {}
+
+	virtual Type* getType(CodeContext& context) = 0;
+};
+
+class NBaseType : public NDataType
+{
+public:
 	NBaseType(BaseDataType type = BaseDataType::AUTO)
-	: NIdentifier(nullptr), type(type) {}
+	: NDataType(type) {}
 
 	Type* getType(CodeContext& context);
-
-	Value* genCode(CodeContext& context)
-	{
-		return nullptr;
-	}
 
 	NodeType getNodeType()
 	{
@@ -146,18 +153,18 @@ public:
 	}
 };
 
-class NVariableDecl : public NIdentifier
+class NVariableDecl : public NDeclaration
 {
 protected:
 	NExpression* initExp;
-	NBaseType* type;
+	NDataType* type;
 
 public:
 	NVariableDecl(string* name, NExpression* initExp = nullptr)
-	: NIdentifier(name), initExp(initExp), type(nullptr) {}
+	: NDeclaration(name), initExp(initExp), type(nullptr) {}
 
 	// NOTE: must be called before genCode()
-	void setDataType(NBaseType* qtype)
+	void setDataType(NDataType* qtype)
 	{
 		type = qtype;
 	}
@@ -191,30 +198,40 @@ public:
 	}
 };
 
-class NVariable : public NIdentifier
+class NVariable : public NExpression
 {
+	string* name;
+
 public:
 	NVariable(string* name)
-	: NIdentifier(name) {}
+	: name(name) {}
 
 	Value* genCode(CodeContext& context);
 
-	Type* getType(CodeContext& context);
+	string* getName()
+	{
+		return name;
+	}
 
 	NodeType getNodeType()
 	{
 		return NodeType::Variable;
 	}
+
+	~NVariable()
+	{
+		delete name;
+	}
 };
 
-class NParameter : public NIdentifier
+class NParameter : public NDeclaration
 {
-	NBaseType* type;
+	NDataType* type;
 	Value* arg; // NOTE: not owned by NParameter
 
 public:
-	NParameter(NBaseType* type, string* name)
-	: NIdentifier(name), type(type), arg(nullptr) {}
+	NParameter(NDataType* type, string* name)
+	: NDeclaration(name), type(type), arg(nullptr) {}
 
 	// NOTE: this must be called before genCode()
 	void setArgument(Value* argument)
@@ -243,11 +260,11 @@ typedef NodeList<NParameter> NParameterList;
 
 class NVariableDeclGroup : public NStatement
 {
-	NBaseType* type;
+	NDataType* type;
 	NVariableDeclList* variables;
 
 public:
-	NVariableDeclGroup(NBaseType* type, NVariableDeclList* variables)
+	NVariableDeclGroup(NDataType* type, NVariableDeclList* variables)
 	: type(type), variables(variables) {}
 
 	Value* genCode(CodeContext& context);
@@ -264,14 +281,14 @@ public:
 	}
 };
 
-class NFunctionPrototype : public NIdentifier
+class NFunctionPrototype : public NDeclaration
 {
-	NBaseType* rtype;
+	NDataType* rtype;
 	NParameterList* params;
 
 public:
-	NFunctionPrototype(string* name, NBaseType* rtype, NParameterList* params)
-	: NIdentifier(name), rtype(rtype), params(params) {}
+	NFunctionPrototype(string* name, NDataType* rtype, NParameterList* params)
+	: NDeclaration(name), rtype(rtype), params(params) {}
 
 	Value* genCode(CodeContext& context);
 
@@ -299,14 +316,14 @@ public:
 	}
 };
 
-class NFunctionDeclaration : public NStatement
+class NFunctionDeclaration : public NDeclaration
 {
 	NFunctionPrototype* prototype;
 	NStatementList* body;
 
 public:
 	NFunctionDeclaration(NFunctionPrototype* prototype, NStatementList* body)
-	: prototype(prototype), body(body) {}
+	: NDeclaration(prototype->getName()), prototype(prototype), body(body) {}
 
 	Value* genCode(CodeContext& context);
 
@@ -322,37 +339,31 @@ public:
 	}
 };
 
-class NReturnStatement : public NStatement
+class NConditionStmt : public NStatement
 {
-	NExpression* value;
+protected:
+	NExpression* condition;
+	NStatementList* body;
 
 public:
-	NReturnStatement(NExpression* value = nullptr)
-	: value(value) {}
+	NConditionStmt(NExpression* condition, NStatementList* body)
+	: condition(condition), body(body) {}
 
-	Value* genCode(CodeContext& context);
-
-	NodeType getNodeType()
+	~NConditionStmt()
 	{
-		return NodeType::ReturnStm;
-	}
-
-	~NReturnStatement()
-	{
-		delete value;
+		delete condition;
+		delete body;
 	}
 };
 
-class NWhileStatement : public NStatement
+class NWhileStatement : public NConditionStmt
 {
-	NExpression* condition;
-	NStatementList* body;
 	bool isDoWhile;
 	bool isUntil;
 
 public:
 	NWhileStatement(NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
-	: condition(condition), body(body), isDoWhile(isDoWhile), isUntil(isUntil) {}
+	: NConditionStmt(condition, body), isDoWhile(isDoWhile), isUntil(isUntil) {}
 
 	Value* genCode(CodeContext& context);
 
@@ -360,24 +371,16 @@ public:
 	{
 		return NodeType::WhileStm;
 	}
-
-	~NWhileStatement()
-	{
-		delete condition;
-		delete body;
-	}
 };
 
-class NForStatement : public NStatement
+class NForStatement : public NConditionStmt
 {
 	NStatementList* preStm;
-	NExpression* condition;
 	NExpressionList* postExp;
-	NStatementList* body;
 
 public:
 	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
-	: preStm(preStm), condition(condition), postExp(postExp), body(body) {}
+	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp) {}
 
 	Value* genCode(CodeContext& context);
 
@@ -389,21 +392,17 @@ public:
 	~NForStatement()
 	{
 		delete preStm;
-		delete condition;
 		delete postExp;
-		delete body;
 	}
 };
 
-class NIfStatement : public NStatement
+class NIfStatement : public NConditionStmt
 {
-	NExpression* condition;
-	NStatementList* ifBody;
 	NStatementList* elseBody;
 
 public:
 	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
-	: condition(condition), ifBody(ifBody), elseBody(elseBody) {}
+	: NConditionStmt(condition, ifBody), elseBody(elseBody) {}
 
 	Value* genCode(CodeContext& context);
 
@@ -414,8 +413,6 @@ public:
 
 	~NIfStatement()
 	{
-		delete condition;
-		delete ifBody;
 		delete elseBody;
 	}
 };
@@ -441,7 +438,33 @@ public:
 	}
 };
 
-class NGotoStatement : public NStatement
+class NJumpStatement : public NStatement
+{
+	// For clean type hierarchy
+};
+
+class NReturnStatement : public NJumpStatement
+{
+	NExpression* value;
+
+public:
+	NReturnStatement(NExpression* value = nullptr)
+	: value(value) {}
+
+	Value* genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::ReturnStm;
+	}
+
+	~NReturnStatement()
+	{
+		delete value;
+	}
+};
+
+class NGotoStatement : public NJumpStatement
 {
 	string* name;
 
@@ -462,7 +485,7 @@ public:
 	}
 };
 
-class NLoopBranch : public NStatement
+class NLoopBranch : public NJumpStatement
 {
 	int type;
 
@@ -481,11 +504,11 @@ public:
 class NAssignment : public NExpression
 {
 	int oper;
-	NIdentifier* lhs;
+	NVariable* lhs;
 	NExpression* rhs;
 
 public:
-	NAssignment(int oper, NIdentifier* lhs, NExpression* rhs)
+	NAssignment(int oper, NVariable* lhs, NExpression* rhs)
 	: oper(oper), lhs(lhs), rhs(rhs) {}
 
 	Value* genCode(CodeContext& context);
@@ -631,13 +654,14 @@ public:
 	}
 };
 
-class NFunctionCall : public NIdentifier
+class NFunctionCall : public NExpression
 {
+	string* name;
 	NExpressionList* arguments;
 
 public:
 	NFunctionCall(string* name, NExpressionList* arguments)
-	: NIdentifier(name), arguments(arguments) {}
+	: name(name), arguments(arguments) {}
 
 	Value* genCode(CodeContext& context);
 
