@@ -379,21 +379,21 @@ void NLoopBranch::genCode(CodeContext& context)
 		block = context.getContinueBlock();
 		if (!block) {
 			typeName = "continue";
-			goto ret;
+			goto error;
 		}
 		break;
 	case ParserBase::TT_REDO:
 		block = context.getRedoBlock();
 		if (!block) {
 			typeName = "redo";
-			goto ret;
+			goto error;
 		}
 		break;
 	case ParserBase::TT_BREAK:
 		block = context.getBreakBlock();
 		if (!block) {
 			typeName = "break";
-			goto ret;
+			goto error;
 		}
 		break;
 	default:
@@ -403,7 +403,7 @@ void NLoopBranch::genCode(CodeContext& context)
 	BranchInst::Create(block, context.currBlock());
 	context.pushBlock(context.createBlock());
 	return;
-ret:
+error:
 	context.addError("no valid context for " + typeName + " statement");
 }
 
