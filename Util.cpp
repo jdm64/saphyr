@@ -27,7 +27,9 @@ void typeCastUp(Value*& lhs, Value*& rhs, CodeContext& context)
 	if (ltype == rtype)
 		return;
 
-	if (ltype->isFloatingPointTy()) {
+	if (ltype->isArrayTy() || rtype->isArrayTy()) {
+		context.addError("can not cast array types");
+	} else if (ltype->isFloatingPointTy()) {
 		if (rtype->isFloatingPointTy()) {
 			if (ltype->isDoubleTy())
 				rhs = CastInst::CreateFPCast(rhs, ltype, "", context.currBlock());
@@ -51,25 +53,27 @@ void typeCastUp(Value*& lhs, Value*& rhs, CodeContext& context)
 		else if (rtype->getIntegerBitWidth() < ltype->getIntegerBitWidth())
 			rhs = CastInst::CreateIntegerCast(rhs, ltype, true, "", context.currBlock());
 	}
-	return;
 }
 
 void typeCastMatch(Value*& value, Type* type, CodeContext& context)
 {
-	if (type == value->getType())
+	auto valueType = value->getType();
+	if (type == valueType)
 		return;
 
-	if (type->isFloatingPointTy()) {
-		if (value->getType()->isFloatingPointTy())
+	if (type->isArrayTy() || valueType->isArrayTy()) {
+		context.addError("can not cast array types");
+	} else if (type->isFloatingPointTy()) {
+		if (valueType->isFloatingPointTy())
 			value = CastInst::CreateFPCast(value, type, "", context.currBlock());
 		else
 			value = new SIToFPInst(value, type, "", context.currBlock());
 	} else if (type->isIntegerTy(1)) {
 		// cast to bool is value != 0
-		auto pred = getPredicate(ParserBase::TT_NEQ, value->getType(), context);
-		auto op = value->getType()->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
-		value = CmpInst::Create(op, pred, value, Constant::getNullValue(value->getType()), "", context.currBlock());
-	} else if (value->getType()->isFloatingPointTy()) {
+		auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
+		auto op = valueType->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
+		value = CmpInst::Create(op, pred, value, Constant::getNullValue(valueType), "", context.currBlock());
+	} else if (valueType->isFloatingPointTy()) {
 		value = new FPToSIInst(value, type, "", context.currBlock());
 	} else {
 		value = CastInst::CreateIntegerCast(value, type, true, "", context.currBlock());
@@ -78,6 +82,10 @@ void typeCastMatch(Value*& value, Type* type, CodeContext& context)
 
 Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context)
 {
+	if (type->isArrayTy()) {
+		context.addError("can not perform operation on entire array");
+		return Instruction::Add;
+	}
 	switch (oper) {
 	case '*':
 		return type->isFloatingPointTy()? Instruction::FMul : Instruction::Mul;
@@ -142,6 +150,7 @@ bool isComplexExp(NodeType type)
 	case NodeType::IntConst:
 	case NodeType::FloatConst:
 	case NodeType::Variable:
+	case NodeType::ArrayVariable:
 		return false;
 	default:
 		return true;

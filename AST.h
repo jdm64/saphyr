@@ -161,6 +161,30 @@ public:
 	}
 };
 
+class NArrayType : public NDataType
+{
+private:
+	NDataType* baseType;
+	string* strSize;
+
+public:
+	NArrayType(string* size, NDataType* baseType)
+	: NDataType(BaseDataType::ARRAY), baseType(baseType), strSize(size) {}
+
+	Type* getType(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::ArrayType;
+	}
+
+	~NArrayType()
+	{
+		delete baseType;
+		delete strSize;
+	}
+};
+
 class NVariableDecl : public NDeclaration
 {
 protected:
@@ -208,6 +232,7 @@ public:
 
 class NVariable : public NExpression
 {
+protected:
 	string* name;
 
 public:
@@ -215,6 +240,8 @@ public:
 	: name(name) {}
 
 	Value* genValue(CodeContext& context);
+
+	virtual Value* loadVar(CodeContext& context);
 
 	string* getName()
 	{
@@ -229,6 +256,27 @@ public:
 	~NVariable()
 	{
 		delete name;
+	}
+};
+
+class NArrayVariable : public NVariable
+{
+	NExpression* index;
+
+public:
+	NArrayVariable(string* name, NExpression* index)
+	: NVariable(name), index(index) {}
+
+	Value* loadVar(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::ArrayVariable;
+	}
+
+	~NArrayVariable()
+	{
+		delete index;
 	}
 };
 

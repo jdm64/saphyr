@@ -73,15 +73,64 @@ Type* NBaseType::getType(CodeContext& context)
 	}
 }
 
+Type* NArrayType::getType(CodeContext& context)
+{
+	auto size = ConstantInt::get(Type::getIntNTy(context.getContext(), 64), *strSize, 10);
+	auto arrSize = size->getSExtValue();
+
+	if (arrSize < 0) {
+		context.addError("Array size must be non-negative");
+		return nullptr;
+	}
+	auto btype = baseType->getType(context);
+	return btype? ArrayType::get(btype, arrSize) : nullptr;
+}
+
 Value* NVariable::genValue(CodeContext& context)
 {
-	auto var = context.loadVar(name);
+	auto var = loadVar(context);
+	return var? new LoadInst(var, "", context.currBlock()) : nullptr;
+}
 
+Value* NVariable::loadVar(CodeContext& context)
+{
+	auto var = context.loadVar(name);
+	if (!var)
+		context.addError("variable " + *name + " not declared");
+	return var;
+}
+
+Value* NArrayVariable::loadVar(CodeContext& context)
+{
+	auto zero = ConstantInt::getNullValue(IntegerType::get(context.getContext(), 32));
+	auto indexVal = index->genValue(context);
+
+	if (!indexVal) {
+		return nullptr;
+	} else if (indexVal->getType()->isArrayTy()) {
+		context.addError("array index is not able to be cast to an int");
+		return nullptr;
+	}
+	typeCastMatch(indexVal, IntegerType::get(context.getContext(), 64), context);
+
+	vector<Value*> indexes;
+	indexes.push_back(zero);
+	indexes.push_back(indexVal);
+
+	auto var = context.loadVar(name);
 	if (!var) {
 		context.addError("variable " + *name + " not declared");
 		return nullptr;
 	}
-	return new LoadInst(var, "", context.currBlock());
+	// temporarly load variable to determin type
+	auto load = new LoadInst(var, "");
+	auto isArray = load->getType()->isArrayTy();
+	delete load;
+	if (!isArray) {
+		context.addError("variable " + *name + " is not an array");
+		return nullptr;
+	}
+	return GetElementPtrInst::Create(var, indexes, "", context.currBlock());
 }
 
 void NParameter::genCode(CodeContext& context)
@@ -409,11 +458,9 @@ error:
 
 Value* NAssignment::genValue(CodeContext& context)
 {
-	auto lhsVar = context.loadVar(lhs->getName());
+	auto lhsVar = lhs->loadVar(context);
 	auto rhsExp = rhs->genValue(context);
 
-	if (!lhsVar)
-		context.addError("variable " + *lhs->getName() + " not declared");
 	if (!(lhsVar && rhsExp))
 		return nullptr;
 

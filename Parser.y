@@ -6,8 +6,9 @@
 	int t_int;
 	std::string* t_str;
 	NDataType* t_dtype;
+	NVariable* t_var;
 	NParameter* t_param;
-	NVariableDecl* t_var;
+	NVariableDecl* t_var_decl;
 	NStatement* t_stm;
 	NExpression* t_exp;
 	NFunctionPrototype* t_func_pro;
@@ -36,7 +37,9 @@
 // parameter
 %type <t_param> parameter
 // variable
-%type <t_var> variable global_variable
+%type <t_var> variable_expresion
+// variable declaration
+%type <t_var_decl> variable global_variable
 // operators
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
 %type <t_int> assignment_operator unary_operator
@@ -282,6 +285,13 @@ parameter
 	}
 	;
 data_type
+	: base_type
+	| '[' TT_INTEGER ']' base_type
+	{
+		$$ = new NArrayType($2, $4);
+	}
+	;
+base_type
 	: TT_AUTO
 	{
 		$$ = new NBaseType;
@@ -358,9 +368,9 @@ expression
 	;
 assignment
 	: ternary_expression
-	| TT_IDENTIFIER assignment_operator expression
+	| variable_expresion assignment_operator expression
 	{
-		$$ = new NAssignment($2, new NVariable($1), $3);
+		$$ = new NAssignment($2, $1, $3);
 	}
 	;
 ternary_expression
@@ -512,29 +522,36 @@ function_call
 	}
 	;
 increment_decrement_expression
-	: TT_DEC TT_IDENTIFIER
+	: variable_expresion
+	| TT_DEC variable_expresion
 	{
-		$$ = new NIncrement(new NVariable($2), false, false);
+		$$ = new NIncrement($2, false, false);
 	}
-	| TT_INC TT_IDENTIFIER
+	| TT_INC variable_expresion
 	{
-		$$ = new NIncrement(new NVariable($2), true, false);
+		$$ = new NIncrement($2, true, false);
 	}
-	| TT_IDENTIFIER TT_DEC
+	| variable_expresion TT_DEC
 	{
-		$$ = new NIncrement(new NVariable($1), false, true);
+		$$ = new NIncrement($1, false, true);
 	}
-	| TT_IDENTIFIER TT_INC
+	| variable_expresion TT_INC
 	{
-		$$ = new NIncrement(new NVariable($1), true, true);
+		$$ = new NIncrement($1, true, true);
 	}
 	;
-value_expression
+variable_expresion
 	: TT_IDENTIFIER
 	{
 		$$ = new NVariable($1);
 	}
-	| TT_INTEGER
+	| TT_IDENTIFIER '[' expression ']'
+	{
+		$$ = new NArrayVariable($1, $3);
+	}
+	;
+value_expression
+	: TT_INTEGER
 	{
 		$$ = new NIntConst($1);
 	}
