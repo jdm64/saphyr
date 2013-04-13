@@ -30,10 +30,8 @@ using namespace std;
 using namespace llvm;
 
 // forward declarations
-template<typename NType>
-class NodeList;
 class NStatement;
-typedef NodeList<NStatement> NStatementList;
+class NStatementList;
 
 struct LabelBlock
 {

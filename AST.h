@@ -38,25 +38,8 @@ public:
 	virtual NodeType getNodeType() = 0;
 };
 
-class NStatement : public Node
-{
-public:
-	virtual void genCode(CodeContext& context) = 0;
-};
-
-class NExpression : public NStatement
-{
-public:
-	void genCode(CodeContext& context) final
-	{
-		genValue(context);
-	};
-
-	virtual Value* genValue(CodeContext& context) = 0;
-};
-
 template<typename NType>
-class NodeList : public NStatement
+class NodeList : public Node
 {
 	typedef typename vector<NType*>::iterator NTypeIter;
 
@@ -64,12 +47,6 @@ protected:
 	vector<NType*> list;
 
 public:
-	void genCode(CodeContext& context)
-	{
-		for (auto item : list)
-			item->genCode(context);
-	}
-
 	NodeType getNodeType()
 	{
 		return NodeType::BaseNodeList;
@@ -110,10 +87,44 @@ public:
 		return list[list.size() - 1];
 	}
 };
-typedef NodeList<NStatement> NStatementList;
-typedef NodeList<NExpression> NExpressionList;
 
+class NStatement : public Node
+{
+public:
+	virtual void genCode(CodeContext& context) = 0;
+};
+
+class NStatementList : public NodeList<NStatement>
+{
+public:
+	void genCode(CodeContext& context)
+	{
+		for (auto item : list)
+			item->genCode(context);
+	}
+};
 extern NStatementList* programBlock;
+
+class NExpression : public NStatement
+{
+public:
+	void genCode(CodeContext& context) final
+	{
+		genValue(context);
+	};
+
+	virtual Value* genValue(CodeContext& context) = 0;
+};
+
+class NExpressionList : public NodeList<NExpression>
+{
+public:
+	void genCode(CodeContext& context)
+	{
+		for (auto item : list)
+			item->genValue(context);
+	}
+};
 
 class NDeclaration : public NStatement
 {
@@ -214,7 +225,18 @@ public:
 		delete type;
 	}
 };
-typedef NodeList<NVariableDecl> NVariableDeclList;
+
+class NVariableDeclList : public NodeList<NVariableDecl>
+{
+public:
+	void genCode(NDataType* type, CodeContext& context)
+	{
+		for (auto variable : list) {
+			variable->setDataType(type);
+			variable->genCode(context);
+		}
+	}
+};
 
 class NGlobalVariableDecl : public NVariableDecl
 {
@@ -323,7 +345,10 @@ public:
 	NVariableDeclGroup(NDataType* type, NVariableDeclList* variables)
 	: type(type), variables(variables) {}
 
-	void genCode(CodeContext& context);
+	void genCode(CodeContext& context)
+	{
+		variables->genCode(type, context);
+	}
 
 	NodeType getNodeType()
 	{

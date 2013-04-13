@@ -199,14 +199,6 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 	context.storeGlobalVar(var, name);
 }
 
-void NVariableDeclGroup::genCode(CodeContext& context)
-{
-	for (auto variable : *variables) {
-		variable->setDataType(type);
-		variable->genCode(context);
-	}
-}
-
 void NFunctionPrototype::genCode(CodeContext& context)
 {
 	context.addError("Called NFunctionPrototype::genCode; use genFunction instead.");
@@ -227,10 +219,10 @@ void NFunctionPrototype::genCodeParams(Function* function, CodeContext& context)
 	int i = 0;
 	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++) {
 		auto param = params->getItem(i++);
-		param->setArgument(arg);
 		arg->setName(*param->getName());
+		param->setArgument(arg);
+		param->genCode(context);
 	}
-	params->genCode(context);
 }
 
 void NFunctionDeclaration::genCode(CodeContext& context)
