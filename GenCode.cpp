@@ -276,16 +276,11 @@ void NReturnStatement::genCode(CodeContext& context)
 
 void NWhileStatement::genCode(CodeContext& context)
 {
-	BasicBlock* condBlock;
-	BasicBlock* bodyBlock;
+	auto condBlock = context.createBlock();
+	auto bodyBlock = context.createBlock();
+	if (isDoWhile)
+		swap(condBlock, bodyBlock);
 
-	if (isDoWhile) {
-		bodyBlock = context.createBlock();
-		condBlock = context.createBlock();
-	} else {
-		condBlock = context.createBlock();
-		bodyBlock = context.createBlock();
-	}
 	auto endBlock = context.createBlock();
 	auto startBlock = isDoWhile? bodyBlock : condBlock;
 	auto trueBlock = isUntil? endBlock : bodyBlock;
@@ -592,10 +587,8 @@ Value* NNullCoalescing::genValue(CodeContext& context)
 
 Value* NUnaryMathOperator::genValue(CodeContext& context)
 {
-	Value* value;
 	Instruction::BinaryOps llvmOp;
 	Instruction::OtherOps cmpType;
-	CmpInst::Predicate pred;
 
 	auto unaryExp = unary->genValue(context);
 	auto type = unaryExp->getType();
@@ -606,13 +599,11 @@ Value* NUnaryMathOperator::genValue(CodeContext& context)
 		llvmOp = getOperator(oper, type, context);
 		return BinaryOperator::Create(llvmOp, Constant::getNullValue(type), unaryExp, "", context.currBlock());
 	case '!':
-		pred = getPredicate(ParserBase::TT_EQ, type, context);
 		cmpType = type->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
-		return CmpInst::Create(cmpType, pred, Constant::getNullValue(type), unaryExp, "", context.currBlock());
+		return CmpInst::Create(cmpType, getPredicate(ParserBase::TT_EQ, type, context), Constant::getNullValue(type), unaryExp, "", context.currBlock());
 	case '~':
 		llvmOp = getOperator('^', type, context);
-		value = Constant::getAllOnesValue(type);
-		return BinaryOperator::Create(llvmOp, value, unaryExp, "", context.currBlock());
+		return BinaryOperator::Create(llvmOp, Constant::getAllOnesValue(type), unaryExp, "", context.currBlock());
 	default:
 		context.addError("invalid unary operator " + oper);
 		return nullptr;
@@ -649,7 +640,7 @@ Value* NIncrement::genValue(CodeContext& context)
 		return nullptr;
 
 	auto op = getOperator(isIncrement? '+' : '-', varVal->getType(), context);
-	Constant* one = varVal->getType()->isFloatingPointTy()?
+	auto one = varVal->getType()->isFloatingPointTy()?
 		ConstantFP::get(varVal->getType(), "1.0") :
 		ConstantInt::getSigned(varVal->getType(), 1);
 	auto result = BinaryOperator::Create(op, varVal, one, "", context.currBlock());
@@ -685,15 +676,8 @@ Value* NIntConst::genValue(CodeContext& context)
 
 Value* NFloatConst::genValue(CodeContext& context)
 {
-	Type* llvmType;
-	switch (type) {
-	default:
-	case BaseDataType::FLOAT:
-		llvmType = Type::getFloatTy(context.getContext());
-		break;
-	case BaseDataType::DOUBLE:
-		llvmType = Type::getDoubleTy(context.getContext());
-		break;
-	}
+	auto llvmType = type == BaseDataType::FLOAT?
+		Type::getFloatTy(context.getContext()) :
+		Type::getDoubleTy(context.getContext());
 	return ConstantFP::get(llvmType, *value);
 }
