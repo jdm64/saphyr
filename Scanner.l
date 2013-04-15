@@ -48,6 +48,7 @@ float		{ return ParserBase::TT_FLOAT; }
 double		{ return ParserBase::TT_DOUBLE; }
 
 break		{ return ParserBase::TT_BREAK; }
+case		{ return ParserBase::TT_CASE; }
 continue	{ return ParserBase::TT_CONTINUE; }
 do		{ return ParserBase::TT_DO; }
 else		{ return ParserBase::TT_ELSE; }
@@ -56,6 +57,7 @@ goto		{ return ParserBase::TT_GOTO; }
 if		{ return ParserBase::TT_IF; }
 redo		{ return ParserBase::TT_REDO; }
 return		{ return ParserBase::TT_RETURN; }
+switch		{ return ParserBase::TT_SWITCH; }
 until		{ return ParserBase::TT_UNTIL; }
 while		{ return ParserBase::TT_WHILE; }
 

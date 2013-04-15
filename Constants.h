@@ -23,7 +23,8 @@ enum class NodeType
 	BaseNodeList, BaseType, VarDecl, Variable, Parameter, VariableDecGroup, FunctionDec,
 	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
 	LogicalOp, WhileStm, LoopBranch, ForStm, TernaryOp, Increment, UnaryMath, IfStm,
-	NullCoalescing, FunctionProto, Label, Goto, GlobalVarDecl, ArrayType, ArrayVariable
+	NullCoalescing, FunctionProto, Label, Goto, GlobalVarDecl, ArrayType, ArrayVariable,
+	SwitchStm, SwitchCase
 };
 
 enum class BaseDataType

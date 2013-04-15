@@ -11,11 +11,13 @@
 	NVariableDecl* t_var_decl;
 	NStatement* t_stm;
 	NExpression* t_exp;
+	NSwitchCase* t_case;
 	NFunctionPrototype* t_func_pro;
 	NStatementList* t_stmlist;
 	NExpressionList* t_explist;
 	NParameterList* t_parlist;
 	NVariableDeclList* t_varlist;
+	NSwitchCaseList* t_caslist;
 }
 
 // predefined constants
@@ -27,7 +29,7 @@
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
 %token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 // keywords
-%token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO
+%token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
 %left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
@@ -46,6 +48,7 @@
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
+%type <t_case> switch_case
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
@@ -59,6 +62,7 @@
 %type <t_varlist> variable_list global_variable_list
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
+%type <t_caslist> switch_case_list
 
 %%
 
@@ -150,6 +154,10 @@ statement
 	| while_loop
 	| branch_statement
 	| condition_statement
+	| TT_SWITCH '(' expression ')' '{' switch_case_list '}'
+	{
+		$$ = new NSwitchStatement($3, $6);
+	}
 	| TT_IDENTIFIER ':'
 	{
 		$$ = new NLabelStatement($1);
@@ -183,6 +191,23 @@ while_loop
 	| TT_DO single_statement TT_UNTIL '(' expression_or_empty ')' ';'
 	{
 		$$ = new NWhileStatement($5, $2, true, true);
+	}
+	;
+switch_case_list
+	: switch_case
+	{
+		$$ = new NSwitchCaseList;
+		$$->addItem($1);
+	}
+	| switch_case_list switch_case
+	{
+		$1->addItem($2);
+	}
+	;
+switch_case
+	: TT_CASE TT_INTEGER ':' statement_list_or_empty
+	{
+		$$ = new NSwitchCase(new NIntConst($2), $4);
 	}
 	;
 branch_statement

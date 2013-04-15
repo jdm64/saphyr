@@ -126,6 +126,50 @@ public:
 	}
 };
 
+class NConstant : public NExpression
+{
+protected:
+	BaseDataType type;
+	string* value;
+
+public:
+	NConstant(BaseDataType type, string* value)
+	: type(type), value(value) {}
+
+	~NConstant()
+	{
+		delete value;
+	}
+};
+
+class NIntConst : public NConstant
+{
+public:
+	NIntConst(string* value, BaseDataType type = BaseDataType::INT)
+	: NConstant(type, value) {}
+
+	Value* genValue(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::IntConst;
+	}
+};
+
+class NFloatConst : public NConstant
+{
+public:
+	NFloatConst(string* value, BaseDataType type = BaseDataType::FLOAT)
+	: NConstant(type, value) {}
+
+	Value* genValue(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::FloatConst;
+	}
+};
+
 class NDeclaration : public NStatement
 {
 protected:
@@ -456,6 +500,70 @@ public:
 	}
 };
 
+class NSwitchCase : public NStatement
+{
+	NIntConst* value;
+	NStatementList* body;
+
+public:
+	NSwitchCase(NIntConst* value, NStatementList* body)
+	: value(value), body(body) {}
+
+	void genCode(CodeContext& context)
+	{
+		body->genCode(context);
+	}
+
+	Value* genValue(CodeContext& context)
+	{
+		return value->genValue(context);
+	}
+
+	bool isLastStmBranch()
+	{
+		auto last = body->back();
+		if (!last)
+			return false;
+		auto type = last->getNodeType();
+		return type == NodeType::LoopBranch || type == NodeType::ReturnStm;
+	}
+
+	NodeType getNodeType()
+	{
+		return NodeType::SwitchCase;
+	}
+
+	~NSwitchCase()
+	{
+		delete value;
+		delete body;
+	}
+};
+typedef NodeList<NSwitchCase> NSwitchCaseList;
+
+class NSwitchStatement : public NStatement
+{
+	NExpression* value;
+	NSwitchCaseList* cases;
+
+public:
+	NSwitchStatement(NExpression* value, NSwitchCaseList* cases)
+	: value(value), cases(cases) {}
+
+	void genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::SwitchStm;
+	}
+
+	~NSwitchStatement()
+	{
+		delete value;
+		delete cases;
+	}
+};
+
 class NForStatement : public NConditionStmt
 {
 	NStatementList* preStm;
@@ -779,50 +887,6 @@ public:
 	~NIncrement()
 	{
 		delete variable;
-	}
-};
-
-class NConstant : public NExpression
-{
-protected:
-	BaseDataType type;
-	string* value;
-
-public:
-	NConstant(BaseDataType type, string* value)
-	: type(type), value(value) {}
-
-	~NConstant()
-	{
-		delete value;
-	}
-};
-
-class NIntConst : public NConstant
-{
-public:
-	NIntConst(string* value, BaseDataType type = BaseDataType::INT)
-	: NConstant(type, value) {}
-
-	Value* genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::IntConst;
-	}
-};
-
-class NFloatConst : public NConstant
-{
-public:
-	NFloatConst(string* value, BaseDataType type = BaseDataType::FLOAT)
-	: NConstant(type, value) {}
-
-	Value* genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::FloatConst;
 	}
 };
 

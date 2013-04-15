@@ -14,6 +14,7 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <set>
 #include <fstream>
 #include <llvm/Constants.h>
 #include <llvm/PassManager.h>
@@ -307,6 +308,48 @@ void NWhileStatement::genCode(CodeContext& context)
 	context.popContinueBlock();
 	context.popRedoBlock();
 	context.popBreakBlock();
+}
+
+void NSwitchStatement::genCode(CodeContext& context)
+{
+	auto switchValue = value->genValue(context);
+	typeCastMatch(switchValue, Type::getIntNTy(context.getContext(), 32), context);
+
+	auto caseBlock = context.createBlock();
+	auto endBlock = context.createBlock();
+	auto switchInst = SwitchInst::Create(switchValue, endBlock, cases->size(), context.currBlock());
+
+	context.pushLocalTable();
+	context.pushBreakBlock(endBlock);
+
+	set<int64_t> unique;
+	for (auto caseItem : *cases) {
+		auto val = static_cast<ConstantInt*>(caseItem->genValue(context));
+		if (!unique.insert(val->getSExtValue()).second) {
+			context.addError("switch case values are not unique");
+			return;
+		}
+		switchInst->addCase(val, caseBlock);
+		context.pushBlock(caseBlock);
+		caseItem->genCode(context);
+
+		if (caseItem->isLastStmBranch()) {
+			caseBlock = context.currBlock();
+		} else {
+			caseBlock = context.createBlock();
+			BranchInst::Create(caseBlock, context.currBlock());
+			context.pushBlock(caseBlock);
+		}
+	}
+	// NOTE: the last case will create a dangling block which needs a terminator.
+	BranchInst::Create(endBlock, context.currBlock());
+
+	// NOTE: endBlock will be after the first case before moving it to the end
+	endBlock->moveAfter(context.currBlock());
+
+	context.popLocalTable();
+	context.popBreakBlock();
+	context.pushBlock(endBlock);
 }
 
 void NForStatement::genCode(CodeContext& context)
