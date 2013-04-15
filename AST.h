@@ -72,19 +72,19 @@ public:
 		list.push_back(item);
 	}
 
-	NType* getItem(int i)
+	NType* at(int i)
 	{
-		return list[i];
+		return list.at(i);
 	}
 
-	NType* getFirst()
+	NType* front()
 	{
-		return list[0];
+		return list.empty()? nullptr : list.front();
 	}
 
-	NType* getLast()
+	NType* back()
 	{
-		return list[list.size() - 1];
+		return list.empty()? nullptr : list.back();
 	}
 };
 

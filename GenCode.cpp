@@ -218,7 +218,7 @@ void NFunctionPrototype::genCodeParams(Function* function, CodeContext& context)
 {
 	int i = 0;
 	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++) {
-		auto param = params->getItem(i++);
+		auto param = params->at(i++);
 		arg->setName(*param->getName());
 		param->setArgument(arg);
 		param->genCode(context);
@@ -235,7 +235,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 		return;
 	}
 
-	if (body->getLast()->getNodeType() != NodeType::ReturnStm) {
+	if (body->back()->getNodeType() != NodeType::ReturnStm) {
 		auto returnType = function->getFunctionType()->getReturnType();
 		if (returnType->isVoidTy())
 			body->addItem(new NReturnStatement);
