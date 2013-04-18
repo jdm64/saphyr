@@ -504,10 +504,15 @@ class NSwitchCase : public NStatement
 {
 	NIntConst* value;
 	NStatementList* body;
+	bool hasValue;
 
 public:
+	// used for default case
+	NSwitchCase(NStatementList* body)
+	: value(nullptr), body(body), hasValue(false) {}
+
 	NSwitchCase(NIntConst* value, NStatementList* body)
-	: value(value), body(body) {}
+	: value(value), body(body), hasValue(true) {}
 
 	void genCode(CodeContext& context)
 	{
@@ -517,6 +522,11 @@ public:
 	Value* genValue(CodeContext& context)
 	{
 		return value->genValue(context);
+	}
+
+	bool isValueCase()
+	{
+		return hasValue;
 	}
 
 	bool isLastStmBranch()

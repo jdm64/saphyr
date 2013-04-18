@@ -30,6 +30,7 @@
 %token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
+%token TT_DEFAULT
 %left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
@@ -208,6 +209,10 @@ switch_case
 	: TT_CASE TT_INTEGER ':' statement_list_or_empty
 	{
 		$$ = new NSwitchCase(new NIntConst($2), $4);
+	}
+	| TT_DEFAULT ':' statement_list_or_empty
+	{
+		$$ = new NSwitchCase($3);
 	}
 	;
 branch_statement

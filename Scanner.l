@@ -50,6 +50,7 @@ double		{ return ParserBase::TT_DOUBLE; }
 break		{ return ParserBase::TT_BREAK; }
 case		{ return ParserBase::TT_CASE; }
 continue	{ return ParserBase::TT_CONTINUE; }
+default		{ return ParserBase::TT_DEFAULT; }
 do		{ return ParserBase::TT_DO; }
 else		{ return ParserBase::TT_ELSE; }
 for		{ return ParserBase::TT_FOR; }

@@ -316,20 +316,27 @@ void NSwitchStatement::genCode(CodeContext& context)
 	typeCastMatch(switchValue, Type::getIntNTy(context.getContext(), 32), context);
 
 	auto caseBlock = context.createBlock();
-	auto endBlock = context.createBlock();
-	auto switchInst = SwitchInst::Create(switchValue, endBlock, cases->size(), context.currBlock());
+	auto endBlock = context.createBlock(), defaultBlock = endBlock;
+	auto switchInst = SwitchInst::Create(switchValue, defaultBlock, cases->size(), context.currBlock());
 
 	context.pushLocalTable();
 	context.pushBreakBlock(endBlock);
 
 	set<int64_t> unique;
+	bool hasDefault = false;
 	for (auto caseItem : *cases) {
-		auto val = static_cast<ConstantInt*>(caseItem->genValue(context));
-		if (!unique.insert(val->getSExtValue()).second) {
-			context.addError("switch case values are not unique");
-			return;
+		if (caseItem->isValueCase()) {
+			auto val = static_cast<ConstantInt*>(caseItem->genValue(context));
+			if (!unique.insert(val->getSExtValue()).second)
+				context.addError("switch case values are not unique");
+			switchInst->addCase(val, caseBlock);
+		} else {
+			if (hasDefault)
+				context.addError("switch statement has more than one default");
+			hasDefault = true;
+			defaultBlock = caseBlock;
 		}
-		switchInst->addCase(val, caseBlock);
+
 		context.pushBlock(caseBlock);
 		caseItem->genCode(context);
 
@@ -341,6 +348,8 @@ void NSwitchStatement::genCode(CodeContext& context)
 			context.pushBlock(caseBlock);
 		}
 	}
+	switchInst->setDefaultDest(defaultBlock);
+
 	// NOTE: the last case will create a dangling block which needs a terminator.
 	BranchInst::Create(endBlock, context.currBlock());
 
