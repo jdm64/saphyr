@@ -9,7 +9,10 @@ LETTER		[a-zA-Z_]
 
 %%
 
-{SPACE}+	;
+"/*"(.*|[\n\r])+"*/"	;
+"//".*			;
+{SPACE}+		;
+
 
 "<<"	{ return ParserBase::TT_LSHIFT; }
 ">>"	{ return ParserBase::TT_RSHIFT; }
