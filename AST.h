@@ -126,27 +126,46 @@ public:
 	}
 };
 
-class NConstant : public NExpression
+class NConstant : public NExpression {};
+
+class NBoolConst : public NConstant
+{
+	bool value;
+
+public:
+	NBoolConst(bool value)
+	: value(value) {}
+
+	Value* genValue(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::BoolConst;
+	}
+};
+
+class NNumberConst : public NConstant
 {
 protected:
-	BaseDataType type;
 	string* value;
 
 public:
-	NConstant(BaseDataType type, string* value)
-	: type(type), value(value) {}
+	NNumberConst(string* value)
+	: value(value) {}
 
-	~NConstant()
+	~NNumberConst()
 	{
 		delete value;
 	}
 };
 
-class NIntConst : public NConstant
+class NIntConst : public NNumberConst
 {
+	int base;
+
 public:
-	NIntConst(string* value, BaseDataType type = BaseDataType::INT)
-	: NConstant(type, value) {}
+	NIntConst(string* value, int base = 10)
+	: NNumberConst(value), base(base) {}
 
 	Value* genValue(CodeContext& context);
 
@@ -156,11 +175,11 @@ public:
 	}
 };
 
-class NFloatConst : public NConstant
+class NFloatConst : public NNumberConst
 {
 public:
-	NFloatConst(string* value, BaseDataType type = BaseDataType::FLOAT)
-	: NConstant(type, value) {}
+	NFloatConst(string* value)
+	: NNumberConst(value) {}
 
 	Value* genValue(CodeContext& context);
 

@@ -701,35 +701,18 @@ Value* NIncrement::genValue(CodeContext& context)
 	return isPostfix? varVal : result;
 }
 
+Value* NBoolConst::genValue(CodeContext& context)
+{
+	return value? ConstantInt::getTrue(context.getContext()) : ConstantInt::getFalse(context.getContext());
+}
+
 Value* NIntConst::genValue(CodeContext& context)
 {
-	int bits;
-	switch (type) {
-	case BaseDataType::BOOL:
-		bits = 1;
-		break;
-	case BaseDataType::INT8:
-		bits = 8;
-		break;
-	case BaseDataType::INT16:
-		bits = 16;
-		break;
-	case BaseDataType::INT64:
-		bits = 64;
-		break;
-	case BaseDataType::INT32:
-	case BaseDataType::INT:
-	default:
-		bits = 32;
-		break;
-	}
-	return ConstantInt::get(Type::getIntNTy(context.getContext(), bits), *value, 10);
+	string intVal(*value, base == 10? 0:2);
+	return ConstantInt::get(Type::getInt32Ty(context.getContext()), intVal, base);
 }
 
 Value* NFloatConst::genValue(CodeContext& context)
 {
-	auto llvmType = type == BaseDataType::FLOAT?
-		Type::getFloatTy(context.getContext()) :
-		Type::getDoubleTy(context.getContext());
-	return ConstantFP::get(llvmType, *value);
+	return ConstantFP::get(Type::getDoubleTy(context.getContext()), *value);
 }

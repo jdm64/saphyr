@@ -33,7 +33,7 @@
 %token TT_DEFAULT
 %left TT_ELSE
 // constants and names
-%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER
+%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX
 
 // data types
 %type <t_dtype> data_type base_type
@@ -585,16 +585,28 @@ value_expression
 	{
 		$$ = new NIntConst($1);
 	}
+	| TT_INT_BIN
+	{
+		$$ = new NIntConst($1, 2);
+	}
+	| TT_INT_OCT
+	{
+		$$ = new NIntConst($1, 8);
+	}
+	| TT_INT_HEX
+	{
+		$$ = new NIntConst($1, 16);
+	}
 	| TT_FLOATING
 	{
 		$$ = new NFloatConst($1);
 	}
 	| TT_TRUE
 	{
-		$$ = new NIntConst(new string("1"), BaseDataType::BOOL);
+		$$ = new NBoolConst(true);
 	}
 	| TT_FALSE
 	{
-		$$ = new NIntConst(new string("0"), BaseDataType::BOOL);
+		$$ = new NBoolConst(false);
 	}
 	;

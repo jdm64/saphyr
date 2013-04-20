@@ -65,6 +65,9 @@ switch		{ return ParserBase::TT_SWITCH; }
 until		{ return ParserBase::TT_UNTIL; }
 while		{ return ParserBase::TT_WHILE; }
 
+0b[01]+				{ SAVE_TOKEN return ParserBase::TT_INT_BIN; }
+0o[0-7]+			{ SAVE_TOKEN return ParserBase::TT_INT_OCT; }
+0x[0-9a-fA-F]+			{ SAVE_TOKEN return ParserBase::TT_INT_HEX; }
 {DIGIT}+			{ SAVE_TOKEN return ParserBase::TT_INTEGER; }
 {DIGIT}+'.'{DIGIT}+		{ SAVE_TOKEN return ParserBase::TT_FLOATING; }
 {LETTER}+({LETTER}|{DIGIT})*	{ SAVE_TOKEN return ParserBase::TT_IDENTIFIER; }
