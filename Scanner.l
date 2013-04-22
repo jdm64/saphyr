@@ -4,8 +4,15 @@
 %lex-source "scanner.cpp"
 
 SPACE		[ \t\n\r]
-DIGIT		[0-9]
+BIN		[01]
+OCT		[0-7]
+DEC		[0-9]
+HEX		[0-9a-fA-F]
 LETTER		[a-zA-Z_]
+NUMBER		{DEC}+
+NAME		{LETTER}({LETTER}|{DEC})*
+FLOAT		{NUMBER}'.'{NUMBER}
+SUFFIX		_{NAME}
 
 %%
 
@@ -65,11 +72,11 @@ switch		{ return ParserBase::TT_SWITCH; }
 until		{ return ParserBase::TT_UNTIL; }
 while		{ return ParserBase::TT_WHILE; }
 
-0b[01]+				{ SAVE_TOKEN return ParserBase::TT_INT_BIN; }
-0o[0-7]+			{ SAVE_TOKEN return ParserBase::TT_INT_OCT; }
-0x[0-9a-fA-F]+			{ SAVE_TOKEN return ParserBase::TT_INT_HEX; }
-{DIGIT}+			{ SAVE_TOKEN return ParserBase::TT_INTEGER; }
-{DIGIT}+'.'{DIGIT}+		{ SAVE_TOKEN return ParserBase::TT_FLOATING; }
-{LETTER}+({LETTER}|{DIGIT})*	{ SAVE_TOKEN return ParserBase::TT_IDENTIFIER; }
+0b{BIN}+{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_INT_BIN; }
+0o{OCT}+{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_INT_OCT; }
+0x{HEX}+{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_INT_HEX; }
+{NUMBER}{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_INTEGER; }
+{FLOAT}{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_FLOATING; }
+{NAME}			{ SAVE_TOKEN return ParserBase::TT_IDENTIFIER; }
 
 .	{ return matched()[0]; }

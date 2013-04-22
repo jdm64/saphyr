@@ -708,11 +708,35 @@ Value* NBoolConst::genValue(CodeContext& context)
 
 Value* NIntConst::genValue(CodeContext& context)
 {
-	string intVal(*value, base == 10? 0:2);
-	return ConstantInt::get(Type::getInt32Ty(context.getContext()), intVal, base);
+	static const map<string, int> suffix = {{"i8", 8}, {"i16", 16}, {"i32", 32}, {"i64", 64}};
+	auto bits = 32; // default is int32
+
+	auto data = getValueAndSuffix();
+	if (data.size() > 1) {
+		auto suf = suffix.find(data[1]);
+		if (suf == suffix.end())
+			context.addError("invalid integer suffix: " + data[1]);
+		else
+			bits = suf->second;
+	}
+	string intVal(data[0], base == 10? 0:2);
+	return ConstantInt::get(Type::getIntNTy(context.getContext(), bits), intVal, base);
 }
 
 Value* NFloatConst::genValue(CodeContext& context)
 {
-	return ConstantFP::get(Type::getDoubleTy(context.getContext()), *value);
+	static const map<string, Type*> suffix = {
+		{"f", Type::getFloatTy(context.getContext())},
+		{"d", Type::getDoubleTy(context.getContext())} };
+	auto type = Type::getDoubleTy(context.getContext());
+
+	auto data = getValueAndSuffix();
+	if (data.size() > 1) {
+		auto suf = suffix.find(data[1]);
+		if (suf == suffix.end())
+			context.addError("invalid float suffix: " + data[1]);
+		else
+			type = suf->second;
+	}
+	return ConstantFP::get(type, data[0]);
 }

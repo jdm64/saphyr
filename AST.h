@@ -146,12 +146,20 @@ public:
 
 class NNumberConst : public NConstant
 {
-protected:
 	string* value;
 
 public:
 	NNumberConst(string* value)
 	: value(value) {}
+
+	vector<string> getValueAndSuffix()
+	{
+		auto pos = value->find('_');
+		if (pos == string::npos)
+			return {*value};
+		else
+			return {value->substr(0, pos), value->substr(pos + 1)};
+	}
 
 	~NNumberConst()
 	{
