@@ -151,10 +151,13 @@ statement_list
 	;
 statement
 	: variable_declarations ';'
-	| expression ';'
 	| while_loop
 	| branch_statement
 	| condition_statement
+	| expression ';'
+	{
+		$$ = $1;
+	}
 	| TT_SWITCH '(' expression ')' '{' switch_case_list '}'
 	{
 		$$ = new NSwitchStatement($3, $6);
@@ -387,6 +390,10 @@ expression_or_empty
 	;
 declaration_or_expression_list
 	: expression_list
+	{
+		$$ = $1->copy<NStatementList>();
+		delete $1;
+	}
 	| variable_declarations
 	{
 		$$ = new NStatementList;
@@ -553,6 +560,9 @@ function_call
 	;
 increment_decrement_expression
 	: variable_expresion
+	{
+		$$ = $1;
+	}
 	| TT_DEC variable_expresion
 	{
 		$$ = new NIncrement($2, false, false);

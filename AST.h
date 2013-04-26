@@ -47,6 +47,15 @@ protected:
 	vector<NType*> list;
 
 public:
+	template<typename OtherList>
+	OtherList* copy()
+	{
+		auto other = new OtherList;
+		for (auto item : *this)
+			other->addItem(item);
+		return other;
+	}
+
 	NodeType getNodeType()
 	{
 		return NodeType::BaseNodeList;
