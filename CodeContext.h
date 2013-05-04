@@ -117,6 +117,7 @@ class CodeContext : public SymbolTable
 	Module* module;
 	string filename;
 	vector<string> errors;
+	int returncode;
 
 	void validateFunction()
 	{
@@ -128,7 +129,7 @@ class CodeContext : public SymbolTable
 
 public:
 	CodeContext(string& filename)
-	: filename(filename)
+	: filename(filename), returncode(0)
 	{
 		module = new Module(filename, getGlobalContext());
 	}
@@ -241,6 +242,11 @@ public:
 	}
 
 	void genCode(NStatementList stms);
+
+	int returnCode()
+	{
+		return returncode;
+	}
 };
 
 #endif

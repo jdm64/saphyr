@@ -33,6 +33,7 @@ void CodeContext::genCode(NStatementList stms)
 	stms.genCode(*this);
 
 	if (!errors.empty()) {
+		returncode = 2;
 		for (auto& error : errors)
 			cout << "error: " << error << endl;
 		cout << "found " << errors.size() << " errors" << endl;

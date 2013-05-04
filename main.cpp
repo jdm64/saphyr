@@ -28,4 +28,6 @@ int main(int argc, char** argv)
 
 	CodeContext context(file);
 	context.genCode(*programBlock);
+
+	return context.returnCode();
 }
