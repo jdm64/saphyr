@@ -280,10 +280,8 @@ void NWhileStatement::genCode(CodeContext& context)
 {
 	auto condBlock = context.createBlock();
 	auto bodyBlock = context.createBlock();
-	if (isDoWhile)
-		swap(condBlock, bodyBlock);
-
 	auto endBlock = context.createBlock();
+
 	auto startBlock = isDoWhile? bodyBlock : condBlock;
 	auto trueBlock = isUntil? endBlock : bodyBlock;
 	auto falseBlock = isUntil? bodyBlock : endBlock;
@@ -354,9 +352,6 @@ void NSwitchStatement::genCode(CodeContext& context)
 	// NOTE: the last case will create a dangling block which needs a terminator.
 	BranchInst::Create(endBlock, context.currBlock());
 
-	// NOTE: endBlock will be after the first case before moving it to the end
-	endBlock->moveAfter(context.currBlock());
-
 	context.popLocalTable();
 	context.popBreakBlock();
 	context.pushBlock(endBlock);
@@ -401,7 +396,7 @@ void NIfStatement::genCode(CodeContext& context)
 {
 	auto ifBlock = context.createBlock();
 	auto elseBlock = context.createBlock();
-	auto endBlock = context.createBlock();
+	auto endBlock = elseBody? context.createBlock() : elseBlock;
 
 	context.pushLocalTable();
 
@@ -417,10 +412,10 @@ void NIfStatement::genCode(CodeContext& context)
 	context.pushLocalTable();
 
 	context.pushBlock(elseBlock);
-	if (elseBody)
+	if (elseBody) {
 		elseBody->genCode(context);
-	BranchInst::Create(endBlock, context.currBlock());
-
+		BranchInst::Create(endBlock, context.currBlock());
+	}
 	context.pushBlock(endBlock);
 	context.popLocalTable();
 }

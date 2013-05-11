@@ -183,6 +183,7 @@ public:
 
 	void pushBlock(BasicBlock* block)
 	{
+		block->moveAfter(currBlock());
 		funcBlocks.push_back(block);
 	}
 
