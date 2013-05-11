@@ -149,6 +149,11 @@ public:
 		return module->getFunction(*name);
 	}
 
+	Function* currFunction()
+	{
+		return currBlock()->getParent();
+	}
+
 	void addError(string error)
 	{
 		errors.push_back(error);

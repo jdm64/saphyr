@@ -258,7 +258,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 
 void NReturnStatement::genCode(CodeContext& context)
 {
-	auto func = context.currBlock()->getParent();
+	auto func = context.currFunction();
 	auto funcReturn = func->getReturnType();
 
 	if (funcReturn->isVoidTy()) {
