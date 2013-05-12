@@ -25,12 +25,17 @@
 #include "parserbase.h"
 #include "AST.h"
 #include "Util.h"
+#include "Pass.h"
 
 NStatementList* programBlock;
 
 void CodeContext::genCode(NStatementList stms)
 {
 	stms.genCode(*this);
+
+	PassManager clean;
+	clean.add(new SimpleBlockClean());
+	clean.run(*module);
 
 	if (!errors.empty()) {
 		returncode = 2;
