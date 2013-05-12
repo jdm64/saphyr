@@ -279,6 +279,7 @@ void NReturnStatement::genCode(CodeContext& context)
 	if (returnVal)
 		typeCastMatch(returnVal, funcReturn, context);
 	ReturnInst::Create(context.getContext(), returnVal, context.currBlock());
+	context.pushBlock(context.createBlock());
 }
 
 void NWhileStatement::genCode(CodeContext& context)
