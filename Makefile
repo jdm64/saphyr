@@ -1,6 +1,6 @@
 CXX = g++
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-sign-compare
-CXXFLAGS = -O3 -std=gnu++0x -ggdb `llvm-config --cxxflags` $(WARNINGS) -fexceptions
+CXXFLAGS = -O3 -std=gnu++0x -ggdb `llvm-config --cxxflags` $(WARNINGS) -fexceptions -D__STRICT_ANSI__
 LDFLAGS = `llvm-config --ldflags`
 LIBS = `llvm-config --libs`
 
