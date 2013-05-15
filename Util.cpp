@@ -118,7 +118,7 @@ Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context)
 			context.addError("XOR operator invalid for float types");
 		return Instruction::Xor;
 	default:
-		context.addError("unrecognized operator " + oper);
+		context.addError("unrecognized operator " + to_string(oper));
 		return Instruction::Add;
 	}
 }
@@ -139,7 +139,7 @@ Predicate getPredicate(int oper, Type* type, CodeContext& context)
 	case ParserBase::TT_EQ:
 		return type->isFloatingPointTy()? Predicate::FCMP_OEQ : Predicate::ICMP_EQ;
 	default:
-		context.addError("unrecognized predicate " + oper);
+		context.addError("unrecognized predicate " + to_string(oper));
 		return Predicate::ICMP_EQ;
 	}
 }

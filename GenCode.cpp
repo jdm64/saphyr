@@ -489,7 +489,7 @@ void NLoopBranch::genCode(CodeContext& context)
 		}
 		break;
 	default:
-		context.addError("undefined loop branch type: " + type);
+		context.addError("undefined loop branch type: " + to_string(type));
 		return;
 	}
 	BranchInst::Create(block, context.currBlock());
@@ -661,7 +661,7 @@ Value* NUnaryMathOperator::genValue(CodeContext& context)
 		llvmOp = getOperator('^', type, context);
 		return BinaryOperator::Create(llvmOp, Constant::getAllOnesValue(type), unaryExp, "", context.currBlock());
 	default:
-		context.addError("invalid unary operator " + oper);
+		context.addError("invalid unary operator " + to_string(oper));
 		return nullptr;
 	}
 }
