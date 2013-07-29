@@ -14,8 +14,8 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __UTIL__
-#define __UTIL__
+#ifndef __UTIL_H__
+#define __UTIL_H__
 
 #include <llvm/Value.h>
 #include <llvm/Type.h>

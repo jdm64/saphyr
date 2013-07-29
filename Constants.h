@@ -15,8 +15,8 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __Constants__
-#define __Constants__
+#ifndef __CONSTANTS_H__
+#define __CONSTANTS_H__
 
 enum class NodeType
 {
