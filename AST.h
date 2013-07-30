@@ -18,14 +18,12 @@
 #define __AST_H__
 
 #include <vector>
-#include <llvm/Value.h>
-#include <llvm/Type.h>
 #include <llvm/Function.h>
 #include <llvm/Instructions.h>
 #include "Constants.h"
+#include "Value.h"
 
 using namespace std;
-using namespace llvm;
 
 // forward declaration
 class CodeContext;
@@ -122,7 +120,7 @@ public:
 		genValue(context);
 	};
 
-	virtual Value* genValue(CodeContext& context) = 0;
+	virtual RValue genValue(CodeContext& context) = 0;
 };
 
 class NExpressionList : public NodeList<NExpression>
@@ -145,7 +143,7 @@ public:
 	NBoolConst(bool value)
 	: value(value) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -184,7 +182,7 @@ public:
 	NIntConst(string* value, int base = 10)
 	: NNumberConst(value), base(base) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -198,7 +196,7 @@ public:
 	NFloatConst(string* value)
 	: NNumberConst(value) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -341,9 +339,9 @@ public:
 	NVariable(string* name)
 	: name(name) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
-	virtual Value* loadVar(CodeContext& context);
+	virtual RValue loadVar(CodeContext& context);
 
 	string* getName()
 	{
@@ -369,7 +367,7 @@ public:
 	NArrayVariable(string* name, NExpression* index)
 	: NVariable(name), index(index) {}
 
-	Value* loadVar(CodeContext& context);
+	RValue loadVar(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -385,14 +383,14 @@ public:
 class NParameter : public NDeclaration
 {
 	NDataType* type;
-	Value* arg; // NOTE: not owned by NParameter
+	RValue arg; // NOTE: not owned by NParameter
 
 public:
 	NParameter(NDataType* type, string* name)
-	: NDeclaration(name), type(type), arg(nullptr) {}
+	: NDeclaration(name), type(type) {}
 
 	// NOTE: this must be called before genCode()
-	void setArgument(Value* argument)
+	void setArgument(RValue argument)
 	{
 		arg = argument;
 	}
@@ -555,7 +553,7 @@ public:
 		body->genCode(context);
 	}
 
-	Value* genValue(CodeContext& context)
+	RValue genValue(CodeContext& context)
 	{
 		return value->genValue(context);
 	}
@@ -748,7 +746,7 @@ public:
 	NAssignment(int oper, NVariable* lhs, NExpression* rhs)
 	: oper(oper), lhs(lhs), rhs(rhs) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -772,7 +770,7 @@ public:
 	NTernaryOperator(NExpression* condition, NExpression* trueVal, NExpression* falseVal)
 	: condition(condition), trueVal(trueVal), falseVal(falseVal) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -811,7 +809,7 @@ public:
 	NLogicalOperator(int oper, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, lhs, rhs) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -825,7 +823,7 @@ public:
 	NCompareOperator(int oper, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, lhs, rhs) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -839,7 +837,7 @@ public:
 	NBinaryMathOperator(int oper, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, lhs, rhs) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -853,7 +851,7 @@ public:
 	NNullCoalescing(NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(0, lhs, rhs) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -883,7 +881,7 @@ public:
 	NUnaryMathOperator(int oper, NExpression* unaryExp)
 	: NUnaryOperator(oper, unaryExp) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -900,7 +898,7 @@ public:
 	NFunctionCall(string* name, NExpressionList* arguments)
 	: name(name), arguments(arguments) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -923,7 +921,7 @@ public:
 	NIncrement(NVariable* variable, bool isIncrement, bool isPostfix)
 	: variable(variable), isIncrement(isIncrement), isPostfix(isPostfix) {}
 
-	Value* genValue(CodeContext& context);
+	RValue genValue(CodeContext& context);
 
 	NodeType getNodeType()
 	{

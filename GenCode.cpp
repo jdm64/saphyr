@@ -93,13 +93,13 @@ Type* NArrayType::getType(CodeContext& context)
 	return btype? ArrayType::get(btype, arrSize) : nullptr;
 }
 
-Value* NVariable::genValue(CodeContext& context)
+RValue NVariable::genValue(CodeContext& context)
 {
 	auto var = loadVar(context);
 	return var? new LoadInst(var, "", context.currBlock()) : nullptr;
 }
 
-Value* NVariable::loadVar(CodeContext& context)
+RValue NVariable::loadVar(CodeContext& context)
 {
 	auto var = context.loadVar(name);
 	if (!var)
@@ -107,14 +107,14 @@ Value* NVariable::loadVar(CodeContext& context)
 	return var;
 }
 
-Value* NArrayVariable::loadVar(CodeContext& context)
+RValue NArrayVariable::loadVar(CodeContext& context)
 {
 	auto zero = ConstantInt::getNullValue(IntegerType::get(context, 32));
 	auto indexVal = index->genValue(context);
 
 	if (!indexVal) {
 		return nullptr;
-	} else if (indexVal->getType()->isArrayTy()) {
+	} else if (indexVal.type()->isArrayTy()) {
 		context.addError("array index is not able to be cast to an int");
 		return nullptr;
 	}
@@ -157,7 +157,7 @@ void NVariableDecl::genCode(CodeContext& context)
 			context.addError("auto variable type requires initialization");
 			return;
 		}
-		varType = initValue->getType();
+		varType = initValue.type();
 	}
 
 	auto name = getName();
@@ -166,11 +166,11 @@ void NVariableDecl::genCode(CodeContext& context)
 		return;
 	}
 
-	auto var = new AllocaInst(varType, *name, context.currBlock());
+	auto var = LValue(new AllocaInst(varType, *name, context.currBlock()));
 	context.storeLocalVar(var, name);
 
 	if (initValue) {
-		typeCastMatch(initValue, var->getType()->getPointerElementType(), context);
+		typeCastMatch(initValue, var.type()->getPointerElementType(), context);
 		new StoreInst(initValue, var, context.currBlock());
 	}
 }
@@ -189,9 +189,9 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 			context.addError("auto variable type requires initialization");
 			return;
 		}
-		varType = initValue->getType();
+		varType = initValue.type();
 	}
-	if (initValue && varType != initValue->getType()) {
+	if (initValue && varType != initValue.type()) {
 		context.addError("global variable initialization requires exact type matching");
 		return;
 	}
@@ -202,7 +202,7 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 		return;
 	}
 
-	auto var = new GlobalVariable(*context.getModule(), varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue, *name);
+	auto var = new GlobalVariable(*context.getModule(), varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), *name);
 	context.storeGlobalVar(var, name);
 }
 
@@ -227,7 +227,7 @@ void NFunctionPrototype::genCodeParams(Function* function, CodeContext& context)
 	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++) {
 		auto param = params->at(i++);
 		arg->setName(*param->getName());
-		param->setArgument(arg);
+		param->setArgument(RValue(arg));
 		param->genCode(context);
 	}
 }
@@ -336,7 +336,7 @@ void NSwitchStatement::genCode(CodeContext& context)
 	bool hasDefault = false;
 	for (auto caseItem : *cases) {
 		if (caseItem->isValueCase()) {
-			auto val = static_cast<ConstantInt*>(caseItem->genValue(context));
+			auto val = static_cast<ConstantInt*>(caseItem->genValue(context).value());
 			if (!unique.insert(val->getSExtValue()).second)
 				context.addError("switch case values are not unique");
 			switchInst->addCase(val, caseBlock);
@@ -504,7 +504,7 @@ error:
 	context.addError("no valid context for " + typeName + " statement");
 }
 
-Value* NAssignment::genValue(CodeContext& context)
+RValue NAssignment::genValue(CodeContext& context)
 {
 	auto lhsVar = lhs->loadVar(context);
 	auto rhsExp = rhs->genValue(context);
@@ -513,22 +513,22 @@ Value* NAssignment::genValue(CodeContext& context)
 		return nullptr;
 
 	if (oper != '=') {
-		Value* lhsLocal = new LoadInst(lhsVar, "", context.currBlock());
+		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context.currBlock()));
 		typeCastUp(lhsLocal, rhsExp, context);
-		rhsExp = BinaryOperator::Create(getOperator(oper, lhsLocal->getType(), context), lhsLocal, rhsExp, "", context.currBlock());
+		rhsExp = BinaryOperator::Create(getOperator(oper, lhsLocal.type(), context), lhsLocal, rhsExp, "", context.currBlock());
 	}
-	typeCastMatch(rhsExp, lhsVar->getType()->getPointerElementType(), context);
+	typeCastMatch(rhsExp, lhsVar.type()->getPointerElementType(), context);
 	new StoreInst(rhsExp, lhsVar, context.currBlock());
 
 	return rhsExp;
 }
 
-Value* NTernaryOperator::genValue(CodeContext& context)
+RValue NTernaryOperator::genValue(CodeContext& context)
 {
 	auto condExp = condition->genValue(context);
 	typeCastMatch(condExp, Type::getInt1Ty(context), context);
 
-	Value *trueExp, *falseExp, *retVal;
+	RValue trueExp, falseExp, retVal;
 	if (isComplexExp(trueVal->getNodeType()) || isComplexExp(falseVal->getNodeType())) {
 		auto trueBlock = context.createBlock();
 		auto falseBlock = context.createBlock();
@@ -545,7 +545,7 @@ Value* NTernaryOperator::genValue(CodeContext& context)
 		BranchInst::Create(endBlock, context.currBlock());
 
 		context.pushBlock(endBlock);
-		auto result = PHINode::Create(trueExp->getType(), 2, "", context.currBlock());
+		auto result = PHINode::Create(trueExp.type(), 2, "", context.currBlock());
 		result->addIncoming(trueExp, trueBlock);
 		result->addIncoming(falseExp, falseBlock);
 		retVal = result;
@@ -555,12 +555,12 @@ Value* NTernaryOperator::genValue(CodeContext& context)
 		retVal = SelectInst::Create(condExp, trueExp, falseExp, "", context.currBlock());
 	}
 
-	if (trueExp->getType() != falseExp->getType())
+	if (trueExp.type() != falseExp.type())
 		context.addError("return types of ternary must match");
 	return retVal;
 }
 
-Value* NLogicalOperator::genValue(CodeContext& context)
+RValue NLogicalOperator::genValue(CodeContext& context)
 {
 	auto saveBlock = context.currBlock();
 	auto firstBlock = context.createBlock();
@@ -585,7 +585,7 @@ Value* NLogicalOperator::genValue(CodeContext& context)
 	return result;
 }
 
-Value* NCompareOperator::genValue(CodeContext& context)
+RValue NCompareOperator::genValue(CodeContext& context)
 {
 	auto lhsExp = lhs->genValue(context);
 	auto rhsExp = rhs->genValue(context);
@@ -594,13 +594,13 @@ Value* NCompareOperator::genValue(CodeContext& context)
 		return nullptr;
 
 	typeCastUp(lhsExp, rhsExp, context);
-	auto pred = getPredicate(oper, lhsExp->getType(), context);
-	auto op = rhsExp->getType()->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
+	auto pred = getPredicate(oper, lhsExp.type(), context);
+	auto op = rhsExp.type()->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
 
 	return CmpInst::Create(op, pred, lhsExp, rhsExp, "", context.currBlock());
 }
 
-Value* NBinaryMathOperator::genValue(CodeContext& context)
+RValue NBinaryMathOperator::genValue(CodeContext& context)
 {
 	auto lhsExp = lhs->genValue(context);
 	auto rhsExp = rhs->genValue(context);
@@ -609,12 +609,12 @@ Value* NBinaryMathOperator::genValue(CodeContext& context)
 		return nullptr;
 
 	typeCastUp(lhsExp, rhsExp, context);
-	return BinaryOperator::Create(getOperator(oper, lhsExp->getType(), context), lhsExp, rhsExp, "", context.currBlock());
+	return BinaryOperator::Create(getOperator(oper, lhsExp.type(), context), lhsExp, rhsExp, "", context.currBlock());
 }
 
-Value* NNullCoalescing::genValue(CodeContext& context)
+RValue NNullCoalescing::genValue(CodeContext& context)
 {
-	Value *rhsExp, *retVal;
+	RValue rhsExp, retVal;
 	auto lhsExp = lhs->genValue(context);
 	auto condition = lhsExp;
 
@@ -631,7 +631,7 @@ Value* NNullCoalescing::genValue(CodeContext& context)
 		BranchInst::Create(endBlock, context.currBlock());
 
 		context.pushBlock(endBlock);
-		auto result = PHINode::Create(lhsExp->getType(), 2, "", context.currBlock());
+		auto result = PHINode::Create(lhsExp.type(), 2, "", context.currBlock());
 		result->addIncoming(lhsExp, trueBlock);
 		result->addIncoming(rhsExp, falseBlock);
 
@@ -641,18 +641,18 @@ Value* NNullCoalescing::genValue(CodeContext& context)
 		retVal = SelectInst::Create(condition, lhsExp, rhsExp, "", context.currBlock());
 	}
 
-	if (lhsExp->getType() != rhsExp->getType())
+	if (lhsExp.type() != rhsExp.type())
 		context.addError("return types of null coalescing operator must match");
 	return retVal;
 }
 
-Value* NUnaryMathOperator::genValue(CodeContext& context)
+RValue NUnaryMathOperator::genValue(CodeContext& context)
 {
 	Instruction::BinaryOps llvmOp;
 	Instruction::OtherOps cmpType;
 
 	auto unaryExp = unary->genValue(context);
-	auto type = unaryExp->getType();
+	auto type = unaryExp.type();
 
 	switch (oper) {
 	case '+':
@@ -671,7 +671,7 @@ Value* NUnaryMathOperator::genValue(CodeContext& context)
 	}
 }
 
-Value* NFunctionCall::genValue(CodeContext& context)
+RValue NFunctionCall::genValue(CodeContext& context)
 {
 	auto func = context.getFunction(name);
 	if (!func) {
@@ -694,28 +694,28 @@ Value* NFunctionCall::genValue(CodeContext& context)
 	return CallInst::Create(func, exp_list, "", context.currBlock());
 }
 
-Value* NIncrement::genValue(CodeContext& context)
+RValue NIncrement::genValue(CodeContext& context)
 {
 	auto varVal = variable->genValue(context);
 	if (!varVal)
 		return nullptr;
 
-	auto op = getOperator(isIncrement? '+' : '-', varVal->getType(), context);
-	auto one = varVal->getType()->isFloatingPointTy()?
-		ConstantFP::get(varVal->getType(), "1.0") :
-		ConstantInt::getSigned(varVal->getType(), 1);
+	auto op = getOperator(isIncrement? '+' : '-', varVal.type(), context);
+	auto one = varVal.type()->isFloatingPointTy()?
+		ConstantFP::get(varVal.type(), "1.0") :
+		ConstantInt::getSigned(varVal.type(), 1);
 	auto result = BinaryOperator::Create(op, varVal, one, "", context.currBlock());
 	new StoreInst(result, context.loadVar(variable->getName()), context.currBlock());
 
 	return isPostfix? varVal : result;
 }
 
-Value* NBoolConst::genValue(CodeContext& context)
+RValue NBoolConst::genValue(CodeContext& context)
 {
 	return value? ConstantInt::getTrue(context) : ConstantInt::getFalse(context);
 }
 
-Value* NIntConst::genValue(CodeContext& context)
+RValue NIntConst::genValue(CodeContext& context)
 {
 	static const map<string, int> suffix = {{"i8", 8}, {"i16", 16}, {"i32", 32}, {"i64", 64}};
 	auto bits = 32; // default is int32
@@ -732,7 +732,7 @@ Value* NIntConst::genValue(CodeContext& context)
 	return ConstantInt::get(Type::getIntNTy(context, bits), intVal, base);
 }
 
-Value* NFloatConst::genValue(CodeContext& context)
+RValue NFloatConst::genValue(CodeContext& context)
 {
 	static const map<string, Type*> suffix = {
 		{"f", Type::getFloatTy(context)},

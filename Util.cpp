@@ -19,10 +19,10 @@
 
 typedef llvm::CmpInst::Predicate Predicate;
 
-void typeCastUp(Value*& lhs, Value*& rhs, CodeContext& context)
+void typeCastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 {
-	auto ltype = lhs->getType();
-	auto rtype = rhs->getType();
+	auto ltype = lhs.type();
+	auto rtype = rhs.type();
 
 	if (ltype == rtype)
 		return;
@@ -55,9 +55,9 @@ void typeCastUp(Value*& lhs, Value*& rhs, CodeContext& context)
 	}
 }
 
-void typeCastMatch(Value*& value, Type* type, CodeContext& context)
+void typeCastMatch(RValue& value, Type* type, CodeContext& context)
 {
-	auto valueType = value->getType();
+	auto valueType = value.type();
 	if (type == valueType)
 		return;
 

@@ -17,17 +17,13 @@
 #ifndef __CODE_CONTEXT_H__
 #define __CODE_CONTEXT_H__
 
-#include <map>
 #include <stack>
-#include <iostream>
 #include <llvm/Instructions.h>
-#include <llvm/LLVMContext.h>
 #include <llvm/BasicBlock.h>
 #include <llvm/Module.h>
-#include <llvm/Type.h>
+#include "Value.h"
 
 using namespace std;
-using namespace llvm;
 
 // forward declarations
 class NStatement;
@@ -44,15 +40,15 @@ struct LabelBlock
 
 class VarTable
 {
-	map<string, Value*> table;
+	map<string, LValue> table;
 
 public:
-	void storeVar(Value* var, string* name)
+	void storeVar(LValue var, string* name)
 	{
 		table[*name] = var;
 	}
 
-	Value* loadVar(string* name)
+	LValue loadVar(string* name)
 	{
 		auto varData = table.find(*name);
 		return varData != table.end()? varData->second : nullptr;
@@ -65,12 +61,12 @@ class SymbolTable
 	vector<VarTable> localTable;
 
 public:
-	void storeGlobalVar(GlobalVariable* var, string* name)
+	void storeGlobalVar(LValue var, string* name)
 	{
 		globalTable.storeVar(var, name);
 	}
 
-	void storeLocalVar(AllocaInst* var, string* name)
+	void storeLocalVar(LValue var, string* name)
 	{
 		localTable.back().storeVar(var, name);
 	}
@@ -90,7 +86,7 @@ public:
 		localTable.clear();
 	}
 
-	Value* loadVar(string* name)
+	LValue loadVar(string* name)
 	{
 		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
 			auto var = it->loadVar(name);
@@ -100,7 +96,7 @@ public:
 		return globalTable.loadVar(name);
 	}
 
-	Value* loadVarCurr(string* name)
+	LValue loadVarCurr(string* name)
 	{
 		return localTable.empty()? globalTable.loadVar(name) : localTable.back().loadVar(name);
 	}

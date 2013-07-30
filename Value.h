@@ -14,20 +14,48 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#ifndef __VALUE_H__
+#define __VALUE_H__
 
-#include "Constants.h"
-#include "CodeContext.h"
+#include <llvm/Value.h>
 
-void typeCastMatch(RValue& value, Type* type, CodeContext& context);
+using namespace llvm;
 
-void typeCastUp(RValue& lhs, RValue& rhs, CodeContext& context);
+class RValue
+{
+private:
+	Value* val;
 
-Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context);
+public:
+	RValue(Value* value = nullptr)
+	: val(value) {}
 
-ICmpInst::Predicate getPredicate(int oper, Type* type, CodeContext& context);
+	operator bool() const
+	{
+		return val;
+	}
 
-bool isComplexExp(NodeType type);
+	operator Value*() const
+	{
+		return val;
+	}
+
+	Value* value() const
+	{
+		return val;
+	}
+
+	Type* type() const
+	{
+		return val? val->getType() : nullptr;
+	}
+};
+
+class LValue : public RValue
+{
+public:
+	LValue(Value* value = nullptr)
+	: RValue(value) {};
+};
 
 #endif
