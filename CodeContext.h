@@ -134,7 +134,7 @@ public:
 		module = new Module(filename, getGlobalContext());
 	}
 
-	LLVMContext& getContext()
+	operator LLVMContext&()
 	{
 		return module->getContext();
 	}

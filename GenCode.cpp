@@ -58,22 +58,22 @@ Type* NBaseType::getType(CodeContext& context)
 {
 	switch (type) {
 	case BaseDataType::VOID:
-		return Type::getVoidTy(context.getContext());
+		return Type::getVoidTy(context);
 	case BaseDataType::BOOL:
-		return Type::getInt1Ty(context.getContext());
+		return Type::getInt1Ty(context);
 	case BaseDataType::INT8:
-		return Type::getInt8Ty(context.getContext());
+		return Type::getInt8Ty(context);
 	case BaseDataType::INT16:
-		return Type::getInt16Ty(context.getContext());
+		return Type::getInt16Ty(context);
 	case BaseDataType::INT:
 	case BaseDataType::INT32:
-		return Type::getInt32Ty(context.getContext());
+		return Type::getInt32Ty(context);
 	case BaseDataType::INT64:
-		return Type::getInt64Ty(context.getContext());
+		return Type::getInt64Ty(context);
 	case BaseDataType::FLOAT:
-		return Type::getFloatTy(context.getContext());
+		return Type::getFloatTy(context);
 	case BaseDataType::DOUBLE:
-		return Type::getDoubleTy(context.getContext());
+		return Type::getDoubleTy(context);
 	case BaseDataType::AUTO:
 	default:
 		return nullptr;
@@ -82,7 +82,7 @@ Type* NBaseType::getType(CodeContext& context)
 
 Type* NArrayType::getType(CodeContext& context)
 {
-	auto size = ConstantInt::get(Type::getIntNTy(context.getContext(), 64), *strSize, 10);
+	auto size = ConstantInt::get(Type::getIntNTy(context, 64), *strSize, 10);
 	auto arrSize = size->getSExtValue();
 
 	if (arrSize < 0) {
@@ -109,7 +109,7 @@ Value* NVariable::loadVar(CodeContext& context)
 
 Value* NArrayVariable::loadVar(CodeContext& context)
 {
-	auto zero = ConstantInt::getNullValue(IntegerType::get(context.getContext(), 32));
+	auto zero = ConstantInt::getNullValue(IntegerType::get(context, 32));
 	auto indexVal = index->genValue(context);
 
 	if (!indexVal) {
@@ -118,7 +118,7 @@ Value* NArrayVariable::loadVar(CodeContext& context)
 		context.addError("array index is not able to be cast to an int");
 		return nullptr;
 	}
-	typeCastMatch(indexVal, IntegerType::get(context.getContext(), 64), context);
+	typeCastMatch(indexVal, IntegerType::get(context, 64), context);
 
 	vector<Value*> indexes;
 	indexes.push_back(zero);
@@ -278,7 +278,7 @@ void NReturnStatement::genCode(CodeContext& context)
 	auto returnVal = value? value->genValue(context) : nullptr;
 	if (returnVal)
 		typeCastMatch(returnVal, funcReturn, context);
-	ReturnInst::Create(context.getContext(), returnVal, context.currBlock());
+	ReturnInst::Create(context, returnVal, context.currBlock());
 	context.pushBlock(context.createBlock());
 }
 
@@ -300,8 +300,8 @@ void NWhileStatement::genCode(CodeContext& context)
 	BranchInst::Create(startBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condValue = condition? condition->genValue(context) : ConstantInt::getTrue(context.getContext());;
-	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
+	auto condValue = condition? condition->genValue(context) : ConstantInt::getTrue(context);;
+	typeCastMatch(condValue, Type::getInt1Ty(context), context);
 	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
 
 	context.pushBlock(bodyBlock);
@@ -318,7 +318,7 @@ void NWhileStatement::genCode(CodeContext& context)
 void NSwitchStatement::genCode(CodeContext& context)
 {
 	auto switchValue = value->genValue(context);
-	typeCastMatch(switchValue, Type::getIntNTy(context.getContext(), 32), context);
+	typeCastMatch(switchValue, Type::getIntNTy(context, 32), context);
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBlock(), defaultBlock = endBlock;
@@ -379,8 +379,8 @@ void NForStatement::genCode(CodeContext& context)
 	BranchInst::Create(condBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condValue = condition? condition->genValue(context) : ConstantInt::getTrue(context.getContext());
-	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
+	auto condValue = condition? condition->genValue(context) : ConstantInt::getTrue(context);
+	typeCastMatch(condValue, Type::getInt1Ty(context), context);
 	BranchInst::Create(bodyBlock, endBlock, condValue, context.currBlock());
 
 	context.pushBlock(bodyBlock);
@@ -407,7 +407,7 @@ void NIfStatement::genCode(CodeContext& context)
 	context.pushLocalTable();
 
 	auto condValue = condition->genValue(context);
-	typeCastMatch(condValue, Type::getInt1Ty(context.getContext()), context);
+	typeCastMatch(condValue, Type::getInt1Ty(context), context);
 	BranchInst::Create(ifBlock, elseBlock, condValue, context.currBlock());
 
 	context.pushBlock(ifBlock);
@@ -521,7 +521,7 @@ Value* NAssignment::genValue(CodeContext& context)
 Value* NTernaryOperator::genValue(CodeContext& context)
 {
 	auto condExp = condition->genValue(context);
-	typeCastMatch(condExp, Type::getInt1Ty(context.getContext()), context);
+	typeCastMatch(condExp, Type::getInt1Ty(context), context);
 
 	Value *trueExp, *falseExp, *retVal;
 	if (isComplexExp(trueVal->getNodeType()) || isComplexExp(falseVal->getNodeType())) {
@@ -564,16 +564,16 @@ Value* NLogicalOperator::genValue(CodeContext& context)
 	auto falseBlock = (oper == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
 
 	auto lhsExp = lhs->genValue(context);
-	typeCastMatch(lhsExp, Type::getInt1Ty(context.getContext()), context);
+	typeCastMatch(lhsExp, Type::getInt1Ty(context), context);
 	BranchInst::Create(trueBlock, falseBlock, lhsExp, context.currBlock());
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = rhs->genValue(context);
-	typeCastMatch(rhsExp, Type::getInt1Ty(context.getContext()), context);
+	typeCastMatch(rhsExp, Type::getInt1Ty(context), context);
 	BranchInst::Create(secondBlock, context.currBlock());
 
 	context.pushBlock(secondBlock);
-	auto result = PHINode::Create(Type::getInt1Ty(context.getContext()), 2, "", context.currBlock());
+	auto result = PHINode::Create(Type::getInt1Ty(context), 2, "", context.currBlock());
 	result->addIncoming(lhsExp, saveBlock);
 	result->addIncoming(rhsExp, firstBlock);
 
@@ -613,7 +613,7 @@ Value* NNullCoalescing::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto condition = lhsExp;
 
-	typeCastMatch(condition, Type::getInt1Ty(context.getContext()), context);
+	typeCastMatch(condition, Type::getInt1Ty(context), context);
 	if (isComplexExp(rhs->getNodeType())) {
 		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
@@ -707,7 +707,7 @@ Value* NIncrement::genValue(CodeContext& context)
 
 Value* NBoolConst::genValue(CodeContext& context)
 {
-	return value? ConstantInt::getTrue(context.getContext()) : ConstantInt::getFalse(context.getContext());
+	return value? ConstantInt::getTrue(context) : ConstantInt::getFalse(context);
 }
 
 Value* NIntConst::genValue(CodeContext& context)
@@ -724,15 +724,15 @@ Value* NIntConst::genValue(CodeContext& context)
 			bits = suf->second;
 	}
 	string intVal(data[0], base == 10? 0:2);
-	return ConstantInt::get(Type::getIntNTy(context.getContext(), bits), intVal, base);
+	return ConstantInt::get(Type::getIntNTy(context, bits), intVal, base);
 }
 
 Value* NFloatConst::genValue(CodeContext& context)
 {
 	static const map<string, Type*> suffix = {
-		{"f", Type::getFloatTy(context.getContext())},
-		{"d", Type::getDoubleTy(context.getContext())} };
-	auto type = Type::getDoubleTy(context.getContext());
+		{"f", Type::getFloatTy(context)},
+		{"d", Type::getDoubleTy(context)} };
+	auto type = Type::getDoubleTy(context);
 
 	auto data = getValueAndSuffix();
 	if (data.size() > 1) {
