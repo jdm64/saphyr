@@ -18,17 +18,25 @@
 #define __VALUE_H__
 
 #include <llvm/Value.h>
-
-using namespace llvm;
+#include "Type.h"
 
 class RValue
 {
 private:
 	Value* val;
+	SType* ty;
 
 public:
-	RValue(Value* value = nullptr)
-	: val(value) {}
+	RValue()
+	: RValue(nullptr, nullptr) {}
+
+	RValue(Value* value, SType* type)
+	: val(value), ty(type) {}
+
+	static RValue null()
+	{
+		return RValue(nullptr, nullptr);
+	}
 
 	operator bool() const
 	{
@@ -49,13 +57,26 @@ public:
 	{
 		return val? val->getType() : nullptr;
 	}
+
+	SType* stype() const
+	{
+		return ty;
+	}
 };
 
 class LValue : public RValue
 {
 public:
-	LValue(Value* value = nullptr)
-	: RValue(value) {};
+	LValue()
+	: RValue() {}
+
+	LValue(Value* value, SType* type)
+	: RValue(value, type) {}
+
+	static LValue null()
+	{
+		return LValue(nullptr, nullptr);
+	}
 };
 
 #endif

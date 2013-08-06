@@ -23,8 +23,6 @@
 #include <llvm/Module.h>
 #include "Value.h"
 
-using namespace std;
-
 // forward declarations
 class NStatement;
 class NStatementList;
@@ -51,7 +49,7 @@ public:
 	LValue loadVar(string* name)
 	{
 		auto varData = table.find(*name);
-		return varData != table.end()? varData->second : nullptr;
+		return varData != table.end()? varData->second : LValue::null();
 	}
 };
 

@@ -23,8 +23,6 @@
 #include "Constants.h"
 #include "Value.h"
 
-using namespace std;
-
 // forward declaration
 class CodeContext;
 
@@ -233,7 +231,7 @@ public:
 	NDataType(BaseDataType type)
 	: type(type) {}
 
-	virtual Type* getType(CodeContext& context) = 0;
+	virtual SType* getType(CodeContext& context) = 0;
 };
 
 class NBaseType : public NDataType
@@ -242,7 +240,7 @@ public:
 	NBaseType(BaseDataType type = BaseDataType::AUTO)
 	: NDataType(type) {}
 
-	Type* getType(CodeContext& context);
+	SType* getType(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -260,7 +258,7 @@ public:
 	NArrayType(string* size, NDataType* baseType)
 	: NDataType(BaseDataType::ARRAY), baseType(baseType), strSize(size) {}
 
-	Type* getType(CodeContext& context);
+	SType* getType(CodeContext& context);
 
 	NodeType getNodeType()
 	{
@@ -387,7 +385,7 @@ class NParameter : public NDeclaration
 
 public:
 	NParameter(NDataType* type, string* name)
-	: NDeclaration(name), type(type) {}
+	: NDeclaration(name), type(type), arg(RValue::null()) {}
 
 	// NOTE: this must be called before genCode()
 	void setArgument(RValue argument)
@@ -395,7 +393,7 @@ public:
 		arg = argument;
 	}
 
-	Type* getType(CodeContext& context)
+	SType* getType(CodeContext& context)
 	{
 		return type->getType(context);
 	}
@@ -459,10 +457,10 @@ public:
 	{
 		vector<Type*> args;
 		for (auto item : *params)
-			args.push_back(item->getType(context));
+			args.push_back(item->getType(context)->type());
 
 		auto returnType = rtype->getType(context);
-		return FunctionType::get(returnType, args, false);
+		return FunctionType::get(*returnType, args, false);
 	}
 
 	NodeType getNodeType()

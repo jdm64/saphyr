@@ -4,7 +4,7 @@ CXXFLAGS = -O3 -std=gnu++0x -ggdb `llvm-config --cxxflags` $(WARNINGS) -fexcepti
 LDFLAGS = `llvm-config --ldflags`
 LIBS = `llvm-config --libs`
 
-objs = scanner.o parser.o Util.o Pass.o GenCode.o main.o
+objs = scanner.o parser.o Util.o Pass.o Type.o GenCode.o main.o
 
 compiler : $(objs)
 	$(CXX) $(objs) -o saphyr $(LIBS) $(LDFLAGS)

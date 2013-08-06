@@ -21,100 +21,118 @@ typedef llvm::CmpInst::Predicate Predicate;
 
 void typeCastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 {
-	auto ltype = lhs.type();
-	auto rtype = rhs.type();
+	auto ltype = lhs.stype();
+	auto rtype = rhs.stype();
 
-	if (ltype == rtype)
+	if (ltype->matches(rtype)) {
 		return;
-
-	if (ltype->isArrayTy() || rtype->isArrayTy()) {
+	} else if (ltype->isArray() || rtype->isArray()) {
 		context.addError("can not cast array types");
-	} else if (ltype->isFloatingPointTy()) {
-		if (rtype->isFloatingPointTy()) {
-			if (ltype->isDoubleTy())
-				rhs = CastInst::CreateFPCast(rhs, ltype, "", context.currBlock());
-			else
-				lhs = CastInst::CreateFPCast(lhs, rtype, "", context.currBlock());
+		return;
+	}
+
+	Value* val;
+	if (ltype->isFloating()) {
+		if (rtype->isFloating()) {
+			if (ltype->isDouble()) {
+				val = CastInst::CreateFPCast(rhs, *ltype, "", context.currBlock());
+				rhs = RValue(val, ltype);
+			} else {
+				val = CastInst::CreateFPCast(lhs, *rtype, "", context.currBlock());
+				lhs = RValue(val, rtype);
+			}
 		} else {
-			rhs = new SIToFPInst(rhs, ltype, "", context.currBlock());
+			val = new SIToFPInst(rhs, *ltype, "", context.currBlock());
+			rhs = RValue(val, ltype);
 		}
-	} else if (rtype->isFloatingPointTy()) {
-		if (ltype->isFloatingPointTy()) {
-			if (rtype->isDoubleTy())
-				lhs = CastInst::CreateFPCast(lhs, rtype, "", context.currBlock());
-			else
-				rhs = CastInst::CreateFPCast(rhs, ltype, "", context.currBlock());
+	} else if (rtype->isFloating()) {
+		if (ltype->isFloating()) {
+			if (rtype->isDouble()) {
+				val = CastInst::CreateFPCast(lhs, *rtype, "", context.currBlock());
+				lhs = RValue(val, rtype);
+			} else {
+				val = CastInst::CreateFPCast(rhs, *ltype, "", context.currBlock());
+				rhs = RValue(val, ltype);
+			}
 		} else {
-			lhs = new SIToFPInst(lhs, rtype, "", context.currBlock());
+			val = new SIToFPInst(lhs, *rtype, "", context.currBlock());
+			lhs = RValue(val, rtype);
 		}
 	} else {
-		if (rtype->getIntegerBitWidth() > ltype->getIntegerBitWidth())
-			lhs = CastInst::CreateIntegerCast(lhs, rtype, true, "", context.currBlock());
-		else if (rtype->getIntegerBitWidth() < ltype->getIntegerBitWidth())
-			rhs = CastInst::CreateIntegerCast(rhs, ltype, true, "", context.currBlock());
+		if (rtype->intSize() > ltype->intSize()) {
+			val = CastInst::CreateIntegerCast(lhs, *rtype, true, "", context.currBlock());
+			lhs = RValue(val, rtype);
+		} else if (rtype->intSize() < ltype->intSize()) {
+			val = CastInst::CreateIntegerCast(rhs, *ltype, true, "", context.currBlock());
+			rhs = RValue(val, ltype);
+		}
 	}
 }
 
-void typeCastMatch(RValue& value, Type* type, CodeContext& context)
+void typeCastMatch(RValue& value, SType* type, CodeContext& context)
 {
-	auto valueType = value.type();
-	if (type == valueType)
+	auto valueType = value.stype();
+	if (type->matches(valueType)) {
 		return;
-
-	if (type->isArrayTy() || valueType->isArrayTy()) {
+	} else if (type->isArray() || valueType->isArray()) {
 		context.addError("can not cast array types");
-	} else if (type->isFloatingPointTy()) {
-		if (valueType->isFloatingPointTy())
-			value = CastInst::CreateFPCast(value, type, "", context.currBlock());
+		return;
+	}
+
+	Value* val;
+	if (type->isFloating()) {
+		if (valueType->isFloating())
+			val = CastInst::CreateFPCast(value, *type, "", context.currBlock());
 		else
-			value = new SIToFPInst(value, type, "", context.currBlock());
-	} else if (type->isIntegerTy(1)) {
+			val = new SIToFPInst(value, *type, "", context.currBlock());
+	} else if (type->isBool()) {
 		// cast to bool is value != 0
 		auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
-		auto op = valueType->isFloatingPointTy()? Instruction::FCmp : Instruction::ICmp;
-		value = CmpInst::Create(op, pred, value, Constant::getNullValue(valueType), "", context.currBlock());
-	} else if (valueType->isFloatingPointTy()) {
-		value = new FPToSIInst(value, type, "", context.currBlock());
+		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
+		val = CmpInst::Create(op, pred, value, Constant::getNullValue(*valueType), "", context.currBlock());
+	} else if (valueType->isFloating()) {
+		val = new FPToSIInst(value, *type, "", context.currBlock());
 	} else {
-		value = CastInst::CreateIntegerCast(value, type, true, "", context.currBlock());
+		val = CastInst::CreateIntegerCast(value, *type, true, "", context.currBlock());
 	}
+	value = RValue(val, type);
 }
 
-Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context)
+Instruction::BinaryOps getOperator(int oper, SType* type, CodeContext& context)
 {
-	if (type->isArrayTy()) {
+	if (type->isArray()) {
 		context.addError("can not perform operation on entire array");
 		return Instruction::Add;
 	}
 	switch (oper) {
 	case '*':
-		return type->isFloatingPointTy()? Instruction::FMul : Instruction::Mul;
+		return type->isFloating()? Instruction::FMul : Instruction::Mul;
 	case '/':
-		return type->isFloatingPointTy()? Instruction::FDiv : Instruction::SDiv;
+		return type->isFloating()? Instruction::FDiv : Instruction::SDiv;
 	case '%':
-		return type->isFloatingPointTy()? Instruction::FRem : Instruction::SRem;
+		return type->isFloating()? Instruction::FRem : Instruction::SRem;
 	case '+':
-		return type->isFloatingPointTy()? Instruction::FAdd : Instruction::Add;
+		return type->isFloating()? Instruction::FAdd : Instruction::Add;
 	case '-':
-		return type->isFloatingPointTy()? Instruction::FSub : Instruction::Sub;
+		return type->isFloating()? Instruction::FSub : Instruction::Sub;
 	case ParserBase::TT_LSHIFT:
-		if (type->isFloatingPointTy())
+		if (type->isFloating())
 			context.addError("shift operator invalid for float types");
 		return Instruction::Shl;
 	case ParserBase::TT_RSHIFT:
-		if (type->isFloatingPointTy())
+		if (type->isFloating())
 			context.addError("shift operator invalid for float types");
 		return Instruction::LShr;
 	case '&':
-		if (type->isFloatingPointTy())
+		if (type->isFloating())
 			context.addError("AND operator invalid for float types");
 		return Instruction::And;
 	case '|':
-		if (type->isFloatingPointTy())
+		if (type->isFloating())
 			context.addError("OR operator invalid for float types");
 		return Instruction::Or;
 	case '^':
-		if (type->isFloatingPointTy())
+		if (type->isFloating())
 			context.addError("XOR operator invalid for float types");
 		return Instruction::Xor;
 	default:
@@ -123,21 +141,21 @@ Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context)
 	}
 }
 
-Predicate getPredicate(int oper, Type* type, CodeContext& context)
+Predicate getPredicate(int oper, SType* type, CodeContext& context)
 {
 	switch (oper) {
 	case '<':
-		return type->isFloatingPointTy()? Predicate::FCMP_OLT : Predicate::ICMP_SLT;
+		return type->isFloating()? Predicate::FCMP_OLT : Predicate::ICMP_SLT;
 	case '>':
-		return type->isFloatingPointTy()? Predicate::FCMP_OGT : Predicate::ICMP_SGT;
+		return type->isFloating()? Predicate::FCMP_OGT : Predicate::ICMP_SGT;
 	case ParserBase::TT_LEQ:
-		return type->isFloatingPointTy()? Predicate::FCMP_OLE : Predicate::ICMP_SLE;
+		return type->isFloating()? Predicate::FCMP_OLE : Predicate::ICMP_SLE;
 	case ParserBase::TT_GEQ:
-		return type->isFloatingPointTy()? Predicate::FCMP_OGE : Predicate::ICMP_SGE;
+		return type->isFloating()? Predicate::FCMP_OGE : Predicate::ICMP_SGE;
 	case ParserBase::TT_NEQ:
-		return type->isFloatingPointTy()? Predicate::FCMP_ONE : Predicate::ICMP_NE;
+		return type->isFloating()? Predicate::FCMP_ONE : Predicate::ICMP_NE;
 	case ParserBase::TT_EQ:
-		return type->isFloatingPointTy()? Predicate::FCMP_OEQ : Predicate::ICMP_EQ;
+		return type->isFloating()? Predicate::FCMP_OEQ : Predicate::ICMP_EQ;
 	default:
 		context.addError("unrecognized predicate " + to_string(oper));
 		return Predicate::ICMP_EQ;

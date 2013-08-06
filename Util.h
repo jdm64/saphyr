@@ -20,13 +20,13 @@
 #include "Constants.h"
 #include "CodeContext.h"
 
-void typeCastMatch(RValue& value, Type* type, CodeContext& context);
+void typeCastMatch(RValue& value, SType* type, CodeContext& context);
 
 void typeCastUp(RValue& lhs, RValue& rhs, CodeContext& context);
 
-Instruction::BinaryOps getOperator(int oper, Type* type, CodeContext& context);
+Instruction::BinaryOps getOperator(int oper, SType* type, CodeContext& context);
 
-ICmpInst::Predicate getPredicate(int oper, Type* type, CodeContext& context);
+ICmpInst::Predicate getPredicate(int oper, SType* type, CodeContext& context);
 
 bool isComplexExp(NodeType type);
 
