@@ -256,6 +256,11 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 	}
 
 	context.startFuncBlock(function);
+
+	// pad stack with 4 bytes
+	// also fixes issue with function with one instruction not being declared
+	new AllocaInst(Type::getInt32Ty(context), "", context.currBlock());
+
 	prototype->genCodeParams(function, context);
 	body->genCode(context);
 	context.endFuncBlock();
