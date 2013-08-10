@@ -18,8 +18,6 @@
 #include "AST.h"
 #include "CodeContext.h"
 
-using namespace std;
-
 int main(int argc, char** argv)
 {
 	string file(argv[1]);

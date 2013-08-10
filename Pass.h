@@ -15,7 +15,6 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <llvm/Pass.h>
-#include <llvm/Support/CFG.h>
 
 using namespace llvm;
 
