@@ -134,6 +134,11 @@ public:
 		module = new Module(filename, getGlobalContext());
 	}
 
+	~CodeContext()
+	{
+		delete module;
+	}
+
 	operator LLVMContext&()
 	{
 		return module->getContext();
