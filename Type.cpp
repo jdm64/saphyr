@@ -14,53 +14,47 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <llvm/Support/raw_ostream.h>
 #include "CodeContext.h"
 
 SType* SType::get(CodeContext& context, Type* type)
 {
-	if (type->isVoidTy())
-		return SType::getVoid(context);
-	else if (type->isIntegerTy())
-		return SType::getInt(context, type->getIntegerBitWidth());
-	else if (type->isFloatingPointTy())
-		return SType::getFloat(context, type->isDoubleTy());
-	else if (type->isArrayTy())
-		return SType::getArray(context, SType::get(context, type->getArrayElementType()), type->getArrayNumElements());
-
-	string str;
-	raw_string_ostream stream(str);
-	type->print(stream);
-	cout << "BUG: can't wrap llvm::Type:\n" << endl;
-	cout << stream.str() << endl;
-
-	return nullptr;
+	return context.typeManager.get(type);
 }
 
 SType* SType::getVoid(CodeContext& context)
 {
-	return new SType(SType::VOID, Type::getVoidTy(context));
+	return context.typeManager.getVoid();
 }
 
 SType* SType::getBool(CodeContext& context)
 {
-	return new SType(SType::INTEGER, Type::getIntNTy(context, 1), 1);
+	return context.typeManager.getBool();
 }
 
 SType* SType::getInt(CodeContext& context, int bitWidth)
 {
-	auto type = Type::getIntNTy(context, bitWidth);
-	return new SType(SType::INTEGER, type, bitWidth);
+	return context.typeManager.getInt(bitWidth);
 }
 
 SType* SType::getFloat(CodeContext& context, bool doubleType)
 {
-	auto type = doubleType? Type::getDoubleTy(context) : Type::getFloatTy(context);
-	return new SType(SType::FLOATING | (doubleType? SType::DOUBLE : 0), type);
+	return context.typeManager.getFloat(doubleType);
 }
 
 SType* SType::getArray(CodeContext& context, SType* arrType, uint64_t size)
 {
-	auto type = ArrayType::get(arrType->type(), size);
-	return new SType(SType::ARRAY, type, size, arrType);
+	return context.typeManager.getArray(arrType, size);
+}
+
+TypeManager::TypeManager(LLVMContext& ctx)
+: context(ctx)
+{
+	voidTy = smart_stype(SType::VOID, Type::getVoidTy(context), 0, nullptr);
+	boolTy = smart_stype(SType::INTEGER, Type::getInt1Ty(context), 1, nullptr);
+	int8Ty = smart_stype(SType::INTEGER, Type::getInt8Ty(context), 8, nullptr);
+	int16Ty = smart_stype(SType::INTEGER, Type::getInt16Ty(context), 16, nullptr);
+	int32Ty = smart_stype(SType::INTEGER, Type::getInt32Ty(context), 32, nullptr);
+	int64Ty = smart_stype(SType::INTEGER, Type::getInt64Ty(context), 64, nullptr);
+	floatTy = smart_stype(SType::FLOATING, Type::getFloatTy(context), 0, nullptr);
+	doubleTy = smart_stype(SType::FLOATING | SType::DOUBLE, Type::getDoubleTy(context), 0, nullptr);
 }

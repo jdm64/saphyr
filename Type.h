@@ -34,6 +34,7 @@ using namespace llvm;
 class SType
 {
 protected:
+	friend class TypeManager;
 
 	int tclass;
 	Type* ltype;
@@ -45,11 +46,6 @@ protected:
 
 public:
 	enum { VOID = 0x1, INTEGER = 0x2, FLOATING = 0x4, DOUBLE = 0x8, ARRAY = 0x10 };
-
-	~SType()
-	{
-		delete subtype;
-	}
 
 	static SType* get(CodeContext& context, Type* type);
 
@@ -116,6 +112,75 @@ public:
 	SType* arrType() const
 	{
 		return subtype;
+	}
+};
+
+#define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
+
+class TypeManager
+{
+	using STypePtr = unique_ptr<SType>;
+
+private:
+	LLVMContext& context;
+
+	// built-in types
+	STypePtr voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy;
+
+	// array types
+	map<pair<SType*, uint64_t>, STypePtr> arrMap;
+
+public:
+	TypeManager(LLVMContext& ctx);
+
+	SType* get(Type* type)
+	{
+		if (type->isVoidTy())
+			return getVoid();
+		else if (type->isIntegerTy())
+			return getInt(type->getIntegerBitWidth());
+		else if (type->isFloatingPointTy())
+			return getFloat(type->isDoubleTy());
+		else if (type->isArrayTy())
+			return getArray(get(type->getArrayElementType()), type->getArrayNumElements());
+
+		// BUG - type not handled
+		string str;
+		raw_string_ostream stream(str);
+		type->print(stream);
+		cout << "BUG: can't wrap llvm::Type:\n" << endl;
+		cout << stream.str() << endl;
+
+		return nullptr;
+	}
+
+	SType* getVoid() { return voidTy.get(); }
+
+	SType* getBool() { return boolTy.get(); }
+
+	SType* getInt(int bitWidth)
+	{
+		switch (bitWidth) {
+		case 1:  return boolTy.get();
+		case 8:  return int8Ty.get();
+		case 16: return int16Ty.get();
+		case 32: return int32Ty.get();
+		case 64: return int64Ty.get();
+		default: return nullptr;
+		}
+	}
+
+	SType* getFloat(bool doubleType = false)
+	{
+		return doubleType? doubleTy.get() : floatTy.get();
+	}
+
+	SType* getArray(SType* arrType, int64_t size)
+	{
+		STypePtr &item = arrMap[make_pair(arrType, size)];
+		if (!item.get())
+			item = smart_stype(SType::ARRAY, ArrayType::get(*arrType, size), size, arrType);
+		return item.get();
 	}
 };
 

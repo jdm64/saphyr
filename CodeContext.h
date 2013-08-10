@@ -102,16 +102,20 @@ public:
 
 class CodeContext : public SymbolTable
 {
+	friend class SType;
+
 	vector<BasicBlock*> funcBlocks;
 	vector<BasicBlock*> continueBlocks;
 	vector<BasicBlock*> breakBlocks;
 	vector<BasicBlock*> redoBlocks;
 	map<string, LabelBlock*> labelBlocks;
 
-	Module* module;
 	string filename;
 	vector<string> errors;
 	int returncode;
+
+	Module* module;
+	TypeManager typeManager;
 
 	void validateFunction()
 	{
@@ -123,9 +127,9 @@ class CodeContext : public SymbolTable
 
 public:
 	CodeContext(string& filename)
-	: filename(filename), returncode(0)
+	: filename(filename), returncode(0), module(new Module(filename, getGlobalContext())),
+	typeManager(module->getContext())
 	{
-		module = new Module(filename, getGlobalContext());
 	}
 
 	~CodeContext()
