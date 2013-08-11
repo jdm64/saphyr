@@ -27,9 +27,4 @@ enum class NodeType
 	SwitchStm, SwitchCase, BoolConst
 };
 
-enum class BaseDataType
-{
-	AUTO, VOID, BOOL, INT, INT8, INT16, INT32, INT64, FLOAT, DOUBLE, ARRAY
-};
-
 #endif

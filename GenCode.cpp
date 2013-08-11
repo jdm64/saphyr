@@ -57,24 +57,24 @@ void CodeContext::genCode(NStatementList stms)
 SType* NBaseType::getType(CodeContext& context)
 {
 	switch (type) {
-	case BaseDataType::VOID:
+	case ParserBase::TT_VOID:
 		return SType::getVoid(context);
-	case BaseDataType::BOOL:
+	case ParserBase::TT_BOOL:
 		return SType::getBool(context);
-	case BaseDataType::INT8:
+	case ParserBase::TT_INT8:
 		return SType::getInt(context, 8);
-	case BaseDataType::INT16:
+	case ParserBase::TT_INT16:
 		return SType::getInt(context, 16);
-	case BaseDataType::INT:
-	case BaseDataType::INT32:
+	case ParserBase::TT_INT:
+	case ParserBase::TT_INT32:
 		return SType::getInt(context, 32);
-	case BaseDataType::INT64:
+	case ParserBase::TT_INT64:
 		return SType::getInt(context, 64);
-	case BaseDataType::FLOAT:
+	case ParserBase::TT_FLOAT:
 		return SType::getFloat(context);
-	case BaseDataType::DOUBLE:
+	case ParserBase::TT_DOUBLE:
 		return SType::getFloat(context, true);
-	case BaseDataType::AUTO:
+	case ParserBase::TT_AUTO:
 	default:
 		return nullptr;
 	}
@@ -715,7 +715,7 @@ RValue NIncrement::genValue(CodeContext& context)
 	if (!varVal)
 		return RValue::null();
 
-	auto op = getOperator(isIncrement? '+' : '-', varVal.stype(), context);
+	auto op = getOperator(type == ParserBase::TT_INC? '+' : '-', varVal.stype(), context);
 	auto one = varVal.stype()->isFloating()?
 		ConstantFP::get(varVal.type(), "1.0") :
 		ConstantInt::getSigned(varVal.type(), 1);

@@ -225,10 +225,10 @@ public:
 class NDataType : public Node
 {
 protected:
-	BaseDataType type;
+	int type;
 
 public:
-	NDataType(BaseDataType type)
+	NDataType(int type)
 	: type(type) {}
 
 	virtual SType* getType(CodeContext& context) = 0;
@@ -237,7 +237,7 @@ public:
 class NBaseType : public NDataType
 {
 public:
-	NBaseType(BaseDataType type = BaseDataType::AUTO)
+	NBaseType(int type)
 	: NDataType(type) {}
 
 	SType* getType(CodeContext& context);
@@ -256,7 +256,7 @@ private:
 
 public:
 	NArrayType(string* size, NDataType* baseType)
-	: NDataType(BaseDataType::ARRAY), baseType(baseType), strSize(size) {}
+	: NDataType(0), baseType(baseType), strSize(size) {}
 
 	SType* getType(CodeContext& context);
 
@@ -912,12 +912,12 @@ public:
 class NIncrement : public NExpression
 {
 	NVariable* variable;
-	bool isIncrement;
+	int type;
 	bool isPostfix;
 
 public:
-	NIncrement(NVariable* variable, bool isIncrement, bool isPostfix)
-	: variable(variable), isIncrement(isIncrement), isPostfix(isPostfix) {}
+	NIncrement(NVariable* variable, int type, bool isPostfix)
+	: variable(variable), type(type), isPostfix(isPostfix) {}
 
 	RValue genValue(CodeContext& context);
 

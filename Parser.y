@@ -45,7 +45,9 @@
 %type <t_var_decl> variable global_variable
 // operators
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
-%type <t_int> assignment_operator unary_operator
+%type <t_int> assignment_operator unary_operator increment_decrement_operator
+// keywords
+%type <t_int> branch_keyword base_type_keyword
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
@@ -219,18 +221,15 @@ switch_case
 	}
 	;
 branch_statement
-	: TT_CONTINUE ';'
+	: branch_keyword ';'
 	{
-		$$ = new NLoopBranch(TT_CONTINUE);
+		$$ = new NLoopBranch($1);
 	}
-	| TT_BREAK ';'
-	{
-		$$ = new NLoopBranch(TT_BREAK);
-	}
-	| TT_REDO ';'
-	{
-		$$ = new NLoopBranch(TT_REDO);
-	}
+	;
+branch_keyword
+	: TT_CONTINUE { $$ = TT_CONTINUE; }
+	| TT_BREAK { $$ = TT_BREAK; }
+	| TT_REDO { $$ = TT_REDO; }
 	;
 condition_statement
 	: TT_IF '(' expression ')' single_statement else_statement
@@ -325,46 +324,22 @@ data_type
 	}
 	;
 base_type
-	: TT_AUTO
+	: base_type_keyword
 	{
-		$$ = new NBaseType;
+		$$ = new NBaseType($1);
 	}
-	| TT_VOID
-	{
-		$$ = new NBaseType(BaseDataType::VOID);
-	}
-	| TT_BOOL
-	{
-		$$ = new NBaseType(BaseDataType::BOOL);
-	}
-	| TT_INT
-	{
-		$$ = new NBaseType(BaseDataType::INT);
-	}
-	| TT_INT8
-	{
-		$$ = new NBaseType(BaseDataType::INT8);
-	}
-	| TT_INT16
-	{
-		$$ = new NBaseType(BaseDataType::INT16);
-	}
-	| TT_INT32
-	{
-		$$ = new NBaseType(BaseDataType::INT32);
-	}
-	| TT_INT64
-	{
-		$$ = new NBaseType(BaseDataType::INT64);
-	}
-	| TT_FLOAT
-	{
-		$$ = new NBaseType(BaseDataType::FLOAT);
-	}
-	| TT_DOUBLE
-	{
-		$$ = new NBaseType(BaseDataType::DOUBLE);
-	}
+	;
+base_type_keyword
+	: TT_AUTO { $$ = TT_AUTO; }
+	| TT_VOID { $$ = TT_VOID; }
+	| TT_BOOL { $$ = TT_BOOL; }
+	| TT_INT { $$ = TT_INT; }
+	| TT_INT8 { $$ = TT_INT8; }
+	| TT_INT16 { $$ = TT_INT16; }
+	| TT_INT32 { $$ = TT_INT32; }
+	| TT_INT64 { $$ = TT_INT64; }
+	| TT_FLOAT { $$ = TT_FLOAT; }
+	| TT_DOUBLE { $$ = TT_DOUBLE; }
 	;
 expression_list
 	:
@@ -563,22 +538,18 @@ increment_decrement_expression
 	{
 		$$ = $1;
 	}
-	| TT_DEC variable_expresion
+	| increment_decrement_operator variable_expresion
 	{
-		$$ = new NIncrement($2, false, false);
+		$$ = new NIncrement($2, $1, false);
 	}
-	| TT_INC variable_expresion
+	| variable_expresion increment_decrement_operator
 	{
-		$$ = new NIncrement($2, true, false);
+		$$ = new NIncrement($1, $2, true);
 	}
-	| variable_expresion TT_DEC
-	{
-		$$ = new NIncrement($1, false, true);
-	}
-	| variable_expresion TT_INC
-	{
-		$$ = new NIncrement($1, true, true);
-	}
+	;
+increment_decrement_operator
+	: TT_INC { $$ = TT_INC; }
+	| TT_DEC { $$ = TT_DEC; }
 	;
 variable_expresion
 	: TT_IDENTIFIER
