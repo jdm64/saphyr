@@ -24,7 +24,7 @@
 #include <llvm/Assembly/PrintModulePass.h>
 #include "parserbase.h"
 #include "AST.h"
-#include "Util.h"
+#include "Instructions.h"
 #include "Pass.h"
 
 NStatementList* programBlock;
@@ -121,7 +121,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 		context.addError("array index is not able to be cast to an int");
 		return RValue::null();
 	}
-	typeCastMatch(indexVal, SType::getInt(context, 64), context);
+	Inst::CastMatch(indexVal, SType::getInt(context, 64), context);
 
 	vector<Value*> indexes;
 	indexes.push_back(zero);
@@ -171,7 +171,7 @@ void NVariableDecl::genCode(CodeContext& context)
 	context.storeLocalVar(var, name);
 
 	if (initValue) {
-		typeCastMatch(initValue, varType, context);
+		Inst::CastMatch(initValue, varType, context);
 		new StoreInst(initValue, var, context.currBlock());
 	}
 }
@@ -283,7 +283,7 @@ void NReturnStatement::genCode(CodeContext& context)
 	}
 	auto returnVal = value? value->genValue(context) : RValue::null();
 	if (returnVal)
-		typeCastMatch(returnVal, funcReturn, context);
+		Inst::CastMatch(returnVal, funcReturn, context);
 	ReturnInst::Create(context, returnVal, context.currBlock());
 	context.pushBlock(context.createBlock());
 }
@@ -303,10 +303,7 @@ void NWhileStatement::genCode(CodeContext& context)
 	BranchInst::Create(startBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condVal = condition? condition->genValue(context) : ConstantInt::getTrue(context);;
-	auto condValue = RValue(condVal, SType::get(context, condVal->getType()));
-	typeCastMatch(condValue, SType::getBool(context), context);
-	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
+	Inst::Branch(trueBlock, falseBlock, condition, context);
 
 	context.pushBlock(bodyBlock);
 	body->genCode(context);
@@ -320,7 +317,7 @@ void NWhileStatement::genCode(CodeContext& context)
 void NSwitchStatement::genCode(CodeContext& context)
 {
 	auto switchValue = value->genValue(context);
-	typeCastMatch(switchValue, SType::getInt(context, 32), context);
+	Inst::CastMatch(switchValue, SType::getInt(context, 32), context);
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
@@ -377,10 +374,7 @@ void NForStatement::genCode(CodeContext& context)
 	BranchInst::Create(condBlock, context.currBlock());
 
 	context.pushBlock(condBlock);
-	auto condVal = condition? condition->genValue(context) : ConstantInt::getTrue(context);
-	auto condValue = RValue(condVal, SType::getBool(context));
-	typeCastMatch(condValue, SType::getBool(context), context);
-	BranchInst::Create(bodyBlock, endBlock, condValue, context.currBlock());
+	Inst::Branch(bodyBlock, endBlock, condition, context);
 
 	context.pushBlock(bodyBlock);
 	body->genCode(context);
@@ -403,9 +397,7 @@ void NIfStatement::genCode(CodeContext& context)
 
 	context.pushLocalTable();
 
-	auto condValue = condition->genValue(context);
-	typeCastMatch(condValue, SType::getBool(context), context);
-	BranchInst::Create(ifBlock, elseBlock, condValue, context.currBlock());
+	Inst::Branch(ifBlock, elseBlock, condition, context);
 
 	context.pushBlock(ifBlock);
 	body->genCode(context);
@@ -506,11 +498,10 @@ RValue NAssignment::genValue(CodeContext& context)
 
 	if (oper != '=') {
 		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context.currBlock()), lhsVar.stype());
-		typeCastUp(lhsLocal, rhsExp, context);
-		auto bin = BinaryOperator::Create(getOperator(oper, lhsLocal.stype(), context), lhsLocal, rhsExp, "", context.currBlock());
-		rhsExp = RValue(bin, lhsLocal.stype());
+		Inst::CastUp(lhsLocal, rhsExp, context);
+		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
-	typeCastMatch(rhsExp, lhsVar.stype(), context);
+	Inst::CastMatch(rhsExp, lhsVar.stype(), context);
 	new StoreInst(rhsExp, lhsVar, context.currBlock());
 
 	return rhsExp;
@@ -519,10 +510,10 @@ RValue NAssignment::genValue(CodeContext& context)
 RValue NTernaryOperator::genValue(CodeContext& context)
 {
 	auto condExp = condition->genValue(context);
-	typeCastMatch(condExp, SType::getBool(context), context);
+	Inst::CastMatch(condExp, SType::getBool(context), context);
 
 	RValue trueExp, falseExp, retVal;
-	if (isComplexExp(trueVal->getNodeType()) || isComplexExp(falseVal->getNodeType())) {
+	if (Inst::isComplexExp(trueVal->getNodeType()) || Inst::isComplexExp(falseVal->getNodeType())) {
 		auto trueBlock = context.createBlock();
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
@@ -562,13 +553,11 @@ RValue NLogicalOperator::genValue(CodeContext& context)
 	auto trueBlock = (oper == ParserBase::TT_LOG_AND)? firstBlock : secondBlock;
 	auto falseBlock = (oper == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
 
-	auto lhsExp = lhs->genValue(context);
-	typeCastMatch(lhsExp, SType::getBool(context), context);
-	BranchInst::Create(trueBlock, falseBlock, lhsExp, context.currBlock());
+	auto lhsExp = Inst::Branch(trueBlock, falseBlock, lhs, context);
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = rhs->genValue(context);
-	typeCastMatch(rhsExp, SType::getBool(context), context);
+	Inst::CastMatch(rhsExp, SType::getBool(context), context);
 	BranchInst::Create(secondBlock, context.currBlock());
 
 	context.pushBlock(secondBlock);
@@ -587,12 +576,8 @@ RValue NCompareOperator::genValue(CodeContext& context)
 	if (!(rhsExp && lhsExp))
 		return RValue::null();
 
-	typeCastUp(lhsExp, rhsExp, context);
-	auto pred = getPredicate(oper, lhsExp.stype(), context);
-	auto op = rhsExp.stype()->isFloating()? Instruction::FCmp : Instruction::ICmp;
-
-	auto cmp = CmpInst::Create(op, pred, lhsExp, rhsExp, "", context.currBlock());
-	return RValue(cmp, SType::getBool(context));
+	Inst::CastUp(lhsExp, rhsExp, context);
+	return Inst::Cmp(oper, lhsExp, rhsExp, context);
 }
 
 RValue NBinaryMathOperator::genValue(CodeContext& context)
@@ -603,9 +588,8 @@ RValue NBinaryMathOperator::genValue(CodeContext& context)
 	if (!(lhsExp && rhsExp))
 		return RValue::null();
 
-	typeCastUp(lhsExp, rhsExp, context);
-	auto bin = BinaryOperator::Create(getOperator(oper, lhsExp.stype(), context), lhsExp, rhsExp, "", context.currBlock());
-	return RValue(bin, lhsExp.stype());
+	Inst::CastUp(lhsExp, rhsExp, context);
+	return Inst::BinaryOp(oper, lhsExp, rhsExp, context);
 }
 
 RValue NNullCoalescing::genValue(CodeContext& context)
@@ -614,8 +598,8 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto condition = lhsExp;
 
-	typeCastMatch(condition, SType::getBool(context), context);
-	if (isComplexExp(rhs->getNodeType())) {
+	Inst::CastMatch(condition, SType::getBool(context), context);
+	if (Inst::isComplexExp(rhs->getNodeType())) {
 		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
@@ -645,33 +629,21 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 
 RValue NUnaryMathOperator::genValue(CodeContext& context)
 {
-	Instruction::BinaryOps llvmOp;
-	Instruction::OtherOps cmpType;
-
-	Value* llvmVal;
 	auto unaryExp = unary->genValue(context);
 	auto type = unaryExp.stype();
 
 	switch (oper) {
 	case '+':
 	case '-':
-		llvmOp = getOperator(oper, type, context);
-		llvmVal = BinaryOperator::Create(llvmOp, RValue::getZero(type), unaryExp, "", context.currBlock());
-		break;
+		return Inst::BinaryOp(oper, RValue::getZero(type), unaryExp, context);
 	case '!':
-		cmpType = type->isFloating()? Instruction::FCmp : Instruction::ICmp;
-		llvmVal = CmpInst::Create(cmpType, getPredicate(ParserBase::TT_EQ, type, context), RValue::getZero(type), unaryExp, "", context.currBlock());
-		type = SType::getBool(context); // resulting type should be bool
-		break;
+		return Inst::Cmp(ParserBase::TT_EQ, RValue::getZero(type), unaryExp, context);
 	case '~':
-		llvmOp = getOperator('^', type, context);
-		llvmVal = BinaryOperator::Create(llvmOp, RValue::getAllOne(type), unaryExp, "", context.currBlock());
-		break;
+		return Inst::BinaryOp('^', RValue::getAllOne(type), unaryExp, context);
 	default:
 		context.addError("invalid unary operator " + to_string(oper));
 		return RValue::null();
 	}
-	return RValue(llvmVal, type);
 }
 
 RValue NFunctionCall::genValue(CodeContext& context)
@@ -691,7 +663,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	int i = 0;
 	for (auto arg : *arguments) {
 		auto argExp = arg->genValue(context);
-		typeCastMatch(argExp, SType::get(context, funcType->getParamType(i++)), context);
+		Inst::CastMatch(argExp, SType::get(context, funcType->getParamType(i++)), context);
 		exp_list.push_back(argExp);
 	}
 	auto call = CallInst::Create(func, exp_list, "", context.currBlock());
@@ -704,9 +676,7 @@ RValue NIncrement::genValue(CodeContext& context)
 	if (!varVal)
 		return RValue::null();
 
-	auto op = getOperator(type == ParserBase::TT_INC? '+' : '-', varVal.stype(), context);
-	auto one = RValue::getOne(varVal.stype());
-	auto result = BinaryOperator::Create(op, varVal, one, "", context.currBlock());
+	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(varVal.stype()), context);
 	new StoreInst(result, context.loadVar(variable->getName()), context.currBlock());
 
 	return isPostfix? varVal : RValue(result, varVal.stype());

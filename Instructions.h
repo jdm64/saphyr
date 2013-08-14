@@ -14,20 +14,33 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#ifndef __INSTRUCTIONS_H__
+#define __INSTRUCTIONS_H__
 
-#include "Constants.h"
+#include "AST.h"
 #include "CodeContext.h"
 
-void typeCastMatch(RValue& value, SType* type, CodeContext& context);
+typedef CmpInst::Predicate Predicate;
+typedef Instruction::BinaryOps BinaryOps;
 
-void typeCastUp(RValue& lhs, RValue& rhs, CodeContext& context);
+class Inst
+{
+	static BinaryOps getOperator(int oper, SType* type, CodeContext& context);
 
-Instruction::BinaryOps getOperator(int oper, SType* type, CodeContext& context);
+	static Predicate getPredicate(int oper, SType* type, CodeContext& context);
 
-ICmpInst::Predicate getPredicate(int oper, SType* type, CodeContext& context);
+public:
+	static bool isComplexExp(NodeType type);
 
-bool isComplexExp(NodeType type);
+	static void CastUp(RValue& lhs, RValue& rhs, CodeContext& context);
+
+	static void CastMatch(RValue& value, SType* type, CodeContext& context);
+
+	static RValue BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context);
+
+	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context);
+
+	static RValue Cmp(int type, RValue lhs, RValue rhs, CodeContext& context);
+};
 
 #endif

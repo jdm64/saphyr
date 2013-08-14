@@ -14,12 +14,10 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "Util.h"
+#include "Instructions.h"
 #include "parserbase.h"
 
-typedef llvm::CmpInst::Predicate Predicate;
-
-void typeCastUp(RValue& lhs, RValue& rhs, CodeContext& context)
+void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 {
 	auto ltype = lhs.stype();
 	auto rtype = rhs.stype();
@@ -69,7 +67,7 @@ void typeCastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 	}
 }
 
-void typeCastMatch(RValue& value, SType* type, CodeContext& context)
+void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
 {
 	auto valueType = value.stype();
 	if (type->matches(valueType)) {
@@ -98,7 +96,7 @@ void typeCastMatch(RValue& value, SType* type, CodeContext& context)
 	value = RValue(val, type);
 }
 
-Instruction::BinaryOps getOperator(int oper, SType* type, CodeContext& context)
+BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 {
 	if (type->isArray()) {
 		context.addError("can not perform operation on entire array");
@@ -112,8 +110,10 @@ Instruction::BinaryOps getOperator(int oper, SType* type, CodeContext& context)
 	case '%':
 		return type->isFloating()? Instruction::FRem : Instruction::SRem;
 	case '+':
+	case ParserBase::TT_INC:
 		return type->isFloating()? Instruction::FAdd : Instruction::Add;
 	case '-':
+	case ParserBase::TT_DEC:
 		return type->isFloating()? Instruction::FSub : Instruction::Sub;
 	case ParserBase::TT_LSHIFT:
 		if (type->isFloating())
@@ -141,7 +141,7 @@ Instruction::BinaryOps getOperator(int oper, SType* type, CodeContext& context)
 	}
 }
 
-Predicate getPredicate(int oper, SType* type, CodeContext& context)
+Predicate Inst::getPredicate(int oper, SType* type, CodeContext& context)
 {
 	switch (oper) {
 	case '<':
@@ -162,7 +162,7 @@ Predicate getPredicate(int oper, SType* type, CodeContext& context)
 	}
 }
 
-bool isComplexExp(NodeType type)
+bool Inst::isComplexExp(NodeType type)
 {
 	switch (type) {
 	case NodeType::IntConst:
@@ -173,4 +173,28 @@ bool isComplexExp(NodeType type)
 	default:
 		return true;
 	}
+}
+
+RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
+{
+	auto llvmOp = getOperator(type, lhs.stype(), context);
+	auto llvmVal = BinaryOperator::Create(llvmOp, lhs, rhs, "", context.currBlock());
+	return RValue(llvmVal, lhs.stype());
+}
+
+RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
+{
+	auto condVal = condExp? condExp->genValue(context) : ConstantInt::getTrue(context);
+	auto condValue = RValue(condVal, SType::get(context, condVal->getType()));
+	CastMatch(condValue, SType::getBool(context), context);
+	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
+	return condValue;
+}
+
+RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
+{
+	auto pred = getPredicate(type, lhs.stype(), context);
+	auto op = rhs.stype()->isFloating()? Instruction::FCmp : Instruction::ICmp;
+	auto cmp = CmpInst::Create(op, pred, lhs, rhs, "", context.currBlock());
+	return RValue(cmp, SType::getBool(context));
 }
