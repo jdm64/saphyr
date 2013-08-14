@@ -89,7 +89,7 @@ void typeCastMatch(RValue& value, SType* type, CodeContext& context)
 		// cast to bool is value != 0
 		auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
 		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
-		val = CmpInst::Create(op, pred, value, Constant::getNullValue(*valueType), "", context.currBlock());
+		val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context.currBlock());
 	} else if (valueType->isFloating()) {
 		val = new FPToSIInst(value, *type, "", context.currBlock());
 	} else {

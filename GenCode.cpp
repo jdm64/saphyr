@@ -112,7 +112,7 @@ RValue NVariable::loadVar(CodeContext& context)
 
 RValue NArrayVariable::loadVar(CodeContext& context)
 {
-	auto zero = ConstantInt::getNullValue(IntegerType::get(context, 32));
+	auto zero = RValue::getZero(SType::getInt(context, 32));
 	auto indexVal = index->genValue(context);
 
 	if (!indexVal) {
@@ -656,16 +656,16 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 	case '+':
 	case '-':
 		llvmOp = getOperator(oper, type, context);
-		llvmVal = BinaryOperator::Create(llvmOp, Constant::getNullValue(*type), unaryExp, "", context.currBlock());
+		llvmVal = BinaryOperator::Create(llvmOp, RValue::getZero(type), unaryExp, "", context.currBlock());
 		break;
 	case '!':
 		cmpType = type->isFloating()? Instruction::FCmp : Instruction::ICmp;
-		llvmVal = CmpInst::Create(cmpType, getPredicate(ParserBase::TT_EQ, type, context), Constant::getNullValue(*type), unaryExp, "", context.currBlock());
+		llvmVal = CmpInst::Create(cmpType, getPredicate(ParserBase::TT_EQ, type, context), RValue::getZero(type), unaryExp, "", context.currBlock());
 		type = SType::getBool(context); // resulting type should be bool
 		break;
 	case '~':
 		llvmOp = getOperator('^', type, context);
-		llvmVal = BinaryOperator::Create(llvmOp, Constant::getAllOnesValue(*type), unaryExp, "", context.currBlock());
+		llvmVal = BinaryOperator::Create(llvmOp, RValue::getAllOne(type), unaryExp, "", context.currBlock());
 		break;
 	default:
 		context.addError("invalid unary operator " + to_string(oper));
@@ -705,9 +705,7 @@ RValue NIncrement::genValue(CodeContext& context)
 		return RValue::null();
 
 	auto op = getOperator(type == ParserBase::TT_INC? '+' : '-', varVal.stype(), context);
-	auto one = varVal.stype()->isFloating()?
-		ConstantFP::get(varVal.type(), "1.0") :
-		ConstantInt::getSigned(varVal.type(), 1);
+	auto one = RValue::getOne(varVal.stype());
 	auto result = BinaryOperator::Create(op, varVal, one, "", context.currBlock());
 	new StoreInst(result, context.loadVar(variable->getName()), context.currBlock());
 

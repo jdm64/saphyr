@@ -18,6 +18,7 @@
 #define __VALUE_H__
 
 #include <llvm/Value.h>
+#include <llvm/Constant.h>
 #include "Type.h"
 
 class RValue
@@ -36,6 +37,24 @@ public:
 	static RValue null()
 	{
 		return RValue(nullptr, nullptr);
+	}
+
+	static RValue getZero(SType* type)
+	{
+		return RValue(Constant::getNullValue(*type), type);
+	}
+
+	static RValue getOne(SType* type)
+	{
+		auto one = type->isFloating()?
+			ConstantFP::get(type->type(), "1.0") :
+			ConstantInt::getSigned(type->type(), 1);
+		return RValue(one, type);
+	}
+
+	static RValue getAllOne(SType* type)
+	{
+		return RValue(Constant::getAllOnesValue(*type), type);
 	}
 
 	operator bool() const
