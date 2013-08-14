@@ -290,18 +290,15 @@ void NReturnStatement::genCode(CodeContext& context)
 
 void NWhileStatement::genCode(CodeContext& context)
 {
-	auto condBlock = context.createBlock();
-	auto bodyBlock = context.createBlock();
-	auto endBlock = context.createBlock();
+	auto condBlock = context.createContinueBlock();
+	auto bodyBlock = context.createRedoBlock();
+	auto endBlock = context.createBreakBlock();
 
 	auto startBlock = isDoWhile? bodyBlock : condBlock;
 	auto trueBlock = isUntil? endBlock : bodyBlock;
 	auto falseBlock = isUntil? bodyBlock : endBlock;
 
 	context.pushLocalTable();
-	context.pushContinueBlock(condBlock);
-	context.pushRedoBlock(bodyBlock);
-	context.pushBreakBlock(endBlock);
 
 	BranchInst::Create(startBlock, context.currBlock());
 
@@ -317,9 +314,7 @@ void NWhileStatement::genCode(CodeContext& context)
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
-	context.popContinueBlock();
-	context.popRedoBlock();
-	context.popBreakBlock();
+	context.popLoopBranchBlocks();
 }
 
 void NSwitchStatement::genCode(CodeContext& context)
@@ -328,11 +323,10 @@ void NSwitchStatement::genCode(CodeContext& context)
 	typeCastMatch(switchValue, SType::getInt(context, 32), context);
 
 	auto caseBlock = context.createBlock();
-	auto endBlock = context.createBlock(), defaultBlock = endBlock;
+	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
 	auto switchInst = SwitchInst::Create(switchValue, defaultBlock, cases->size(), context.currBlock());
 
 	context.pushLocalTable();
-	context.pushBreakBlock(endBlock);
 
 	set<int64_t> unique;
 	bool hasDefault = false;
@@ -373,14 +367,11 @@ void NSwitchStatement::genCode(CodeContext& context)
 void NForStatement::genCode(CodeContext& context)
 {
 	auto condBlock = context.createBlock();
-	auto bodyBlock = context.createBlock();
-	auto postBlock = context.createBlock();
-	auto endBlock = context.createBlock();
+	auto bodyBlock = context.createRedoBlock();
+	auto postBlock = context.createContinueBlock();
+	auto endBlock = context.createBreakBlock();
 
 	context.pushLocalTable();
-	context.pushContinueBlock(postBlock);
-	context.pushRedoBlock(bodyBlock);
-	context.pushBreakBlock(endBlock);
 
 	preStm->genCode(context);
 	BranchInst::Create(condBlock, context.currBlock());
@@ -401,9 +392,7 @@ void NForStatement::genCode(CodeContext& context)
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
-	context.popContinueBlock();
-	context.popRedoBlock();
-	context.popBreakBlock();
+	context.popLoopBranchBlocks();
 }
 
 void NIfStatement::genCode(CodeContext& context)

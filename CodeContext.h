@@ -195,9 +195,11 @@ public:
 		funcBlocks.push_back(block);
 	}
 
-	void pushContinueBlock(BasicBlock* block)
+	BasicBlock* createContinueBlock()
 	{
+		auto block = createBlock();
 		continueBlocks.push_back(block);
+		return block;
 	}
 	void popContinueBlock()
 	{
@@ -208,9 +210,11 @@ public:
 		return continueBlocks.empty()? nullptr : continueBlocks.back();
 	}
 
-	void pushBreakBlock(BasicBlock* block)
+	BasicBlock* createBreakBlock()
 	{
+		auto block = createBlock();
 		breakBlocks.push_back(block);
+		return block;
 	}
 	void popBreakBlock()
 	{
@@ -221,9 +225,11 @@ public:
 		return breakBlocks.empty()? nullptr : breakBlocks.back();
 	}
 
-	void pushRedoBlock(BasicBlock* block)
+	BasicBlock* createRedoBlock()
 	{
+		auto block = createBlock();
 		redoBlocks.push_back(block);
+		return block;
 	}
 	void popRedoBlock()
 	{
@@ -232,6 +238,13 @@ public:
 	BasicBlock* getRedoBlock()
 	{
 		return redoBlocks.empty()?  nullptr : redoBlocks.back();
+	}
+
+	void popLoopBranchBlocks()
+	{
+		popBreakBlock();
+		popContinueBlock();
+		popRedoBlock();
 	}
 
 	LabelBlock* getLabelBlock(string* name)
