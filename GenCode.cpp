@@ -212,23 +212,23 @@ void NFunctionPrototype::genCode(CodeContext& context)
 	context.addError("Called NFunctionPrototype::genCode; use genFunction instead.");
 }
 
-Function* NFunctionPrototype::genFunction(CodeContext& context)
+SFunction* NFunctionPrototype::genFunction(CodeContext& context)
 {
 	auto function = context.getFunction(name);
 	if (function)
 		return function;
 
 	auto funcType = getFunctionType(context);
-	return Function::Create(funcType, GlobalValue::ExternalLinkage, *name, context.getModule());
+	return SFunction::create(context, name, funcType);
 }
 
-void NFunctionPrototype::genCodeParams(Function* function, CodeContext& context)
+void NFunctionPrototype::genCodeParams(SFunction* function, CodeContext& context)
 {
 	int i = 0;
-	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++) {
-		auto param = params->at(i++);
+	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++, i++) {
+		auto param = params->at(i);
 		arg->setName(*param->getName());
-		param->setArgument(RValue(arg, SType::get(context, arg->getType())));
+		param->setArgument(RValue(arg, function->stype()->getParam(i)));
 		param->genCode(context);
 	}
 }
@@ -244,14 +244,14 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 	}
 
 	if (body->back()->getNodeType() != NodeType::ReturnStm) {
-		auto returnType = function->getFunctionType()->getReturnType();
-		if (returnType->isVoidTy())
+		auto returnType = function->returnTy();
+		if (returnType->isVoid())
 			body->addItem(new NReturnStatement);
 		else
 			context.addError("no return for a non-void function");
 	}
 
-	if (prototype->getFunctionType(context) != function->getFunctionType()) {
+	if (prototype->getFunctionType(context) != function->stype()) {
 		context.addError("function type for " + *prototype->getName() + " doesn't match definition");
 		return;
 	}
@@ -270,15 +270,15 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 void NReturnStatement::genCode(CodeContext& context)
 {
 	auto func = context.currFunction();
-	auto funcReturn = SType::get(context, func->getReturnType());
+	auto funcReturn = func->returnTy();
 
 	if (funcReturn->isVoid()) {
 		if (value) {
-			context.addError(func->getName().str() + " function declared void, but non-void return found");
+			context.addError(func->name().str() + " function declared void, but non-void return found");
 			return;
 		}
 	} else if (!value) {
-		context.addError(func->getName().str() + " function declared non-void, but void return found");
+		context.addError(func->name().str() + " function declared non-void, but void return found");
 		return;
 	}
 	auto returnVal = value? value->genValue(context) : RValue::null();
@@ -654,20 +654,20 @@ RValue NFunctionCall::genValue(CodeContext& context)
 		return RValue::null();
 	}
 	auto argCount = arguments->size();
-	auto paramCount = func->getFunctionType()->getNumParams();
+	auto paramCount = func->stype()->numParams();
 	if (argCount != paramCount)
-		context.addError("argument count for " + func->getName().str() + " function invalid, "
+		context.addError("argument count for " + func->name().str() + " function invalid, "
 			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.");
-	auto funcType = func->getFunctionType();
+	auto funcType = func->stype();
 	vector<Value*> exp_list;
 	int i = 0;
 	for (auto arg : *arguments) {
 		auto argExp = arg->genValue(context);
-		Inst::CastMatch(argExp, SType::get(context, funcType->getParamType(i++)), context);
+		Inst::CastMatch(argExp, funcType->getParam(i++), context);
 		exp_list.push_back(argExp);
 	}
-	auto call = CallInst::Create(func, exp_list, "", context.currBlock());
-	return RValue(call, SType::get(context, func->getReturnType()));
+	auto call = CallInst::Create(*func, exp_list, "", context.currBlock());
+	return RValue(call, func->returnTy());
 }
 
 RValue NIncrement::genValue(CodeContext& context)

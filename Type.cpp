@@ -46,6 +46,11 @@ SType* SType::getArray(CodeContext& context, SType* arrType, uint64_t size)
 	return context.typeManager.getArray(arrType, size);
 }
 
+SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, vector<SType*> params)
+{
+	return context.typeManager.getFunction(returnTy, params);
+}
+
 TypeManager::TypeManager(LLVMContext& ctx)
 : context(ctx)
 {

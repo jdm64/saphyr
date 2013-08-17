@@ -18,10 +18,10 @@
 #define __AST_H__
 
 #include <vector>
-#include <llvm/Function.h>
 #include <llvm/Instructions.h>
 #include "Constants.h"
 #include "Value.h"
+#include "Function.h"
 
 // forward declaration
 class CodeContext;
@@ -449,18 +449,18 @@ public:
 
 	void genCode(CodeContext& context) final;
 
-	Function* genFunction(CodeContext& context);
+	SFunction* genFunction(CodeContext& context);
 
-	void genCodeParams(Function* function, CodeContext& context);
+	void genCodeParams(SFunction* function, CodeContext& context);
 
-	FunctionType* getFunctionType(CodeContext& context)
+	SFunctionType* getFunctionType(CodeContext& context)
 	{
-		vector<Type*> args;
+		vector<SType*> args;
 		for (auto item : *params)
-			args.push_back(item->getType(context)->type());
+			args.push_back(item->getType(context));
 
 		auto returnType = rtype->getType(context);
-		return FunctionType::get(*returnType, args, false);
+		return SType::getFunction(context, returnType, args);
 	}
 
 	NodeType getNodeType()

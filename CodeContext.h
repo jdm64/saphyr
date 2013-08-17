@@ -20,8 +20,8 @@
 #include <stack>
 #include <llvm/Instructions.h>
 #include <llvm/BasicBlock.h>
-#include <llvm/Module.h>
 #include "Value.h"
+#include "Function.h"
 
 // forward declarations
 class NStatement;
@@ -103,6 +103,7 @@ public:
 class CodeContext : public SymbolTable
 {
 	friend class SType;
+	friend class SFunction;
 
 	vector<BasicBlock*> funcBlocks;
 	vector<BasicBlock*> continueBlocks;
@@ -116,6 +117,7 @@ class CodeContext : public SymbolTable
 
 	Module* module;
 	TypeManager typeManager;
+	FunctionManager funcManager;
 
 	void validateFunction()
 	{
@@ -128,7 +130,7 @@ class CodeContext : public SymbolTable
 public:
 	CodeContext(string& filename)
 	: filename(filename), returncode(0), module(new Module(filename, getGlobalContext())),
-	typeManager(module->getContext())
+	typeManager(module->getContext()), funcManager(module)
 	{
 	}
 
@@ -147,14 +149,14 @@ public:
 		return module;
 	}
 
-	Function* getFunction(string* name)
+	SFunction* getFunction(string* name)
 	{
-		return module->getFunction(*name);
+		return funcManager.getFunction(name);
 	}
 
-	Function* currFunction()
+	SFunction* currFunction()
 	{
-		return currBlock()->getParent();
+		return funcManager.current();
 	}
 
 	void addError(string error)
@@ -167,11 +169,12 @@ public:
 		return funcBlocks.back();
 	}
 
-	void startFuncBlock(Function* function)
+	void startFuncBlock(SFunction* function)
 	{
 		pushLocalTable();
 		funcBlocks.clear();
-		funcBlocks.push_back(BasicBlock::Create(module->getContext(), "", function));
+		funcBlocks.push_back(BasicBlock::Create(module->getContext(), "", *function));
+		funcManager.setCurrent(function);
 	}
 
 	void endFuncBlock()
@@ -187,6 +190,7 @@ public:
 		for (auto& item : labelBlocks)
 			delete item.second;
 		labelBlocks.clear();
+		funcManager.setCurrent(nullptr);
 	}
 
 	void pushBlock(BasicBlock* block)
