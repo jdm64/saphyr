@@ -427,9 +427,7 @@ void NLabelStatement::genCode(CodeContext& context)
 		// a used label is no longer a placeholder
 		label->isPlaceholder = false;
 	} else {
-		label = new LabelBlock(context.createBlock(), false);
-		label->block->setName(*name);
-		context.setLabelBlock(name, label);
+		label = context.createLabelBlock(name, false);
 	}
 	BranchInst::Create(label->block, context.currBlock());
 	context.pushBlock(label->block);
@@ -442,9 +440,7 @@ void NGotoStatement::genCode(CodeContext& context)
 	if (!label) {
 		// trying to jump to a non-existant label. create place holder and
 		// later check if it's used at the end of the function.
-		label = new LabelBlock(context.createBlock(), true);
-		label->block->setName(*name);
-		context.setLabelBlock(name, label);
+		label = context.createLabelBlock(name, true);
 	}
 	BranchInst::Create(label->block, context.currBlock());
 	context.pushBlock(skip);

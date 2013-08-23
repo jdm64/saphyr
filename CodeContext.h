@@ -36,6 +36,9 @@ struct LabelBlock
 	: block(block), isPlaceholder(isPlaceholder) {}
 };
 
+typedef unique_ptr<LabelBlock> LabelBlockPtr;
+#define smart_label(block, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, placeholder))
+
 class VarTable
 {
 	map<string, LValue> table;
@@ -109,7 +112,7 @@ class CodeContext : public SymbolTable
 	vector<BasicBlock*> continueBlocks;
 	vector<BasicBlock*> breakBlocks;
 	vector<BasicBlock*> redoBlocks;
-	map<string, LabelBlock*> labelBlocks;
+	map<string, LabelBlockPtr> labelBlocks;
 
 	string filename;
 	vector<string> errors;
@@ -186,10 +189,8 @@ public:
 		continueBlocks.clear();
 		breakBlocks.clear();
 		redoBlocks.clear();
-
-		for (auto& item : labelBlocks)
-			delete item.second;
 		labelBlocks.clear();
+
 		funcManager.setCurrent(nullptr);
 	}
 
@@ -253,12 +254,16 @@ public:
 
 	LabelBlock* getLabelBlock(string* name)
 	{
-		auto iter = labelBlocks.find(*name);
-		return iter != labelBlocks.end()? iter->second : nullptr;
+		return labelBlocks[*name].get();
 	}
-	void setLabelBlock(string* name, LabelBlock* label)
+	LabelBlock* createLabelBlock(string* name, bool isPlaceholder)
 	{
-		labelBlocks[*name] = label;
+		LabelBlockPtr &item = labelBlocks[*name];
+		if (!item.get()) {
+			item = smart_label(createBlock(), isPlaceholder);
+			item.get()->block->setName(*name);
+		}
+		return item.get();
 	}
 
 	// NOTE: can only be used inside a function to add a new block
