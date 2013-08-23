@@ -16,11 +16,6 @@
 */
 #include "CodeContext.h"
 
-SType* SType::get(CodeContext& context, Type* type)
-{
-	return context.typeManager.get(type);
-}
-
 SType* SType::getVoid(CodeContext& context)
 {
 	return context.typeManager.getVoid();

@@ -184,8 +184,7 @@ RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 
 RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
 {
-	auto condVal = condExp? condExp->genValue(context) : ConstantInt::getTrue(context);
-	auto condValue = RValue(condVal, SType::get(context, condVal->getType()));
+	auto condValue = condExp? condExp->genValue(context) : RValue::getOne(SType::getBool(context));
 	CastMatch(condValue, SType::getBool(context), context);
 	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
 	return condValue;

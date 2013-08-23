@@ -56,8 +56,6 @@ public:
 		return vec;
 	}
 
-	static SType* get(CodeContext& context, Type* type);
-
 	static SType* getVoid(CodeContext& context);
 
 	static SType* getBool(CodeContext& context);
@@ -192,27 +190,6 @@ private:
 
 public:
 	TypeManager(LLVMContext& ctx);
-
-	SType* get(Type* type)
-	{
-		if (type->isVoidTy())
-			return getVoid();
-		else if (type->isIntegerTy())
-			return getInt(type->getIntegerBitWidth());
-		else if (type->isFloatingPointTy())
-			return getFloat(type->isDoubleTy());
-		else if (type->isArrayTy())
-			return getArray(get(type->getArrayElementType()), type->getArrayNumElements());
-
-		// BUG - type not handled
-		string str;
-		raw_string_ostream stream(str);
-		type->print(stream);
-		cout << "BUG: can't wrap llvm::Type:\n" << endl;
-		cout << stream.str() << endl;
-
-		return nullptr;
-	}
 
 	SType* getVoid() { return voidTy.get(); }
 
