@@ -98,7 +98,7 @@ RValue NVariable::genValue(CodeContext& context)
 	auto var = loadVar(context);
 	if (!var)
 		return RValue::null();
-	auto load = new LoadInst(var, "", context.currBlock());
+	auto load = new LoadInst(var, "", context);
 	return RValue(load, var.stype());
 }
 
@@ -136,15 +136,15 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 		context.addError("variable " + *name + " is not an array");
 		return RValue::null();
 	}
-	auto getEl = GetElementPtrInst::Create(var, indexes, "", context.currBlock());
+	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
 	return RValue(getEl, var.stype()->arrType());
 }
 
 void NParameter::genCode(CodeContext& context)
 {
 	auto stype = type->getType(context);
-	auto stackAlloc = new AllocaInst(*stype, "", context.currBlock());
-	new StoreInst(arg, stackAlloc, context.currBlock());
+	auto stackAlloc = new AllocaInst(*stype, "", context);
+	new StoreInst(arg, stackAlloc, context);
 	context.storeLocalVar(LValue(stackAlloc, stype), name);
 }
 
@@ -167,12 +167,12 @@ void NVariableDecl::genCode(CodeContext& context)
 		return;
 	}
 
-	auto var = LValue(new AllocaInst(*varType, *name, context.currBlock()), varType);
+	auto var = LValue(new AllocaInst(*varType, *name, context), varType);
 	context.storeLocalVar(var, name);
 
 	if (initValue) {
 		Inst::CastMatch(initValue, varType, context);
-		new StoreInst(initValue, var, context.currBlock());
+		new StoreInst(initValue, var, context);
 	}
 }
 
@@ -260,7 +260,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 
 	// pad stack with 4 bytes
 	// also fixes issue with function with one instruction not being declared
-	new AllocaInst(SType::getInt(context, 32)->type(), "", context.currBlock());
+	new AllocaInst(SType::getInt(context, 32)->type(), "", context);
 
 	prototype->genCodeParams(function, context);
 	body->genCode(context);
@@ -284,7 +284,7 @@ void NReturnStatement::genCode(CodeContext& context)
 	auto returnVal = value? value->genValue(context) : RValue::null();
 	if (returnVal)
 		Inst::CastMatch(returnVal, funcReturn, context);
-	ReturnInst::Create(context, returnVal, context.currBlock());
+	ReturnInst::Create(context, returnVal, context);
 	context.pushBlock(context.createBlock());
 }
 
@@ -300,14 +300,14 @@ void NWhileStatement::genCode(CodeContext& context)
 
 	context.pushLocalTable();
 
-	BranchInst::Create(startBlock, context.currBlock());
+	BranchInst::Create(startBlock, context);
 
 	context.pushBlock(condBlock);
 	Inst::Branch(trueBlock, falseBlock, condition, context);
 
 	context.pushBlock(bodyBlock);
 	body->genCode(context);
-	BranchInst::Create(condBlock, context.currBlock());
+	BranchInst::Create(condBlock, context);
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
@@ -321,7 +321,7 @@ void NSwitchStatement::genCode(CodeContext& context)
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
-	auto switchInst = SwitchInst::Create(switchValue, defaultBlock, cases->size(), context.currBlock());
+	auto switchInst = SwitchInst::Create(switchValue, defaultBlock, cases->size(), context);
 
 	context.pushLocalTable();
 
@@ -347,14 +347,14 @@ void NSwitchStatement::genCode(CodeContext& context)
 			caseBlock = context.currBlock();
 		} else {
 			caseBlock = context.createBlock();
-			BranchInst::Create(caseBlock, context.currBlock());
+			BranchInst::Create(caseBlock, context);
 			context.pushBlock(caseBlock);
 		}
 	}
 	switchInst->setDefaultDest(defaultBlock);
 
 	// NOTE: the last case will create a dangling block which needs a terminator.
-	BranchInst::Create(endBlock, context.currBlock());
+	BranchInst::Create(endBlock, context);
 
 	context.popLocalTable();
 	context.popBreakBlock();
@@ -371,18 +371,18 @@ void NForStatement::genCode(CodeContext& context)
 	context.pushLocalTable();
 
 	preStm->genCode(context);
-	BranchInst::Create(condBlock, context.currBlock());
+	BranchInst::Create(condBlock, context);
 
 	context.pushBlock(condBlock);
 	Inst::Branch(bodyBlock, endBlock, condition, context);
 
 	context.pushBlock(bodyBlock);
 	body->genCode(context);
-	BranchInst::Create(postBlock, context.currBlock());
+	BranchInst::Create(postBlock, context);
 
 	context.pushBlock(postBlock);
 	postExp->genCode(context);
-	BranchInst::Create(condBlock, context.currBlock());
+	BranchInst::Create(condBlock, context);
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
@@ -401,7 +401,7 @@ void NIfStatement::genCode(CodeContext& context)
 
 	context.pushBlock(ifBlock);
 	body->genCode(context);
-	BranchInst::Create(endBlock, context.currBlock());
+	BranchInst::Create(endBlock, context);
 
 	context.popLocalTable();
 	context.pushLocalTable();
@@ -409,7 +409,7 @@ void NIfStatement::genCode(CodeContext& context)
 	context.pushBlock(elseBlock);
 	if (elseBody) {
 		elseBody->genCode(context);
-		BranchInst::Create(endBlock, context.currBlock());
+		BranchInst::Create(endBlock, context);
 	}
 	context.pushBlock(endBlock);
 	context.popLocalTable();
@@ -429,7 +429,7 @@ void NLabelStatement::genCode(CodeContext& context)
 	} else {
 		label = context.createLabelBlock(name, false);
 	}
-	BranchInst::Create(label->block, context.currBlock());
+	BranchInst::Create(label->block, context);
 	context.pushBlock(label->block);
 }
 
@@ -442,7 +442,7 @@ void NGotoStatement::genCode(CodeContext& context)
 		// later check if it's used at the end of the function.
 		label = context.createLabelBlock(name, true);
 	}
-	BranchInst::Create(label->block, context.currBlock());
+	BranchInst::Create(label->block, context);
 	context.pushBlock(skip);
 }
 
@@ -477,7 +477,7 @@ void NLoopBranch::genCode(CodeContext& context)
 		context.addError("undefined loop branch type: " + to_string(type));
 		return;
 	}
-	BranchInst::Create(block, context.currBlock());
+	BranchInst::Create(block, context);
 	context.pushBlock(context.createBlock());
 	return;
 error:
@@ -493,12 +493,12 @@ RValue NAssignment::genValue(CodeContext& context)
 		return RValue::null();
 
 	if (oper != '=') {
-		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context.currBlock()), lhsVar.stype());
+		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context), lhsVar.stype());
 		Inst::CastUp(lhsLocal, rhsExp, context);
 		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
 	Inst::CastMatch(rhsExp, lhsVar.stype(), context);
-	new StoreInst(rhsExp, lhsVar, context.currBlock());
+	new StoreInst(rhsExp, lhsVar, context);
 
 	return rhsExp;
 }
@@ -514,25 +514,25 @@ RValue NTernaryOperator::genValue(CodeContext& context)
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
 
-		BranchInst::Create(trueBlock, falseBlock, condExp, context.currBlock());
+		BranchInst::Create(trueBlock, falseBlock, condExp, context);
 
 		context.pushBlock(trueBlock);
 		trueExp = trueVal->genValue(context);
-		BranchInst::Create(endBlock, context.currBlock());
+		BranchInst::Create(endBlock, context);
 
 		context.pushBlock(falseBlock);
 		falseExp = falseVal->genValue(context);
-		BranchInst::Create(endBlock, context.currBlock());
+		BranchInst::Create(endBlock, context);
 
 		context.pushBlock(endBlock);
-		auto result = PHINode::Create(trueExp.type(), 2, "", context.currBlock());
+		auto result = PHINode::Create(trueExp.type(), 2, "", context);
 		result->addIncoming(trueExp, trueBlock);
 		result->addIncoming(falseExp, falseBlock);
 		retVal = RValue(result, trueExp.stype());
 	} else {
 		trueExp = trueVal->genValue(context);
 		falseExp = falseVal->genValue(context);
-		auto select = SelectInst::Create(condExp, trueExp, falseExp, "", context.currBlock());
+		auto select = SelectInst::Create(condExp, trueExp, falseExp, "", context);
 		retVal = RValue(select, trueExp.stype());
 	}
 
@@ -554,10 +554,10 @@ RValue NLogicalOperator::genValue(CodeContext& context)
 	context.pushBlock(firstBlock);
 	auto rhsExp = rhs->genValue(context);
 	Inst::CastMatch(rhsExp, SType::getBool(context), context);
-	BranchInst::Create(secondBlock, context.currBlock());
+	BranchInst::Create(secondBlock, context);
 
 	context.pushBlock(secondBlock);
-	auto result = PHINode::Create(Type::getInt1Ty(context), 2, "", context.currBlock());
+	auto result = PHINode::Create(Type::getInt1Ty(context), 2, "", context);
 	result->addIncoming(lhsExp, saveBlock);
 	result->addIncoming(rhsExp, firstBlock);
 
@@ -600,21 +600,21 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
 
-		BranchInst::Create(endBlock, falseBlock, condition, context.currBlock());
+		BranchInst::Create(endBlock, falseBlock, condition, context);
 
 		context.pushBlock(falseBlock);
 		rhsExp = rhs->genValue(context);
-		BranchInst::Create(endBlock, context.currBlock());
+		BranchInst::Create(endBlock, context);
 
 		context.pushBlock(endBlock);
-		auto result = PHINode::Create(lhsExp.type(), 2, "", context.currBlock());
+		auto result = PHINode::Create(lhsExp.type(), 2, "", context);
 		result->addIncoming(lhsExp, trueBlock);
 		result->addIncoming(rhsExp, falseBlock);
 
 		retVal = RValue(result, lhsExp.stype());
 	} else {
 		rhsExp = rhs->genValue(context);
-		auto select = SelectInst::Create(condition, lhsExp, rhsExp, "", context.currBlock());
+		auto select = SelectInst::Create(condition, lhsExp, rhsExp, "", context);
 		retVal = RValue(select, lhsExp.stype());
 	}
 
@@ -662,7 +662,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 		Inst::CastMatch(argExp, funcType->getParam(i++), context);
 		exp_list.push_back(argExp);
 	}
-	auto call = CallInst::Create(*func, exp_list, "", context.currBlock());
+	auto call = CallInst::Create(*func, exp_list, "", context);
 	return RValue(call, func->returnTy());
 }
 
@@ -673,7 +673,7 @@ RValue NIncrement::genValue(CodeContext& context)
 		return RValue::null();
 
 	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(varVal.stype()), context);
-	new StoreInst(result, context.loadVar(variable->getName()), context.currBlock());
+	new StoreInst(result, context.loadVar(variable->getName()), context);
 
 	return isPostfix? varVal : RValue(result, varVal.stype());
 }

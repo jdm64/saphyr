@@ -33,35 +33,35 @@ void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 	if (ltype->isFloating()) {
 		if (rtype->isFloating()) {
 			if (ltype->isDouble()) {
-				val = CastInst::CreateFPCast(rhs, *ltype, "", context.currBlock());
+				val = CastInst::CreateFPCast(rhs, *ltype, "", context);
 				rhs = RValue(val, ltype);
 			} else {
-				val = CastInst::CreateFPCast(lhs, *rtype, "", context.currBlock());
+				val = CastInst::CreateFPCast(lhs, *rtype, "", context);
 				lhs = RValue(val, rtype);
 			}
 		} else {
-			val = new SIToFPInst(rhs, *ltype, "", context.currBlock());
+			val = new SIToFPInst(rhs, *ltype, "", context);
 			rhs = RValue(val, ltype);
 		}
 	} else if (rtype->isFloating()) {
 		if (ltype->isFloating()) {
 			if (rtype->isDouble()) {
-				val = CastInst::CreateFPCast(lhs, *rtype, "", context.currBlock());
+				val = CastInst::CreateFPCast(lhs, *rtype, "", context);
 				lhs = RValue(val, rtype);
 			} else {
-				val = CastInst::CreateFPCast(rhs, *ltype, "", context.currBlock());
+				val = CastInst::CreateFPCast(rhs, *ltype, "", context);
 				rhs = RValue(val, ltype);
 			}
 		} else {
-			val = new SIToFPInst(lhs, *rtype, "", context.currBlock());
+			val = new SIToFPInst(lhs, *rtype, "", context);
 			lhs = RValue(val, rtype);
 		}
 	} else {
 		if (rtype->intSize() > ltype->intSize()) {
-			val = CastInst::CreateIntegerCast(lhs, *rtype, true, "", context.currBlock());
+			val = CastInst::CreateIntegerCast(lhs, *rtype, true, "", context);
 			lhs = RValue(val, rtype);
 		} else if (rtype->intSize() < ltype->intSize()) {
-			val = CastInst::CreateIntegerCast(rhs, *ltype, true, "", context.currBlock());
+			val = CastInst::CreateIntegerCast(rhs, *ltype, true, "", context);
 			rhs = RValue(val, ltype);
 		}
 	}
@@ -80,18 +80,18 @@ void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
 	Value* val;
 	if (type->isFloating()) {
 		if (valueType->isFloating())
-			val = CastInst::CreateFPCast(value, *type, "", context.currBlock());
+			val = CastInst::CreateFPCast(value, *type, "", context);
 		else
-			val = new SIToFPInst(value, *type, "", context.currBlock());
+			val = new SIToFPInst(value, *type, "", context);
 	} else if (type->isBool()) {
 		// cast to bool is value != 0
 		auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
 		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
-		val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context.currBlock());
+		val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context);
 	} else if (valueType->isFloating()) {
-		val = new FPToSIInst(value, *type, "", context.currBlock());
+		val = new FPToSIInst(value, *type, "", context);
 	} else {
-		val = CastInst::CreateIntegerCast(value, *type, true, "", context.currBlock());
+		val = CastInst::CreateIntegerCast(value, *type, true, "", context);
 	}
 	value = RValue(val, type);
 }
@@ -178,7 +178,7 @@ bool Inst::isComplexExp(NodeType type)
 RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
 	auto llvmOp = getOperator(type, lhs.stype(), context);
-	auto llvmVal = BinaryOperator::Create(llvmOp, lhs, rhs, "", context.currBlock());
+	auto llvmVal = BinaryOperator::Create(llvmOp, lhs, rhs, "", context);
 	return RValue(llvmVal, lhs.stype());
 }
 
@@ -186,7 +186,7 @@ RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* 
 {
 	auto condValue = condExp? condExp->genValue(context) : RValue::getOne(SType::getBool(context));
 	CastMatch(condValue, SType::getBool(context), context);
-	BranchInst::Create(trueBlock, falseBlock, condValue, context.currBlock());
+	BranchInst::Create(trueBlock, falseBlock, condValue, context);
 	return condValue;
 }
 
@@ -194,6 +194,6 @@ RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
 	auto pred = getPredicate(type, lhs.stype(), context);
 	auto op = rhs.stype()->isFloating()? Instruction::FCmp : Instruction::ICmp;
-	auto cmp = CmpInst::Create(op, pred, lhs, rhs, "", context.currBlock());
+	auto cmp = CmpInst::Create(op, pred, lhs, rhs, "", context);
 	return RValue(cmp, SType::getBool(context));
 }

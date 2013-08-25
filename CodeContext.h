@@ -147,6 +147,11 @@ public:
 		return module->getContext();
 	}
 
+	operator BasicBlock*() const
+	{
+		return currBlock();
+	}
+
 	Module* getModule()
 	{
 		return module;
@@ -167,7 +172,7 @@ public:
 		errors.push_back(error);
 	}
 
-	BasicBlock* currBlock()
+	BasicBlock* currBlock() const
 	{
 		return funcBlocks.back();
 	}
