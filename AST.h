@@ -47,7 +47,7 @@ public:
 	OtherList* copy()
 	{
 		auto other = new OtherList;
-		for (auto item : *this)
+		for (const auto item : *this)
 			other->addItem(item);
 		return other;
 	}
@@ -57,7 +57,7 @@ public:
 		return NodeType::BaseNodeList;
 	}
 
-	int size()
+	int size() const
 	{
 		return list.size();
 	}
@@ -102,7 +102,7 @@ public:
 class NStatementList : public NodeList<NStatement>
 {
 public:
-	void genCode(CodeContext& context)
+	void genCode(CodeContext& context) const
 	{
 		for (auto item : list)
 			item->genCode(context);
@@ -124,7 +124,7 @@ public:
 class NExpressionList : public NodeList<NExpression>
 {
 public:
-	void genCode(CodeContext& context)
+	void genCode(CodeContext& context) const
 	{
 		for (auto item : list)
 			item->genValue(context);
@@ -305,7 +305,7 @@ public:
 class NVariableDeclList : public NodeList<NVariableDecl>
 {
 public:
-	void genCode(NDataType* type, CodeContext& context)
+	void genCode(NDataType* type, CodeContext& context) const
 	{
 		for (auto variable : list) {
 			variable->setDataType(type);
@@ -556,7 +556,7 @@ public:
 		return value->genValue(context);
 	}
 
-	bool isValueCase()
+	bool isValueCase() const
 	{
 		return hasValue;
 	}

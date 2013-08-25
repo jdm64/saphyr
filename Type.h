@@ -191,11 +191,17 @@ private:
 public:
 	TypeManager(LLVMContext& ctx);
 
-	SType* getVoid() { return voidTy.get(); }
+	SType* getVoid() const
+	{
+		return voidTy.get();
+	}
 
-	SType* getBool() { return boolTy.get(); }
+	SType* getBool() const
+	{
+		return boolTy.get();
+	}
 
-	SType* getInt(int bitWidth)
+	SType* getInt(int bitWidth) const
 	{
 		switch (bitWidth) {
 		case 1:  return boolTy.get();
@@ -207,7 +213,7 @@ public:
 		}
 	}
 
-	SType* getFloat(bool doubleType = false)
+	SType* getFloat(bool doubleType = false) const
 	{
 		return doubleType? doubleTy.get() : floatTy.get();
 	}

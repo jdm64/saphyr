@@ -49,7 +49,7 @@ public:
 		table[*name] = var;
 	}
 
-	LValue loadVar(string* name)
+	LValue loadVar(string* name) const
 	{
 		auto varData = table.find(*name);
 		return varData != table.end()? varData->second : LValue::null();
@@ -87,7 +87,7 @@ public:
 		localTable.clear();
 	}
 
-	LValue loadVar(string* name)
+	LValue loadVar(string* name) const
 	{
 		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
 			auto var = it->loadVar(name);
@@ -152,7 +152,7 @@ public:
 		return currBlock();
 	}
 
-	Module* getModule()
+	Module* getModule() const
 	{
 		return module;
 	}
@@ -162,7 +162,7 @@ public:
 		return funcManager.getFunction(name);
 	}
 
-	SFunction* currFunction()
+	SFunction* currFunction() const
 	{
 		return funcManager.current();
 	}
@@ -215,7 +215,7 @@ public:
 	{
 		continueBlocks.pop_back();
 	}
-	BasicBlock* getContinueBlock()
+	BasicBlock* getContinueBlock() const
 	{
 		return continueBlocks.empty()? nullptr : continueBlocks.back();
 	}
@@ -230,7 +230,7 @@ public:
 	{
 		breakBlocks.pop_back();
 	}
-	BasicBlock* getBreakBlock()
+	BasicBlock* getBreakBlock() const
 	{
 		return breakBlocks.empty()? nullptr : breakBlocks.back();
 	}
@@ -245,7 +245,7 @@ public:
 	{
 		redoBlocks.pop_back();
 	}
-	BasicBlock* getRedoBlock()
+	BasicBlock* getRedoBlock() const
 	{
 		return redoBlocks.empty()?  nullptr : redoBlocks.back();
 	}
@@ -272,14 +272,14 @@ public:
 	}
 
 	// NOTE: can only be used inside a function to add a new block
-	BasicBlock* createBlock()
+	BasicBlock* createBlock() const
 	{
 		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
 	}
 
 	void genCode(NStatementList stms);
 
-	int returnCode()
+	int returnCode() const
 	{
 		return returncode;
 	}
