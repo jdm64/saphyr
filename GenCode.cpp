@@ -494,7 +494,6 @@ RValue NAssignment::genValue(CodeContext& context)
 
 	if (oper != '=') {
 		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context), lhsVar.stype());
-		Inst::CastUp(lhsLocal, rhsExp, context);
 		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
 	Inst::CastMatch(rhsExp, lhsVar.stype(), context);
@@ -572,7 +571,6 @@ RValue NCompareOperator::genValue(CodeContext& context)
 	if (!(rhsExp && lhsExp))
 		return RValue::null();
 
-	Inst::CastUp(lhsExp, rhsExp, context);
 	return Inst::Cmp(oper, lhsExp, rhsExp, context);
 }
 
@@ -584,7 +582,6 @@ RValue NBinaryMathOperator::genValue(CodeContext& context)
 	if (!(lhsExp && rhsExp))
 		return RValue::null();
 
-	Inst::CastUp(lhsExp, rhsExp, context);
 	return Inst::BinaryOp(oper, lhsExp, rhsExp, context);
 }
 

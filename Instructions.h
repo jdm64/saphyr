@@ -29,10 +29,12 @@ class Inst
 
 	static Predicate getPredicate(int oper, SType* type, CodeContext& context);
 
+	static void CastUp(RValue& lhs, RValue& rhs, CodeContext& context);
+
+	static void CastMatch(RValue& lhs, RValue& rhs, CodeContext& context);
+
 public:
 	static bool isComplexExp(NodeType type);
-
-	static void CastUp(RValue& lhs, RValue& rhs, CodeContext& context);
 
 	static void CastMatch(RValue& value, SType* type, CodeContext& context);
 

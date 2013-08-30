@@ -56,6 +56,8 @@ public:
 		return vec;
 	}
 
+	static SType* opType(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
+
 	static SType* getVoid(CodeContext& context);
 
 	static SType* getBool(CodeContext& context);

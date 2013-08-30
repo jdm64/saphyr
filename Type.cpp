@@ -46,6 +46,22 @@ SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, vector<
 	return context.typeManager.getFunction(returnTy, params);
 }
 
+SType* SType::opType(CodeContext& context, SType* ltype, SType* rtype, bool int32min)
+{
+	auto btype = ltype->tclass | rtype->tclass;
+	if (btype & DOUBLE)
+		return SType::getFloat(context, true);
+	else if (btype & FLOATING)
+		return SType::getFloat(context);
+
+	auto lbits = ltype->intSize();
+	auto rbits = rtype->intSize();
+	if (lbits > rbits)
+		return (int32min && lbits < 32)? SType::getInt(context, 32) : ltype;
+	else
+		return (int32min && rbits < 32)? SType::getInt(context, 32) : rtype;
+}
+
 TypeManager::TypeManager(LLVMContext& ctx)
 : context(ctx)
 {

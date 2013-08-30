@@ -22,6 +22,21 @@ void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 	auto ltype = lhs.stype();
 	auto rtype = rhs.stype();
 
+	if (ltype->isArray() || rtype->isArray()) {
+		context.addError("can not cast array types");
+		return;
+	}
+
+	auto toType = SType::opType(context, ltype, rtype);
+	CastMatch(lhs, toType, context);
+	CastMatch(rhs, toType, context);
+}
+
+void Inst::CastMatch(RValue& lhs, RValue& rhs, CodeContext& context)
+{
+	auto ltype = lhs.stype();
+	auto rtype = rhs.stype();
+
 	if (ltype == rtype) {
 		return;
 	} else if (ltype->isArray() || rtype->isArray()) {
@@ -29,42 +44,9 @@ void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 		return;
 	}
 
-	Value* val;
-	if (ltype->isFloating()) {
-		if (rtype->isFloating()) {
-			if (ltype->isDouble()) {
-				val = CastInst::CreateFPCast(rhs, *ltype, "", context);
-				rhs = RValue(val, ltype);
-			} else {
-				val = CastInst::CreateFPCast(lhs, *rtype, "", context);
-				lhs = RValue(val, rtype);
-			}
-		} else {
-			val = new SIToFPInst(rhs, *ltype, "", context);
-			rhs = RValue(val, ltype);
-		}
-	} else if (rtype->isFloating()) {
-		if (ltype->isFloating()) {
-			if (rtype->isDouble()) {
-				val = CastInst::CreateFPCast(lhs, *rtype, "", context);
-				lhs = RValue(val, rtype);
-			} else {
-				val = CastInst::CreateFPCast(rhs, *ltype, "", context);
-				rhs = RValue(val, ltype);
-			}
-		} else {
-			val = new SIToFPInst(lhs, *rtype, "", context);
-			lhs = RValue(val, rtype);
-		}
-	} else {
-		if (rtype->intSize() > ltype->intSize()) {
-			val = CastInst::CreateIntegerCast(lhs, *rtype, true, "", context);
-			lhs = RValue(val, rtype);
-		} else if (rtype->intSize() < ltype->intSize()) {
-			val = CastInst::CreateIntegerCast(rhs, *ltype, true, "", context);
-			rhs = RValue(val, ltype);
-		}
-	}
+	auto toType = SType::opType(context, ltype, rtype, false);
+	CastMatch(lhs, toType, context);
+	CastMatch(rhs, toType, context);
 }
 
 void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
@@ -177,6 +159,7 @@ bool Inst::isComplexExp(NodeType type)
 
 RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
+	CastUp(lhs, rhs, context);
 	auto llvmOp = getOperator(type, lhs.stype(), context);
 	auto llvmVal = BinaryOperator::Create(llvmOp, lhs, rhs, "", context);
 	return RValue(llvmVal, lhs.stype());
@@ -192,6 +175,7 @@ RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* 
 
 RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
+	CastMatch(lhs, rhs, context);
 	auto pred = getPredicate(type, lhs.stype(), context);
 	auto op = rhs.stype()->isFloating()? Instruction::FCmp : Instruction::ICmp;
 	auto cmp = CmpInst::Create(op, pred, lhs, rhs, "", context);
