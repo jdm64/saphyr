@@ -22,7 +22,7 @@ void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 	auto ltype = lhs.stype();
 	auto rtype = rhs.stype();
 
-	if (ltype->matches(rtype)) {
+	if (ltype == rtype) {
 		return;
 	} else if (ltype->isArray() || rtype->isArray()) {
 		context.addError("can not cast array types");
@@ -70,7 +70,7 @@ void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
 {
 	auto valueType = value.stype();
-	if (type->matches(valueType)) {
+	if (type == valueType) {
 		return;
 	} else if (type->isArray() || valueType->isArray()) {
 		context.addError("can not cast array types");

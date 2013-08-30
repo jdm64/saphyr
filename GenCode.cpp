@@ -192,7 +192,7 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 		}
 		varType = initValue.stype();
 	}
-	if (initValue && !varType->matches(initValue.stype())) {
+	if (initValue && varType != initValue.stype()) {
 		context.addError("global variable initialization requires exact type matching");
 		return;
 	}
@@ -536,7 +536,7 @@ RValue NTernaryOperator::genValue(CodeContext& context)
 		retVal = RValue(select, trueExp.stype());
 	}
 
-	if (!trueExp.stype()->matches(falseExp.stype()))
+	if (trueExp.stype() != falseExp.stype())
 		context.addError("return types of ternary must match");
 	return retVal;
 }
@@ -618,7 +618,7 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 		retVal = RValue(select, lhsExp.stype());
 	}
 
-	if (!lhsExp.stype()->matches(rhsExp.stype()))
+	if (lhsExp.stype() != rhsExp.stype())
 		context.addError("return types of null coalescing operator must match");
 	return retVal;
 }

@@ -78,11 +78,6 @@ public:
 		return ltype;
 	}
 
-	bool matches(SType* valueType) const
-	{
-		return ltype == valueType->ltype;
-	}
-
 	bool isVoid() const
 	{
 		return tclass & VOID;
