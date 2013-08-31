@@ -54,6 +54,11 @@ int8		{ return ParserBase::TT_INT8; }
 int16		{ return ParserBase::TT_INT16; }
 int32		{ return ParserBase::TT_INT32; }
 int64		{ return ParserBase::TT_INT64; }
+uint		{ return ParserBase::TT_UINT; }
+uint8		{ return ParserBase::TT_UINT8; }
+uint16		{ return ParserBase::TT_UINT16; }
+uint32		{ return ParserBase::TT_UINT32; }
+uint64		{ return ParserBase::TT_UINT64; }
 float		{ return ParserBase::TT_FLOAT; }
 double		{ return ParserBase::TT_DOUBLE; }
 

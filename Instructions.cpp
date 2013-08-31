@@ -72,7 +72,7 @@ void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
 	switch (type->isFloating() + valueType->isFloating()) {
 	case 0: // both int
 		if (type->intSize() > valueType->intSize())
-			op = Instruction::SExt;
+			op = valueType->isUnsigned()? Instruction::ZExt : Instruction::SExt;
 		else if (type->intSize() < valueType->intSize())
 			op = Instruction::Trunc;
 		else
@@ -80,9 +80,9 @@ void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
 		break;
 	case 1: // int and float
 		if (valueType->isInteger())
-			op = Instruction::SIToFP;
+			op = valueType->isUnsigned()? Instruction::UIToFP : Instruction::SIToFP;
 		else
-			op = Instruction::FPToSI;
+			op = type->isUnsigned()? Instruction::FPToUI : Instruction::FPToSI;
 		break;
 	case 2: // both float
 		op = type->isDouble()? Instruction::FPExt : Instruction::FPTrunc;
@@ -102,9 +102,13 @@ BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 	case '*':
 		return type->isFloating()? Instruction::FMul : Instruction::Mul;
 	case '/':
-		return type->isFloating()? Instruction::FDiv : Instruction::SDiv;
+		if (type->isFloating())
+			return Instruction::FDiv;
+		return type->isUnsigned()? Instruction::UDiv : Instruction::SDiv;
 	case '%':
-		return type->isFloating()? Instruction::FRem : Instruction::SRem;
+		if (type->isFloating())
+			return Instruction::FRem;
+		return type->isUnsigned()? Instruction::URem : Instruction::SRem;
 	case '+':
 	case ParserBase::TT_INC:
 		return type->isFloating()? Instruction::FAdd : Instruction::Add;

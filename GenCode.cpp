@@ -70,6 +70,15 @@ SType* NBaseType::getType(CodeContext& context)
 		return SType::getInt(context, 32);
 	case ParserBase::TT_INT64:
 		return SType::getInt(context, 64);
+	case ParserBase::TT_UINT8:
+		return SType::getInt(context, 8, true);
+	case ParserBase::TT_UINT16:
+		return SType::getInt(context, 16, true);
+	case ParserBase::TT_UINT:
+	case ParserBase::TT_UINT32:
+		return SType::getInt(context, 32, true);
+	case ParserBase::TT_UINT64:
+		return SType::getInt(context, 64, true);
 	case ParserBase::TT_FLOAT:
 		return SType::getFloat(context);
 	case ParserBase::TT_DOUBLE:
@@ -683,8 +692,16 @@ RValue NBoolConst::genValue(CodeContext& context)
 
 RValue NIntConst::genValue(CodeContext& context)
 {
-	static const map<string, int> suffix = {{"i8", 8}, {"i16", 16}, {"i32", 32}, {"i64", 64}};
-	auto bits = 32; // default is int32
+	static const map<string, SType*> suffix = {
+		{"i8", SType::getInt(context, 8)},
+		{"u8", SType::getInt(context, 8, true)},
+		{"i16", SType::getInt(context, 16)},
+		{"u16", SType::getInt(context, 16, true)},
+		{"i32", SType::getInt(context, 32)},
+		{"u32", SType::getInt(context, 32, true)},
+		{"i64", SType::getInt(context, 64)},
+		{"u64", SType::getInt(context, 64, true)} };
+	auto type = SType::getInt(context, 32); // default is int32
 
 	auto data = getValueAndSuffix();
 	if (data.size() > 1) {
@@ -692,11 +709,11 @@ RValue NIntConst::genValue(CodeContext& context)
 		if (suf == suffix.end())
 			context.addError("invalid integer suffix: " + data[1]);
 		else
-			bits = suf->second;
+			type = suf->second;
 	}
 	string intVal(data[0], base == 10? 0:2);
-	auto val = ConstantInt::get(Type::getIntNTy(context, bits), intVal, base);
-	return RValue(val, SType::getInt(context, bits));
+	auto val = ConstantInt::get((IntegerType*) type->type(), intVal, base);
+	return RValue(val, type);
 }
 
 RValue NFloatConst::genValue(CodeContext& context)

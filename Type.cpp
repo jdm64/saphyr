@@ -26,9 +26,9 @@ SType* SType::getBool(CodeContext& context)
 	return context.typeManager.getBool();
 }
 
-SType* SType::getInt(CodeContext& context, int bitWidth)
+SType* SType::getInt(CodeContext& context, int bitWidth, bool isUnsigned)
 {
-	return context.typeManager.getInt(bitWidth);
+	return context.typeManager.getInt(bitWidth, isUnsigned);
 }
 
 SType* SType::getFloat(CodeContext& context, bool doubleType)
@@ -54,23 +54,27 @@ SType* SType::opType(CodeContext& context, SType* ltype, SType* rtype, bool int3
 	else if (btype & FLOATING)
 		return SType::getFloat(context);
 
-	auto lbits = ltype->intSize();
-	auto rbits = rtype->intSize();
+	auto lbits = ltype->intSize() - !ltype->isUnsigned();
+	auto rbits = rtype->intSize() - !rtype->isUnsigned();
 	if (lbits > rbits)
-		return (int32min && lbits < 32)? SType::getInt(context, 32) : ltype;
+		return (int32min && lbits < 31)? SType::getInt(context, 32) : ltype;
 	else
-		return (int32min && rbits < 32)? SType::getInt(context, 32) : rtype;
+		return (int32min && rbits < 31)? SType::getInt(context, 32) : rtype;
 }
 
 TypeManager::TypeManager(LLVMContext& ctx)
 : context(ctx)
 {
 	voidTy = smart_stype(SType::VOID, Type::getVoidTy(context), 0, nullptr);
-	boolTy = smart_stype(SType::INTEGER, Type::getInt1Ty(context), 1, nullptr);
+	boolTy = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt1Ty(context), 1, nullptr);
 	int8Ty = smart_stype(SType::INTEGER, Type::getInt8Ty(context), 8, nullptr);
 	int16Ty = smart_stype(SType::INTEGER, Type::getInt16Ty(context), 16, nullptr);
 	int32Ty = smart_stype(SType::INTEGER, Type::getInt32Ty(context), 32, nullptr);
 	int64Ty = smart_stype(SType::INTEGER, Type::getInt64Ty(context), 64, nullptr);
+	uint8Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt8Ty(context), 8, nullptr);
+	uint16Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt16Ty(context), 16, nullptr);
+	uint32Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt32Ty(context), 32, nullptr);
+	uint64Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt64Ty(context), 64, nullptr);
 	floatTy = smart_stype(SType::FLOATING, Type::getFloatTy(context), 0, nullptr);
 	doubleTy = smart_stype(SType::FLOATING | SType::DOUBLE, Type::getDoubleTy(context), 0, nullptr);
 }

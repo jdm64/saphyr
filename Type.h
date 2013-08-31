@@ -46,7 +46,8 @@ protected:
 	: tclass(typeClass), ltype(type), tsize(size), subtype(subtype) {}
 
 public:
-	enum { VOID = 0x1, INTEGER = 0x2, FLOATING = 0x4, DOUBLE = 0x8, ARRAY = 0x10, FUNCTION = 0x20 };
+	enum { VOID = 0x1, INTEGER = 0x2, UNSIGNED = 0x4, FLOATING = 0x8, DOUBLE = 0x10,
+		ARRAY = 0x20, FUNCTION = 0x40 };
 
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
@@ -62,7 +63,7 @@ public:
 
 	static SType* getBool(CodeContext& context);
 
-	static SType* getInt(CodeContext& context, int bitWidth);
+	static SType* getInt(CodeContext& context, int bitWidth, bool isUnsigned = false);
 
 	static SType* getFloat(CodeContext& context, bool doubleType = false);
 
@@ -93,6 +94,11 @@ public:
 	bool isInteger() const
 	{
 		return tclass & INTEGER;
+	}
+
+	bool isUnsigned() const
+	{
+		return tclass & UNSIGNED;
 	}
 
 	int intSize() const
@@ -177,7 +183,8 @@ private:
 	LLVMContext& context;
 
 	// built-in types
-	STypePtr voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy;
+	STypePtr voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
+		uint8Ty, uint16Ty, uint32Ty, uint64Ty;
 
 	// array types
 	map<pair<SType*, uint64_t>, STypePtr> arrMap;
@@ -198,14 +205,14 @@ public:
 		return boolTy.get();
 	}
 
-	SType* getInt(int bitWidth) const
+	SType* getInt(int bitWidth, bool isUnsigned = false) const
 	{
 		switch (bitWidth) {
 		case 1:  return boolTy.get();
-		case 8:  return int8Ty.get();
-		case 16: return int16Ty.get();
-		case 32: return int32Ty.get();
-		case 64: return int64Ty.get();
+		case 8:  return isUnsigned? uint8Ty.get() : int8Ty.get();
+		case 16: return isUnsigned? uint16Ty.get() : int16Ty.get();
+		case 32: return isUnsigned? uint32Ty.get() : int32Ty.get();
+		case 64: return isUnsigned? uint64Ty.get() : int64Ty.get();
 		default: return nullptr;
 		}
 	}
