@@ -59,22 +59,36 @@ void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
 		return;
 	}
 
-	Value* val;
-	if (type->isFloating()) {
-		if (valueType->isFloating())
-			val = CastInst::CreateFPCast(value, *type, "", context);
-		else
-			val = new SIToFPInst(value, *type, "", context);
-	} else if (type->isBool()) {
+	if (type->isBool()) {
 		// cast to bool is value != 0
 		auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
 		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
-		val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context);
-	} else if (valueType->isFloating()) {
-		val = new FPToSIInst(value, *type, "", context);
-	} else {
-		val = CastInst::CreateIntegerCast(value, *type, true, "", context);
+		auto val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context);
+		value = RValue(val, type);
+		return;
 	}
+
+	Instruction::CastOps op;
+	switch (type->isFloating() + valueType->isFloating()) {
+	case 0: // both int
+		if (type->intSize() > valueType->intSize())
+			op = Instruction::SExt;
+		else if (type->intSize() < valueType->intSize())
+			op = Instruction::Trunc;
+		else
+			return; // same int size; no need to cast
+		break;
+	case 1: // int and float
+		if (valueType->isInteger())
+			op = Instruction::SIToFP;
+		else
+			op = Instruction::FPToSI;
+		break;
+	case 2: // both float
+		op = type->isDouble()? Instruction::FPExt : Instruction::FPTrunc;
+		break;
+	}
+	auto val = CastInst::Create(op, value, *type, "", context);
 	value = RValue(val, type);
 }
 
