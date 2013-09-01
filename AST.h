@@ -385,7 +385,7 @@ class NParameter : public NDeclaration
 
 public:
 	NParameter(NDataType* type, string* name)
-	: NDeclaration(name), type(type), arg(RValue::null()) {}
+	: NDeclaration(name), type(type) {}
 
 	// NOTE: this must be called before genCode()
 	void setArgument(RValue argument)

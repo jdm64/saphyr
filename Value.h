@@ -34,11 +34,6 @@ public:
 	RValue(Value* value, SType* type)
 	: val(value), ty(type) {}
 
-	static RValue null()
-	{
-		return RValue(nullptr, nullptr);
-	}
-
 	static RValue getZero(SType* type)
 	{
 		return RValue(Constant::getNullValue(*type), type);
@@ -91,11 +86,6 @@ public:
 
 	LValue(Value* value, SType* type)
 	: RValue(value, type) {}
-
-	static LValue null()
-	{
-		return LValue(nullptr, nullptr);
-	}
 };
 
 #endif

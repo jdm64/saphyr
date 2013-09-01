@@ -106,7 +106,7 @@ RValue NVariable::genValue(CodeContext& context)
 {
 	auto var = loadVar(context);
 	if (!var)
-		return RValue::null();
+		return context.errValue();
 	auto load = new LoadInst(var, "", context);
 	return RValue(load, var.stype());
 }
@@ -125,10 +125,10 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	auto indexVal = index->genValue(context);
 
 	if (!indexVal) {
-		return RValue::null();
+		return indexVal;
 	} else if (indexVal.stype()->isArray()) {
 		context.addError("array index is not able to be cast to an int");
-		return RValue::null();
+		return RValue();
 	}
 	Inst::CastMatch(indexVal, SType::getInt(context, 64), context);
 
@@ -139,11 +139,11 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	auto var = context.loadVar(name);
 	if (!var) {
 		context.addError("variable " + *name + " not declared");
-		return RValue::null();
+		return var;
 	}
 	if (!var.stype()->isArray()) {
 		context.addError("variable " + *name + " is not an array");
-		return RValue::null();
+		return RValue();
 	}
 	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
 	return RValue(getEl, var.stype()->arrType());
@@ -159,7 +159,7 @@ void NParameter::genCode(CodeContext& context)
 
 void NVariableDecl::genCode(CodeContext& context)
 {
-	auto initValue = initExp? initExp->genValue(context) : RValue::null();
+	auto initValue = initExp? initExp->genValue(context) : RValue();
 	auto varType = type->getType(context);
 
 	if (!varType) { // auto type
@@ -191,7 +191,7 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 		context.addError("global variables only support constant value initializer");
 		return;
 	}
-	auto initValue = initExp? initExp->genValue(context) : RValue::null();
+	auto initValue = initExp? initExp->genValue(context) : RValue();
 	auto varType = type->getType(context);
 
 	if (!varType) { // auto type
@@ -290,7 +290,7 @@ void NReturnStatement::genCode(CodeContext& context)
 		context.addError(func->name().str() + " function declared non-void, but void return found");
 		return;
 	}
-	auto returnVal = value? value->genValue(context) : RValue::null();
+	auto returnVal = value? value->genValue(context) : RValue();
 	if (returnVal)
 		Inst::CastMatch(returnVal, funcReturn, context);
 	ReturnInst::Create(context, returnVal, context);
@@ -498,8 +498,8 @@ RValue NAssignment::genValue(CodeContext& context)
 	auto lhsVar = lhs->loadVar(context);
 	auto rhsExp = rhs->genValue(context);
 
-	if (!(lhsVar && rhsExp))
-		return RValue::null();
+	if (!lhsVar)
+		return context.errValue();
 
 	if (oper != '=') {
 		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context), lhsVar.stype());
@@ -577,9 +577,6 @@ RValue NCompareOperator::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto rhsExp = rhs->genValue(context);
 
-	if (!(rhsExp && lhsExp))
-		return RValue::null();
-
 	return Inst::Cmp(oper, lhsExp, rhsExp, context);
 }
 
@@ -587,9 +584,6 @@ RValue NBinaryMathOperator::genValue(CodeContext& context)
 {
 	auto lhsExp = lhs->genValue(context);
 	auto rhsExp = rhs->genValue(context);
-
-	if (!(lhsExp && rhsExp))
-		return RValue::null();
 
 	return Inst::BinaryOp(oper, lhsExp, rhsExp, context);
 }
@@ -644,7 +638,7 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 		return Inst::BinaryOp('^', RValue::getAllOne(type), unaryExp, context);
 	default:
 		context.addError("invalid unary operator " + to_string(oper));
-		return RValue::null();
+		return context.errValue();
 	}
 }
 
@@ -653,7 +647,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	auto func = context.getFunction(name);
 	if (!func) {
 		context.addError("function " + *name + " not defined");
-		return RValue::null();
+		return context.errValue();
 	}
 	auto argCount = arguments->size();
 	auto paramCount = func->stype()->numParams();
@@ -675,8 +669,6 @@ RValue NFunctionCall::genValue(CodeContext& context)
 RValue NIncrement::genValue(CodeContext& context)
 {
 	auto varVal = variable->genValue(context);
-	if (!varVal)
-		return RValue::null();
 
 	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(varVal.stype()), context);
 	new StoreInst(result, context.loadVar(variable->getName()), context);

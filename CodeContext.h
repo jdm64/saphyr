@@ -52,7 +52,7 @@ public:
 	LValue loadVar(string* name) const
 	{
 		auto varData = table.find(*name);
-		return varData != table.end()? varData->second : LValue::null();
+		return varData != table.end()? varData->second : LValue();
 	}
 };
 
@@ -275,6 +275,11 @@ public:
 	BasicBlock* createBlock() const
 	{
 		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
+	}
+
+	RValue errValue() const
+	{
+		return RValue::getZero(typeManager.getInt(32));
 	}
 
 	void genCode(NStatementList stms);
