@@ -319,7 +319,7 @@ parameter
 	;
 data_type
 	: base_type
-	| '[' TT_INTEGER ']' base_type
+	| '[' TT_INTEGER ']' data_type
 	{
 		$$ = new NArrayType($2, $4);
 	}
@@ -562,7 +562,7 @@ variable_expresion
 	{
 		$$ = new NVariable($1);
 	}
-	| TT_IDENTIFIER '[' expression ']'
+	| variable_expresion '[' expression ']'
 	{
 		$$ = new NArrayVariable($1, $3);
 	}

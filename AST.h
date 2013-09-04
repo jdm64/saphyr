@@ -341,7 +341,7 @@ public:
 
 	virtual RValue loadVar(CodeContext& context);
 
-	string* getName()
+	string* getName() const
 	{
 		return name;
 	}
@@ -359,13 +359,19 @@ public:
 
 class NArrayVariable : public NVariable
 {
+	NVariable* arrVar;
 	NExpression* index;
 
 public:
-	NArrayVariable(string* name, NExpression* index)
-	: NVariable(name), index(index) {}
+	NArrayVariable(NVariable* arrVar, NExpression* index)
+	: NVariable(nullptr), arrVar(arrVar), index(index) {}
 
 	RValue loadVar(CodeContext& context);
+
+	string* getName() const
+	{
+		return arrVar->getName();
+	}
 
 	NodeType getNodeType()
 	{
@@ -374,6 +380,7 @@ public:
 
 	~NArrayVariable()
 	{
+		delete arrVar;
 		delete index;
 	}
 };

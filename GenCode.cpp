@@ -136,13 +136,11 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	indexes.push_back(zero);
 	indexes.push_back(indexVal);
 
-	auto var = context.loadVar(name);
+	auto var = arrVar->loadVar(context);
 	if (!var) {
-		context.addError("variable " + *name + " not declared");
 		return var;
-	}
-	if (!var.stype()->isArray()) {
-		context.addError("variable " + *name + " is not an array");
+	} else if (!var.stype()->isArray()) {
+		context.addError("variable " + *getName() + " is not an array");
 		return RValue();
 	}
 	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
