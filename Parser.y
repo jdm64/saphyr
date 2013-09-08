@@ -560,7 +560,7 @@ increment_decrement_operator
 variable_expresion
 	: TT_IDENTIFIER
 	{
-		$$ = new NVariable($1);
+		$$ = new NBaseVariable($1);
 	}
 	| variable_expresion '[' expression ']'
 	{

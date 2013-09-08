@@ -224,21 +224,17 @@ public:
 
 class NDataType : public Node
 {
-protected:
-	int type;
-
 public:
-	NDataType(int type)
-	: type(type) {}
-
 	virtual SType* getType(CodeContext& context) = 0;
 };
 
 class NBaseType : public NDataType
 {
+	int type;
+
 public:
 	NBaseType(int type)
-	: NDataType(type) {}
+	: type(type) {}
 
 	SType* getType(CodeContext& context);
 
@@ -250,13 +246,12 @@ public:
 
 class NArrayType : public NDataType
 {
-private:
 	NDataType* baseType;
 	string* strSize;
 
 public:
 	NArrayType(string* size, NDataType* baseType)
-	: NDataType(0), baseType(baseType), strSize(size) {}
+	: baseType(baseType), strSize(size) {}
 
 	SType* getType(CodeContext& context);
 
@@ -330,16 +325,23 @@ public:
 
 class NVariable : public NExpression
 {
-protected:
+public:
+	RValue genValue(CodeContext& context);
+
+	virtual RValue loadVar(CodeContext& context) = 0;
+
+	virtual string* getName() const = 0;
+};
+
+class NBaseVariable : public NVariable
+{
 	string* name;
 
 public:
-	NVariable(string* name)
+	NBaseVariable(string* name)
 	: name(name) {}
 
-	RValue genValue(CodeContext& context);
-
-	virtual RValue loadVar(CodeContext& context);
+	RValue loadVar(CodeContext& context);
 
 	string* getName() const
 	{
@@ -351,7 +353,7 @@ public:
 		return NodeType::Variable;
 	}
 
-	~NVariable()
+	~NBaseVariable()
 	{
 		delete name;
 	}
@@ -364,7 +366,7 @@ class NArrayVariable : public NVariable
 
 public:
 	NArrayVariable(NVariable* arrVar, NExpression* index)
-	: NVariable(nullptr), arrVar(arrVar), index(index) {}
+	: arrVar(arrVar), index(index) {}
 
 	RValue loadVar(CodeContext& context);
 

@@ -111,7 +111,7 @@ RValue NVariable::genValue(CodeContext& context)
 	return RValue(load, var.stype());
 }
 
-RValue NVariable::loadVar(CodeContext& context)
+RValue NBaseVariable::loadVar(CodeContext& context)
 {
 	auto var = context.loadVar(name);
 	if (!var)
