@@ -133,7 +133,7 @@ class CodeContext : public SymbolTable
 public:
 	CodeContext(string& filename)
 	: filename(filename), returncode(0), module(new Module(filename, getGlobalContext())),
-	typeManager(module->getContext()), funcManager(module)
+	typeManager(module), funcManager(module)
 	{
 	}
 

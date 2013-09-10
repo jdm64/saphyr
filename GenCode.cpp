@@ -621,6 +621,16 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 	return retVal;
 }
 
+RValue NSizeOfOperator::genValue(CodeContext& context)
+{
+	auto stype = dtype? dtype->getType(context) : exp->genValue(context).stype();
+	if (!stype)
+		return context.errValue();
+	auto itype = SType::getInt(context, 64, true);
+	auto size = ConstantInt::get(*itype, SType::allocSize(context, stype));
+	return RValue(size, itype);
+}
+
 RValue NUnaryMathOperator::genValue(CodeContext& context)
 {
 	auto unaryExp = unary->genValue(context);

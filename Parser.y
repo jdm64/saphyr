@@ -31,7 +31,7 @@
 %token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT
+%token TT_DEFAULT TT_SIZEOF
 %left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX
@@ -58,6 +58,7 @@
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
+%type <t_exp> sizeof_expression
 // function prototype
 %type <t_func_pro> function_prototype
 // lists
@@ -513,6 +514,7 @@ null_coalescing_expression
 	;
 unary_expression
 	: primary_expression
+	| sizeof_expression
 	| unary_operator primary_expression
 	{
 		$$ = new NUnaryMathOperator($1, $2);
@@ -523,6 +525,20 @@ unary_operator
 	| '-' { $$ = '-'; }
 	| '!' { $$ = '!'; }
 	| '~' { $$ = '~'; }
+	;
+sizeof_expression
+	: TT_SIZEOF primary_expression
+	{
+		$$ = new NSizeOfOperator($2);
+	}
+	| TT_SIZEOF data_type
+	{
+		$$ = new NSizeOfOperator($2);
+	}
+	| TT_SIZEOF '(' data_type ')'
+	{
+		$$ = new NSizeOfOperator($3);
+	}
 	;
 primary_expression
 	: function_call

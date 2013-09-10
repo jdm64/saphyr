@@ -46,6 +46,11 @@ SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, vector<
 	return context.typeManager.getFunction(returnTy, params);
 }
 
+uint64_t SType::allocSize(CodeContext& context, SType* type)
+{
+	return context.typeManager.allocSize(type);
+}
+
 SType* SType::opType(CodeContext& context, SType* ltype, SType* rtype, bool int32min)
 {
 	auto btype = ltype->tclass | rtype->tclass;
@@ -62,9 +67,10 @@ SType* SType::opType(CodeContext& context, SType* ltype, SType* rtype, bool int3
 		return (int32min && rbits < 31)? SType::getInt(context, 32) : rtype;
 }
 
-TypeManager::TypeManager(LLVMContext& ctx)
-: context(ctx)
+TypeManager::TypeManager(Module* module)
+: datalayout(module)
 {
+	auto &context = module->getContext();
 	voidTy = smart_stype(SType::VOID, Type::getVoidTy(context), 0, nullptr);
 	boolTy = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt1Ty(context), 1, nullptr);
 	int8Ty = smart_stype(SType::INTEGER, Type::getInt8Ty(context), 8, nullptr);

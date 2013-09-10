@@ -20,9 +20,11 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <llvm/Module.h>
 #include <llvm/LLVMContext.h>
 #include <llvm/Type.h>
 #include <llvm/DerivedTypes.h>
+#include <llvm/DataLayout.h>
 #include <llvm/Support/raw_ostream.h>
 
 // forward declaration
@@ -56,6 +58,8 @@ public:
 			vec.push_back(*item);
 		return vec;
 	}
+
+	static uint64_t allocSize(CodeContext& context, SType* type);
 
 	static SType* opType(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
 
@@ -180,7 +184,7 @@ class TypeManager
 	using SFuncPtr = unique_ptr<SFunctionType>;
 
 private:
-	LLVMContext& context;
+	DataLayout datalayout;
 
 	// built-in types
 	STypePtr voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
@@ -193,7 +197,12 @@ private:
 	map<pair<SType*, vector<SType*> >, SFuncPtr> funcMap;
 
 public:
-	TypeManager(LLVMContext& ctx);
+	TypeManager(Module* module);
+
+	uint64_t allocSize(SType* stype)
+	{
+		return datalayout.getTypeAllocSize(*stype);
+	}
 
 	SType* getVoid() const
 	{

@@ -17,7 +17,6 @@
 #ifndef __FUNCTION_H__
 #define __FUNCTION_H__
 
-#include <llvm/Module.h>
 #include <llvm/Function.h>
 #include "Type.h"
 

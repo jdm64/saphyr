@@ -866,6 +866,32 @@ public:
 	}
 };
 
+class NSizeOfOperator : public NExpression
+{
+	NDataType* dtype;
+	NExpression* exp;
+
+public:
+	NSizeOfOperator(NDataType* dtype)
+	: dtype(dtype), exp(nullptr) {}
+
+	NSizeOfOperator(NExpression* exp)
+	: dtype(nullptr), exp(exp) {}
+
+	RValue genValue(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::SizeOfOp;
+	}
+
+	~NSizeOfOperator()
+	{
+		delete dtype;
+		delete exp;
+	}
+};
+
 class NUnaryOperator : public NExpression
 {
 protected:
