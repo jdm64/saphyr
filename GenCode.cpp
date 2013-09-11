@@ -144,7 +144,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 		return RValue();
 	}
 	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
-	return RValue(getEl, var.stype()->arrType());
+	return RValue(getEl, var.stype()->subType());
 }
 
 void NParameter::genCode(CodeContext& context)

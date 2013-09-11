@@ -130,7 +130,7 @@ public:
 		return tclass & FUNCTION;
 	}
 
-	SType* arrType() const
+	SType* subType() const
 	{
 		return subtype;
 	}
