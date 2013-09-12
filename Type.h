@@ -138,7 +138,6 @@ public:
 
 class SFunctionType : public SType
 {
-private:
 	friend class TypeManager;
 
 	vector<SType*> params;
@@ -183,7 +182,6 @@ class TypeManager
 	using STypePtr = unique_ptr<SType>;
 	using SFuncPtr = unique_ptr<SFunctionType>;
 
-private:
 	DataLayout datalayout;
 
 	// built-in types

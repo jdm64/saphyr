@@ -23,7 +23,6 @@
 
 class RValue
 {
-private:
 	Value* val;
 	SType* ty;
 

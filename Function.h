@@ -22,7 +22,6 @@
 
 class SFunction
 {
-private:
 	friend class FunctionManager;
 
 	Function* func;
@@ -74,7 +73,6 @@ public:
 
 class FunctionManager
 {
-private:
 	using SFuncPtr = unique_ptr<SFunction>;
 	using SFuncTyPtr = unique_ptr<SFunctionType>;
 
