@@ -29,3 +29,6 @@ fullclean : clean
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+cppcheck :
+	cppcheck --enable=all --inconclusive ./
