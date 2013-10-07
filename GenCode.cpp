@@ -623,7 +623,15 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 
 RValue NSizeOfOperator::genValue(CodeContext& context)
 {
-	auto stype = dtype? dtype->getType(context) : exp->genValue(context).stype();
+	SType* stype = nullptr;
+	switch (type) {
+	case DATA:
+		stype = dtype->getType(context);
+		break;
+	case EXP:
+		stype = exp->genValue(context).stype();
+		break;
+	}
 	if (!stype)
 		return context.errValue();
 	auto itype = SType::getInt(context, 64, true);

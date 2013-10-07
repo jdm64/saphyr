@@ -37,11 +37,11 @@
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX
 
 // data types
-%type <t_dtype> data_type base_type
+%type <t_dtype> data_type base_type explicit_data_type
 // parameter
 %type <t_param> parameter
 // variable
-%type <t_var> variable_expresion
+%type <t_var> variable_expresion explicit_variable_expresion
 // variable declaration
 %type <t_var_decl> variable global_variable
 // operators
@@ -319,6 +319,9 @@ parameter
 	}
 	;
 data_type
+	: explicit_data_type
+	;
+explicit_data_type
 	: base_type
 	| '[' TT_INTEGER ']' data_type
 	{
@@ -527,15 +530,19 @@ unary_operator
 	| '~' { $$ = '~'; }
 	;
 sizeof_expression
-	: TT_SIZEOF primary_expression
+	: TT_SIZEOF explicit_variable_expresion
 	{
 		$$ = new NSizeOfOperator($2);
 	}
-	| TT_SIZEOF data_type
+	| TT_SIZEOF explicit_data_type
 	{
 		$$ = new NSizeOfOperator($2);
 	}
-	| TT_SIZEOF '(' data_type ')'
+	| TT_SIZEOF '(' explicit_variable_expresion ')'
+	{
+		$$ = new NSizeOfOperator($3);
+	}
+	| TT_SIZEOF '(' explicit_data_type ')'
 	{
 		$$ = new NSizeOfOperator($3);
 	}
@@ -578,7 +585,10 @@ variable_expresion
 	{
 		$$ = new NBaseVariable($1);
 	}
-	| variable_expresion '[' expression ']'
+	| explicit_variable_expresion
+	;
+explicit_variable_expresion
+	: variable_expresion '[' expression ']'
 	{
 		$$ = new NArrayVariable($1, $3);
 	}

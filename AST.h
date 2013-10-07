@@ -868,15 +868,18 @@ public:
 
 class NSizeOfOperator : public NExpression
 {
+	enum OfType { DATA, EXP };
+
+	OfType type;
 	NDataType* dtype;
 	NExpression* exp;
 
 public:
 	NSizeOfOperator(NDataType* dtype)
-	: dtype(dtype), exp(nullptr) {}
+	: type(DATA), dtype(dtype), exp(nullptr) {}
 
 	NSizeOfOperator(NExpression* exp)
-	: dtype(nullptr), exp(exp) {}
+	: type(EXP), dtype(nullptr), exp(exp) {}
 
 	RValue genValue(CodeContext& context);
 
