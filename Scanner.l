@@ -74,6 +74,7 @@ if		{ return ParserBase::TT_IF; }
 redo		{ return ParserBase::TT_REDO; }
 return		{ return ParserBase::TT_RETURN; }
 sizeof		{ return ParserBase::TT_SIZEOF; }
+struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }
 until		{ return ParserBase::TT_UNTIL; }
 while		{ return ParserBase::TT_WHILE; }

@@ -30,6 +30,7 @@
 // forward declaration
 class CodeContext;
 class SFunctionType;
+class SStructType;
 
 using namespace std;
 using namespace llvm;
@@ -38,6 +39,7 @@ class SType
 {
 protected:
 	friend class TypeManager;
+	friend class SUserType;
 
 	int tclass;
 	Type* ltype;
@@ -49,7 +51,7 @@ protected:
 
 public:
 	enum { VOID = 0x1, INTEGER = 0x2, UNSIGNED = 0x4, FLOATING = 0x8, DOUBLE = 0x10,
-		ARRAY = 0x20, FUNCTION = 0x40 };
+		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80 };
 
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
@@ -125,6 +127,16 @@ public:
 		return tclass & ARRAY;
 	}
 
+	bool isStruct() const
+	{
+		return tclass & STRUCT;
+	}
+
+	bool isComposite() const
+	{
+		return tclass & (ARRAY | STRUCT);
+	}
+
 	bool isFunction() const
 	{
 		return tclass & FUNCTION;
@@ -133,6 +145,41 @@ public:
 	SType* subType() const
 	{
 		return subtype;
+	}
+};
+
+class SUserType : public SType
+{
+	friend class SStructType;
+
+	SUserType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
+	: SType(typeClass, type, size, subtype) {}
+
+public:
+	static SUserType* lookup(CodeContext& context, string* name);
+
+	static void createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
+};
+
+class SStructType : public SUserType
+{
+	friend class TypeManager;
+
+	map<string, pair<int, SType*>> items;
+
+	SStructType(StructType* type, const vector<pair<string, SType*> >& structure)
+	: SUserType(STRUCT, type, structure.size())
+	{
+		int i = 0;
+		for (auto var : structure)
+			items[var.first] = make_pair(i++, var.second);
+	}
+
+public:
+	pair<int, SType*>* getItem(string* name)
+	{
+		auto iter = items.find(*name);
+		return iter != items.end()? &iter->second : nullptr;
 	}
 };
 
@@ -176,11 +223,13 @@ public:
 
 #define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
 #define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
+#define smart_strucTy(type, structure) unique_ptr<SUserType>(new SStructType(type, structure))
 
 class TypeManager
 {
 	using STypePtr = unique_ptr<SType>;
 	using SFuncPtr = unique_ptr<SFunctionType>;
+	using SUserPtr = unique_ptr<SUserType>;
 
 	DataLayout datalayout;
 
@@ -190,6 +239,9 @@ class TypeManager
 
 	// array types
 	map<pair<SType*, uint64_t>, STypePtr> arrMap;
+
+	// user types
+	map<string, SUserPtr> usrMap;
 
 	// function types
 	map<pair<SType*, vector<SType*> >, SFuncPtr> funcMap;
@@ -245,6 +297,23 @@ public:
 			item = smart_sfuncTy(func, returnTy, args);
 		}
 		return item.get();
+	}
+
+	SUserType* lookupUserType(string* name)
+	{
+		return usrMap[*name].get();
+	}
+
+	void createStruct(string* name, vector<pair<string, SType*>> structure)
+	{
+		SUserPtr& item = usrMap[*name];
+		if (item.get())
+			return;
+		vector<Type*> elements;
+		for (auto item : structure)
+			elements.push_back(*item.second);
+		auto type = StructType::create(elements, *name);
+		item = smart_strucTy(type, structure);
 	}
 };
 

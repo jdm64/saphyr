@@ -18,6 +18,7 @@
 #define __AST_H__
 
 #include <vector>
+#include <set>
 #include <llvm/Instructions.h>
 #include "Constants.h"
 #include "Value.h"
@@ -267,6 +268,27 @@ public:
 	}
 };
 
+class NUserType : public NDataType
+{
+	string* name;
+
+public:
+	NUserType(string* name)
+	: name(name) {}
+
+	SType* getType(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::UserType;
+	}
+
+	~NUserType()
+	{
+		delete name;
+	}
+};
+
 class NVariableDecl : public NDeclaration
 {
 protected:
@@ -281,6 +303,11 @@ public:
 	void setDataType(NDataType* qtype)
 	{
 		type = qtype;
+	}
+
+	bool hasInit() const
+	{
+		return initExp;
 	}
 
 	void genCode(CodeContext& context);
@@ -387,6 +414,34 @@ public:
 	}
 };
 
+class NMemberVariable : public NVariable
+{
+	NVariable* baseVar;
+	string* memberName;
+
+public:
+	NMemberVariable(NVariable* baseVar, string* memberName)
+	: baseVar(baseVar), memberName(memberName) {}
+
+	RValue loadVar(CodeContext& context);
+
+	string* getName() const
+	{
+		return baseVar->getName();
+	}
+
+	NodeType getNodeType()
+	{
+		return NodeType::MemberVariable;
+	}
+
+	~NMemberVariable()
+	{
+		delete baseVar;
+		delete memberName;
+	}
+};
+
 class NParameter : public NDeclaration
 {
 	NDataType* type;
@@ -435,6 +490,8 @@ public:
 		variables->genCode(type, context);
 	}
 
+	void addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
+
 	NodeType getNodeType()
 	{
 		return NodeType::VariableDecGroup;
@@ -444,6 +501,28 @@ public:
 	{
 		delete variables;
 		delete type;
+	}
+};
+typedef NodeList<NVariableDeclGroup> NVariableDeclGroupList;
+
+class NStructDeclaration : public NDeclaration
+{
+	NVariableDeclGroupList* list;
+
+public:
+	NStructDeclaration(string* name, NVariableDeclGroupList* list)
+	: NDeclaration(name), list(list) {}
+
+	void genCode(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::StructDec;
+	}
+
+	~NStructDeclaration()
+	{
+		delete list;
 	}
 };
 
@@ -868,18 +947,22 @@ public:
 
 class NSizeOfOperator : public NExpression
 {
-	enum OfType { DATA, EXP };
+	enum OfType { DATA, EXP, NAME };
 
 	OfType type;
 	NDataType* dtype;
 	NExpression* exp;
+	string* name;
 
 public:
 	NSizeOfOperator(NDataType* dtype)
-	: type(DATA), dtype(dtype), exp(nullptr) {}
+	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr) {}
 
 	NSizeOfOperator(NExpression* exp)
-	: type(EXP), dtype(nullptr), exp(exp) {}
+	: type(EXP), dtype(nullptr), exp(exp), name(nullptr) {}
+
+	NSizeOfOperator(string* name)
+	: type(NAME), dtype(nullptr), exp(nullptr), name(name) {}
 
 	RValue genValue(CodeContext& context);
 
@@ -892,6 +975,7 @@ public:
 	{
 		delete dtype;
 		delete exp;
+		delete name;
 	}
 };
 

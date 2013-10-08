@@ -18,6 +18,7 @@
 	NParameterList* t_parlist;
 	NVariableDeclList* t_varlist;
 	NSwitchCaseList* t_caslist;
+	NVariableDeclGroupList* t_var_dec_list;
 }
 
 // predefined constants
@@ -31,7 +32,7 @@
 %token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT TT_SIZEOF
+%token TT_DEFAULT TT_SIZEOF TT_STRUCT
 %left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX
@@ -52,6 +53,7 @@
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
+%type <t_stm> struct_declaration
 %type <t_case> switch_case
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
@@ -68,6 +70,7 @@
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
 %type <t_caslist> switch_case_list
+%type <t_var_dec_list> variable_declarations_list
 
 %%
 
@@ -91,11 +94,18 @@ declaration_list
 declaration
 	: function_declaration
 	| global_variable_declaration
+	| struct_declaration
 	;
 global_variable_declaration
 	: data_type global_variable_list ';'
 	{
 		$$ = new NVariableDeclGroup($1, $2);
+	}
+	;
+struct_declaration
+	: TT_STRUCT TT_IDENTIFIER '{' variable_declarations_list '}'
+	{
+		$$ = new NStructDeclaration($2, $4);
 	}
 	;
 function_declaration
@@ -249,10 +259,26 @@ else_statement
 		$$ = $2;
 	}
 	;
+variable_declarations_list
+	: variable_declarations ';'
+	{
+		$$ = new NVariableDeclGroupList;
+		$$->addItem((NVariableDeclGroup*) $1);
+	}
+	| variable_declarations_list variable_declarations ';'
+	{
+		$1->addItem((NVariableDeclGroup*) $2);
+	}
+	;
 variable_declarations
-	: data_type variable_list
+	: explicit_data_type variable_list
 	{
 		$$ = new NVariableDeclGroup($1, $2);
+	}
+	| TT_IDENTIFIER variable_list
+	{
+		auto type = new NUserType($1);
+		$$ = new NVariableDeclGroup(type, $2);
 	}
 	;
 variable_list
@@ -320,6 +346,10 @@ parameter
 	;
 data_type
 	: explicit_data_type
+	| TT_IDENTIFIER
+	{
+		$$ = new NUserType($1);
+	}
 	;
 explicit_data_type
 	: base_type
@@ -538,11 +568,19 @@ sizeof_expression
 	{
 		$$ = new NSizeOfOperator($2);
 	}
+	| TT_SIZEOF TT_IDENTIFIER
+	{
+		$$ = new NSizeOfOperator($2);
+	}
 	| TT_SIZEOF '(' explicit_variable_expresion ')'
 	{
 		$$ = new NSizeOfOperator($3);
 	}
 	| TT_SIZEOF '(' explicit_data_type ')'
+	{
+		$$ = new NSizeOfOperator($3);
+	}
+	| TT_SIZEOF '(' TT_IDENTIFIER ')'
 	{
 		$$ = new NSizeOfOperator($3);
 	}
@@ -591,6 +629,10 @@ explicit_variable_expresion
 	: variable_expresion '[' expression ']'
 	{
 		$$ = new NArrayVariable($1, $3);
+	}
+	| variable_expresion '.' TT_IDENTIFIER
+	{
+		$$ = new NMemberVariable($1, $3);
 	}
 	;
 value_expression

@@ -24,7 +24,7 @@ enum class NodeType
 	ReturnStm, Assignment, CompareOp, BinaryMathOp, FunctionCall, IntConst, FloatConst,
 	LogicalOp, WhileStm, LoopBranch, ForStm, TernaryOp, Increment, UnaryMath, IfStm,
 	NullCoalescing, FunctionProto, Label, Goto, GlobalVarDecl, ArrayType, ArrayVariable,
-	SwitchStm, SwitchCase, BoolConst, SizeOfOp
+	SwitchStm, SwitchCase, BoolConst, SizeOfOp, UserType, StructDec, MemberVariable
 };
 
 #endif

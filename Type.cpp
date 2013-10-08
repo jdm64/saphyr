@@ -67,6 +67,16 @@ SType* SType::opType(CodeContext& context, SType* ltype, SType* rtype, bool int3
 		return (int32min && rbits < 31)? SType::getInt(context, 32) : rtype;
 }
 
+SUserType* SUserType::lookup(CodeContext& context, string* name)
+{
+	return context.typeManager.lookupUserType(name);
+}
+
+void SUserType::createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure)
+{
+	context.typeManager.createStruct(name, structure);
+}
+
 TypeManager::TypeManager(Module* module)
 : datalayout(module)
 {

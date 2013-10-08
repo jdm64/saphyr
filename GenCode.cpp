@@ -102,6 +102,14 @@ SType* NArrayType::getType(CodeContext& context)
 	return btype? SType::getArray(context, btype, arrSize) : nullptr;
 }
 
+SType* NUserType::getType(CodeContext& context)
+{
+	auto type = SUserType::lookup(context, name);
+	if (!type)
+		context.addError(*name + " type not declared");
+	return type;
+}
+
 RValue NVariable::genValue(CodeContext& context)
 {
 	auto var = loadVar(context);
@@ -126,7 +134,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 
 	if (!indexVal) {
 		return indexVal;
-	} else if (indexVal.stype()->isArray()) {
+	} else if (indexVal.stype()->isComposite()) {
 		context.addError("array index is not able to be cast to an int");
 		return RValue();
 	}
@@ -145,6 +153,30 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	}
 	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
 	return RValue(getEl, var.stype()->subType());
+}
+
+RValue NMemberVariable::loadVar(CodeContext& context)
+{
+	auto var = baseVar->loadVar(context);
+	auto varType = var.stype();
+	if (!varType->isStruct()) {
+		context.addError(*getName() + " is not a struct");
+		return RValue();
+	}
+
+	auto structType = (SStructType*) varType;
+	auto item = structType->getItem(memberName);
+	if (!item) {
+		context.addError(*getName() +" doesn't have member " + *memberName);
+		return RValue();
+	}
+
+	vector<Value*> indexes;
+	indexes.push_back(RValue::getZero(SType::getInt(context, 32)));
+	indexes.push_back(ConstantInt::get(*SType::getInt(context, 32), item->first));
+
+	auto getEl = GetElementPtrInst::Create(var.value(), indexes, "", context);
+	return RValue(getEl, item->second);
 }
 
 void NParameter::genCode(CodeContext& context)
@@ -212,6 +244,40 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 
 	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), *name);
 	context.storeGlobalVar(LValue(var, varType), name);
+}
+
+void NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
+{
+	auto stype = type->getType(context);
+	if (!type) {
+		context.addError("stuct members must not have auto type");
+		return;
+	}
+	for (auto var : *variables) {
+		if (var->hasInit())
+			context.addError("structs don't support variable initialization");
+		auto name = var->getName();
+		auto res = memberNames.insert(*name);
+		if (!res.second) {
+			context.addError("member name " + *name + " already declared");
+			continue;
+		}
+		structVector.push_back(make_pair(*name, stype));
+	}
+}
+
+void NStructDeclaration::genCode(CodeContext& context)
+{
+	auto utype = SUserType::lookup(context, name);
+	if (utype) {
+		context.addError(*name + " type already declared");
+		return;
+	}
+	vector<pair<string, SType*> > structVars;
+	set<string> memberNames;
+	for (auto item : *list)
+		item->addMembers(structVars, memberNames, context);
+	SUserType::createStruct(context, name, structVars);
 }
 
 void NFunctionPrototype::genCode(CodeContext& context)
@@ -630,6 +696,22 @@ RValue NSizeOfOperator::genValue(CodeContext& context)
 		break;
 	case EXP:
 		stype = exp->genValue(context).stype();
+		break;
+	case NAME:
+		auto isType = SUserType::lookup(context, name);
+		auto isVar = context.loadVar(name);
+
+		if (isType && isVar) {
+			context.addError(*name + " is ambigious, both a type and a variable");
+			return context.errValue();
+		} else if (isType) {
+			stype = isType;
+		} else if (isVar) {
+			stype = isVar.stype();
+		} else {
+			context.addError(*name + " is not declared");
+			return context.errValue();
+		}
 		break;
 	}
 	if (!stype)

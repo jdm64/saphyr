@@ -107,6 +107,7 @@ class CodeContext : public SymbolTable
 {
 	friend class SType;
 	friend class SFunction;
+	friend class SUserType;
 
 	vector<BasicBlock*> funcBlocks;
 	vector<BasicBlock*> continueBlocks;
