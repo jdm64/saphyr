@@ -547,6 +547,7 @@ null_coalescing_expression
 	;
 unary_expression
 	: primary_expression
+	| increment_decrement_expression
 	| sizeof_expression
 	| unary_operator primary_expression
 	{
@@ -588,7 +589,10 @@ sizeof_expression
 primary_expression
 	: function_call
 	| value_expression
-	| increment_decrement_expression
+	| variable_expresion
+	{
+		$$ = $1;
+	}
 	| '(' expression ')'
 	{
 		$$ = $2;
@@ -601,11 +605,7 @@ function_call
 	}
 	;
 increment_decrement_expression
-	: variable_expresion
-	{
-		$$ = $1;
-	}
-	| increment_decrement_operator variable_expresion
+	: increment_decrement_operator variable_expresion
 	{
 		$$ = new NIncrement($2, $1, false);
 	}
