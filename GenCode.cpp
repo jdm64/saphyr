@@ -138,7 +138,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 		context.addError("array index is not able to be cast to an int");
 		return RValue();
 	}
-	Inst::CastMatch(indexVal, SType::getInt(context, 64), context);
+	Inst::CastTo(indexVal, SType::getInt(context, 64), context);
 
 	vector<Value*> indexes;
 	indexes.push_back(zero);
@@ -210,7 +210,7 @@ void NVariableDecl::genCode(CodeContext& context)
 	context.storeLocalVar(var, name);
 
 	if (initValue) {
-		Inst::CastMatch(initValue, varType, context);
+		Inst::CastTo(initValue, varType, context);
 		new StoreInst(initValue, var, context);
 	}
 }
@@ -356,7 +356,7 @@ void NReturnStatement::genCode(CodeContext& context)
 	}
 	auto returnVal = value? value->genValue(context) : RValue();
 	if (returnVal)
-		Inst::CastMatch(returnVal, funcReturn, context);
+		Inst::CastTo(returnVal, funcReturn, context);
 	ReturnInst::Create(context, returnVal, context);
 	context.pushBlock(context.createBlock());
 }
@@ -390,7 +390,7 @@ void NWhileStatement::genCode(CodeContext& context)
 void NSwitchStatement::genCode(CodeContext& context)
 {
 	auto switchValue = value->genValue(context);
-	Inst::CastMatch(switchValue, SType::getInt(context, 32), context);
+	Inst::CastTo(switchValue, SType::getInt(context, 32), context);
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
@@ -569,7 +569,7 @@ RValue NAssignment::genValue(CodeContext& context)
 		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context), lhsVar.stype());
 		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
-	Inst::CastMatch(rhsExp, lhsVar.stype(), context);
+	Inst::CastTo(rhsExp, lhsVar.stype(), context);
 	new StoreInst(rhsExp, lhsVar, context);
 
 	return rhsExp;
@@ -578,7 +578,7 @@ RValue NAssignment::genValue(CodeContext& context)
 RValue NTernaryOperator::genValue(CodeContext& context)
 {
 	auto condExp = condition->genValue(context);
-	Inst::CastMatch(condExp, SType::getBool(context), context);
+	Inst::CastTo(condExp, SType::getBool(context), context);
 
 	RValue trueExp, falseExp, retVal;
 	if (Inst::isComplexExp(trueVal->getNodeType()) || Inst::isComplexExp(falseVal->getNodeType())) {
@@ -625,7 +625,7 @@ RValue NLogicalOperator::genValue(CodeContext& context)
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = rhs->genValue(context);
-	Inst::CastMatch(rhsExp, SType::getBool(context), context);
+	Inst::CastTo(rhsExp, SType::getBool(context), context);
 	BranchInst::Create(secondBlock, context);
 
 	context.pushBlock(secondBlock);
@@ -658,7 +658,7 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto condition = lhsExp;
 
-	Inst::CastMatch(condition, SType::getBool(context), context);
+	Inst::CastTo(condition, SType::getBool(context), context);
 	if (Inst::isComplexExp(rhs->getNodeType())) {
 		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
@@ -757,7 +757,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	int i = 0;
 	for (auto arg : *arguments) {
 		auto argExp = arg->genValue(context);
-		Inst::CastMatch(argExp, funcType->getParam(i++), context);
+		Inst::CastTo(argExp, funcType->getParam(i++), context);
 		exp_list.push_back(argExp);
 	}
 	auto call = CallInst::Create(*func, exp_list, "", context);

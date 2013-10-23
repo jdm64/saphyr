@@ -63,7 +63,7 @@ public:
 
 	static uint64_t allocSize(CodeContext& context, SType* type);
 
-	static SType* opType(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
+	static SType* numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
 
 	static SType* getVoid(CodeContext& context);
 
@@ -107,7 +107,7 @@ public:
 		return tclass & UNSIGNED;
 	}
 
-	int intSize() const
+	int size() const
 	{
 		return tsize;
 	}

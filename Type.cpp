@@ -51,7 +51,7 @@ uint64_t SType::allocSize(CodeContext& context, SType* type)
 	return context.typeManager.allocSize(type);
 }
 
-SType* SType::opType(CodeContext& context, SType* ltype, SType* rtype, bool int32min)
+SType* SType::numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min)
 {
 	auto btype = ltype->tclass | rtype->tclass;
 	if (btype & DOUBLE)
@@ -59,8 +59,8 @@ SType* SType::opType(CodeContext& context, SType* ltype, SType* rtype, bool int3
 	else if (btype & FLOATING)
 		return SType::getFloat(context);
 
-	auto lbits = ltype->intSize() - !ltype->isUnsigned();
-	auto rbits = rtype->intSize() - !rtype->isUnsigned();
+	auto lbits = ltype->size() - !ltype->isUnsigned();
+	auto rbits = rtype->size() - !rtype->isUnsigned();
 	if (lbits > rbits)
 		return (int32min && lbits < 31)? SType::getInt(context, 32) : ltype;
 	else

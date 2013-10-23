@@ -28,8 +28,8 @@ void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
 	}
 
 	auto toType = SType::opType(context, ltype, rtype);
-	CastMatch(lhs, toType, context);
-	CastMatch(rhs, toType, context);
+	CastTo(lhs, toType, context);
+	CastTo(rhs, toType, context);
 }
 
 void Inst::CastMatch(RValue& lhs, RValue& rhs, CodeContext& context)
@@ -44,12 +44,12 @@ void Inst::CastMatch(RValue& lhs, RValue& rhs, CodeContext& context)
 		return;
 	}
 
-	auto toType = SType::opType(context, ltype, rtype, false);
-	CastMatch(lhs, toType, context);
-	CastMatch(rhs, toType, context);
+	auto toType = SType::numericConv(context, ltype, rtype, upcast);
+	CastTo(lhs, toType, context);
+	CastTo(rhs, toType, context);
 }
 
-void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
+void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 {
 	auto valueType = value.stype();
 
@@ -72,9 +72,9 @@ void Inst::CastMatch(RValue& value, SType* type, CodeContext& context)
 	Instruction::CastOps op;
 	switch (type->isFloating() + valueType->isFloating()) {
 	case 0: // both int
-		if (type->intSize() > valueType->intSize())
+		if (type->size() > valueType->size())
 			op = valueType->isUnsigned()? Instruction::ZExt : Instruction::SExt;
-		else if (type->intSize() < valueType->intSize())
+		else if (type->size() < valueType->size())
 			op = Instruction::Trunc;
 		else
 			return; // same int size; no need to cast
@@ -187,7 +187,7 @@ RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
 {
 	auto condValue = condExp? condExp->genValue(context) : RValue::getOne(SType::getBool(context));
-	CastMatch(condValue, SType::getBool(context), context);
+	CastTo(condValue, SType::getBool(context), context);
 	BranchInst::Create(trueBlock, falseBlock, condValue, context);
 	return condValue;
 }
