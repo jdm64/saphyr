@@ -17,22 +17,7 @@
 #include "Instructions.h"
 #include "parserbase.h"
 
-void Inst::CastUp(RValue& lhs, RValue& rhs, CodeContext& context)
-{
-	auto ltype = lhs.stype();
-	auto rtype = rhs.stype();
-
-	if (ltype->isComposite() || rtype->isComposite()) {
-		context.addError("can not cast composite types");
-		return;
-	}
-
-	auto toType = SType::opType(context, ltype, rtype);
-	CastTo(lhs, toType, context);
-	CastTo(rhs, toType, context);
-}
-
-void Inst::CastMatch(RValue& lhs, RValue& rhs, CodeContext& context)
+void Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast)
 {
 	auto ltype = lhs.stype();
 	auto rtype = rhs.stype();
@@ -178,7 +163,7 @@ bool Inst::isComplexExp(NodeType type)
 
 RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
-	CastUp(lhs, rhs, context);
+	CastMatch(context, lhs, rhs, true);
 	auto llvmOp = getOperator(type, lhs.stype(), context);
 	auto llvmVal = BinaryOperator::Create(llvmOp, lhs, rhs, "", context);
 	return RValue(llvmVal, lhs.stype());
@@ -194,7 +179,7 @@ RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* 
 
 RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
-	CastMatch(lhs, rhs, context);
+	CastMatch(context, lhs, rhs);
 	auto pred = getPredicate(type, lhs.stype(), context);
 	auto op = rhs.stype()->isFloating()? Instruction::FCmp : Instruction::ICmp;
 	auto cmp = CmpInst::Create(op, pred, lhs, rhs, "", context);
