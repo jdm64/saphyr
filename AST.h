@@ -268,6 +268,29 @@ public:
 	}
 };
 
+class NVecType : public NDataType
+{
+	NBaseType* baseType;
+	string* strSize;
+
+public:
+	NVecType(string* size, NBaseType* baseType)
+	: baseType(baseType), strSize(size) {}
+
+	SType* getType(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::VecType;
+	}
+
+	~NVecType()
+	{
+		delete baseType;
+		delete strSize;
+	}
+};
+
 class NUserType : public NDataType
 {
 	string* name;

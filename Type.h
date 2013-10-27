@@ -51,7 +51,7 @@ protected:
 
 public:
 	enum { VOID = 0x1, INTEGER = 0x2, UNSIGNED = 0x4, FLOATING = 0x8, DOUBLE = 0x10,
-		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80 };
+		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80, VEC = 0x100 };
 
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
@@ -74,6 +74,8 @@ public:
 	static SType* getFloat(CodeContext& context, bool doubleType = false);
 
 	static SType* getArray(CodeContext& context, SType* arrType, uint64_t size);
+
+	static SType* getVec(CodeContext& context, SType* vecType, uint64_t size);
 
 	static SFunctionType* getFunction(CodeContext& context, SType* returnTy, vector<SType*> params);
 
@@ -122,9 +124,24 @@ public:
 		return tclass & DOUBLE;
 	}
 
+	bool isNumeric() const
+	{
+		return tclass & (INTEGER | FLOATING);
+	}
+
 	bool isArray() const
 	{
 		return tclass & ARRAY;
+	}
+
+	bool isVec() const
+	{
+		return tclass & VEC;
+	}
+
+	bool isSequence() const
+	{
+		return tclass & (ARRAY | VEC);
 	}
 
 	bool isStruct() const
@@ -134,7 +151,7 @@ public:
 
 	bool isComposite() const
 	{
-		return tclass & (ARRAY | STRUCT);
+		return tclass & (ARRAY | STRUCT | VEC);
 	}
 
 	bool isFunction() const
@@ -237,8 +254,9 @@ class TypeManager
 	STypePtr voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
 		uint8Ty, uint16Ty, uint32Ty, uint64Ty;
 
-	// array types
+	// array & vec types
 	map<pair<SType*, uint64_t>, STypePtr> arrMap;
+	map<pair<SType*, uint64_t>, STypePtr> vecMap;
 
 	// user types
 	map<string, SUserPtr> usrMap;
@@ -286,6 +304,14 @@ public:
 		STypePtr &item = arrMap[make_pair(arrType, size)];
 		if (!item.get())
 			item = smart_stype(SType::ARRAY, ArrayType::get(*arrType, size), size, arrType);
+		return item.get();
+	}
+
+	SType* getVec(SType* vecType, int64_t size)
+	{
+		STypePtr &item = arrMap[make_pair(vecType, size)];
+		if (!item.get())
+			item = smart_stype(SType::VEC, VectorType::get(*vecType, size), size, vecType);
 		return item.get();
 	}
 

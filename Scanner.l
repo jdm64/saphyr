@@ -77,6 +77,7 @@ sizeof		{ return ParserBase::TT_SIZEOF; }
 struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }
 until		{ return ParserBase::TT_UNTIL; }
+vec		{ return ParserBase::TT_VEC; }
 while		{ return ParserBase::TT_WHILE; }
 
 0b{BIN}+{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_INT_BIN; }

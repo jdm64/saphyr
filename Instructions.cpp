@@ -80,7 +80,9 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 
 BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 {
-	if (type->isComposite()) {
+	if (type->isVec()) {
+		type = type->subType();
+	} else if (type->isComposite()) {
 		context.addError("can not perform operation on composite types");
 		return Instruction::Add;
 	}

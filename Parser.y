@@ -25,7 +25,7 @@
 %token <t_int> TT_FALSE TT_TRUE
 // qualifiers
 %token <t_int> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
-%token <t_int> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64
+%token <t_int> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64 TT_VEC
 // operators
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
@@ -356,6 +356,10 @@ explicit_data_type
 	| '[' TT_INTEGER ']' data_type
 	{
 		$$ = new NArrayType($2, $4);
+	}
+	| TT_VEC '<' TT_INTEGER ',' base_type '>'
+	{
+		$$ = new NVecType($3, (NBaseType*) $5);
 	}
 	;
 base_type

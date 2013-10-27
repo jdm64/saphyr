@@ -102,6 +102,27 @@ SType* NArrayType::getType(CodeContext& context)
 	return btype? SType::getArray(context, btype, arrSize) : nullptr;
 }
 
+SType* NVecType::getType(CodeContext& context)
+{
+	auto size = ConstantInt::get(Type::getIntNTy(context, 64), *strSize, 10);
+	auto arrSize = size->getSExtValue();
+
+	if (arrSize <= 0) {
+		context.addError("vec size must be greater than 0");
+		return nullptr;
+	}
+	auto btype = baseType->getType(context);
+	if (!btype) {
+		context.addError("vec type can not be auto");
+		return nullptr;
+	}
+	if (!btype->isNumeric()) {
+		context.addError("vec type only supports basic numeric types");
+		return nullptr;
+	}
+	return SType::getVec(context, btype, arrSize);
+}
+
 SType* NUserType::getType(CodeContext& context)
 {
 	auto type = SUserType::lookup(context, name);
@@ -129,7 +150,6 @@ RValue NBaseVariable::loadVar(CodeContext& context)
 
 RValue NArrayVariable::loadVar(CodeContext& context)
 {
-	auto zero = RValue::getZero(SType::getInt(context, 32));
 	auto indexVal = index->genValue(context);
 
 	if (!indexVal) {
@@ -138,19 +158,20 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 		context.addError("array index is not able to be cast to an int");
 		return RValue();
 	}
-	Inst::CastTo(indexVal, SType::getInt(context, 64), context);
-
-	vector<Value*> indexes;
-	indexes.push_back(zero);
-	indexes.push_back(indexVal);
 
 	auto var = arrVar->loadVar(context);
 	if (!var) {
 		return var;
-	} else if (!var.stype()->isArray()) {
-		context.addError("variable " + *getName() + " is not an array");
+	} else if (!var.stype()->isSequence()) {
+		context.addError("variable " + *getName() + " is not an array or vec");
 		return RValue();
 	}
+	Inst::CastTo(indexVal, SType::getInt(context, 64), context);
+
+	vector<Value*> indexes;
+	indexes.push_back(RValue::getZero(SType::getInt(context, 32)));
+	indexes.push_back(indexVal);
+
 	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
 	return RValue(getEl, var.stype()->subType());
 }
