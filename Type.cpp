@@ -82,6 +82,11 @@ void SUserType::createStruct(CodeContext& context, string* name, const vector<pa
 	context.typeManager.createStruct(name, structure);
 }
 
+void SUserType::createUnion(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure)
+{
+	context.typeManager.createUnion(name, structure);
+}
+
 TypeManager::TypeManager(Module* module)
 : datalayout(module)
 {

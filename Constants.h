@@ -25,7 +25,7 @@ enum class NodeType
 	LogicalOp, WhileStm, LoopBranch, ForStm, TernaryOp, Increment, UnaryMath, IfStm,
 	NullCoalescing, FunctionProto, Label, Goto, GlobalVarDecl, ArrayType, ArrayVariable,
 	SwitchStm, SwitchCase, BoolConst, SizeOfOp, UserType, StructDec, MemberVariable,
-	VecType
+	VecType, UnionDec
 };
 
 #endif

@@ -51,7 +51,7 @@ protected:
 
 public:
 	enum { VOID = 0x1, INTEGER = 0x2, UNSIGNED = 0x4, FLOATING = 0x8, DOUBLE = 0x10,
-		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80, VEC = 0x100 };
+		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80, VEC = 0x100, UNION = 0x200 };
 
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
@@ -139,6 +139,11 @@ public:
 		return tclass & VEC;
 	}
 
+	bool isUnion() const
+	{
+		return tclass & UNION;
+	}
+
 	bool isSequence() const
 	{
 		return tclass & (ARRAY | VEC);
@@ -151,7 +156,7 @@ public:
 
 	bool isComposite() const
 	{
-		return tclass & (ARRAY | STRUCT | VEC);
+		return tclass & (ARRAY | STRUCT | VEC | UNION);
 	}
 
 	bool isFunction() const
@@ -168,6 +173,7 @@ public:
 class SUserType : public SType
 {
 	friend class SStructType;
+	friend class SUnionType;
 
 	SUserType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
 	: SType(typeClass, type, size, subtype) {}
@@ -176,6 +182,8 @@ public:
 	static SUserType* lookup(CodeContext& context, string* name);
 
 	static void createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
+
+	static void createUnion(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
 };
 
 class SStructType : public SUserType
@@ -197,6 +205,27 @@ public:
 	{
 		auto iter = items.find(*name);
 		return iter != items.end()? &iter->second : nullptr;
+	}
+};
+
+class SUnionType : public SUserType
+{
+	friend class TypeManager;
+
+	map<string, SType*> items;
+
+	SUnionType(StructType* type, const vector<pair<string, SType*> >& structure, uint64_t size)
+	: SUserType(UNION, type, size)
+	{
+		for (auto var : structure)
+			items[var.first] = var.second;
+	}
+
+public:
+	SType* getItem(string* name)
+	{
+		auto iter = items.find(*name);
+		return iter != items.end()? iter->second : nullptr;
 	}
 };
 
@@ -241,6 +270,7 @@ public:
 #define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
 #define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
 #define smart_strucTy(type, structure) unique_ptr<SUserType>(new SStructType(type, structure))
+#define smart_unionTy(type, structure, size) unique_ptr<SUserType>(new SUnionType(type, structure, size))
 
 class TypeManager
 {
@@ -340,6 +370,25 @@ public:
 			elements.push_back(*item.second);
 		auto type = StructType::create(elements, *name);
 		item = smart_strucTy(type, structure);
+	}
+
+	void createUnion(string* name, vector<pair<string, SType*>> structure)
+	{
+		SUserPtr& item = usrMap[*name];
+		if (item.get())
+			return;
+		int size = 0;
+		SType* type = nullptr;
+		for (auto item : structure) {
+			auto tsize = allocSize(item.second);
+			if (tsize > size) {
+				size = tsize;
+				type = item.second;
+			}
+		}
+		vector<Type*> elements;
+		elements.push_back(*type);
+		item = smart_unionTy(StructType::create(elements, *name), structure, size);
 	}
 };
 

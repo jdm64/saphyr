@@ -180,12 +180,18 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 {
 	auto var = baseVar->loadVar(context);
 	auto varType = var.stype();
-	if (!varType->isStruct()) {
-		context.addError(*getName() + " is not a struct");
-		return RValue();
-	}
 
-	auto structType = (SStructType*) varType;
+	if (varType->isStruct())
+		return loadStruct(context, var, static_cast<SStructType*>(varType));
+	else if (varType->isUnion())
+		return loadUnion(context, var, static_cast<SUnionType*>(varType));
+
+	context.addError(*getName() + " is not a struct or union");
+	return RValue();
+}
+
+RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType)
+{
 	auto item = structType->getItem(memberName);
 	if (!item) {
 		context.addError(*getName() +" doesn't have member " + *memberName);
@@ -196,8 +202,21 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 	indexes.push_back(RValue::getZero(SType::getInt(context, 32)));
 	indexes.push_back(ConstantInt::get(*SType::getInt(context, 32), item->first));
 
-	auto getEl = GetElementPtrInst::Create(var.value(), indexes, "", context);
+	auto getEl = GetElementPtrInst::Create(baseValue, indexes, "", context);
 	return RValue(getEl, item->second);
+}
+
+RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType)
+{
+	auto item = unionType->getItem(memberName);
+	if (!item) {
+		context.addError(*getName() +" doesn't have member " + *memberName);
+		return RValue();
+	}
+
+	auto ptr = PointerType::get(*item, 0);
+	auto castEl = new BitCastInst(baseValue, ptr, "", context);
+	return RValue(castEl, item);
 }
 
 void NParameter::genCode(CodeContext& context)
@@ -298,7 +317,7 @@ void NStructDeclaration::genCode(CodeContext& context)
 	set<string> memberNames;
 	for (auto item : *list)
 		item->addMembers(structVars, memberNames, context);
-	SUserType::createStruct(context, name, structVars);
+	createUserType(structVars, context);
 }
 
 void NFunctionPrototype::genCode(CodeContext& context)

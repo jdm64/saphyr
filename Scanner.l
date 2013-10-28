@@ -76,6 +76,7 @@ return		{ return ParserBase::TT_RETURN; }
 sizeof		{ return ParserBase::TT_SIZEOF; }
 struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }
+union		{ return ParserBase::TT_UNION; }
 until		{ return ParserBase::TT_UNTIL; }
 vec		{ return ParserBase::TT_VEC; }
 while		{ return ParserBase::TT_WHILE; }

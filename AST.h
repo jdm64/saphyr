@@ -448,6 +448,10 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
+	RValue loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType);
+
+	RValue loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType);
+
 	string* getName() const
 	{
 		return baseVar->getName();
@@ -532,6 +536,12 @@ class NStructDeclaration : public NDeclaration
 {
 	NVariableDeclGroupList* list;
 
+protected:
+	virtual void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
+	{
+		SUserType::createStruct(context, name, structVars);
+	}
+
 public:
 	NStructDeclaration(string* name, NVariableDeclGroupList* list)
 	: NDeclaration(name), list(list) {}
@@ -546,6 +556,24 @@ public:
 	~NStructDeclaration()
 	{
 		delete list;
+	}
+};
+
+class NUnionDeclaration : public NStructDeclaration
+{
+protected:
+	void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
+	{
+		SUserType::createUnion(context, name, structVars);
+	}
+
+public:
+	NUnionDeclaration(string* name, NVariableDeclGroupList* list)
+	: NStructDeclaration(name, list) {}
+
+	NodeType getNodeType()
+	{
+		return NodeType::UnionDec;
 	}
 };
 
