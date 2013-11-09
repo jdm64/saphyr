@@ -804,6 +804,14 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	return RValue(call, func->returnTy());
 }
 
+RValue NFunctionCall::loadVar(CodeContext& context)
+{
+	auto value = genValue(context);
+	auto stackAlloc = new AllocaInst(value.type(), "", context);
+	new StoreInst(value, stackAlloc, context);
+	return RValue(stackAlloc, value.stype());
+}
+
 RValue NIncrement::genValue(CodeContext& context)
 {
 	auto varVal = variable->genValue(context);

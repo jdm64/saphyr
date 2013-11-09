@@ -1060,7 +1060,7 @@ public:
 	}
 };
 
-class NFunctionCall : public NExpression
+class NFunctionCall : public NVariable
 {
 	string* name;
 	NExpressionList* arguments;
@@ -1070,6 +1070,13 @@ public:
 	: name(name), arguments(arguments) {}
 
 	RValue genValue(CodeContext& context);
+
+	RValue loadVar(CodeContext& context);
+
+	string* getName() const
+	{
+		return name;
+	}
 
 	NodeType getNodeType()
 	{

@@ -42,7 +42,7 @@
 // parameter
 %type <t_param> parameter
 // variable
-%type <t_var> variable_expresion explicit_variable_expresion
+%type <t_var> variable_expresion explicit_variable_expresion function_call
 // variable declaration
 %type <t_var_decl> variable global_variable
 // operators
@@ -58,7 +58,7 @@
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
-%type <t_exp> primary_expression function_call logical_or_expression logical_and_expression expression_or_empty
+%type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
 %type <t_exp> sizeof_expression
 // function prototype
@@ -598,8 +598,7 @@ sizeof_expression
 	}
 	;
 primary_expression
-	: function_call
-	| value_expression
+	: value_expression
 	| variable_expresion
 	{
 		$$ = $1;
@@ -634,6 +633,7 @@ variable_expresion
 	{
 		$$ = new NBaseVariable($1);
 	}
+	| function_call
 	| explicit_variable_expresion
 	;
 explicit_variable_expresion
