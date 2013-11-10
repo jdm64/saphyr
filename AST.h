@@ -203,6 +203,29 @@ public:
 	}
 };
 
+class NCharConst : public NConstant
+{
+	string* value;
+
+public:
+	NCharConst(string* charStr)
+	{
+		value = new string(charStr->substr(1, charStr->length() - 2));
+	}
+
+	RValue genValue(CodeContext& context);
+
+	NodeType getNodeType()
+	{
+		return NodeType::CharConst;
+	}
+
+	~NCharConst()
+	{
+		delete value;
+	}
+};
+
 class NDeclaration : public NStatement
 {
 protected:

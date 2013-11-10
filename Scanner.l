@@ -88,4 +88,5 @@ while		{ return ParserBase::TT_WHILE; }
 {FLOAT}{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_FLOATING; }
 {NAME}			{ SAVE_TOKEN return ParserBase::TT_IDENTIFIER; }
 
-.	{ return matched()[0]; }
+\'(\\.|[^'])\'	{ SAVE_TOKEN return ParserBase::TT_CHAR_LIT; }
+.		{ return matched()[0]; }

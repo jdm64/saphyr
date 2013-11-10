@@ -35,7 +35,7 @@
 %token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION
 %left TT_ELSE
 // constants and names
-%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX
+%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT
 
 // data types
 %type <t_dtype> data_type base_type explicit_data_type
@@ -650,6 +650,10 @@ value_expression
 	: TT_INTEGER
 	{
 		$$ = new NIntConst($1);
+	}
+	| TT_CHAR_LIT
+	{
+		$$ = new NCharConst($1);
 	}
 	| TT_INT_BIN
 	{

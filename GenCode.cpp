@@ -872,3 +872,26 @@ RValue NFloatConst::genValue(CodeContext& context)
 	auto fp = ConstantFP::get(*type, data[0]);
 	return RValue(fp, type);
 }
+
+RValue NCharConst::genValue(CodeContext& context)
+{
+	char cVal = '\0';
+	if (value->at(0) == '\\' && value->length() > 1) {
+		switch (value->at(1)) {
+		case '0': cVal = '\0'; break;
+		case 'a': cVal = '\a'; break;
+		case 'b': cVal = '\b'; break;
+		case 'f': cVal = '\f'; break;
+		case 'n': cVal = '\n'; break;
+		case 'r': cVal = '\r'; break;
+		case 't': cVal = '\t'; break;
+		case 'v': cVal = '\v'; break;
+		default: cVal = value->at(1);
+		}
+	} else {
+		cVal = value->at(0);
+	}
+	auto type = SType::getInt(context, 8, true);
+	auto val = ConstantInt::get((IntegerType*) type->type(), cVal);
+	return RValue(val, type);
+}
