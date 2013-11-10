@@ -11,7 +11,7 @@ HEX		[0-9a-fA-F]
 LETTER		[a-zA-Z_]
 NUMBER		{DEC}+
 NAME		{LETTER}({LETTER}|{DEC})*
-FLOAT		{NUMBER}'.'{NUMBER}
+FLOAT		{NUMBER}'.'{NUMBER}([eE][+-]?{NUMBER})?
 SUFFIX		_{NAME}
 
 %%
