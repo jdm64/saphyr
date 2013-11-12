@@ -5,6 +5,7 @@
 %union {
 	int t_int;
 	std::string* t_str;
+	NIntConst* t_const_int;
 	NDataType* t_dtype;
 	NVariable* t_var;
 	NParameter* t_param;
@@ -37,6 +38,8 @@
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT
 
+// integer constant
+%type <t_const_int> integer_constant
 // data types
 %type <t_dtype> data_type base_type explicit_data_type
 // parameter
@@ -230,9 +233,9 @@ switch_case_list
 	}
 	;
 switch_case
-	: TT_CASE TT_INTEGER ':' statement_list_or_empty
+	: TT_CASE integer_constant ':' statement_list_or_empty
 	{
-		$$ = new NSwitchCase(new NIntConst($2), $4);
+		$$ = new NSwitchCase($2, $4);
 	}
 	| TT_DEFAULT ':' statement_list_or_empty
 	{
@@ -360,11 +363,11 @@ data_type
 	;
 explicit_data_type
 	: base_type
-	| '[' TT_INTEGER ']' data_type
+	| '[' integer_constant ']' data_type
 	{
 		$$ = new NArrayType($2, $4);
 	}
-	| TT_VEC '<' TT_INTEGER ',' base_type '>'
+	| TT_VEC '<' integer_constant ',' base_type '>'
 	{
 		$$ = new NVecType($3, (NBaseType*) $5);
 	}
@@ -647,25 +650,13 @@ explicit_variable_expresion
 	}
 	;
 value_expression
-	: TT_INTEGER
+	: integer_constant
 	{
-		$$ = new NIntConst($1);
+		$$ = $1;
 	}
 	| TT_CHAR_LIT
 	{
 		$$ = new NCharConst($1);
-	}
-	| TT_INT_BIN
-	{
-		$$ = new NIntConst($1, 2);
-	}
-	| TT_INT_OCT
-	{
-		$$ = new NIntConst($1, 8);
-	}
-	| TT_INT_HEX
-	{
-		$$ = new NIntConst($1, 16);
 	}
 	| TT_FLOATING
 	{
@@ -678,5 +669,23 @@ value_expression
 	| TT_FALSE
 	{
 		$$ = new NBoolConst(false);
+	}
+	;
+integer_constant
+	: TT_INTEGER
+	{
+		$$ = new NIntConst($1);
+	}
+	| TT_INT_BIN
+	{
+		$$ = new NIntConst($1, 2);
+	}
+	| TT_INT_OCT
+	{
+		$$ = new NIntConst($1, 8);
+	}
+	| TT_INT_HEX
+	{
+		$$ = new NIntConst($1, 16);
 	}
 	;

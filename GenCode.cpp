@@ -91,9 +91,7 @@ SType* NBaseType::getType(CodeContext& context)
 
 SType* NArrayType::getType(CodeContext& context)
 {
-	auto size = ConstantInt::get(Type::getIntNTy(context, 64), *strSize, 10);
-	auto arrSize = size->getSExtValue();
-
+	auto arrSize = size->getInt(context);
 	if (arrSize < 0) {
 		context.addError("Array size must be non-negative");
 		return nullptr;
@@ -104,9 +102,7 @@ SType* NArrayType::getType(CodeContext& context)
 
 SType* NVecType::getType(CodeContext& context)
 {
-	auto size = ConstantInt::get(Type::getIntNTy(context, 64), *strSize, 10);
-	auto arrSize = size->getSExtValue();
-
+	auto arrSize = size->getInt(context);
 	if (arrSize <= 0) {
 		context.addError("vec size must be greater than 0");
 		return nullptr;
@@ -442,7 +438,7 @@ void NSwitchStatement::genCode(CodeContext& context)
 	bool hasDefault = false;
 	for (auto caseItem : *cases) {
 		if (caseItem->isValueCase()) {
-			auto val = static_cast<ConstantInt*>(caseItem->genValue(context).value());
+			auto val = caseItem->getValue(context);
 			if (!unique.insert(val->getSExtValue()).second)
 				context.addError("switch case values are not unique");
 			switchInst->addCase(val, caseBlock);

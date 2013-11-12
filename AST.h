@@ -183,6 +183,16 @@ public:
 
 	RValue genValue(CodeContext& context);
 
+	ConstantInt* getConstInt(CodeContext& context)
+	{
+		return static_cast<ConstantInt*>(genValue(context).value());
+	}
+
+	int64_t getInt(CodeContext& context)
+	{
+		return getConstInt(context)->getSExtValue();
+	}
+
 	NodeType getNodeType()
 	{
 		return NodeType::IntConst;
@@ -271,11 +281,11 @@ public:
 class NArrayType : public NDataType
 {
 	NDataType* baseType;
-	string* strSize;
+	NIntConst* size;
 
 public:
-	NArrayType(string* size, NDataType* baseType)
-	: baseType(baseType), strSize(size) {}
+	NArrayType(NIntConst* size, NDataType* baseType)
+	: baseType(baseType), size(size) {}
 
 	SType* getType(CodeContext& context);
 
@@ -287,18 +297,18 @@ public:
 	~NArrayType()
 	{
 		delete baseType;
-		delete strSize;
+		delete size;
 	}
 };
 
 class NVecType : public NDataType
 {
 	NBaseType* baseType;
-	string* strSize;
+	NIntConst* size;
 
 public:
-	NVecType(string* size, NBaseType* baseType)
-	: baseType(baseType), strSize(size) {}
+	NVecType(NIntConst* size, NBaseType* baseType)
+	: baseType(baseType), size(size) {}
 
 	SType* getType(CodeContext& context);
 
@@ -310,7 +320,7 @@ public:
 	~NVecType()
 	{
 		delete baseType;
-		delete strSize;
+		delete size;
 	}
 };
 
@@ -698,29 +708,28 @@ class NSwitchCase : public NStatement
 {
 	NIntConst* value;
 	NStatementList* body;
-	bool hasValue;
 
 public:
 	// used for default case
 	NSwitchCase(NStatementList* body)
-	: value(nullptr), body(body), hasValue(false) {}
+	: value(nullptr), body(body) {}
 
 	NSwitchCase(NIntConst* value, NStatementList* body)
-	: value(value), body(body), hasValue(true) {}
+	: value(value), body(body) {}
 
 	void genCode(CodeContext& context)
 	{
 		body->genCode(context);
 	}
 
-	RValue genValue(CodeContext& context)
+	ConstantInt* getValue(CodeContext& context)
 	{
-		return value->genValue(context);
+		return value->getConstInt(context);
 	}
 
 	bool isValueCase() const
 	{
-		return hasValue;
+		return value != nullptr;
 	}
 
 	bool isLastStmBranch()
