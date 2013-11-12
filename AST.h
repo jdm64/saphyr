@@ -892,10 +892,11 @@ public:
 class NLoopBranch : public NJumpStatement
 {
 	int type;
+	NIntConst* level;
 
 public:
-	NLoopBranch(int type)
-	: type(type) {}
+	NLoopBranch(int type, NIntConst* level = nullptr)
+	: type(type), level(level) {}
 
 	void genCode(CodeContext& context);
 

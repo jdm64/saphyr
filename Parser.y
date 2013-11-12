@@ -247,6 +247,10 @@ branch_statement
 	{
 		$$ = new NLoopBranch($1);
 	}
+	| branch_keyword integer_constant ';'
+	{
+		$$ = new NLoopBranch($1, $2);
+	}
 	;
 branch_keyword
 	: TT_CONTINUE { $$ = TT_CONTINUE; }

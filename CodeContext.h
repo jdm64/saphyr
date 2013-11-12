@@ -131,6 +131,12 @@ class CodeContext : public SymbolTable
 		}
 	}
 
+	BasicBlock* loopBranchLevel(const vector<BasicBlock*>& branchBlocks, int level) const
+	{
+		int idx = level > 0? branchBlocks.size() - level : abs(level) - 1;
+		return (idx >= 0 && idx < branchBlocks.size())? branchBlocks[idx] : nullptr;
+	}
+
 public:
 	CodeContext(string& filename)
 	: filename(filename), returncode(0), module(new Module(filename, getGlobalContext())),
@@ -216,9 +222,9 @@ public:
 	{
 		continueBlocks.pop_back();
 	}
-	BasicBlock* getContinueBlock() const
+	BasicBlock* getContinueBlock(int level = 1) const
 	{
-		return continueBlocks.empty()? nullptr : continueBlocks.back();
+		return loopBranchLevel(continueBlocks, level);
 	}
 
 	BasicBlock* createBreakBlock()
@@ -231,9 +237,9 @@ public:
 	{
 		breakBlocks.pop_back();
 	}
-	BasicBlock* getBreakBlock() const
+	BasicBlock* getBreakBlock(int level = 1) const
 	{
-		return breakBlocks.empty()? nullptr : breakBlocks.back();
+		return loopBranchLevel(breakBlocks, level);
 	}
 
 	BasicBlock* createRedoBlock()
@@ -246,9 +252,9 @@ public:
 	{
 		redoBlocks.pop_back();
 	}
-	BasicBlock* getRedoBlock() const
+	BasicBlock* getRedoBlock(int level = 1) const
 	{
-		return redoBlocks.empty()?  nullptr : redoBlocks.back();
+		return loopBranchLevel(redoBlocks, level);
 	}
 
 	void popLoopBranchBlocks()

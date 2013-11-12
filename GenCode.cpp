@@ -559,24 +559,25 @@ void NLoopBranch::genCode(CodeContext& context)
 {
 	BasicBlock* block;
 	string typeName;
+	auto brLevel = level? level->getInt(context) : 1;
 
 	switch (type) {
 	case ParserBase::TT_CONTINUE:
-		block = context.getContinueBlock();
+		block = context.getContinueBlock(brLevel);
 		if (!block) {
 			typeName = "continue";
 			goto error;
 		}
 		break;
 	case ParserBase::TT_REDO:
-		block = context.getRedoBlock();
+		block = context.getRedoBlock(brLevel);
 		if (!block) {
 			typeName = "redo";
 			goto error;
 		}
 		break;
 	case ParserBase::TT_BREAK:
-		block = context.getBreakBlock();
+		block = context.getBreakBlock(brLevel);
 		if (!block) {
 			typeName = "break";
 			goto error;
