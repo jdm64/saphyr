@@ -409,7 +409,12 @@ public:
 class NVariable : public NExpression
 {
 public:
-	RValue genValue(CodeContext& context);
+	RValue genValue(CodeContext& context)
+	{
+		return genValue(context, loadVar(context));
+	}
+
+	RValue genValue(CodeContext& context, RValue var);
 
 	virtual RValue loadVar(CodeContext& context) = 0;
 

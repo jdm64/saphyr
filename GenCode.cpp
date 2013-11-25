@@ -127,9 +127,8 @@ SType* NUserType::getType(CodeContext& context)
 	return type;
 }
 
-RValue NVariable::genValue(CodeContext& context)
+RValue NVariable::genValue(CodeContext& context, RValue var)
 {
-	auto var = loadVar(context);
 	if (!var)
 		return context.errValue();
 	auto load = new LoadInst(var, "", context);
@@ -811,10 +810,11 @@ RValue NFunctionCall::loadVar(CodeContext& context)
 
 RValue NIncrement::genValue(CodeContext& context)
 {
-	auto varVal = variable->genValue(context);
+	auto varPtr = variable->loadVar(context);
+	auto varVal = variable->genValue(context, varPtr);
 
 	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(varVal.stype()), context);
-	new StoreInst(result, context.loadVar(variable->getName()), context);
+	new StoreInst(result, varPtr, context);
 
 	return isPostfix? varVal : RValue(result, varVal.stype());
 }
