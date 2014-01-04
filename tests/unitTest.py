@@ -16,9 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys
+import os, sys, fnmatch
 from subprocess import call, Popen, PIPE
-from glob import glob
 
 SAPHYR_BIN = "../saphyr"
 ENCODING = "utf-8"
@@ -35,17 +34,30 @@ def runCmd(cmd):
 	out, err = p.communicate()
 	return [p.returncode, out.decode(ENCODING), err.decode(ENCODING)]
 
+def findAllTests():
+	matches = []
+	for root, dirnames, filenames in os.walk('.'):
+		root = root.strip("./")
+		for filename in fnmatch.filter(filenames, '*' + TEST_EXT):
+			matches.append(os.path.join(root, filename))
+	return matches
+
 def getFiles(files):
 	if not isinstance(files, type([])):
 		files = [files]
 	elif not files:
-		return glob("*" + TEST_EXT)
+		return findAllTests()
+
+	allTests = findAllTests()
 	fileList = []
 	for f in files:
 		dot = f.rfind('.')
 		if dot > 0:
 			f = f[0:dot]
-		fileList.extend(glob("*" + f + "*" + TEST_EXT))
+		matches = [item for item in allTests if f in item]
+		fileList.extend(matches)
+		for item in matches:
+			allTests.remove(item)
 	return fileList
 
 def createTestFiles(filename):
