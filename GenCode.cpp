@@ -351,7 +351,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 		return;
 	}
 
-	if (body->back()->getNodeType() != NodeType::ReturnStm) {
+	if (body->empty() || body->back()->getNodeType() != NodeType::ReturnStm) {
 		auto returnType = function->returnTy();
 		if (returnType->isVoid())
 			body->addItem(new NReturnStatement);

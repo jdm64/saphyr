@@ -58,6 +58,11 @@ public:
 		return NodeType::BaseNodeList;
 	}
 
+	bool empty() const
+	{
+		return list.empty();
+	}
+
 	int size() const
 	{
 		return list.size();
