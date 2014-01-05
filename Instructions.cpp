@@ -131,23 +131,38 @@ BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 
 Predicate Inst::getPredicate(int oper, SType* type, CodeContext& context)
 {
+	const static Predicate predArr[] = {
+		Predicate::FCMP_OLT, Predicate::FCMP_OGT, Predicate::FCMP_OLE,
+		Predicate::FCMP_OGE, Predicate::FCMP_ONE, Predicate::FCMP_OEQ,
+		Predicate::ICMP_ULT, Predicate::ICMP_UGT, Predicate::ICMP_ULE,
+		Predicate::ICMP_UGE, Predicate::ICMP_NE,  Predicate::ICMP_EQ,
+		Predicate::ICMP_SLT, Predicate::ICMP_SGT, Predicate::ICMP_SLE,
+		Predicate::ICMP_SGE, Predicate::ICMP_NE,  Predicate::ICMP_EQ
+	};
+
+	int offset;
 	switch (oper) {
 	case '<':
-		return type->isFloating()? Predicate::FCMP_OLT : Predicate::ICMP_SLT;
+		offset = 0; break;
 	case '>':
-		return type->isFloating()? Predicate::FCMP_OGT : Predicate::ICMP_SGT;
+		offset = 1; break;
 	case ParserBase::TT_LEQ:
-		return type->isFloating()? Predicate::FCMP_OLE : Predicate::ICMP_SLE;
+		offset = 2; break;
 	case ParserBase::TT_GEQ:
-		return type->isFloating()? Predicate::FCMP_OGE : Predicate::ICMP_SGE;
+		offset = 3; break;
 	case ParserBase::TT_NEQ:
-		return type->isFloating()? Predicate::FCMP_ONE : Predicate::ICMP_NE;
+		offset = 4; break;
 	case ParserBase::TT_EQ:
-		return type->isFloating()? Predicate::FCMP_OEQ : Predicate::ICMP_EQ;
+		offset = 5; break;
 	default:
 		context.addError("unrecognized predicate " + to_string(oper));
 		return Predicate::ICMP_EQ;
 	}
+
+	if (type->isFloating())
+		return predArr[offset];
+	offset += type->isUnsigned()? 6 : 12;
+	return predArr[offset];
 }
 
 bool Inst::isComplexExp(NodeType type)
