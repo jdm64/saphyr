@@ -165,19 +165,6 @@ Predicate Inst::getPredicate(int oper, SType* type, CodeContext& context)
 	return predArr[offset];
 }
 
-bool Inst::isComplexExp(NodeType type)
-{
-	switch (type) {
-	case NodeType::IntConst:
-	case NodeType::FloatConst:
-	case NodeType::Variable:
-	case NodeType::ArrayVariable:
-		return false;
-	default:
-		return true;
-	}
-}
-
 RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
 	CastMatch(context, lhs, rhs, true);

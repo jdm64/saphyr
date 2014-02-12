@@ -32,8 +32,6 @@ class Inst
 	static void CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast = false);
 
 public:
-	static bool isComplexExp(NodeType type);
-
 	static void CastTo(RValue& value, SType* type, CodeContext& context);
 
 	static RValue BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context);

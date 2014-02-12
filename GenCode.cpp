@@ -252,7 +252,7 @@ void NVariableDecl::genCode(CodeContext& context)
 
 void NGlobalVariableDecl::genCode(CodeContext& context)
 {
-	if (initExp && initExp->getNodeType() != NodeType::IntConst && initExp->getNodeType() != NodeType::FloatConst) {
+	if (initExp && !initExp->isConstant()) {
 		context.addError("global variables only support constant value initializer");
 		return;
 	}
@@ -351,7 +351,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 		return;
 	}
 
-	if (body->empty() || body->back()->getNodeType() != NodeType::ReturnStm) {
+	if (body->empty() || !body->back()->isTerminator()) {
 		auto returnType = function->returnTy();
 		if (returnType->isVoid())
 			body->addItem(new NReturnStatement);
@@ -617,7 +617,7 @@ RValue NTernaryOperator::genValue(CodeContext& context)
 	Inst::CastTo(condExp, SType::getBool(context), context);
 
 	RValue trueExp, falseExp, retVal;
-	if (Inst::isComplexExp(trueVal->getNodeType()) || Inst::isComplexExp(falseVal->getNodeType())) {
+	if (trueVal->isComplex() || falseVal->isComplex()) {
 		auto trueBlock = context.createBlock();
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
@@ -695,7 +695,7 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 	auto condition = lhsExp;
 
 	Inst::CastTo(condition, SType::getBool(context), context);
-	if (Inst::isComplexExp(rhs->getNodeType())) {
+	if (rhs->isComplex()) {
 		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();

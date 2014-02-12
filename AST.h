@@ -20,7 +20,6 @@
 #include <vector>
 #include <set>
 #include <llvm/Instructions.h>
-#include "Constants.h"
 #include "Value.h"
 #include "Function.h"
 
@@ -31,8 +30,6 @@ class Node
 {
 public:
 	virtual ~Node() {};
-
-	virtual NodeType getNodeType() = 0;
 };
 
 template<typename NType>
@@ -51,11 +48,6 @@ public:
 		for (const auto item : *this)
 			other->addItem(item);
 		return other;
-	}
-
-	NodeType getNodeType()
-	{
-		return NodeType::BaseNodeList;
 	}
 
 	bool empty() const
@@ -103,6 +95,11 @@ class NStatement : public Node
 {
 public:
 	virtual void genCode(CodeContext& context) = 0;
+
+	virtual bool isTerminator() const
+	{
+		return false;
+	}
 };
 
 class NStatementList : public NodeList<NStatement>
@@ -124,6 +121,16 @@ public:
 		genValue(context);
 	};
 
+	virtual bool isConstant() const
+	{
+		return false;
+	}
+
+	virtual bool isComplex() const
+	{
+		return true;
+	}
+
 	virtual RValue genValue(CodeContext& context) = 0;
 };
 
@@ -137,7 +144,19 @@ public:
 	}
 };
 
-class NConstant : public NExpression {};
+class NConstant : public NExpression
+{
+public:
+	bool isConstant() const
+	{
+		return true;
+	}
+
+	bool isComplex() const
+	{
+		return false;
+	}
+};
 
 class NBoolConst : public NConstant
 {
@@ -148,11 +167,6 @@ public:
 	: value(value) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::BoolConst;
-	}
 };
 
 class NNumberConst : public NConstant
@@ -197,11 +211,6 @@ public:
 	{
 		return getConstInt(context)->getSExtValue();
 	}
-
-	NodeType getNodeType()
-	{
-		return NodeType::IntConst;
-	}
 };
 
 class NFloatConst : public NNumberConst
@@ -211,11 +220,6 @@ public:
 	: NNumberConst(value) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::FloatConst;
-	}
 };
 
 class NCharConst : public NConstant
@@ -229,11 +233,6 @@ public:
 	}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::CharConst;
-	}
 
 	~NCharConst()
 	{
@@ -276,11 +275,6 @@ public:
 	: type(type) {}
 
 	SType* getType(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::BaseType;
-	}
 };
 
 class NArrayType : public NDataType
@@ -293,11 +287,6 @@ public:
 	: baseType(baseType), size(size) {}
 
 	SType* getType(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::ArrayType;
-	}
 
 	~NArrayType()
 	{
@@ -317,11 +306,6 @@ public:
 
 	SType* getType(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::VecType;
-	}
-
 	~NVecType()
 	{
 		delete baseType;
@@ -338,11 +322,6 @@ public:
 	: name(name) {}
 
 	SType* getType(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::UserType;
-	}
 
 	~NUserType()
 	{
@@ -373,11 +352,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::VarDecl;
-	}
-
 	~NVariableDecl()
 	{
 		delete initExp;
@@ -404,11 +378,6 @@ public:
 	: NVariableDecl(name, initExp) {}
 
 	void genCode(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::GlobalVarDecl;
-	}
 };
 
 class NVariable : public NExpression
@@ -441,9 +410,9 @@ public:
 		return name;
 	}
 
-	NodeType getNodeType()
+	bool isComplex() const
 	{
-		return NodeType::Variable;
+		return false;
 	}
 
 	~NBaseVariable()
@@ -466,11 +435,6 @@ public:
 	string* getName() const
 	{
 		return arrVar->getName();
-	}
-
-	NodeType getNodeType()
-	{
-		return NodeType::ArrayVariable;
 	}
 
 	~NArrayVariable()
@@ -498,11 +462,6 @@ public:
 	string* getName() const
 	{
 		return baseVar->getName();
-	}
-
-	NodeType getNodeType()
-	{
-		return NodeType::MemberVariable;
 	}
 
 	~NMemberVariable()
@@ -534,11 +493,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::Parameter;
-	}
-
 	~NParameter()
 	{
 		delete type;
@@ -561,11 +515,6 @@ public:
 	}
 
 	void addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::VariableDecGroup;
-	}
 
 	~NVariableDeclGroup()
 	{
@@ -591,11 +540,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::StructDec;
-	}
-
 	~NStructDeclaration()
 	{
 		delete list;
@@ -613,11 +557,6 @@ protected:
 public:
 	NUnionDeclaration(string* name, NVariableDeclGroupList* list)
 	: NStructDeclaration(name, list) {}
-
-	NodeType getNodeType()
-	{
-		return NodeType::UnionDec;
-	}
 };
 
 class NFunctionPrototype : public NDeclaration
@@ -645,11 +584,6 @@ public:
 		return SType::getFunction(context, returnType, args);
 	}
 
-	NodeType getNodeType()
-	{
-		return NodeType::FunctionProto;
-	}
-
 	~NFunctionPrototype()
 	{
 		delete rtype;
@@ -667,11 +601,6 @@ public:
 	: NDeclaration(prototype->getName()), prototype(prototype), body(body) {}
 
 	void genCode(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::FunctionDec;
-	}
 
 	~NFunctionDeclaration()
 	{
@@ -707,11 +636,6 @@ public:
 	: NConditionStmt(condition, body), isDoWhile(isDoWhile), isUntil(isUntil) {}
 
 	void genCode(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::WhileStm;
-	}
 };
 
 class NSwitchCase : public NStatement
@@ -742,18 +666,12 @@ public:
 		return value != nullptr;
 	}
 
-	bool isLastStmBranch()
+	bool isLastStmBranch() const
 	{
 		auto last = body->back();
 		if (!last)
 			return false;
-		auto type = last->getNodeType();
-		return type == NodeType::LoopBranch || type == NodeType::ReturnStm;
-	}
-
-	NodeType getNodeType()
-	{
-		return NodeType::SwitchCase;
+		return last->isTerminator();
 	}
 
 	~NSwitchCase()
@@ -775,11 +693,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::SwitchStm;
-	}
-
 	~NSwitchStatement()
 	{
 		delete value;
@@ -798,11 +711,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::ForStm;
-	}
-
 	~NForStatement()
 	{
 		delete preStm;
@@ -820,11 +728,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::IfStm;
-	}
-
 	~NIfStatement()
 	{
 		delete elseBody;
@@ -841,11 +744,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::Label;
-	}
-
 	~NLabelStatement()
 	{
 		delete name;
@@ -854,7 +752,11 @@ public:
 
 class NJumpStatement : public NStatement
 {
-	// For clean type hierarchy
+public:
+	bool isTerminator() const
+	{
+		return true;
+	}
 };
 
 class NReturnStatement : public NJumpStatement
@@ -866,11 +768,6 @@ public:
 	: value(value) {}
 
 	void genCode(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::ReturnStm;
-	}
 
 	~NReturnStatement()
 	{
@@ -888,11 +785,6 @@ public:
 
 	void genCode(CodeContext& context);
 
-	NodeType getNodeType()
-	{
-		return NodeType::Goto;
-	}
-
 	~NGotoStatement()
 	{
 		delete name;
@@ -909,11 +801,6 @@ public:
 	: type(type), level(level) {}
 
 	void genCode(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::LoopBranch;
-	}
 };
 
 class NAssignment : public NExpression
@@ -927,11 +814,6 @@ public:
 	: oper(oper), lhs(lhs), rhs(rhs) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::Assignment;
-	}
 
 	~NAssignment()
 	{
@@ -951,11 +833,6 @@ public:
 	: condition(condition), trueVal(trueVal), falseVal(falseVal) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::TernaryOp;
-	}
 
 	~NTernaryOperator()
 	{
@@ -990,11 +867,6 @@ public:
 	: NBinaryOperator(oper, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::LogicalOp;
-	}
 };
 
 class NCompareOperator : public NBinaryOperator
@@ -1004,11 +876,6 @@ public:
 	: NBinaryOperator(oper, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::CompareOp;
-	}
 };
 
 class NBinaryMathOperator : public NBinaryOperator
@@ -1018,11 +885,6 @@ public:
 	: NBinaryOperator(oper, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::BinaryMathOp;
-	}
 };
 
 class NNullCoalescing : public NBinaryOperator
@@ -1032,11 +894,6 @@ public:
 	: NBinaryOperator(0, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::NullCoalescing;
-	}
 };
 
 class NSizeOfOperator : public NExpression
@@ -1060,9 +917,9 @@ public:
 
 	RValue genValue(CodeContext& context);
 
-	NodeType getNodeType()
+	bool isConstant() const
 	{
-		return NodeType::SizeOfOp;
+		return type == EXP? exp->isConstant() : true;
 	}
 
 	~NSizeOfOperator()
@@ -1096,11 +953,6 @@ public:
 	: NUnaryOperator(oper, unaryExp) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::UnaryMath;
-	}
 };
 
 class NFunctionCall : public NVariable
@@ -1121,11 +973,6 @@ public:
 		return name;
 	}
 
-	NodeType getNodeType()
-	{
-		return NodeType::FunctionCall;
-	}
-
 	~NFunctionCall()
 	{
 		delete arguments;
@@ -1143,11 +990,6 @@ public:
 	: variable(variable), type(type), isPostfix(isPostfix) {}
 
 	RValue genValue(CodeContext& context);
-
-	NodeType getNodeType()
-	{
-		return NodeType::Increment;
-	}
 
 	~NIncrement()
 	{
