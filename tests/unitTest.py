@@ -28,11 +28,14 @@ ERR_EXT = ".err"
 EXP_EXT = ".exp"
 PADDING = 0
 
-def runCmd(cmd):
-	p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-	p.wait()
-	out, err = p.communicate()
-	return [p.returncode, out.decode(ENCODING), err.decode(ENCODING)]
+class Cmd:
+	def __init__(self, cmd):
+		p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+		p.wait()
+		out, err = p.communicate()
+		self.ext = p.returncode
+		self.out = out.decode(ENCODING)
+		self.err = err.decode(ENCODING)
 
 def findAllTests():
 	matches = []
@@ -80,7 +83,7 @@ def updateTest(file):
 
 def cleanSingleTest(file):
 	basename = file[0 : file.rfind(".")]
-	runCmd(["rm", basename + SYP_EXT, basename + LL_EXT, basename + EXP_EXT, basename + ERR_EXT])
+	Cmd(["rm", basename + SYP_EXT, basename + LL_EXT, basename + EXP_EXT, basename + ERR_EXT])
 
 def patchAsmFile(file):
 	with open(file, "r") as asm:
@@ -93,25 +96,25 @@ def patchAsmFile(file):
 
 def runSingleTest(file, update=False):
 	basename = file[0 : file.rfind(".")]
-	p = runCmd([SAPHYR_BIN, basename + SYP_EXT])
-	if p[0] != 0:
+	p = Cmd([SAPHYR_BIN, basename + SYP_EXT])
+	if p.ext != 0:
 		print(file.ljust(PADDING) + " = [compile error]")
 		with open(basename + ERR_EXT, "w") as log:
-			log.write(p[2])
-			log.write(p[1])
+			log.write(p.err)
+			log.write(p.out)
 		return True
 
 	patchAsmFile(basename + LL_EXT)
-	p = runCmd(["diff", "-uwB", basename + EXP_EXT, basename + LL_EXT])
-	if p[0] != 0:
+	p = Cmd(["diff", "-uwB", basename + EXP_EXT, basename + LL_EXT])
+	if p.ext != 0:
 		if update:
 			print(file.ljust(PADDING) + " = [updated]")
 			updateTest(file)
 			return False
 		print(file.ljust(PADDING) + " = [output differs]")
 		with open(basename + ERR_EXT, "w") as log:
-			log.write(p[2])
-			log.write(p[1])
+			log.write(p.err)
+			log.write(p.out)
 		return True
 	print(file.ljust(PADDING) + " = [ok]")
 	return False
