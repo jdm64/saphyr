@@ -94,14 +94,17 @@ def patchAsmFile(file):
 	with open(file, "w") as asm:
 		asm.write(data)
 
+def writeLogFile(basename, p):
+	with open(basename + ERR_EXT, "w") as log:
+		log.write(p.err)
+		log.write(p.out)
+
 def runSingleTest(file, update=False):
 	basename = file[0 : file.rfind(".")]
 	p = Cmd([SAPHYR_BIN, basename + SYP_EXT])
 	if p.ext != 0:
 		print(file.ljust(PADDING) + " = [compile error]")
-		with open(basename + ERR_EXT, "w") as log:
-			log.write(p.err)
-			log.write(p.out)
+		writeLogFile(basename, p)
 		return True
 
 	patchAsmFile(basename + LL_EXT)
@@ -112,9 +115,7 @@ def runSingleTest(file, update=False):
 			updateTest(file)
 			return False
 		print(file.ljust(PADDING) + " = [output differs]")
-		with open(basename + ERR_EXT, "w") as log:
-			log.write(p.err)
-			log.write(p.out)
+		writeLogFile(basename, p)
 		return True
 	print(file.ljust(PADDING) + " = [ok]")
 	return False
