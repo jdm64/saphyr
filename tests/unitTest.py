@@ -26,6 +26,7 @@ SYP_EXT = ".syp"
 LL_EXT = ".ll"
 ERR_EXT = ".err"
 EXP_EXT = ".exp"
+NEG_EXT = ".neg"
 PADDING = 0
 
 class Cmd:
@@ -74,16 +75,16 @@ def createTestFiles(filename):
 		with open(basename + EXP_EXT, "w") as asmFile:
 			asmFile.write(data[1])
 
-def updateTest(file):
-	basename = file[0 : file.rfind(".")]
-	with open(basename + SYP_EXT) as sourceF, open(basename + LL_EXT) as llvmF, open(file, "w") as tstF:
+def updateTest(basename, isPos=True):
+	expExt = LL_EXT if isPos else NEG_EXT
+	with open(basename + SYP_EXT) as sourceF, open(basename + expExt) as expF, open(basename + TEST_EXT, "w") as tstF:
 		tstF.write(sourceF.read())
 		tstF.write("========\n\n")
-		tstF.write(llvmF.read())
+		tstF.write(expF.read())
 
 def cleanSingleTest(file):
 	basename = file[0 : file.rfind(".")]
-	Cmd(["rm", basename + SYP_EXT, basename + LL_EXT, basename + EXP_EXT, basename + ERR_EXT])
+	Cmd(["rm", basename + SYP_EXT, basename + LL_EXT, basename + EXP_EXT, basename + ERR_EXT, basename + NEG_EXT])
 
 def patchAsmFile(file):
 	with open(file, "r") as asm:
@@ -99,26 +100,43 @@ def writeLogFile(basename, p):
 		log.write(p.err)
 		log.write(p.out)
 
-def runSingleTest(file, update=False):
-	basename = file[0 : file.rfind(".")]
-	p = Cmd([SAPHYR_BIN, basename + SYP_EXT])
+def checkNegativeTest(basename, update, p):
+	file = basename + TEST_EXT
+	with open(basename + NEG_EXT, "w") as err:
+		err.write(p.out)
+	p = Cmd(["diff", "-uwB", basename + EXP_EXT, basename + NEG_EXT])
 	if p.ext != 0:
+		if update:
+			print(file.ljust(PADDING) + " = [updated]")
+			updateTest(basename, False)
+			return False
 		print(file.ljust(PADDING) + " = [compile error]")
 		writeLogFile(basename, p)
 		return True
+	print(file.ljust(PADDING) + " = [ok]")
+	return False
 
+def checkPositiveTest(basename, update):
+	file = basename + TEST_EXT
 	patchAsmFile(basename + LL_EXT)
 	p = Cmd(["diff", "-uwB", basename + EXP_EXT, basename + LL_EXT])
 	if p.ext != 0:
 		if update:
 			print(file.ljust(PADDING) + " = [updated]")
-			updateTest(file)
+			updateTest(basename)
 			return False
 		print(file.ljust(PADDING) + " = [output differs]")
 		writeLogFile(basename, p)
 		return True
 	print(file.ljust(PADDING) + " = [ok]")
 	return False
+
+def runSingleTest(file, update=False):
+	basename = file[0 : file.rfind(".")]
+	p = Cmd([SAPHYR_BIN, basename + SYP_EXT])
+	if p.ext != 0:
+		return checkNegativeTest(basename, update, p)
+	return checkPositiveTest(basename, update)
 
 def cleanTests(files):
 	files = getFiles(files)
