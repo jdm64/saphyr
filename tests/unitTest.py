@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Saphyr, a C++ style compiler using LLVM
-# Copyright (C) 2012, Justin Madru (justin.jdm64@gmail.com)
+# Copyright (C) 2009-2014, Justin Madru (justin.jdm64@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
