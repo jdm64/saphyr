@@ -20,6 +20,8 @@ using namespace llvm;
 
 class SimpleBlockClean : public FunctionPass
 {
+	bool removeBranchBlock(BasicBlock* block);
+
 public:
 	static char ID;
 
