@@ -24,9 +24,6 @@ char SimpleBlockClean::ID = 0;
 
 bool SimpleBlockClean::removeBranchBlock(BasicBlock* block)
 {
-	if  (pred_begin(block) == pred_end(block))
-		return true;
-
 	auto& first = block->front();
 	if (!isa<BranchInst>(first))
 		return false;
@@ -68,8 +65,9 @@ bool SimpleBlockClean::runOnFunction(Function &func)
 
 	auto end = func.end();
 	auto iter = func.begin();
+	iter++; // skip first block
 	while (iter != end) {
-		if (iter->empty()) {
+		if (iter->empty() || pred_begin(&*iter) == pred_end(&*iter)) {
 			(iter++)->eraseFromParent();
 			modified = true;
 		} else if (iter->size() == 1) {
