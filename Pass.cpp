@@ -41,7 +41,7 @@ bool SimpleBlockClean::removeBranchBlock(BasicBlock* block)
 		termVec.push_back(blk->getTerminator());
 	}
 	for (auto& inst : termVec) {
-		for (int i = 0; i < inst->getNumSuccessors(); i++) {
+		for (uint i = 0; i < inst->getNumSuccessors(); i++) {
 			auto successor = inst->getSuccessor(i);
 			if (successor == block)
 				inst->setSuccessor(i, branchTo);

@@ -377,7 +377,7 @@ public:
 		SUserPtr& item = usrMap[*name];
 		if (item.get())
 			return;
-		int size = 0;
+		uint64_t size = 0;
 		SType* type = nullptr;
 		for (auto item : structure) {
 			auto tsize = allocSize(item.second);
