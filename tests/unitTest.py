@@ -134,9 +134,15 @@ def checkPositiveTest(basename, update):
 def runSingleTest(file, update=False):
 	basename = file[0 : file.rfind(".")]
 	p = Cmd([SAPHYR_BIN, basename + SYP_EXT])
-	if p.ext != 0:
+	if p.ext == 0:
+		return checkPositiveTest(basename, update)
+	elif p.ext > 0:
 		return checkNegativeTest(basename, update, p)
-	return checkPositiveTest(basename, update)
+
+	# program crashed
+	print(file.ljust(PADDING) + " = [crash]")
+	writeLogFile(basename, p)
+	return True
 
 def cleanTests(files):
 	files = getFiles(files)
