@@ -27,7 +27,6 @@ LL_EXT = ".ll"
 ERR_EXT = ".err"
 EXP_EXT = ".exp"
 NEG_EXT = ".neg"
-PADDING = 0
 
 class Cmd:
 	def __init__(self, cmd):
@@ -64,107 +63,99 @@ def getFiles(files):
 			allTests.remove(item)
 	return fileList
 
-def createTestFiles(filename):
-	basename = filename[0 : filename.rfind(".")]
-	with open(filename) as testFile:
-		data = testFile.read().split("========")
-		if len(data) != 2:
-			return True
-		with open(basename + SYP_EXT, "w") as sourceFile:
-			sourceFile.write(data[0])
-		with open(basename + EXP_EXT, "w") as asmFile:
-			asmFile.write(data[1])
+class TestCase:
+	def __init__(self, file, clean=True, update=False):
+		self.tstFile = file
+		self.doClean = clean
+		self.doUpdate = update
+		self.basename = file[0 : file.rfind(".")]
+		self.srcFile = self.basename + SYP_EXT
+		self.expFile = self.basename + EXP_EXT
+		self.llFile = self.basename + LL_EXT
+		self.errFile = self.basename + ERR_EXT
+		self.negFile = self.basename + NEG_EXT
 
-def updateTest(basename, isPos=True):
-	expExt = LL_EXT if isPos else NEG_EXT
-	with open(basename + SYP_EXT) as sourceF, open(basename + expExt) as expF, open(basename + TEST_EXT, "w") as tstF:
-		tstF.write(sourceF.read())
-		tstF.write("========\n\n")
-		tstF.write(expF.read())
+	def createFiles(self):
+		with open(self.tstFile) as testFile:
+			data = testFile.read().split("========")
+			if len(data) != 2:
+				return True
+			with open(self.srcFile, "w") as sourceFile:
+				sourceFile.write(data[0])
+			with open(self.expFile, "w") as asmFile:
+				asmFile.write(data[1])
+		return False
 
-def cleanSingleTest(file):
-	basename = file[0 : file.rfind(".")]
-	Cmd(["rm", basename + SYP_EXT, basename + LL_EXT, basename + EXP_EXT, basename + ERR_EXT, basename + NEG_EXT])
+	def update(self, isPos):
+		expected = self.llFile if isPos else self.negFile
+		with open(self.srcFile) as sourceF, open(expected) as expF, open(self.tstFile, "w") as tstF:
+			tstF.write(sourceF.read())
+			tstF.write("========\n\n")
+			tstF.write(expF.read())
 
-def patchAsmFile(file):
-	with open(file, "r") as asm:
-		data = asm.read()
+	def clean(self):
+		ext_list = [SYP_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT]
+		Cmd(["rm"] + [self.basename + ext for ext in ext_list])
 
-	data = re.sub("; ModuleID =.*", "", data).strip() + "\n"
+	def patchAsm(self, file):
+		with open(file, "r") as asm:
+			data = asm.read()
+		data = re.sub("; ModuleID =.*", "", data).strip() + "\n"
+		with open(file, "w") as asm:
+			asm.write(data)
 
-	with open(file, "w") as asm:
-		asm.write(data)
+	def writeLog(self, p):
+		with open(self.errFile, "w") as log:
+			log.write(p.err)
+			log.write(p.out)
 
-def writeLogFile(basename, p):
-	with open(basename + ERR_EXT, "w") as log:
-		log.write(p.err)
-		log.write(p.out)
+	def runExe(self):
+		proc = Cmd([SAPHYR_BIN, self.srcFile])
+		if proc.ext < 0:
+			self.writeLog(proc)
+			return True, "[crash]"
+		elif proc.ext == 0:
+			actual = self.llFile
+			self.patchAsm(actual)
+			isPos = True
+		else:
+			actual = self.negFile
+			with open(actual, "w") as err:
+				err.write(proc.out)
+			isPos = False
 
-def checkNegativeTest(basename, update, p):
-	file = basename + TEST_EXT
-	with open(basename + NEG_EXT, "w") as err:
-		err.write(p.out)
-	p = Cmd(["diff", "-uwB", basename + EXP_EXT, basename + NEG_EXT])
-	if p.ext != 0:
-		if update:
-			print(file.ljust(PADDING) + " = [updated]")
-			updateTest(basename, False)
-			return False
-		print(file.ljust(PADDING) + " = [compile error]")
-		writeLogFile(basename, p)
-		return True
-	print(file.ljust(PADDING) + " = [ok]")
-	return False
+		proc = Cmd(["diff", "-uwB", self.expFile, actual])
+		if proc.ext == 0:
+			return False, "[ok]"
+		elif self.doUpdate:
+			self.update(isPos)
+			return False, "[updated]"
+		else:
+			self.writeLog(proc)
+			return True, "[output differs]"
 
-def checkPositiveTest(basename, update):
-	file = basename + TEST_EXT
-	patchAsmFile(basename + LL_EXT)
-	p = Cmd(["diff", "-uwB", basename + EXP_EXT, basename + LL_EXT])
-	if p.ext != 0:
-		if update:
-			print(file.ljust(PADDING) + " = [updated]")
-			updateTest(basename)
-			return False
-		print(file.ljust(PADDING) + " = [output differs]")
-		writeLogFile(basename, p)
-		return True
-	print(file.ljust(PADDING) + " = [ok]")
-	return False
-
-def runSingleTest(file, update=False):
-	basename = file[0 : file.rfind(".")]
-	p = Cmd([SAPHYR_BIN, basename + SYP_EXT])
-	if p.ext == 0:
-		return checkPositiveTest(basename, update)
-	elif p.ext > 0:
-		return checkNegativeTest(basename, update, p)
-
-	# program crashed
-	print(file.ljust(PADDING) + " = [crash]")
-	writeLogFile(basename, p)
-	return True
+	def run(self):
+		if self.createFiles():
+			return True, "[missing section]"
+		res = self.runExe()
+		if not res[0] and self.doClean:
+			self.clean()
+		return res
 
 def cleanTests(files):
-	files = getFiles(files)
-	for file in files:
-		cleanSingleTest(file)
+	for file in getFiles(files):
+		TestCase(file).clean()
 
 def runTests(files, clean=True, update=False):
-	global PADDING
 	files = getFiles(files)
 	if not files:
 		return
-	PADDING = len(max(files, key=len))
+	padding = len(max(files, key=len))
 	failed = 0
 	total = len(files)
 	for file in files:
-		if createTestFiles(file):
-			print(file.ljust(PADDING) + " = [missing section]")
-			failed += 1
-			continue
-		error = runSingleTest(file, update)
-		if not error and clean:
-			cleanSingleTest(file)
+		error, msg = TestCase(file, clean, update).run()
+		print(file.ljust(padding) + " = " + msg)
 		failed += error
 	passed = total - failed
 	print(str(passed) + " / " + str(total) + " tests passed")
