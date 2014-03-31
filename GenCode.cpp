@@ -176,11 +176,13 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 	auto var = baseVar->loadVar(context);
 	auto varType = var.stype();
 
-	if (varType->isStruct())
+	if (!varType)
+		goto fail;
+	else if (varType->isStruct())
 		return loadStruct(context, var, static_cast<SStructType*>(varType));
 	else if (varType->isUnion())
 		return loadUnion(context, var, static_cast<SUnionType*>(varType));
-
+fail:
 	context.addError(*getName() + " is not a struct or union");
 	return RValue();
 }
@@ -281,13 +283,14 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 	context.storeGlobalVar(LValue(var, varType), name);
 }
 
-void NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
+bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
 {
 	auto stype = type->getType(context);
-	if (!type) {
-		context.addError("stuct members must not have auto type");
-		return;
+	if (!stype) {
+		context.addError("struct members must not have auto type");
+		return false;
 	}
+	bool valid = true;
 	for (auto var : *variables) {
 		if (var->hasInit())
 			context.addError("structs don't support variable initialization");
@@ -295,10 +298,12 @@ void NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector,
 		auto res = memberNames.insert(*name);
 		if (!res.second) {
 			context.addError("member name " + *name + " already declared");
+			valid = false;
 			continue;
 		}
 		structVector.push_back(make_pair(*name, stype));
 	}
+	return valid;
 }
 
 void NStructDeclaration::genCode(CodeContext& context)
@@ -310,9 +315,11 @@ void NStructDeclaration::genCode(CodeContext& context)
 	}
 	vector<pair<string, SType*> > structVars;
 	set<string> memberNames;
+	bool valid = true;
 	for (auto item : *list)
-		item->addMembers(structVars, memberNames, context);
-	createUserType(structVars, context);
+		valid &= item->addMembers(structVars, memberNames, context);
+	if (valid)
+		createUserType(structVars, context);
 }
 
 void NFunctionPrototype::genCode(CodeContext& context)
@@ -327,7 +334,7 @@ SFunction* NFunctionPrototype::genFunction(CodeContext& context)
 		return function;
 
 	auto funcType = getFunctionType(context);
-	return SFunction::create(context, name, funcType);
+	return funcType? SFunction::create(context, name, funcType) : nullptr;
 }
 
 void NFunctionPrototype::genCodeParams(SFunction* function, CodeContext& context)

@@ -514,7 +514,7 @@ public:
 		variables->genCode(type, context);
 	}
 
-	void addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
+	bool addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
 
 	~NVariableDeclGroup()
 	{
@@ -576,12 +576,18 @@ public:
 
 	SFunctionType* getFunctionType(CodeContext& context)
 	{
+		bool valid = true;
 		vector<SType*> args;
-		for (auto item : *params)
-			args.push_back(item->getType(context));
+		for (auto item : *params) {
+			auto param = item->getType(context);
+			if (param)
+				args.push_back(param);
+			else
+				valid = false;
+		}
 
 		auto returnType = rtype->getType(context);
-		return SType::getFunction(context, returnType, args);
+		return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
 	}
 
 	~NFunctionPrototype()
