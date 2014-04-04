@@ -17,7 +17,7 @@
 #ifndef __FUNCTION_H__
 #define __FUNCTION_H__
 
-#include <llvm/Function.h>
+#include <llvm/IR/Function.h>
 #include "Type.h"
 
 class SFunction

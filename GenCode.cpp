@@ -16,7 +16,7 @@
  */
 #include <set>
 #include <fstream>
-#include <llvm/Constants.h>
+#include <llvm/IR/Constants.h>
 #include <llvm/PassManager.h>
 #include <llvm/Analysis/Verifier.h>
 #include <llvm/Support/FormattedStream.h>

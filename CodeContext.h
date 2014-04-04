@@ -18,8 +18,8 @@
 #define __CODE_CONTEXT_H__
 
 #include <stack>
-#include <llvm/Instructions.h>
-#include <llvm/BasicBlock.h>
+#include <llvm/IR/Instructions.h>
+#include <llvm/IR/BasicBlock.h>
 #include "Value.h"
 #include "Function.h"
 

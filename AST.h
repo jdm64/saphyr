@@ -19,7 +19,7 @@
 
 #include <vector>
 #include <set>
-#include <llvm/Instructions.h>
+#include <llvm/IR/Instructions.h>
 #include "Value.h"
 #include "Function.h"
 

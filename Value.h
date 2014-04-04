@@ -17,8 +17,8 @@
 #ifndef __VALUE_H__
 #define __VALUE_H__
 
-#include <llvm/Value.h>
-#include <llvm/Constant.h>
+#include <llvm/IR/Value.h>
+#include <llvm/IR/Constants.h>
 #include "Type.h"
 
 class RValue
