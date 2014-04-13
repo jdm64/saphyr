@@ -34,4 +34,4 @@ fullclean : clean
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 cppcheck :
-	cppcheck --enable=all --inconclusive ./
+	cppcheck --enable=all --inconclusive ./ 1> /dev/null
