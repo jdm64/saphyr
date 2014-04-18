@@ -83,13 +83,13 @@ class TestCase:
 			with open(self.srcFile, "w") as sourceFile:
 				sourceFile.write(data[0])
 			with open(self.expFile, "w") as asmFile:
-				asmFile.write(data[1])
+				asmFile.write(data[1].lstrip())
 		return False
 
 	def update(self, isPos):
 		expected = self.llFile if isPos else self.negFile
 		with open(self.srcFile) as sourceF, open(expected) as expF, open(self.tstFile, "w") as tstF:
-			tstF.write(sourceF.read())
+			tstF.write("\n" + sourceF.read().strip() + "\n\n")
 			tstF.write("========\n\n")
 			tstF.write(expF.read())
 
