@@ -35,3 +35,6 @@ fullclean : clean
 
 cppcheck :
 	cppcheck --enable=all --inconclusive ./ 1> /dev/null
+
+analyze : clean
+	scan-build make compiler
