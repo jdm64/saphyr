@@ -73,6 +73,10 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 	case 2: // both float
 		op = type->isDouble()? Instruction::FPExt : Instruction::FPTrunc;
 		break;
+	default:
+		// should never happen
+		op = Instruction::SExt;
+		break;
 	}
 	auto val = CastInst::Create(op, value, *type, "", context);
 	value = RValue(val, type);

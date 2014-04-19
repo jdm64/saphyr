@@ -375,10 +375,10 @@ public:
 	void createUnion(string* name, vector<pair<string, SType*>> structure)
 	{
 		SUserPtr& item = usrMap[*name];
-		if (item.get())
+		if (item.get() || !structure.size())
 			return;
-		uint64_t size = 0;
-		SType* type = nullptr;
+		auto type = structure[0].second;
+		auto size = allocSize(type);
 		for (auto item : structure) {
 			auto tsize = allocSize(item.second);
 			if (tsize > size) {
