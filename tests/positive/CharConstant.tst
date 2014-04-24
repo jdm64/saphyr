@@ -1,0 +1,59 @@
+
+int excape()
+{
+	auto a = '\0', b = '\a', c = '\b', d = '\e', e = '\f',
+		f = '\n', g = '\r', h = '\t', i = '\v';
+	return d / c;
+}
+
+int main()
+{
+	auto a = 'a', b = '\\', c = '\'', d = '\"', e = '\?';
+	return excape() * b;
+}
+
+========
+
+define i32 @excape() {
+  %a = alloca i8
+  store i8 0, i8* %a
+  %b = alloca i8
+  store i8 7, i8* %b
+  %c = alloca i8
+  store i8 8, i8* %c
+  %d = alloca i8
+  store i8 101, i8* %d
+  %e = alloca i8
+  store i8 12, i8* %e
+  %f = alloca i8
+  store i8 10, i8* %f
+  %g = alloca i8
+  store i8 13, i8* %g
+  %h = alloca i8
+  store i8 9, i8* %h
+  %i = alloca i8
+  store i8 11, i8* %i
+  %1 = load i8* %d
+  %2 = load i8* %c
+  %3 = udiv i8 %1, %2
+  %4 = zext i8 %3 to i32
+  ret i32 %4
+}
+
+define i32 @main() {
+  %a = alloca i8
+  store i8 97, i8* %a
+  %b = alloca i8
+  store i8 92, i8* %b
+  %c = alloca i8
+  store i8 39, i8* %c
+  %d = alloca i8
+  store i8 34, i8* %d
+  %e = alloca i8
+  store i8 63, i8* %e
+  %1 = call i32 @excape()
+  %2 = load i8* %b
+  %3 = zext i8 %2 to i32
+  %4 = mul i32 %1, %3
+  ret i32 %4
+}

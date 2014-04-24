@@ -1,0 +1,117 @@
+
+void func(int x)
+{
+	for (;;) {
+		x++;
+		if (!(x % 4))
+			break;
+	}
+}
+
+void func2()
+{
+	int i, x;
+	for (i++, x += 4; i < 10; i++)
+		x += i;
+}
+
+int main()
+{
+	for (auto i = 0, x = 0; ; i++) {
+		x += i;
+		if (i < 10) {
+			x = 10;
+			break;
+		}
+	}
+	return 0;
+}
+
+========
+
+define void @func(i32 %x) {
+  %1 = alloca i32
+  store i32 %x, i32* %1
+  br label %2
+
+; <label>:2                                       ; preds = %3, %0
+  br i1 true, label %3, label %9
+
+; <label>:3                                       ; preds = %2
+  %4 = load i32* %1
+  %5 = add i32 %4, 1
+  store i32 %5, i32* %1
+  %6 = load i32* %1
+  %7 = srem i32 %6, 4
+  %8 = icmp eq i32 0, %7
+  br i1 %8, label %9, label %2
+
+; <label>:9                                       ; preds = %3, %2
+  ret void
+}
+
+define void @func2() {
+  %i = alloca i32
+  %x = alloca i32
+  %1 = load i32* %i
+  %2 = add i32 %1, 1
+  store i32 %2, i32* %i
+  %3 = load i32* %x
+  %4 = add i32 %3, 4
+  store i32 %4, i32* %x
+  br label %5
+
+; <label>:5                                       ; preds = %12, %0
+  %6 = load i32* %i
+  %7 = icmp slt i32 %6, 10
+  br i1 %7, label %8, label %15
+
+; <label>:8                                       ; preds = %5
+  %9 = load i32* %i
+  %10 = load i32* %x
+  %11 = add i32 %10, %9
+  store i32 %11, i32* %x
+  br label %12
+
+; <label>:12                                      ; preds = %8
+  %13 = load i32* %i
+  %14 = add i32 %13, 1
+  store i32 %14, i32* %i
+  br label %5
+
+; <label>:15                                      ; preds = %5
+  ret void
+}
+
+define i32 @main() {
+  %i = alloca i32
+  store i32 0, i32* %i
+  %x = alloca i32
+  store i32 0, i32* %x
+  br label %1
+
+; <label>:1                                       ; preds = %9, %0
+  br i1 true, label %2, label %12
+
+; <label>:2                                       ; preds = %1
+  %3 = load i32* %i
+  %4 = load i32* %x
+  %5 = add i32 %4, %3
+  store i32 %5, i32* %x
+  %6 = load i32* %i
+  %7 = icmp slt i32 %6, 10
+  br i1 %7, label %8, label %9
+
+; <label>:8                                       ; preds = %2
+  store i32 10, i32* %x
+  br label %12
+
+; <label>:9                                       ; preds = %2
+  %10 = load i32* %i
+  %11 = add i32 %10, 1
+  store i32 %11, i32* %i
+  br label %1
+
+; <label>:12                                      ; preds = %8, %1
+  ret i32 0
+}

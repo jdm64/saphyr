@@ -1,0 +1,108 @@
+
+void one()
+{
+	int x = 1;
+	if (x < 8)
+		x = 0;
+}
+
+void two()
+{
+	int x = 0;
+	if (x > 1)
+		x = 3;
+	else
+		x = 7;
+}
+
+void three()
+{
+	auto x = 9;
+	if (~x)
+		x = 1;
+	else if (x - 8)
+		x = 2;
+	else
+		x = 3;
+}
+
+int main()
+{
+	one();
+	two();
+	three();
+	return 0;
+}
+
+========
+
+define void @one() {
+  %x = alloca i32
+  store i32 1, i32* %x
+  %1 = load i32* %x
+  %2 = icmp slt i32 %1, 8
+  br i1 %2, label %3, label %4
+
+; <label>:3                                       ; preds = %0
+  store i32 0, i32* %x
+  br label %4
+
+; <label>:4                                       ; preds = %3, %0
+  ret void
+}
+
+define void @two() {
+  %x = alloca i32
+  store i32 0, i32* %x
+  %1 = load i32* %x
+  %2 = icmp sgt i32 %1, 1
+  br i1 %2, label %3, label %4
+
+; <label>:3                                       ; preds = %0
+  store i32 3, i32* %x
+  br label %5
+
+; <label>:4                                       ; preds = %0
+  store i32 7, i32* %x
+  br label %5
+
+; <label>:5                                       ; preds = %4, %3
+  ret void
+}
+
+define void @three() {
+  %x = alloca i32
+  store i32 9, i32* %x
+  %1 = load i32* %x
+  %2 = xor i32 -1, %1
+  %3 = icmp ne i32 %2, 0
+  br i1 %3, label %4, label %5
+
+; <label>:4                                       ; preds = %0
+  store i32 1, i32* %x
+  br label %11
+
+; <label>:5                                       ; preds = %0
+  %6 = load i32* %x
+  %7 = sub i32 %6, 8
+  %8 = icmp ne i32 %7, 0
+  br i1 %8, label %9, label %10
+
+; <label>:9                                       ; preds = %5
+  store i32 2, i32* %x
+  br label %11
+
+; <label>:10                                      ; preds = %5
+  store i32 3, i32* %x
+  br label %11
+
+; <label>:11                                      ; preds = %9, %10, %4
+  ret void
+}
+
+define i32 @main() {
+  call void @one()
+  call void @two()
+  call void @three()
+  ret i32 0
+}

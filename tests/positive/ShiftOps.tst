@@ -1,0 +1,46 @@
+
+int signedShifts()
+{
+	int a, b, c;
+
+	c = a << b;
+	return c >> a;
+}
+
+int unsignedShifts()
+{
+	uint a, b, c;
+
+	c = a << b;
+	return c >> a;
+}
+
+========
+
+define i32 @signedShifts() {
+  %a = alloca i32
+  %b = alloca i32
+  %c = alloca i32
+  %1 = load i32* %a
+  %2 = load i32* %b
+  %3 = shl i32 %1, %2
+  store i32 %3, i32* %c
+  %4 = load i32* %c
+  %5 = load i32* %a
+  %6 = ashr i32 %4, %5
+  ret i32 %6
+}
+
+define i32 @unsignedShifts() {
+  %a = alloca i32
+  %b = alloca i32
+  %c = alloca i32
+  %1 = load i32* %a
+  %2 = load i32* %b
+  %3 = shl i32 %1, %2
+  store i32 %3, i32* %c
+  %4 = load i32* %c
+  %5 = load i32* %a
+  %6 = lshr i32 %4, %5
+  ret i32 %6
+}

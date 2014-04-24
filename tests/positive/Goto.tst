@@ -1,0 +1,62 @@
+
+int run(int x)
+{
+start:
+	if (x > 1) {
+		x /= 2;
+		goto start;
+	}
+	return x;		
+}
+
+int main()
+{
+	int x = 4;
+
+	if (x < 5)
+		goto end;
+	x = run(x);
+end:
+	return x;
+}
+
+========
+
+define i32 @run(i32 %x) {
+  %1 = alloca i32
+  store i32 %x, i32* %1
+  br label %start
+
+start:                                            ; preds = %4, %0
+  %2 = load i32* %1
+  %3 = icmp sgt i32 %2, 1
+  br i1 %3, label %4, label %7
+
+; <label>:4                                       ; preds = %start
+  %5 = load i32* %1
+  %6 = sdiv i32 %5, 2
+  store i32 %6, i32* %1
+  br label %start
+
+; <label>:7                                       ; preds = %start
+  %8 = load i32* %1
+  ret i32 %8
+}
+
+define i32 @main() {
+  %x = alloca i32
+  store i32 4, i32* %x
+  %1 = load i32* %x
+  %2 = icmp slt i32 %1, 5
+  br i1 %2, label %end, label %3
+
+; <label>:3                                       ; preds = %0
+  %4 = load i32* %x
+  %5 = call i32 @run(i32 %4)
+  store i32 %5, i32* %x
+  br label %end
+
+end:                                              ; preds = %0, %3
+  %6 = load i32* %x
+  ret i32 %6
+}

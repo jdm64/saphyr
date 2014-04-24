@@ -1,0 +1,86 @@
+
+struct Str
+{
+	int a, b;
+	bool c;
+}
+
+void voidFunc()
+{
+	[7]int a;
+	return;
+}
+
+[3]int arrFunc()
+{
+	[3]int a;
+	return a;
+}
+
+Str structFunc()
+{
+	Str s;
+	s.a = 4;
+	return s;
+}
+
+int castUp()
+{
+	return true;
+}
+
+int main()
+{
+	auto b = structFunc();
+	[3]int a = arrFunc();
+
+	voidFunc();
+
+	return a[b.c] + castUp();
+}
+
+========
+
+%Str = type { i32, i32, i1 }
+
+define void @voidFunc() {
+  %a = alloca [7 x i32]
+  ret void
+}
+
+define [3 x i32] @arrFunc() {
+  %a = alloca [3 x i32]
+  %1 = load [3 x i32]* %a
+  ret [3 x i32] %1
+}
+
+define %Str @structFunc() {
+  %s = alloca %Str
+  %1 = getelementptr %Str* %s, i32 0, i32 0
+  store i32 4, i32* %1
+  %2 = load %Str* %s
+  ret %Str %2
+}
+
+define i32 @castUp() {
+  %1 = zext i1 true to i32
+  ret i32 %1
+}
+
+define i32 @main() {
+  %1 = call %Str @structFunc()
+  %b = alloca %Str
+  store %Str %1, %Str* %b
+  %2 = call [3 x i32] @arrFunc()
+  %a = alloca [3 x i32]
+  store [3 x i32] %2, [3 x i32]* %a
+  call void @voidFunc()
+  %3 = getelementptr %Str* %b, i32 0, i32 2
+  %4 = load i1* %3
+  %5 = zext i1 %4 to i64
+  %6 = getelementptr [3 x i32]* %a, i32 0, i64 %5
+  %7 = load i32* %6
+  %8 = call i32 @castUp()
+  %9 = add i32 %7, %8
+  ret i32 %9
+}

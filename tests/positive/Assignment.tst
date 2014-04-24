@@ -1,0 +1,73 @@
+
+void one()
+{
+	int a;
+
+	a += 2;
+	a -= 9;
+}
+
+void two()
+{
+	float f;
+
+	f *= 10.3;
+	f /= 3;
+}
+
+void three()
+{
+	int8 a;
+
+	a &= 6;
+	a |= 24;
+	a ^= -1;
+}
+
+========
+
+define void @one() {
+  %a = alloca i32
+  %1 = load i32* %a
+  %2 = add i32 %1, 2
+  store i32 %2, i32* %a
+  %3 = load i32* %a
+  %4 = sub i32 %3, 9
+  store i32 %4, i32* %a
+  ret void
+}
+
+define void @two() {
+  %f = alloca float
+  %1 = load float* %f
+  %2 = fpext float %1 to double
+  %3 = fmul double %2, 1.030000e+01
+  %4 = fptrunc double %3 to float
+  store float %4, float* %f
+  %5 = load float* %f
+  %6 = sitofp i32 3 to float
+  %7 = fdiv float %5, %6
+  store float %7, float* %f
+  ret void
+}
+
+define void @three() {
+  %a = alloca i8
+  %1 = load i8* %a
+  %2 = sext i8 %1 to i32
+  %3 = and i32 %2, 6
+  %4 = trunc i32 %3 to i8
+  store i8 %4, i8* %a
+  %5 = load i8* %a
+  %6 = sext i8 %5 to i32
+  %7 = or i32 %6, 24
+  %8 = trunc i32 %7 to i8
+  store i8 %8, i8* %a
+  %9 = sub i32 0, 1
+  %10 = load i8* %a
+  %11 = sext i8 %10 to i32
+  %12 = xor i32 %11, %9
+  %13 = trunc i32 %12 to i8
+  store i8 %13, i8* %a
+  ret void
+}
