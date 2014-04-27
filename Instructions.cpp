@@ -114,7 +114,7 @@ BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 	case ParserBase::TT_RSHIFT:
 		if (type->isFloating())
 			context.addError("shift operator invalid for float types");
-		return Instruction::LShr;
+		return type->isUnsigned()? Instruction::LShr : Instruction::AShr;
 	case '&':
 		if (type->isFloating())
 			context.addError("AND operator invalid for float types");
