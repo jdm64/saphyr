@@ -143,12 +143,17 @@ class TestCase:
 		return res
 
 def cleanTests(files):
-	for file in getFiles(files):
+	files = getFiles(files)
+	if not files:
+		print("No tests found")
+		return
+	for file in files:
 		TestCase(file).clean()
 
 def runTests(files, clean=True, update=False):
 	files = getFiles(files)
 	if not files:
+		print("No tests found")
 		return
 	padding = len(max(files, key=len))
 	failed = 0
