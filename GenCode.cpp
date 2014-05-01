@@ -752,8 +752,12 @@ RValue NSizeOfOperator::genValue(CodeContext& context)
 		}
 		break;
 	}
-	if (!stype)
+	if (!stype) {
 		return context.errValue();
+	} else if (stype->isVoid()) {
+		context.addError("size of void is invalid");
+		return context.errValue();
+	}
 	auto itype = SType::getInt(context, 64, true);
 	auto size = ConstantInt::get(*itype, SType::allocSize(context, stype));
 	return RValue(size, itype);
