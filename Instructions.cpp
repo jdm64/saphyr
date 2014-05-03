@@ -57,12 +57,15 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 	Instruction::CastOps op;
 	switch (type->isFloating() + valueType->isFloating()) {
 	case 0: // both int
-		if (type->size() > valueType->size())
+		if (type->size() > valueType->size()) {
 			op = valueType->isUnsigned()? Instruction::ZExt : Instruction::SExt;
-		else if (type->size() < valueType->size())
+		} else if (type->size() < valueType->size()) {
 			op = Instruction::Trunc;
-		else
-			return; // same int size; no need to cast
+		} else {
+			// same int size; no need to cast, just set internal type
+			value = RValue(value.value(), type);
+			return;
+		}
 		break;
 	case 1: // int and float
 		if (valueType->isInteger())
