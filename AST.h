@@ -572,7 +572,7 @@ public:
 
 	SFunction* genFunction(CodeContext& context);
 
-	void genCodeParams(SFunction* function, CodeContext& context);
+	void genCodeParams(SFunction* function, CodeContext& context) const;
 
 	SFunctionType* getFunctionType(CodeContext& context)
 	{

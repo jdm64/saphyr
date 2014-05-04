@@ -337,7 +337,7 @@ SFunction* NFunctionPrototype::genFunction(CodeContext& context)
 	return funcType? SFunction::create(context, name, funcType) : nullptr;
 }
 
-void NFunctionPrototype::genCodeParams(SFunction* function, CodeContext& context)
+void NFunctionPrototype::genCodeParams(SFunction* function, CodeContext& context) const
 {
 	int i = 0;
 	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++, i++) {
