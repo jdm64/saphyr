@@ -147,6 +147,13 @@ Predicate Inst::getPredicate(int oper, SType* type, CodeContext& context)
 		Predicate::ICMP_SGE, Predicate::ICMP_NE,  Predicate::ICMP_EQ
 	};
 
+	if (type->isVec()) {
+		type = type->subType();
+	} else if (type->isComposite()) {
+		context.addError("can not perform operation on composite types");
+		return Predicate::ICMP_EQ;
+	}
+
 	int offset;
 	switch (oper) {
 	case '<':
@@ -192,7 +199,11 @@ RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
 	CastMatch(context, lhs, rhs);
 	auto pred = getPredicate(type, lhs.stype(), context);
-	auto op = rhs.stype()->isFloating()? Instruction::FCmp : Instruction::ICmp;
+	auto cmpType = lhs.stype()->isVec()? lhs.stype()->subType() : lhs.stype();
+	auto op = cmpType->isFloating()? Instruction::FCmp : Instruction::ICmp;
 	auto cmp = CmpInst::Create(op, pred, lhs, rhs, "", context);
-	return RValue(cmp, SType::getBool(context));
+	auto retType = lhs.stype()->isVec()?
+		SType::getVec(context, SType::getBool(context), lhs.stype()->size()) :
+		SType::getBool(context);
+	return RValue(cmp, retType);
 }
