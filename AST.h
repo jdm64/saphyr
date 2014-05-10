@@ -471,6 +471,31 @@ public:
 	}
 };
 
+class NExprVariable : public NVariable
+{
+	NExpression* expr;
+
+public:
+	NExprVariable(NExpression* expr)
+	: expr(expr) {}
+
+	RValue loadVar(CodeContext& context)
+	{
+		return expr->genValue(context);
+	}
+
+	string* getName() const
+	{
+		static string name = "temp expression";
+		return &name;
+	}
+
+	~NExprVariable()
+	{
+		delete expr;
+	}
+};
+
 class NParameter : public NDeclaration
 {
 	NDataType* type;

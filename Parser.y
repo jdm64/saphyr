@@ -63,7 +63,7 @@
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
-%type <t_exp> sizeof_expression
+%type <t_exp> sizeof_expression paren_expression
 // function prototype
 %type <t_func_pro> function_prototype
 // lists
@@ -610,9 +610,23 @@ primary_expression
 	{
 		$$ = $1;
 	}
-	| '(' expression ')'
+	| paren_expression
+	{
+		$$ = $1;
+	}
+	;
+paren_expression
+	: '(' expression ')'
 	{
 		$$ = $2;
+	}
+	| paren_expression '[' expression ']'
+	{
+		$$ = new NArrayVariable(new NExprVariable($1), $3);
+	}
+	| paren_expression '.' TT_IDENTIFIER
+	{
+		$$ = new NMemberVariable(new NExprVariable($1), $3);
 	}
 	;
 function_call
