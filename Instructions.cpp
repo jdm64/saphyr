@@ -54,35 +54,32 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 		return;
 	}
 
-	Instruction::CastOps op;
-	switch (type->isFloating() + valueType->isFloating()) {
-	case 0: // both int
-		if (type->size() > valueType->size()) {
-			op = valueType->isUnsigned()? Instruction::ZExt : Instruction::SExt;
-		} else if (type->size() < valueType->size()) {
-			op = Instruction::Trunc;
-		} else {
-			// same int size; no need to cast, just set internal type
-			value = RValue(value.value(), type);
-			return;
-		}
-		break;
-	case 1: // int and float
-		if (valueType->isInteger())
-			op = valueType->isUnsigned()? Instruction::UIToFP : Instruction::SIToFP;
-		else
-			op = type->isUnsigned()? Instruction::FPToUI : Instruction::FPToSI;
-		break;
-	case 2: // both float
-		op = type->isDouble()? Instruction::FPExt : Instruction::FPTrunc;
-		break;
-	default:
-		// should never happen
-		op = Instruction::SExt;
-		break;
-	}
-	auto val = CastInst::Create(op, value, *type, "", context);
+	auto op = getCastOp(valueType, type);
+	auto val = op != Instruction::AddrSpaceCast? CastInst::Create(op, value, *type, "", context) : value;
 	value = RValue(val, type);
+}
+
+CastOps Inst::getCastOp(SType* from, SType* to)
+{
+	switch (from->isFloating() | to->isFloating() << 1) {
+	case 0:
+		// both int
+		if (to->size() > from->size())
+			return from->isUnsigned()? Instruction::ZExt : Instruction::SExt;
+		else if (from->size() > to->size())
+			return Instruction::Trunc;
+		break;
+	case 1:
+		// from = float, to = int
+		return to->isUnsigned()? Instruction::FPToUI : Instruction::FPToSI;
+	case 2:
+		// from = int, to = float
+		return from->isUnsigned()? Instruction::UIToFP : Instruction::SIToFP;
+	case 3:
+		// both float
+		return to->isDouble()? Instruction::FPExt : Instruction::FPTrunc;
+	}
+	return Instruction::AddrSpaceCast;
 }
 
 BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)

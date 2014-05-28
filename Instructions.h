@@ -22,12 +22,15 @@
 
 typedef CmpInst::Predicate Predicate;
 typedef Instruction::BinaryOps BinaryOps;
+typedef Instruction::CastOps CastOps;
 
 class Inst
 {
 	static BinaryOps getOperator(int oper, SType* type, CodeContext& context);
 
 	static Predicate getPredicate(int oper, SType* type, CodeContext& context);
+
+	static CastOps getCastOp(SType* from, SType* to);
 
 	static void CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast = false);
 
