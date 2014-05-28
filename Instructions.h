@@ -30,6 +30,10 @@ class Inst
 
 	static Predicate getPredicate(int oper, SType* type, CodeContext& context);
 
+	/**
+	 * @return the CastOps required to cast from -> to. Only supports numeric casts.
+	 * Instruction::AddrSpaceCast is returned if no cast is required.
+	 */
 	static CastOps getCastOp(SType* from, SType* to);
 
 	static void CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast = false);

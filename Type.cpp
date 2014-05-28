@@ -58,11 +58,28 @@ uint64_t SType::allocSize(CodeContext& context, SType* type)
 
 SType* SType::numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min)
 {
+	switch (ltype->isVec() | (rtype->isVec() << 1)) {
+	default:
+		// should never happen
+		return ltype;
+	case 0:
+		goto novec;
+	case 1:
+		return ltype;
+	case 2:
+		return rtype;
+	case 3: // both vector
+		if (ltype->size() != rtype->size()) {
+			context.addError("can not cast vec types of different sizes");
+			return ltype;
+		}
+		auto subType = numericConv(context, ltype->subType(), rtype->subType(), false);
+		return SType::getVec(context, subType, ltype->size());
+	}
+novec:
 	auto btype = ltype->tclass | rtype->tclass;
-	if (btype & DOUBLE)
-		return SType::getFloat(context, true);
-	else if (btype & FLOATING)
-		return SType::getFloat(context);
+	if (btype & FLOATING)
+		return SType::getFloat(context, btype & DOUBLE);
 
 	auto lbits = ltype->size() - !ltype->isUnsigned();
 	auto rbits = rtype->size() - !rtype->isUnsigned();

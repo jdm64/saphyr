@@ -24,8 +24,8 @@ void Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast
 
 	if (ltype == rtype) {
 		return;
-	} else if (ltype->isComposite() || rtype->isComposite()) {
-		context.addError("can not cast composite types");
+	} else if (ltype->isComplex() || rtype->isComplex()) {
+		context.addError("can not cast complex types");
 		return;
 	}
 
@@ -40,12 +40,42 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 
 	if (type == valueType) {
 		return;
-	} else if (type->isComposite() || valueType->isComposite()) {
-		context.addError("can not cast composite types");
+	} else if (type->isComplex() || valueType->isComplex()) {
+		context.addError("can not cast complex types");
 		return;
-	}
+	} else if (type->isVec()) {
+		if (valueType->isNumeric()) {
+			CastTo(value, type->subType(), context);
 
-	if (type->isBool()) {
+			auto i32 = SType::getInt(context, 32);
+			auto mask = RValue::getZero(SType::getVec(context, i32, type->size()));
+			auto udef = UndefValue::get(*SType::getVec(context, type->subType(), 1));
+			auto instEle = InsertElementInst::Create(udef, value, RValue::getZero(i32), "", context);
+			auto retVal = new ShuffleVectorInst(instEle, udef, mask, "", context);
+
+			value = RValue(retVal, type);
+			return;
+		} else if (type->size() != valueType->size()) {
+			context.addError("can not cast vec types of different sizes");
+			return;
+		} else if (type->subType()->isBool()) {
+			// cast to bool is value != 0
+			auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
+			auto op = valueType->subType()->isFloating()? Instruction::FCmp : Instruction::ICmp;
+			auto val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context);
+			value = RValue(val, type);
+			return;
+		} else {
+			auto op = getCastOp(valueType->subType(), type->subType());
+			auto val = CastInst::Create(op, value, *type, "", context);
+			value = RValue(val, type);
+			return;
+		}
+	} else if (type->isBool()) {
+		if (valueType->isVec()) {
+			context.addError("can not cast vec type to bool");
+			return;
+		}
 		// cast to bool is value != 0
 		auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
 		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
@@ -86,7 +116,7 @@ BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 {
 	if (type->isVec()) {
 		type = type->subType();
-	} else if (type->isComposite()) {
+	} else if (type->isComplex()) {
 		context.addError("can not perform operation on composite types");
 		return Instruction::Add;
 	}
@@ -146,7 +176,7 @@ Predicate Inst::getPredicate(int oper, SType* type, CodeContext& context)
 
 	if (type->isVec()) {
 		type = type->subType();
-	} else if (type->isComposite()) {
+	} else if (type->isComplex()) {
 		context.addError("can not perform operation on composite types");
 		return Predicate::ICMP_EQ;
 	}

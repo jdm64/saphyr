@@ -154,9 +154,13 @@ public:
 		return tclass & STRUCT;
 	}
 
-	bool isComposite() const
+	/**
+	 * @return true if the type is not a simple type
+	 * @see http://llvm.org/docs/LangRef.html#single-value-types
+	 */
+	bool isComplex() const
 	{
-		return tclass & (ARRAY | STRUCT | VEC | UNION);
+		return tclass & (ARRAY | STRUCT | UNION | FUNCTION);
 	}
 
 	bool isFunction() const

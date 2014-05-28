@@ -149,7 +149,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 
 	if (!indexVal) {
 		return indexVal;
-	} else if (indexVal.stype()->isComposite()) {
+	} else if (!indexVal.stype()->isNumeric()) {
 		context.addError("array index is not able to be cast to an int");
 		return RValue();
 	}
