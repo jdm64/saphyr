@@ -127,7 +127,7 @@ class CodeContext : public SymbolTable
 	{
 		for (auto& item : labelBlocks) {
 			if (item.second->isPlaceholder)
-				addError("label \"" + item.first + "\" not defined");
+				addError("label " + item.first + " not defined");
 		}
 	}
 

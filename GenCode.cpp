@@ -384,11 +384,11 @@ void NReturnStatement::genCode(CodeContext& context)
 
 	if (funcReturn->isVoid()) {
 		if (value) {
-			context.addError(func->name().str() + " function declared void, but non-void return found");
+			context.addError("function " + func->name().str() + " declared void, but non-void return found");
 			return;
 		}
 	} else if (!value) {
-		context.addError(func->name().str() + " function declared non-void, but void return found");
+		context.addError("function " + func->name().str() + " declared non-void, but void return found");
 		return;
 	}
 	auto returnVal = value? value->genValue(context) : RValue();
@@ -531,7 +531,7 @@ void NLabelStatement::genCode(CodeContext& context)
 	auto label = context.getLabelBlock(name);
 	if (label) {
 		if (!label->isPlaceholder) {
-			context.addError("label \"" + *name + "\" already defined");
+			context.addError("label " + *name + " already defined");
 			return;
 		}
 		// a used label is no longer a placeholder
@@ -592,7 +592,7 @@ void NLoopBranch::genCode(CodeContext& context)
 	context.pushBlock(context.createBlock());
 	return;
 error:
-	context.addError("no valid context for " + typeName + " statement");
+	context.addError(typeName + " invalid outside a loop/switch block");
 }
 
 RValue NAssignment::genValue(CodeContext& context)
@@ -747,7 +747,7 @@ RValue NSizeOfOperator::genValue(CodeContext& context)
 		} else if (isVar) {
 			stype = isVar.stype();
 		} else {
-			context.addError(*name + " is not declared");
+			context.addError("type " + *name + " is not declared");
 			return context.errValue();
 		}
 		break;
