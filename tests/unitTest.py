@@ -121,7 +121,7 @@ class TestCase:
 		else:
 			actual = self.negFile
 			with open(actual, "w") as err:
-				err.write(proc.out)
+				err.write(proc.err + proc.out)
 			isPos = False
 
 		proc = Cmd(["diff", "-uwB", self.expFile, actual])
