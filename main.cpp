@@ -22,8 +22,10 @@ int main(int argc, char** argv)
 {
 	string file(argv[1]);
 	Parser parser(file);
-	parser.parse();
 
+	if (parser.parse()) {
+		return 1;
+	}
 	CodeContext context(file);
 	context.genCode(*programBlock);
 
