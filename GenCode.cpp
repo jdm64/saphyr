@@ -791,9 +791,11 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	}
 	auto argCount = arguments->size();
 	auto paramCount = func->stype()->numParams();
-	if (argCount != paramCount)
+	if (argCount != paramCount) {
 		context.addError("argument count for " + func->name().str() + " function invalid, "
 			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.");
+		return context.errValue();
+	}
 	auto funcType = func->stype();
 	vector<Value*> exp_list;
 	int i = 0;
