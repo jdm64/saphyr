@@ -329,6 +329,22 @@ public:
 	}
 };
 
+class NPointerType : public NDataType
+{
+	NDataType* baseType;
+
+public:
+	NPointerType(NDataType* baseType)
+	: baseType(baseType) {}
+
+	SType* getType(CodeContext& context);
+
+	~NPointerType()
+	{
+		delete baseType;
+	}
+};
+
 class NVariableDecl : public NDeclaration
 {
 protected:
@@ -388,7 +404,7 @@ public:
 		return genValue(context, loadVar(context));
 	}
 
-	RValue genValue(CodeContext& context, RValue var);
+	virtual RValue genValue(CodeContext& context, RValue var);
 
 	virtual RValue loadVar(CodeContext& context) = 0;
 
@@ -493,6 +509,43 @@ public:
 	~NExprVariable()
 	{
 		delete expr;
+	}
+};
+
+class NDereference : public NVariable
+{
+	NVariable* derefVar;
+
+public:
+	NDereference(NVariable* derefVar)
+	: derefVar(derefVar) {}
+
+	RValue loadVar(CodeContext& context);
+
+	string* getName() const
+	{
+		return derefVar->getName();
+	}
+};
+
+class NAddressOf : public NVariable
+{
+	NVariable* addVar;
+
+public:
+	NAddressOf(NVariable* addVar)
+	: addVar(addVar) {}
+
+	RValue genValue(CodeContext& context, RValue var)
+	{
+		return RValue(var, SType::getPointer(context, var.stype()));
+	}
+
+	RValue loadVar(CodeContext& context);
+
+	string* getName() const
+	{
+		return addVar->getName();
 	}
 };
 

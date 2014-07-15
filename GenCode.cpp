@@ -127,6 +127,12 @@ SType* NUserType::getType(CodeContext& context)
 	return type;
 }
 
+SType* NPointerType::getType(CodeContext& context)
+{
+	auto btype = baseType->getType(context);
+	return btype? SType::getPointer(context, btype) : nullptr;
+}
+
 RValue NVariable::genValue(CodeContext& context, RValue var)
 {
 	if (!var)
@@ -214,6 +220,24 @@ RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnio
 	auto ptr = PointerType::get(*item, 0);
 	auto castEl = new BitCastInst(baseValue, ptr, "", context);
 	return RValue(castEl, item);
+}
+
+RValue NDereference::loadVar(CodeContext& context)
+{
+	auto var = derefVar->loadVar(context);
+	if (!var) {
+		return var;
+	} else if (!var.stype()->isPointer()) {
+		context.addError("variable " + *getName() + " can not be dereferenced");
+		return RValue();
+	}
+	auto load = new LoadInst(var, "", context);
+	return RValue(load, var.stype()->subType());
+}
+
+RValue NAddressOf::loadVar(CodeContext& context)
+{
+	return addVar->loadVar(context);
 }
 
 void NParameter::genCode(CodeContext& context)

@@ -51,7 +51,8 @@ protected:
 
 public:
 	enum { VOID = 0x1, INTEGER = 0x2, UNSIGNED = 0x4, FLOATING = 0x8, DOUBLE = 0x10,
-		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80, VEC = 0x100, UNION = 0x200 };
+		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80, VEC = 0x100, UNION = 0x200,
+		POINTER = 0x400 };
 
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
@@ -76,6 +77,8 @@ public:
 	static SType* getArray(CodeContext& context, SType* arrType, uint64_t size);
 
 	static SType* getVec(CodeContext& context, SType* vecType, uint64_t size);
+
+	static SType* getPointer(CodeContext& context, SType* ptrType);
 
 	static SFunctionType* getFunction(CodeContext& context, SType* returnTy, vector<SType*> params);
 
@@ -161,6 +164,11 @@ public:
 	bool isComplex() const
 	{
 		return tclass & (ARRAY | STRUCT | UNION | FUNCTION);
+	}
+
+	bool isPointer() const
+	{
+		return tclass & POINTER;
 	}
 
 	bool isFunction() const
@@ -292,6 +300,9 @@ class TypeManager
 	map<pair<SType*, uint64_t>, STypePtr> arrMap;
 	map<pair<SType*, uint64_t>, STypePtr> vecMap;
 
+	// pointer types
+	map<SType*, STypePtr> ptrMap;
+
 	// user types
 	map<string, SUserPtr> usrMap;
 
@@ -346,6 +357,14 @@ public:
 		STypePtr &item = arrMap[make_pair(vecType, size)];
 		if (!item.get())
 			item = smart_stype(SType::VEC, VectorType::get(*vecType, size), size, vecType);
+		return item.get();
+	}
+
+	SType* getPointer(SType* ptrType)
+	{
+		STypePtr &item = ptrMap[ptrType];
+		if (!item.get())
+			item = smart_stype(SType::POINTER, PointerType::getUnqual(*ptrType), 0, ptrType);
 		return item.get();
 	}
 

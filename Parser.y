@@ -375,6 +375,10 @@ explicit_data_type
 	{
 		$$ = new NVecType($3, (NBaseType*) $5);
 	}
+	| '@' data_type
+	{
+		$$ = new NPointerType($2);
+	}
 	;
 base_type
 	: base_type_keyword
@@ -665,6 +669,14 @@ explicit_variable_expresion
 	| variable_expresion '.' TT_IDENTIFIER
 	{
 		$$ = new NMemberVariable($1, $3);
+	}
+	| variable_expresion '@'
+	{
+		$$ = new NDereference($1);
+	}
+	| variable_expresion '$'
+	{
+		$$ = new NAddressOf($1);
 	}
 	;
 value_expression
