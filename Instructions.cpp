@@ -234,3 +234,8 @@ RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
 		SType::getBool(context);
 	return RValue(cmp, retType);
 }
+
+RValue Inst::Load(CodeContext& context, RValue value, SType* type)
+{
+	return RValue(new LoadInst(value, "", context), type);
+}

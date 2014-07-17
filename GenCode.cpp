@@ -137,8 +137,7 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 {
 	if (!var)
 		return context.errValue();
-	auto load = new LoadInst(var, "", context);
-	return RValue(load, var.stype());
+	return Inst::Load(context, var, var.stype());
 }
 
 RValue NBaseVariable::loadVar(CodeContext& context)
@@ -231,8 +230,7 @@ RValue NDereference::loadVar(CodeContext& context)
 		context.addError("variable " + *getName() + " can not be dereferenced");
 		return RValue();
 	}
-	auto load = new LoadInst(var, "", context);
-	return RValue(load, var.stype()->subType());
+	return Inst::Load(context, var, var.stype()->subType());
 }
 
 RValue NAddressOf::loadVar(CodeContext& context)
@@ -628,7 +626,7 @@ RValue NAssignment::genValue(CodeContext& context)
 		return context.errValue();
 
 	if (oper != '=') {
-		auto lhsLocal = RValue(new LoadInst(lhsVar, "", context), lhsVar.stype());
+		auto lhsLocal = Inst::Load(context, lhsVar, lhsVar.stype());
 		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
 	Inst::CastTo(rhsExp, lhsVar.stype(), context);
