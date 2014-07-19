@@ -47,7 +47,9 @@ public:
 
 	static RValue Cmp(int type, RValue lhs, RValue rhs, CodeContext& context);
 
-	static RValue Load(CodeContext& context, RValue value, SType* type);
+	static RValue Load(CodeContext& context, RValue value);
+
+	static RValue Deref(CodeContext& context, RValue value, bool recursive = false);
 };
 
 #endif

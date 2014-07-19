@@ -235,7 +235,16 @@ RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
 	return RValue(cmp, retType);
 }
 
-RValue Inst::Load(CodeContext& context, RValue value, SType* type)
+RValue Inst::Load(CodeContext& context, RValue value)
 {
-	return RValue(new LoadInst(value, "", context), type);
+	return RValue(new LoadInst(value, "", context), value.stype());
+}
+
+RValue Inst::Deref(CodeContext& context, RValue value, bool recursive)
+{
+	auto retVal = value;
+	do {
+		retVal = RValue(new LoadInst(retVal, "", context), retVal.stype()->subType());
+	} while (recursive && retVal.stype()->isPointer());
+	return retVal;
 }

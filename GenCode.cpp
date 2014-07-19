@@ -137,7 +137,7 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 {
 	if (!var)
 		return context.errValue();
-	return Inst::Load(context, var, var.stype());
+	return Inst::Load(context, var);
 }
 
 RValue NBaseVariable::loadVar(CodeContext& context)
@@ -160,9 +160,12 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	}
 
 	auto var = arrVar->loadVar(context);
-	if (!var) {
+	if (!var)
 		return var;
-	} else if (!var.stype()->isSequence()) {
+	else if (var.stype()->isPointer())
+		var = Inst::Deref(context, var, true);
+
+	if (!var.stype()->isSequence()) {
 		context.addError("variable " + *getName() + " is not an array or vec");
 		return RValue();
 	}
@@ -181,9 +184,14 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 	auto var = baseVar->loadVar(context);
 	auto varType = var.stype();
 
-	if (!varType)
+	if (!varType) {
 		goto fail;
-	else if (varType->isStruct())
+	} else if (var.stype()->isPointer()) {
+		var = Inst::Deref(context, var, true);
+		varType = var.stype();
+	}
+
+	if (varType->isStruct())
 		return loadStruct(context, var, static_cast<SStructType*>(varType));
 	else if (varType->isUnion())
 		return loadUnion(context, var, static_cast<SUnionType*>(varType));
@@ -230,7 +238,7 @@ RValue NDereference::loadVar(CodeContext& context)
 		context.addError("variable " + *getName() + " can not be dereferenced");
 		return RValue();
 	}
-	return Inst::Load(context, var, var.stype()->subType());
+	return Inst::Deref(context, var);
 }
 
 RValue NAddressOf::loadVar(CodeContext& context)
@@ -626,7 +634,7 @@ RValue NAssignment::genValue(CodeContext& context)
 		return context.errValue();
 
 	if (oper != '=') {
-		auto lhsLocal = Inst::Load(context, lhsVar, lhsVar.stype());
+		auto lhsLocal = Inst::Load(context, lhsVar);
 		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
 	Inst::CastTo(rhsExp, lhsVar.stype(), context);
