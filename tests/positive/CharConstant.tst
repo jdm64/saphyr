@@ -22,7 +22,7 @@ define i32 @excape() {
   %c = alloca i8
   store i8 8, i8* %c
   %d = alloca i8
-  store i8 101, i8* %d
+  store i8 27, i8* %d
   %e = alloca i8
   store i8 12, i8* %e
   %f = alloca i8

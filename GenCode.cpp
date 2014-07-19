@@ -916,6 +916,7 @@ RValue NCharConst::genValue(CodeContext& context)
 		case '0': cVal = '\0'; break;
 		case 'a': cVal = '\a'; break;
 		case 'b': cVal = '\b'; break;
+		case 'e': cVal =   27; break;
 		case 'f': cVal = '\f'; break;
 		case 'n': cVal = '\n'; break;
 		case 'r': cVal = '\r'; break;
