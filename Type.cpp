@@ -16,6 +16,11 @@
  */
 #include "CodeContext.h"
 
+#define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
+#define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
+#define smart_strucTy(type, structure) unique_ptr<SUserType>(new SStructType(type, structure))
+#define smart_unionTy(type, structure, size) unique_ptr<SUserType>(new SUnionType(type, structure, size))
+
 SType* SType::getVoid(CodeContext& context)
 {
 	return context.typeManager.getVoid();
@@ -125,4 +130,69 @@ TypeManager::TypeManager(Module* module)
 	uint64Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt64Ty(context), 64, nullptr);
 	floatTy = smart_stype(SType::FLOATING, Type::getFloatTy(context), 0, nullptr);
 	doubleTy = smart_stype(SType::FLOATING | SType::DOUBLE, Type::getDoubleTy(context), 0, nullptr);
+}
+
+SType* TypeManager::getArray(SType* arrType, int64_t size)
+{
+	STypePtr &item = arrMap[make_pair(arrType, size)];
+	if (!item.get())
+		item = smart_stype(SType::ARRAY, ArrayType::get(*arrType, size), size, arrType);
+	return item.get();
+}
+
+SType* TypeManager::getVec(SType* vecType, int64_t size)
+{
+	STypePtr &item = arrMap[make_pair(vecType, size)];
+	if (!item.get())
+		item = smart_stype(SType::VEC, VectorType::get(*vecType, size), size, vecType);
+	return item.get();
+}
+
+SType* TypeManager::getPointer(SType* ptrType)
+{
+	STypePtr &item = ptrMap[ptrType];
+	if (!item.get())
+		item = smart_stype(SType::POINTER, PointerType::getUnqual(*ptrType), 0, ptrType);
+	return item.get();
+}
+
+SFunctionType* TypeManager::getFunction(SType* returnTy, vector<SType*> args)
+{
+	SFuncPtr &item = funcMap[make_pair(returnTy, args)];
+	if (!item.get()) {
+		auto func = FunctionType::get(*returnTy, SType::convertArr(args), false);
+		item = smart_sfuncTy(func, returnTy, args);
+	}
+	return item.get();
+}
+
+void TypeManager::createStruct(string* name, vector<pair<string, SType*>> structure)
+{
+	SUserPtr& item = usrMap[*name];
+	if (item.get())
+		return;
+	vector<Type*> elements;
+	for (auto item : structure)
+		elements.push_back(*item.second);
+	auto type = StructType::create(elements, *name);
+	item = smart_strucTy(type, structure);
+}
+
+void TypeManager::createUnion(string* name, vector<pair<string, SType*>> structure)
+{
+	SUserPtr& item = usrMap[*name];
+	if (item.get() || !structure.size())
+		return;
+	auto type = structure[0].second;
+	auto size = allocSize(type);
+	for (auto item : structure) {
+		auto tsize = allocSize(item.second);
+		if (tsize > size) {
+			size = tsize;
+			type = item.second;
+		}
+	}
+	vector<Type*> elements;
+	elements.push_back(*type);
+	item = smart_unionTy(StructType::create(elements, *name), structure, size);
 }
