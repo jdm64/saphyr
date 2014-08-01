@@ -172,7 +172,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	Inst::CastTo(indexVal, SType::getInt(context, 64), context);
 
 	vector<Value*> indexes;
-	indexes.push_back(RValue::getZero(SType::getInt(context, 32)));
+	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
 	indexes.push_back(indexVal);
 
 	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
@@ -209,7 +209,7 @@ RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStr
 	}
 
 	vector<Value*> indexes;
-	indexes.push_back(RValue::getZero(SType::getInt(context, 32)));
+	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
 	indexes.push_back(ConstantInt::get(*SType::getInt(context, 32), item->first));
 
 	auto getEl = GetElementPtrInst::Create(baseValue, indexes, "", context);
@@ -801,11 +801,11 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 	switch (oper) {
 	case '+':
 	case '-':
-		return Inst::BinaryOp(oper, RValue::getZero(type), unaryExp, context);
+		return Inst::BinaryOp(oper, RValue::getZero(context, type), unaryExp, context);
 	case '!':
-		return Inst::Cmp(ParserBase::TT_EQ, RValue::getZero(type), unaryExp, context);
+		return Inst::Cmp(ParserBase::TT_EQ, RValue::getZero(context, type), unaryExp, context);
 	case '~':
-		return Inst::BinaryOp('^', RValue::getAllOne(type), unaryExp, context);
+		return Inst::BinaryOp('^', RValue::getAllOne(context, type), unaryExp, context);
 	default:
 		context.addError("invalid unary operator " + to_string(oper));
 		return context.errValue();
@@ -851,7 +851,7 @@ RValue NIncrement::genValue(CodeContext& context)
 	auto varPtr = variable->loadVar(context);
 	auto varVal = variable->genValue(context, varPtr);
 
-	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(varVal.stype()), context);
+	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(context, varVal.stype()), context);
 	new StoreInst(result, varPtr, context);
 
 	return isPostfix? varVal : RValue(result, varVal.stype());

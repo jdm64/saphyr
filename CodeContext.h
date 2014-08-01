@@ -286,9 +286,9 @@ public:
 		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
 	}
 
-	RValue errValue() const
+	RValue errValue()
 	{
-		return RValue::getZero(typeManager.getInt(32));
+		return RValue::getZero(*this, typeManager.getInt(32));
 	}
 
 	void genCode(NStatementList stms);

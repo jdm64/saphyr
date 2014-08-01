@@ -33,12 +33,12 @@ public:
 	RValue(Value* value, SType* type)
 	: val(value), ty(type) {}
 
-	static RValue getZero(SType* type)
+	static RValue getZero(CodeContext &context, SType* type)
 	{
 		return RValue(Constant::getNullValue(*type), type);
 	}
 
-	static RValue getOne(SType* type)
+	static RValue getOne(CodeContext &context, SType* type)
 	{
 		auto one = type->isFloating()?
 			ConstantFP::get(type->type(), "1.0") :
@@ -46,7 +46,7 @@ public:
 		return RValue(one, type);
 	}
 
-	static RValue getAllOne(SType* type)
+	static RValue getAllOne(CodeContext &context, SType* type)
 	{
 		return RValue(Constant::getAllOnesValue(*type), type);
 	}

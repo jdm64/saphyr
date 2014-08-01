@@ -48,9 +48,9 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 			CastTo(value, type->subType(), context);
 
 			auto i32 = SType::getInt(context, 32);
-			auto mask = RValue::getZero(SType::getVec(context, i32, type->size()));
+			auto mask = RValue::getZero(context, SType::getVec(context, i32, type->size()));
 			auto udef = UndefValue::get(*SType::getVec(context, type->subType(), 1));
-			auto instEle = InsertElementInst::Create(udef, value, RValue::getZero(i32), "", context);
+			auto instEle = InsertElementInst::Create(udef, value, RValue::getZero(context, i32), "", context);
 			auto retVal = new ShuffleVectorInst(instEle, udef, mask, "", context);
 
 			value = RValue(retVal, type);
@@ -62,7 +62,7 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 			// cast to bool is value != 0
 			auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
 			auto op = valueType->subType()->isFloating()? Instruction::FCmp : Instruction::ICmp;
-			auto val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context);
+			auto val = CmpInst::Create(op, pred, value, RValue::getZero(context, valueType), "", context);
 			value = RValue(val, type);
 			return;
 		} else {
@@ -79,7 +79,7 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 		// cast to bool is value != 0
 		auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
 		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
-		auto val = CmpInst::Create(op, pred, value, RValue::getZero(valueType), "", context);
+		auto val = CmpInst::Create(op, pred, value, RValue::getZero(context, valueType), "", context);
 		value = RValue(val, type);
 		return;
 	}
@@ -216,7 +216,7 @@ RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 
 RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
 {
-	auto condValue = condExp? condExp->genValue(context) : RValue::getOne(SType::getBool(context));
+	auto condValue = condExp? condExp->genValue(context) : RValue::getOne(context, SType::getBool(context));
 	CastTo(condValue, SType::getBool(context), context);
 	BranchInst::Create(trueBlock, falseBlock, condValue, context);
 	return condValue;
