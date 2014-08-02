@@ -152,7 +152,7 @@ SType* TypeManager::getPointer(SType* ptrType)
 {
 	STypePtr &item = ptrMap[ptrType];
 	if (!item.get())
-		item = smart_stype(SType::POINTER, PointerType::getUnqual(*ptrType), 0, ptrType);
+		item = smart_stype(SType::POINTER | SType::UNSIGNED, PointerType::getUnqual(*ptrType), 0, ptrType);
 	return item.get();
 }
 
