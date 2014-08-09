@@ -850,8 +850,9 @@ RValue NIncrement::genValue(CodeContext& context)
 {
 	auto varPtr = variable->loadVar(context);
 	auto varVal = variable->genValue(context, varPtr);
+	auto incType = varVal.stype()->isPointer()? SType::getInt(context, 32) : varVal.stype();
 
-	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(context, varVal.stype()), context);
+	auto result = Inst::BinaryOp(type, varVal, RValue::getOne(context, incType), context);
 	new StoreInst(result, varPtr, context);
 
 	return isPostfix? varVal : RValue(result, varVal.stype());
