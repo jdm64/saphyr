@@ -55,6 +55,20 @@ public:
 		return vec;
 	}
 
+	static SType* getNumberLike(CodeContext& context, SType* type)
+	{
+		if (type->isNumeric()) {
+			return type;
+		} else if (type->tclass & (ARRAY | FUNCTION | POINTER)) {
+			return getNumberLike(context, type->subtype);
+		} else if (type->isVec()) {
+			auto subT = type->subtype;
+			return subT->isNumeric()? type : getNumberLike(context, subT);
+		}
+		// default to int32 for void, struct, union
+		return getInt(context, 32);
+	}
+
 	static uint64_t allocSize(CodeContext& context, SType* type);
 
 	static SType* numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
