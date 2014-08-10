@@ -35,20 +35,27 @@ public:
 
 	static RValue getZero(CodeContext &context, SType* type)
 	{
+		// llvm's Constant::getNullValue() supports every type
+		// except function, label, and opaque type
+		if (type->isFunction())
+			type = SType::getNumberLike(context, type);
 		return RValue(Constant::getNullValue(*type), type);
 	}
 
 	static RValue getOne(CodeContext &context, SType* type)
 	{
-		auto one = type->isFloating()?
-			ConstantFP::get(type->type(), "1.0") :
-			ConstantInt::getSigned(type->type(), 1);
-		return RValue(one, type);
+		auto numlike = SType::getNumberLike(context, type);
+		auto basenum = numlike->getScalar();
+		auto one = basenum->isFloating()?
+			ConstantFP::get(*numlike, "1.0") :
+			ConstantInt::getSigned(*numlike, 1);
+		return RValue(one, numlike);
 	}
 
 	static RValue getAllOne(CodeContext &context, SType* type)
 	{
-		return RValue(Constant::getAllOnesValue(*type), type);
+		auto numlike = SType::getNumberLike(context, type);
+		return RValue(Constant::getAllOnesValue(*numlike), type);
 	}
 
 	operator bool() const
