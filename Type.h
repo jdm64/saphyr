@@ -187,6 +187,11 @@ public:
 	{
 		return subtype;
 	}
+
+	SType* getScalar()
+	{
+		return isSequence()? subtype->getScalar() : this;
+	}
 };
 
 class SUserType : public SType
