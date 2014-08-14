@@ -27,6 +27,10 @@ void Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast
 	} else if (ltype->isComplex() || rtype->isComplex()) {
 		context.addError("can not cast complex types");
 		return;
+	} else if (ltype->isPointer() || rtype->isPointer()) {
+		// different pointer types can't be cast automatically
+		// the operations need to handle pointers specially
+		return;
 	}
 
 	auto toType = SType::numericConv(context, ltype, rtype, upcast);
@@ -43,6 +47,12 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 	} else if (type->isComplex() || valueType->isComplex()) {
 		context.addError("can not cast complex types");
 		return;
+	} else if (type->isPointer()) {
+		if (!valueType->isInteger()) {
+			context.addError("operation with pointer only valid with integer");
+			return;
+		}
+		return;
 	} else if (type->isVec()) {
 		if (valueType->isNumeric()) {
 			CastTo(value, type->subType(), context);
@@ -54,6 +64,9 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 			auto retVal = new ShuffleVectorInst(instEle, udef, mask, "", context);
 
 			value = RValue(retVal, type);
+			return;
+		} else if (valueType->isPointer()) {
+			context.addError("can not cast pointer to vec type");
 			return;
 		} else if (type->size() != valueType->size()) {
 			context.addError("can not cast vec types of different sizes");
