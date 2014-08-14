@@ -38,6 +38,8 @@ class Inst
 
 	static void CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast = false);
 
+	static RValue PointerMath(int type, RValue ptr, RValue val, CodeContext& context);
+
 public:
 	static void CastTo(RValue& value, SType* type, CodeContext& context);
 

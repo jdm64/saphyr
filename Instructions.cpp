@@ -219,12 +219,35 @@ Predicate Inst::getPredicate(int oper, SType* type, CodeContext& context)
 	return predArr[offset];
 }
 
+RValue Inst::PointerMath(int type, RValue ptr, RValue val, CodeContext& context)
+{
+	if (type != ParserBase::TT_INC && type != ParserBase::TT_DEC) {
+		context.addError("pointer arithmetic only valid using ++/-- operators");
+		return ptr;
+	}
+	auto ptrVal = GetElementPtrInst::Create(ptr, val.value(), "", context);
+	return RValue(ptrVal, ptr.stype());
+}
+
 RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
 	CastMatch(context, lhs, rhs, true);
-	auto llvmOp = getOperator(type, lhs.stype(), context);
-	auto llvmVal = BinaryOperator::Create(llvmOp, lhs, rhs, "", context);
-	return RValue(llvmVal, lhs.stype());
+
+	switch ((lhs.stype()->isPointer() << 1) | rhs.stype()->isPointer()) {
+	default:
+	case 0: // no pointer
+	{
+		auto llvmOp = getOperator(type, lhs.stype(), context);
+		return RValue(BinaryOperator::Create(llvmOp, lhs, rhs, "", context), lhs.stype());
+	}
+	case 1: // lhs != ptr, rhs == ptr
+		swap(lhs, rhs);
+	case 2: // lhs == ptr, rhs != ptr
+		return PointerMath(type, lhs, rhs, context);
+	case 3: // both ptr
+		context.addError("can't perform operation with two pointers");
+		return lhs;
+	}
 }
 
 RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
