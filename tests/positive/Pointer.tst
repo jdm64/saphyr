@@ -24,6 +24,17 @@ int other()
 	return p1@ + p2@;
 }
 
+@int getPtr()
+{
+	@int p;
+
+	int a = p? 1 : 5;
+
+	p@ = a;
+
+	return p;
+}
+
 ========
 
 define void @test() {
@@ -68,4 +79,18 @@ define i32 @other() {
   %5 = load i32* %4
   %6 = add i32 %3, %5
   ret i32 %6
+}
+
+define i32* @getPtr() {
+  %p = alloca i32*
+  %1 = load i32** %p
+  %2 = icmp ne i32* %1, null
+  %3 = select i1 %2, i32 1, i32 5
+  %a = alloca i32
+  store i32 %3, i32* %a
+  %4 = load i32** %p
+  %5 = load i32* %a
+  store i32 %5, i32* %4
+  %6 = load i32** %p
+  ret i32* %6
 }
