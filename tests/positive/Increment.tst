@@ -102,10 +102,10 @@ define i32 @main() {
   %4 = fadd double %3, 1.000000e+00
   store double %4, double* %b
   %5 = load i32* %a
-  %6 = sub i32 %5, 1
+  %6 = add i32 %5, -1
   store i32 %6, i32* %a
   %7 = load double* %b
-  %8 = fsub double %7, 1.000000e+00
+  %8 = fadd double %7, -1.000000e+00
   store double %8, double* %b
   %9 = load i32* %a
   ret i32 %9

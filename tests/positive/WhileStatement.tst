@@ -71,7 +71,7 @@ define void @func2(i32 %x) {
 
 ; <label>:5                                       ; preds = %2, %0
   %6 = load i32* %1
-  %7 = sub i32 %6, 1
+  %7 = add i32 %6, -1
   store i32 %7, i32* %1
   br label %2
 

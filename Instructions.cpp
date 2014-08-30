@@ -143,9 +143,9 @@ BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 		return type->isUnsigned()? Instruction::URem : Instruction::SRem;
 	case '+':
 	case ParserBase::TT_INC:
+	case ParserBase::TT_DEC:
 		return type->isFloating()? Instruction::FAdd : Instruction::Add;
 	case '-':
-	case ParserBase::TT_DEC:
 		return type->isFloating()? Instruction::FSub : Instruction::Sub;
 	case ParserBase::TT_LSHIFT:
 		if (type->isFloating())
@@ -249,7 +249,7 @@ RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 
 RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
 {
-	auto condValue = condExp? condExp->genValue(context) : RValue::getOne(context, SType::getBool(context));
+	auto condValue = condExp? condExp->genValue(context) : RValue::getNumVal(context, SType::getBool(context));
 	CastTo(condValue, SType::getBool(context), context);
 	BranchInst::Create(trueBlock, falseBlock, condValue, context);
 	return condValue;

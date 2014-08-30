@@ -70,7 +70,7 @@ define void @brLoop() {
 
 ; <label>:7                                       ; preds = %4
   %8 = load i32* %a
-  %9 = sub i32 %8, 1
+  %9 = add i32 %8, -1
   store i32 %9, i32* %a
   br label %1
 
@@ -115,7 +115,7 @@ define void @cnLoop() {
 
 ; <label>:7                                       ; preds = %4
   %8 = load i32* %a
-  %9 = sub i32 %8, 1
+  %9 = add i32 %8, -1
   store i32 %9, i32* %a
   br label %1
 
@@ -160,7 +160,7 @@ define i32 @main() {
 
 ; <label>:7                                       ; preds = %4
   %8 = load i32* %a
-  %9 = sub i32 %8, 1
+  %9 = add i32 %8, -1
   store i32 %9, i32* %a
   br label %1
 

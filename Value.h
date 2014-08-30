@@ -42,13 +42,13 @@ public:
 		return RValue(Constant::getNullValue(*type), type);
 	}
 
-	static RValue getOne(CodeContext &context, SType* type)
+	static RValue getNumVal(CodeContext &context, SType* type, int64_t value = 1)
 	{
 		auto numlike = SType::getNumberLike(context, type);
 		auto basenum = numlike->getScalar();
 		auto one = basenum->isFloating()?
-			ConstantFP::get(*numlike, "1.0") :
-			ConstantInt::getSigned(*numlike, 1);
+			ConstantFP::get(*numlike, value) :
+			ConstantInt::getSigned(*numlike, value);
 		return RValue(one, numlike);
 	}
 

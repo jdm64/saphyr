@@ -39,6 +39,7 @@ void vecOps()
 	auto c = -a;
 	c = ~a;
 	c++;
+	c--;
 }
 
 ========
@@ -115,5 +116,8 @@ define void @vecOps() {
   %5 = load <3 x i32>* %c
   %6 = add <3 x i32> %5, <i32 1, i32 1, i32 1>
   store <3 x i32> %6, <3 x i32>* %c
+  %7 = load <3 x i32>* %c
+  %8 = add <3 x i32> %7, <i32 -1, i32 -1, i32 -1>
+  store <3 x i32> %8, <3 x i32>* %c
   ret void
 }
