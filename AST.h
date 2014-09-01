@@ -538,7 +538,7 @@ public:
 
 	RValue genValue(CodeContext& context, RValue var)
 	{
-		return RValue(var, SType::getPointer(context, var.stype()));
+		return var? RValue(var, SType::getPointer(context, var.stype())) : var;
 	}
 
 	RValue loadVar(CodeContext& context);

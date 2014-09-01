@@ -4,6 +4,8 @@ void func()
 	int a;
 
 	a@ = 5;
+
+	a = q$;
 }
 
 void func2()
@@ -25,8 +27,9 @@ void func3()
 ========
 
 error: variable a can not be dereferenced
+error: variable q not declared
 error: can't cast value to pointer type
 error: pointer arithmetic only valid using ++/-- operators
 error: can't perform operation with two pointers
 error: can not cast pointer to vec type
-found 5 errors
+found 6 errors

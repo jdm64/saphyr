@@ -630,7 +630,7 @@ RValue NAssignment::genValue(CodeContext& context)
 	auto lhsVar = lhs->loadVar(context);
 	auto rhsExp = rhs->genValue(context);
 
-	if (!lhsVar)
+	if (!lhsVar || !rhsExp)
 		return context.errValue();
 
 	if (oper != '=') {
