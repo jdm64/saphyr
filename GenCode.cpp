@@ -373,7 +373,7 @@ void NFunctionPrototype::genCodeParams(SFunction* function, CodeContext& context
 	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++, i++) {
 		auto param = params->at(i);
 		arg->setName(*param->getName());
-		param->setArgument(RValue(arg, function->stype()->getParam(i)));
+		param->setArgument(RValue(arg, function->getParam(i)));
 		param->genCode(context);
 	}
 }
@@ -820,18 +820,17 @@ RValue NFunctionCall::genValue(CodeContext& context)
 		return context.errValue();
 	}
 	auto argCount = arguments->size();
-	auto paramCount = func->stype()->numParams();
+	auto paramCount = func->numParams();
 	if (argCount != paramCount) {
 		context.addError("argument count for " + func->name().str() + " function invalid, "
 			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.");
 		return context.errValue();
 	}
-	auto funcType = func->stype();
 	vector<Value*> exp_list;
 	int i = 0;
 	for (auto arg : *arguments) {
 		auto argExp = arg->genValue(context);
-		Inst::CastTo(argExp, funcType->getParam(i++), context);
+		Inst::CastTo(argExp, func->getParam(i++), context);
 		exp_list.push_back(argExp);
 	}
 	auto call = CallInst::Create(*func, exp_list, "", context);

@@ -18,54 +18,66 @@
 #define __FUNCTION_H__
 
 #include <llvm/IR/Function.h>
-#include "Type.h"
+#include "Value.h"
 
-class SFunction
+class SFunction : public LValue
 {
 	friend class FunctionManager;
 
-	Function* func;
-	SFunctionType* sfuncTy;
-
 	SFunction(Function* function, SFunctionType* type)
-	: func(function), sfuncTy(type) {};
+	: LValue(function, type) {};
+
+	Function* funcValue() const
+	{
+		return static_cast<Function*>(value());
+	}
+
+	SFunctionType* funcStype() const
+	{
+		return static_cast<SFunctionType*>(stype());
+	}
 
 public:
 	static SFunction* create(CodeContext& context, string* name, SFunctionType* type);
 
 	operator Function*() const
 	{
-		return func;
+		return funcValue();
 	}
 
 	int size() const
 	{
-		return func->size();
+		return funcValue()->size();
 	}
 
 	StringRef name() const
 	{
-		return func->getName();
-	}
-
-	SFunctionType* stype() const
-	{
-		return sfuncTy;
+		return funcValue()->getName();
 	}
 
 	SType* returnTy() const
 	{
-		return sfuncTy->returnTy();
+		return funcStype()->returnTy();
+	}
+
+	int numParams() const
+	{
+		return funcStype()->numParams();
+	}
+
+	SType* getParam(int index) const
+	{
+		return funcStype()->getParam(index);
 	}
 
 	Function::arg_iterator arg_begin() const
 	{
-		return func->arg_begin();
+		return funcValue()->arg_begin();
 	}
 
 	Function::arg_iterator arg_end() const
 	{
-		return func->arg_end();
+		return funcValue()->arg_end();
 	}
 };
 
