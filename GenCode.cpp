@@ -142,7 +142,7 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 
 RValue NBaseVariable::loadVar(CodeContext& context)
 {
-	auto var = context.loadVar(name);
+	auto var = context.loadSymbol(name);
 	if (!var)
 		context.addError("variable " + *name + " not declared");
 	return var;
@@ -251,7 +251,7 @@ void NParameter::genCode(CodeContext& context)
 	auto stype = type->getType(context);
 	auto stackAlloc = new AllocaInst(*stype, "", context);
 	new StoreInst(arg, stackAlloc, context);
-	context.storeLocalVar(LValue(stackAlloc, stype), name);
+	context.storeLocalSymbol(LValue(stackAlloc, stype), name);
 }
 
 void NVariableDecl::genCode(CodeContext& context)
@@ -268,13 +268,13 @@ void NVariableDecl::genCode(CodeContext& context)
 	}
 
 	auto name = getName();
-	if (context.loadVarCurr(name)) {
+	if (context.loadSymbolCurr(name)) {
 		context.addError("variable " + *name + " already defined");
 		return;
 	}
 
 	auto var = LValue(new AllocaInst(*varType, *name, context), varType);
-	context.storeLocalVar(var, name);
+	context.storeLocalSymbol(var, name);
 
 	if (initValue) {
 		Inst::CastTo(initValue, varType, context);
@@ -304,13 +304,13 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 	}
 
 	auto name = getName();
-	if (context.loadVarCurr(name)) {
+	if (context.loadSymbolCurr(name)) {
 		context.addError("variable " + *name + " already defined");
 		return;
 	}
 
 	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), *name);
-	context.storeGlobalVar(LValue(var, varType), name);
+	context.storeGlobalSymbol(LValue(var, varType), name);
 }
 
 bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
@@ -767,7 +767,7 @@ RValue NSizeOfOperator::genValue(CodeContext& context)
 		break;
 	case NAME:
 		auto isType = SUserType::lookup(context, name);
-		auto isVar = context.loadVar(name);
+		auto isVar = context.loadSymbol(name);
 
 		if (isType && isVar) {
 			context.addError(*name + " is ambigious, both a type and a variable");
