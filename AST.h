@@ -648,9 +648,9 @@ public:
 
 	void genCode(CodeContext& context) final;
 
-	SFunction* genFunction(CodeContext& context);
+	SFunction genFunction(CodeContext& context);
 
-	void genCodeParams(SFunction* function, CodeContext& context) const;
+	void genCodeParams(SFunction function, CodeContext& context) const;
 
 	SFunctionType* getFunctionType(CodeContext& context)
 	{

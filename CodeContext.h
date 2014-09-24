@@ -99,7 +99,7 @@ public:
 		return globalTable.loadSymbol(name);
 	}
 
-	LValue loadSymbolCurr(string* name)
+	LValue loadSymbolCurr(string* name) const
 	{
 		return localTable.empty()? globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
 	}
@@ -123,7 +123,7 @@ class CodeContext : public SymbolTable
 
 	Module* module;
 	TypeManager typeManager;
-	FunctionManager funcManager;
+	SFunction currFunc;
 
 	void validateFunction()
 	{
@@ -142,7 +142,7 @@ class CodeContext : public SymbolTable
 public:
 	CodeContext(string& filename)
 	: filename(filename), returncode(0), module(new Module(filename, getGlobalContext())),
-	typeManager(module), funcManager(module)
+	typeManager(module)
 	{
 	}
 
@@ -166,14 +166,9 @@ public:
 		return module;
 	}
 
-	SFunction* getFunction(string* name)
+	SFunction currFunction() const
 	{
-		return funcManager.getFunction(name);
-	}
-
-	SFunction* currFunction() const
-	{
-		return funcManager.current();
+		return currFunc;
 	}
 
 	void addError(string error)
@@ -186,12 +181,12 @@ public:
 		return funcBlocks.back();
 	}
 
-	void startFuncBlock(SFunction* function)
+	void startFuncBlock(SFunction function)
 	{
 		pushLocalTable();
 		funcBlocks.clear();
-		funcBlocks.push_back(BasicBlock::Create(module->getContext(), "", *function));
-		funcManager.setCurrent(function);
+		funcBlocks.push_back(BasicBlock::Create(module->getContext(), "", function));
+		currFunc = function;
 	}
 
 	void endFuncBlock()
@@ -205,7 +200,7 @@ public:
 		redoBlocks.clear();
 		labelBlocks.clear();
 
-		funcManager.setCurrent(nullptr);
+		currFunc = SFunction();
 	}
 
 	void pushBlock(BasicBlock* block)

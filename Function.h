@@ -22,11 +22,6 @@
 
 class SFunction : public LValue
 {
-	friend class FunctionManager;
-
-	SFunction(Function* function, SFunctionType* type)
-	: LValue(function, type) {};
-
 	Function* funcValue() const
 	{
 		return static_cast<Function*>(value());
@@ -37,8 +32,14 @@ class SFunction : public LValue
 		return static_cast<SFunctionType*>(stype());
 	}
 
+	SFunction(Function* function, SFunctionType* type)
+	: LValue(function, type) {};
+
 public:
-	static SFunction* create(CodeContext& context, string* name, SFunctionType* type);
+	static SFunction create(CodeContext& context, string* name, SFunctionType* type);
+
+	SFunction()
+	: LValue() {};
 
 	operator Function*() const
 	{
@@ -78,48 +79,6 @@ public:
 	Function::arg_iterator arg_end() const
 	{
 		return funcValue()->arg_end();
-	}
-};
-
-#define smart_sfunc(func, type) unique_ptr<SFunction>(new SFunction(func, type))
-
-class FunctionManager
-{
-	using SFuncPtr = unique_ptr<SFunction>;
-	using SFuncTyPtr = unique_ptr<SFunctionType>;
-
-	Module* module;
-
-	map<string, SFuncPtr> table;
-	SFunction* curr;
-
-public:
-	FunctionManager(Module* module)
-	: module(module), curr(nullptr) {}
-
-	SFunction* current() const
-	{
-		return curr;
-	}
-
-	void setCurrent(SFunction* function)
-	{
-		curr = function;
-	}
-
-	SFunction* getFunction(string* name)
-	{
-		return table[*name].get();
-	}
-
-	SFunction* create(string* name, SFunctionType* type)
-	{
-		SFuncPtr &item = table[*name];
-		if (!item.get()) {
-			auto func = Function::Create(*type, GlobalValue::ExternalLinkage, *name, module);
-			item = smart_sfunc(func, type);
-		}
-		return item.get();
 	}
 };
 

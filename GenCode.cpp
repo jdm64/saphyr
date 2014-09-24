@@ -357,23 +357,27 @@ void NFunctionPrototype::genCode(CodeContext& context)
 	context.addError("Called NFunctionPrototype::genCode; use genFunction instead.");
 }
 
-SFunction* NFunctionPrototype::genFunction(CodeContext& context)
+SFunction NFunctionPrototype::genFunction(CodeContext& context)
 {
-	auto function = context.getFunction(name);
-	if (function)
-		return function;
+	auto sym = context.loadSymbol(name);
+	if (sym) {
+		if (sym.isFunction())
+			return static_cast<SFunction&>(sym);
+		context.addError("variable " + *name + " already defined");
+		return SFunction();
+	}
 
 	auto funcType = getFunctionType(context);
-	return funcType? SFunction::create(context, name, funcType) : nullptr;
+	return funcType? SFunction::create(context, name, funcType) : SFunction();
 }
 
-void NFunctionPrototype::genCodeParams(SFunction* function, CodeContext& context) const
+void NFunctionPrototype::genCodeParams(SFunction function, CodeContext& context) const
 {
 	int i = 0;
-	for (auto arg = function->arg_begin(); arg != function->arg_end(); arg++, i++) {
+	for (auto arg = function.arg_begin(); arg != function.arg_end(); arg++, i++) {
 		auto param = params->at(i);
 		arg->setName(*param->getName());
-		param->setArgument(RValue(arg, function->getParam(i)));
+		param->setArgument(RValue(arg, function.getParam(i)));
 		param->genCode(context);
 	}
 }
@@ -383,20 +387,20 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 	auto function = prototype->genFunction(context);
 	if (!function || !body) { // no body means only function prototype
 		return;
-	} else if (function->size()) {
+	} else if (function.size()) {
 		context.addError("function " + *prototype->getName() + " already declared");
 		return;
 	}
 
 	if (body->empty() || !body->back()->isTerminator()) {
-		auto returnType = function->returnTy();
+		auto returnType = function.returnTy();
 		if (returnType->isVoid())
 			body->addItem(new NReturnStatement);
 		else
 			context.addError("no return for a non-void function");
 	}
 
-	if (prototype->getFunctionType(context) != function->stype()) {
+	if (prototype->getFunctionType(context) != function.stype()) {
 		context.addError("function type for " + *prototype->getName() + " doesn't match definition");
 		return;
 	}
@@ -410,15 +414,15 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 void NReturnStatement::genCode(CodeContext& context)
 {
 	auto func = context.currFunction();
-	auto funcReturn = func->returnTy();
+	auto funcReturn = func.returnTy();
 
 	if (funcReturn->isVoid()) {
 		if (value) {
-			context.addError("function " + func->name().str() + " declared void, but non-void return found");
+			context.addError("function " + func.name().str() + " declared void, but non-void return found");
 			return;
 		}
 	} else if (!value) {
-		context.addError("function " + func->name().str() + " declared non-void, but void return found");
+		context.addError("function " + func.name().str() + " declared non-void, but void return found");
 		return;
 	}
 	auto returnVal = value? value->genValue(context) : RValue();
@@ -814,15 +818,16 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 
 RValue NFunctionCall::genValue(CodeContext& context)
 {
-	auto func = context.getFunction(name);
-	if (!func) {
+	auto sym = context.loadSymbol(name);
+	if (!sym || !sym.isFunction()) {
 		context.addError("function " + *name + " not defined");
 		return context.errValue();
 	}
+	auto func = static_cast<SFunction&>(sym);
 	auto argCount = arguments->size();
-	auto paramCount = func->numParams();
+	auto paramCount = func.numParams();
 	if (argCount != paramCount) {
-		context.addError("argument count for " + func->name().str() + " function invalid, "
+		context.addError("argument count for " + func.name().str() + " function invalid, "
 			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.");
 		return context.errValue();
 	}
@@ -830,11 +835,11 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	int i = 0;
 	for (auto arg : *arguments) {
 		auto argExp = arg->genValue(context);
-		Inst::CastTo(argExp, func->getParam(i++), context);
+		Inst::CastTo(argExp, func.getParam(i++), context);
 		exp_list.push_back(argExp);
 	}
-	auto call = CallInst::Create(*func, exp_list, "", context);
-	return RValue(call, func->returnTy());
+	auto call = CallInst::Create(func, exp_list, "", context);
+	return RValue(call, func.returnTy());
 }
 
 RValue NFunctionCall::loadVar(CodeContext& context)
