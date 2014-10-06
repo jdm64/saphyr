@@ -24,7 +24,7 @@ void func3()
 ========
 
 error: function type for func1 doesn't match definition
-error: function notdefined not defined
+error: symbol notdefined not defined
 error: function func2 declared non-void, but void return found
 error: argument count for func2 function invalid, 1 arguments given, but 0 required.
 error: function func3 declared void, but non-void return found

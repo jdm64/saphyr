@@ -25,6 +25,6 @@ int main()
 
 error: variable f already defined
 error: variable g already defined
-error: function f not defined
+error: symbol f doesn't reference a function
 error: can not cast complex types
 found 4 errors

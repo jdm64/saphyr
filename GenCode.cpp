@@ -137,7 +137,12 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 {
 	if (!var)
 		return context.errValue();
-	return Inst::Load(context, var);
+
+	// don't require address-of operator for converting
+	// a function into a function pointer
+	return var.stype()->isFunction()?
+		RValue(var.value(), SType::getPointer(context, var.stype())) :
+		Inst::Load(context, var);
 }
 
 RValue NBaseVariable::loadVar(CodeContext& context)
@@ -815,11 +820,17 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 RValue NFunctionCall::genValue(CodeContext& context)
 {
 	auto sym = context.loadSymbol(name);
-	if (!sym || !sym.isFunction()) {
-		context.addError("function " + *name + " not defined");
+	if (!sym) {
+		context.addError("symbol " + *name + " not defined");
 		return context.errValue();
 	}
-	auto func = static_cast<SFunction&>(sym);
+	auto deSym = Inst::Deref(context, sym, true);
+	if (!deSym.isFunction()) {
+		context.addError("symbol " + *name + " doesn't reference a function");
+		return RValue();
+	}
+
+	auto func = static_cast<SFunction&>(deSym);
 	auto argCount = arguments->size();
 	auto paramCount = func.numParams();
 	if (argCount != paramCount) {

@@ -82,6 +82,12 @@ public:
 	{
 		return ty;
 	}
+
+	bool isFunction() const
+	{
+		auto type = stype();
+		return type && type->isFunction();
+	}
 };
 
 class LValue : public RValue
@@ -92,12 +98,6 @@ public:
 
 	LValue(Value* value, SType* type)
 	: RValue(value, type) {}
-
-	bool isFunction() const
-	{
-		auto type = stype();
-		return type && type->isFunction();
-	}
 };
 
 #endif
