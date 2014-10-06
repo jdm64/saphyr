@@ -275,9 +275,11 @@ RValue Inst::Load(CodeContext& context, RValue value)
 
 RValue Inst::Deref(CodeContext& context, RValue value, bool recursive)
 {
-	auto retVal = value;
-	do {
+	auto retVal = RValue(value.value(), value.stype());
+	while (retVal.stype()->isPointer()) {
 		retVal = RValue(new LoadInst(retVal, "", context), retVal.stype()->subType());
-	} while (recursive && retVal.stype()->isPointer());
+		if (!recursive)
+			break;
+	}
 	return retVal;
 }

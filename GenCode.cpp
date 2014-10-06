@@ -162,8 +162,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	auto var = arrVar->loadVar(context);
 	if (!var)
 		return var;
-	else if (var.stype()->isPointer())
-		var = Inst::Deref(context, var, true);
+	var = Inst::Deref(context, var, true);
 
 	if (!var.stype()->isSequence()) {
 		context.addError("variable " + *getName() + " is not an array or vec");
@@ -182,20 +181,17 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 RValue NMemberVariable::loadVar(CodeContext& context)
 {
 	auto var = baseVar->loadVar(context);
-	auto varType = var.stype();
+	if (!var)
+		return RValue();
 
-	if (!varType) {
-		goto fail;
-	} else if (var.stype()->isPointer()) {
-		var = Inst::Deref(context, var, true);
-		varType = var.stype();
-	}
+	var = Inst::Deref(context, var, true);
+	auto varType = var.stype();
 
 	if (varType->isStruct())
 		return loadStruct(context, var, static_cast<SStructType*>(varType));
 	else if (varType->isUnion())
 		return loadUnion(context, var, static_cast<SUnionType*>(varType));
-fail:
+
 	context.addError(*getName() + " is not a struct or union");
 	return RValue();
 }
