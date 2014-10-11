@@ -14,6 +14,7 @@
 	NExpression* t_exp;
 	NSwitchCase* t_case;
 	NFunctionPrototype* t_func_pro;
+	NDataTypeList* t_typelist;
 	NStatementList* t_stmlist;
 	NExpressionList* t_explist;
 	NParameterList* t_parlist;
@@ -73,6 +74,7 @@
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
 %type <t_caslist> switch_case_list
+%type <t_typelist> data_type_list
 %type <t_var_dec_list> variable_declarations_list
 
 %%
@@ -378,6 +380,25 @@ explicit_data_type
 	| '@' data_type
 	{
 		$$ = new NPointerType($2);
+	}
+	| '@' '(' data_type_list ')' data_type
+	{
+		$$ = new NFuncPointerType($5, $3);
+	}
+	;
+data_type_list
+	:
+	{
+		$$ = new NDataTypeList;
+	}
+	| data_type
+	{
+		$$ = new NDataTypeList;
+		$$->addItem($1);
+	}
+	| data_type_list ',' data_type
+	{
+		$1->addItem($3);
 	}
 	;
 base_type

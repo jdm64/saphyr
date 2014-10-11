@@ -265,6 +265,7 @@ class NDataType : public Node
 public:
 	virtual SType* getType(CodeContext& context) = 0;
 };
+typedef NodeList<NDataType> NDataTypeList;
 
 class NBaseType : public NDataType
 {
@@ -342,6 +343,44 @@ public:
 	~NPointerType()
 	{
 		delete baseType;
+	}
+};
+
+class NFuncPointerType : public NDataType
+{
+	NDataType* returnType;
+	NDataTypeList* params;
+
+public:
+	NFuncPointerType(NDataType* returnType, NDataTypeList* params)
+	: returnType(returnType), params(params) {}
+
+	SType* getType(CodeContext& context)
+	{
+		auto ptr = NFuncPointerType::getType(context, returnType, params);
+		return ptr? SType::getPointer(context, ptr) : nullptr;
+	}
+
+	static SFunctionType* getType(CodeContext& context, NDataType* retType, NDataTypeList* params)
+	{
+		bool valid = true;
+		vector<SType*> args;
+		for (auto item : *params) {
+			auto param = item->getType(context);
+			if (param)
+				args.push_back(param);
+			else
+				valid = false;
+		}
+
+		auto returnType = retType->getType(context);
+		return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
+	}
+
+	~NFuncPointerType()
+	{
+		delete returnType;
+		delete params;
 	}
 };
 
@@ -569,6 +608,11 @@ public:
 		return type->getType(context);
 	}
 
+	NDataType* getTypeNode() const
+	{
+		return type;
+	}
+
 	void genCode(CodeContext& context);
 
 	~NParameter()
@@ -654,18 +698,11 @@ public:
 
 	SFunctionType* getFunctionType(CodeContext& context)
 	{
-		bool valid = true;
-		vector<SType*> args;
+		NDataTypeList typeList;
 		for (auto item : *params) {
-			auto param = item->getType(context);
-			if (param)
-				args.push_back(param);
-			else
-				valid = false;
+			typeList.addItem(item->getTypeNode());
 		}
-
-		auto returnType = rtype->getType(context);
-		return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
+		return NFuncPointerType::getType(context, rtype, &typeList);
 	}
 
 	~NFunctionPrototype()
