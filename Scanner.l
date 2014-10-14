@@ -45,6 +45,7 @@ SUFFIX		_{NAME}
 
 true		{ return ParserBase::TT_TRUE; }
 false		{ return ParserBase::TT_FALSE; }
+null		{ return ParserBase::TT_NULL; }
 
 auto		{ return ParserBase::TT_AUTO; }
 void		{ return ParserBase::TT_VOID; }

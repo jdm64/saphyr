@@ -26,7 +26,7 @@ int other()
 
 @int getPtr()
 {
-	@int p;
+	@int p = null;
 
 	int a = p? 1 : 5;
 
@@ -83,6 +83,7 @@ define i32 @other() {
 
 define i32* @getPtr() {
   %p = alloca i32*
+  store i32* null, i32** %p
   %1 = load i32** %p
   %2 = icmp ne i32* %1, null
   %3 = select i1 %2, i32 1, i32 5

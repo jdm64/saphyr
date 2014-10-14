@@ -7,7 +7,9 @@ int func(int a)
 int func2()
 {
 	@(int)int a = func;
-	@(int)int b = func$;
+	@(int)int b = null;
+
+	b = func$;
 
 	return a(5) + b(4);
 }
@@ -39,6 +41,7 @@ define i32 @func2() {
   %a = alloca i32 (i32)*
   store i32 (i32)* @func, i32 (i32)** %a
   %b = alloca i32 (i32)*
+  store i32 (i32)* null, i32 (i32)** %b
   store i32 (i32)* @func, i32 (i32)** %b
   %1 = load i32 (i32)** %a
   %2 = call i32 %1(i32 5)

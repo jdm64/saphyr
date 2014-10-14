@@ -169,6 +169,12 @@ public:
 	RValue genValue(CodeContext& context);
 };
 
+class NNullPointer : public NConstant
+{
+public:
+	RValue genValue(CodeContext& context);
+};
+
 class NNumberConst : public NConstant
 {
 	string* value;

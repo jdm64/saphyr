@@ -875,6 +875,11 @@ RValue NBoolConst::genValue(CodeContext& context)
 	return RValue(val, SType::getBool(context));
 }
 
+RValue NNullPointer::genValue(CodeContext& context)
+{
+	return RValue::getNullPtr(context, SType::getInt(context, 8));
+}
+
 RValue NIntConst::genValue(CodeContext& context)
 {
 	static const map<string, SType*> suffix = {

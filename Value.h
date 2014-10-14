@@ -42,6 +42,12 @@ public:
 		return RValue(Constant::getNullValue(*type), type);
 	}
 
+	static RValue getNullPtr(CodeContext &context, SType* type)
+	{
+		auto ptrType = type->isPointer()? type : SType::getPointer(context, type);
+		return RValue::getZero(context, ptrType);
+	}
+
 	static RValue getNumVal(CodeContext &context, SType* type, int64_t value = 1)
 	{
 		auto numlike = SType::getNumberLike(context, type);
@@ -87,6 +93,11 @@ public:
 	{
 		auto type = stype();
 		return type && type->isFunction();
+	}
+
+	bool isNullPtr()
+	{
+		return val? isa<ConstantPointerNull>(val) : false;
 	}
 };
 

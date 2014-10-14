@@ -48,6 +48,12 @@ void Inst::CastTo(RValue& value, SType* type, CodeContext& context)
 		context.addError("can not cast complex types");
 		return;
 	} else if (type->isPointer()) {
+		if (value.isNullPtr()) {
+			// NOTE: discard current null value and create
+			// a new one using the right type
+			value = RValue::getNullPtr(context, type);
+			return;
+		}
 		context.addError("can't cast value to pointer type");
 		return;
 	} else if (type->isVec()) {
