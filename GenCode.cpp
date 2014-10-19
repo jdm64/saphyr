@@ -133,6 +133,27 @@ SType* NPointerType::getType(CodeContext& context)
 	return btype? SType::getPointer(context, btype) : nullptr;
 }
 
+SFunctionType* NFuncPointerType::getType(CodeContext& context, NDataType* retType, NDataTypeList* params)
+{
+	bool valid = true;
+	vector<SType*> args;
+	for (auto item : *params) {
+		auto param = item->getType(context);
+		if (param) {
+			args.push_back(param);
+		} else {
+			context.addError("function parameter type not resolved");
+			valid = false;
+		}
+	}
+
+	auto returnType = retType->getType(context);
+	if (!returnType)
+		context.addError("function return type not resolved");
+
+	return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
+}
+
 RValue NVariable::genValue(CodeContext& context, RValue var)
 {
 	if (!var)

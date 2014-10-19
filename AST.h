@@ -367,21 +367,7 @@ public:
 		return ptr? SType::getPointer(context, ptr) : nullptr;
 	}
 
-	static SFunctionType* getType(CodeContext& context, NDataType* retType, NDataTypeList* params)
-	{
-		bool valid = true;
-		vector<SType*> args;
-		for (auto item : *params) {
-			auto param = item->getType(context);
-			if (param)
-				args.push_back(param);
-			else
-				valid = false;
-		}
-
-		auto returnType = retType->getType(context);
-		return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
-	}
+	static SFunctionType* getType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 
 	~NFuncPointerType()
 	{
