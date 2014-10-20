@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "LLVM_Defines.h"
+
 #include <llvm/IR/Instructions.h>
-#include <llvm/Support/CFG.h>
+#include _LLVM_IR_CFG_H
 #include "Pass.h"
 
 using namespace std;

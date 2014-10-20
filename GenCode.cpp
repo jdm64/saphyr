@@ -14,14 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "LLVM_Defines.h"
+
 #include <set>
 #include <fstream>
 #include <llvm/IR/Constants.h>
 #include <llvm/PassManager.h>
-#include <llvm/Analysis/Verifier.h>
+#include _LLVM_IR_VERIFIER_H
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/raw_os_ostream.h>
-#include <llvm/Assembly/PrintModulePass.h>
+#include _LLVM_IR_PRINTING_PASSES_H
 #include "parserbase.h"
 #include "AST.h"
 #include "Instructions.h"
@@ -50,7 +52,11 @@ void CodeContext::genCode(NStatementList stms)
 	raw_os_ostream stream(file);
 
 	PassManager pm;
+#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
+	pm.add(createPrintModulePass(stream));
+#else
 	pm.add(createPrintModulePass(&stream));
+#endif
 	pm.run(*module);
 }
 
