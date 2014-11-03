@@ -97,7 +97,7 @@ SType* NBaseType::getType(CodeContext& context)
 
 SType* NArrayType::getType(CodeContext& context)
 {
-	auto arrSize = size->getInt(context);
+	auto arrSize = size->getIntVal(context).getSExtValue();
 	if (arrSize < 0) {
 		context.addError("Array size must be non-negative");
 		return nullptr;
@@ -108,7 +108,7 @@ SType* NArrayType::getType(CodeContext& context)
 
 SType* NVecType::getType(CodeContext& context)
 {
-	auto arrSize = size->getInt(context);
+	auto arrSize = size->getIntVal(context).getSExtValue();
 	if (arrSize <= 0) {
 		context.addError("vec size must be greater than 0");
 		return nullptr;
@@ -486,6 +486,11 @@ void NWhileStatement::genCode(CodeContext& context)
 	context.popLoopBranchBlocks();
 }
 
+ConstantInt* NSwitchCase::getValue(CodeContext& context)
+{
+	return ConstantInt::get(context, value->getIntVal(context));
+}
+
 void NSwitchStatement::genCode(CodeContext& context)
 {
 	auto switchValue = value->genValue(context);
@@ -622,7 +627,7 @@ void NLoopBranch::genCode(CodeContext& context)
 {
 	BasicBlock* block;
 	string typeName;
-	auto brLevel = level? level->getInt(context) : 1;
+	auto brLevel = level? level->getIntVal(context).getSExtValue() : 1;
 
 	switch (type) {
 	case ParserBase::TT_CONTINUE:
@@ -896,10 +901,17 @@ RValue NIncrement::genValue(CodeContext& context)
 	return isPostfix? varVal : RValue(result, varVal.stype());
 }
 
-RValue NBoolConst::genValue(CodeContext& context)
+APSInt NBoolConst::getIntVal(CodeContext& context)
 {
-	auto val = value? ConstantInt::getTrue(context) : ConstantInt::getFalse(context);
-	return RValue(val, SType::getBool(context));
+	return APSInt(APInt(1, value));
+}
+
+RValue NIntLikeConst::genValue(CodeContext& context)
+{
+	auto intVal = getIntVal(context);
+	auto val = ConstantInt::get(context, intVal);
+	auto type = SType::getInt(context, intVal.getBitWidth(), intVal.isUnsigned());
+	return RValue(val, type);
 }
 
 RValue NNullPointer::genValue(CodeContext& context)
@@ -907,7 +919,7 @@ RValue NNullPointer::genValue(CodeContext& context)
 	return RValue::getNullPtr(context, SType::getInt(context, 8));
 }
 
-RValue NIntConst::genValue(CodeContext& context)
+APSInt NIntConst::getIntVal(CodeContext& context)
 {
 	static const map<string, SType*> suffix = {
 		{"i8", SType::getInt(context, 8)},
@@ -920,7 +932,7 @@ RValue NIntConst::genValue(CodeContext& context)
 		{"u64", SType::getInt(context, 64, true)} };
 	auto type = SType::getInt(context, 32); // default is int32
 
-	auto data = getValueAndSuffix();
+	auto data = NConstant::getValueAndSuffix(value);
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
@@ -929,8 +941,7 @@ RValue NIntConst::genValue(CodeContext& context)
 			type = suf->second;
 	}
 	string intVal(data[0], base == 10? 0:2);
-	auto val = ConstantInt::get((IntegerType*) type->type(), intVal, base);
-	return RValue(val, type);
+	return APSInt(APInt(type->size(), intVal, base), type->isUnsigned());
 }
 
 RValue NFloatConst::genValue(CodeContext& context)
@@ -940,7 +951,7 @@ RValue NFloatConst::genValue(CodeContext& context)
 		{"d", SType::getFloat(context, true)} };
 	auto type = SType::getFloat(context, true);
 
-	auto data = getValueAndSuffix();
+	auto data = NConstant::getValueAndSuffix(value);
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
@@ -952,7 +963,7 @@ RValue NFloatConst::genValue(CodeContext& context)
 	return RValue(fp, type);
 }
 
-RValue NCharConst::genValue(CodeContext& context)
+APSInt NCharConst::getIntVal(CodeContext& context)
 {
 	char cVal = '\0';
 	if (value->at(0) == '\\' && value->length() > 1) {
@@ -971,7 +982,5 @@ RValue NCharConst::genValue(CodeContext& context)
 	} else {
 		cVal = value->at(0);
 	}
-	auto type = SType::getInt(context, 8, true);
-	auto val = ConstantInt::get((IntegerType*) type->type(), cVal);
-	return RValue(val, type);
+	return APSInt(APInt(8, cVal, true));
 }

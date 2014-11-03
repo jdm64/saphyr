@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <set>
+#include <llvm/ADT/APSInt.h>
 #include <llvm/IR/Instructions.h>
 #include "Value.h"
 #include "Function.h"
@@ -156,34 +157,8 @@ public:
 	{
 		return false;
 	}
-};
 
-class NBoolConst : public NConstant
-{
-	bool value;
-
-public:
-	NBoolConst(bool value)
-	: value(value) {}
-
-	RValue genValue(CodeContext& context);
-};
-
-class NNullPointer : public NConstant
-{
-public:
-	RValue genValue(CodeContext& context);
-};
-
-class NNumberConst : public NConstant
-{
-	string* value;
-
-public:
-	NNumberConst(string* value)
-	: value(value) {}
-
-	vector<string> getValueAndSuffix()
+	static vector<string> getValueAndSuffix(string* value)
 	{
 		auto pos = value->find('_');
 		if (pos == string::npos)
@@ -192,43 +167,34 @@ public:
 			return {value->substr(0, pos), value->substr(pos + 1)};
 	}
 
-	~NNumberConst()
-	{
-		delete value;
-	}
 };
 
-class NIntConst : public NNumberConst
-{
-	int base;
-
-public:
-	NIntConst(string* value, int base = 10)
-	: NNumberConst(value), base(base) {}
-
-	RValue genValue(CodeContext& context);
-
-	ConstantInt* getConstInt(CodeContext& context)
-	{
-		return static_cast<ConstantInt*>(genValue(context).value());
-	}
-
-	int64_t getInt(CodeContext& context)
-	{
-		return getConstInt(context)->getSExtValue();
-	}
-};
-
-class NFloatConst : public NNumberConst
+class NNullPointer : public NConstant
 {
 public:
-	NFloatConst(string* value)
-	: NNumberConst(value) {}
-
 	RValue genValue(CodeContext& context);
 };
 
-class NCharConst : public NConstant
+class NIntLikeConst : public NConstant
+{
+public:
+	RValue genValue(CodeContext& context) final;
+
+	virtual APSInt getIntVal(CodeContext& context) = 0;
+};
+
+class NBoolConst : public NIntLikeConst
+{
+	bool value;
+
+public:
+	NBoolConst(bool value)
+	: value(value) {}
+
+	APSInt getIntVal(CodeContext& context);
+};
+
+class NCharConst : public NIntLikeConst
 {
 	string* value;
 
@@ -238,9 +204,42 @@ public:
 		value = new string(charStr->substr(1, charStr->length() - 2));
 	}
 
-	RValue genValue(CodeContext& context);
+	APSInt getIntVal(CodeContext& context);
 
 	~NCharConst()
+	{
+		delete value;
+	}
+};
+
+class NIntConst : public NIntLikeConst
+{
+	string* value;
+	int base;
+
+public:
+	NIntConst(string* value, int base = 10)
+	: value(value), base(base) {}
+
+	APSInt getIntVal(CodeContext& context);
+
+	~NIntConst()
+	{
+		delete value;
+	}
+};
+
+class NFloatConst : public NConstant
+{
+	string* value;
+
+public:
+	NFloatConst(string* value)
+	: value(value) {}
+
+	RValue genValue(CodeContext& context);
+
+	~NFloatConst()
 	{
 		delete value;
 	}
@@ -769,10 +768,7 @@ public:
 		body->genCode(context);
 	}
 
-	ConstantInt* getValue(CodeContext& context)
-	{
-		return value->getConstInt(context);
-	}
+	ConstantInt* getValue(CodeContext& context);
 
 	bool isValueCase() const
 	{
