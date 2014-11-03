@@ -146,15 +146,16 @@ def cleanTests(files):
 	files = getFiles(files)
 	if not files:
 		print("No tests found")
-		return
+		return 1
 	for file in files:
 		TestCase(file).clean()
+	return 0
 
 def runTests(files, clean=True, update=False):
 	files = getFiles(files)
 	if not files:
 		print("No tests found")
-		return
+		return 1
 	padding = len(max(files, key=len))
 	failed = 0
 	total = len(files)
@@ -164,14 +165,15 @@ def runTests(files, clean=True, update=False):
 		failed += error
 	passed = total - failed
 	print(str(passed) + " / " + str(total) + " tests passed")
+	return 1 if failed else 0
 
 def main():
 	args = sys.argv[1:]
 	if not args:
-		runTests(args)
-		return
+		return runTests(args)
 
-	{"--clean": lambda: cleanTests(args[1:]),
+	return {
+	"--clean": lambda: cleanTests(args[1:]),
 	      "-c": lambda: cleanTests(args[1:]),
 	"--update": lambda: runTests(args[1:], True, True),
 	      "-u": lambda: runTests(args[1:], True, True),
@@ -180,4 +182,4 @@ def main():
 	}.get(args[0], lambda: runTests(args))()
 
 if __name__ == "__main__":
-	main()
+	sys.exit(main())
