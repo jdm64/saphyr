@@ -2,11 +2,12 @@ CXX = g++
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
 CXXFLAGS = -std=gnu++0x `llvm-config --cxxflags` -ggdb -O3 $(WARNINGS) -fexceptions -D__STRICT_ANSI__
 LDFLAGS = `llvm-config --ldflags` -lLLVM-`llvm-config --version`
+TARGET = saphyr
 
 objs = scanner.o parser.o Type.o Function.o Instructions.o GenCode.o Pass.o main.o
 
 compiler : $(objs)
-	$(CXX) $(objs) -o saphyr $(LDFLAGS)
+	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)
 
 parser.cpp : Parser.y
 	rm -f parser*
@@ -25,7 +26,7 @@ scanner.cpp : Scanner.l parser.cpp
 	sed -i -e '/insert class_h/a\#define SAVE_TOKEN sval->t_str = new std::string(matched());' scanner.ih
 
 clean :
-	rm -f saphyr *.o *~
+	rm -f $(TARGET) *.o *~
 
 fullclean : clean
 	rm -f parser* scanner*
