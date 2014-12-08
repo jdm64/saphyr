@@ -158,6 +158,11 @@ public:
 		return false;
 	}
 
+	virtual bool isIntConst() const
+	{
+		return false;
+	}
+
 	static vector<string> getValueAndSuffix(string* value)
 	{
 		auto pos = value->find('_');
@@ -181,6 +186,11 @@ public:
 	RValue genValue(CodeContext& context) final;
 
 	virtual APSInt getIntVal(CodeContext& context) = 0;
+
+	bool isIntConst() const
+	{
+		return true;
+	}
 };
 
 class NBoolConst : public NIntLikeConst
@@ -396,6 +406,11 @@ public:
 		return initExp;
 	}
 
+	NExpression* getInitExp() const
+	{
+		return initExp;
+	}
+
 	void genCode(CodeContext& context);
 
 	~NVariableDecl()
@@ -504,6 +519,8 @@ public:
 	RValue loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType);
 
 	RValue loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType);
+
+	RValue loadEnum(CodeContext& context, SEnumType* enumType);
 
 	string* getName() const
 	{
@@ -670,6 +687,22 @@ protected:
 public:
 	NUnionDeclaration(string* name, NVariableDeclGroupList* list)
 	: NStructDeclaration(name, list) {}
+};
+
+class NEnumDeclaration : public NDeclaration
+{
+	NVariableDeclList* variables;
+
+public:
+	NEnumDeclaration(string* name, NVariableDeclList* variables)
+	: NDeclaration(name), variables(variables) {}
+
+	void genCode(CodeContext& context);
+
+	~NEnumDeclaration()
+	{
+		delete variables;
+	}
 };
 
 class NFunctionPrototype : public NDeclaration

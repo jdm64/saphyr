@@ -19,6 +19,7 @@
 
 #include <map>
 #include <llvm/IR/DataLayout.h>
+#include <llvm/ADT/APSInt.h>
 
 // forward declaration
 class CodeContext;
@@ -45,7 +46,7 @@ protected:
 public:
 	enum { VOID = 0x1, INTEGER = 0x2, UNSIGNED = 0x4, FLOATING = 0x8, DOUBLE = 0x10,
 		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80, VEC = 0x100, UNION = 0x200,
-		POINTER = 0x400 };
+		POINTER = 0x400, ENUM = 0x800 };
 
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
@@ -178,6 +179,11 @@ public:
 		return tclass & POINTER;
 	}
 
+	bool isEnum() const
+	{
+		return tclass & ENUM;
+	}
+
 	bool isFunction() const
 	{
 		return tclass & FUNCTION;
@@ -198,6 +204,7 @@ class SUserType : public SType
 {
 	friend class SStructType;
 	friend class SUnionType;
+	friend class SEnumType;
 
 	SUserType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
 	: SType(typeClass, type, size, subtype) {}
@@ -208,6 +215,8 @@ public:
 	static void createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
 
 	static void createUnion(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
+
+	static void createEnum(CodeContext& context, string* name, const vector<pair<string, int64_t>>& structure);
 };
 
 class SStructType : public SUserType
@@ -250,6 +259,30 @@ public:
 	{
 		auto iter = items.find(*name);
 		return iter != items.end()? iter->second : nullptr;
+	}
+};
+
+class SEnumType : public SUserType
+{
+	friend class TypeManager;
+
+	map<string, APSInt> items;
+
+	SEnumType(SType* type, const vector<pair<string,int64_t>>& data)
+	: SUserType(ENUM, *type, data.size(), type)
+	{
+		auto numbits = type->size();
+		auto isUnsigned = !type->isUnsigned();
+		for (auto item : data) {
+			items[item.first] = APSInt(APInt(numbits, item.second), isUnsigned);
+		}
+	}
+
+public:
+	APSInt* getItem(string* name)
+	{
+		auto iter = items.find(*name);
+		return iter != items.end()? &iter->second : nullptr;
 	}
 };
 
@@ -367,6 +400,8 @@ public:
 	void createStruct(string* name, vector<pair<string, SType*>> structure);
 
 	void createUnion(string* name, vector<pair<string, SType*>> structure);
+
+	void createEnum(string* name, vector<pair<string,int64_t>> structure);
 };
 
 #endif

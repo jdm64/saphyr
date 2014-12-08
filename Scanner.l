@@ -69,6 +69,7 @@ continue	{ return ParserBase::TT_CONTINUE; }
 default		{ return ParserBase::TT_DEFAULT; }
 do		{ return ParserBase::TT_DO; }
 else		{ return ParserBase::TT_ELSE; }
+enum		{ return ParserBase::TT_ENUM; }
 for		{ return ParserBase::TT_FOR; }
 goto		{ return ParserBase::TT_GOTO; }
 if		{ return ParserBase::TT_IF; }

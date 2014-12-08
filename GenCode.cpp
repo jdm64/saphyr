@@ -165,19 +165,29 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 	if (!var)
 		return context.errValue();
 
-	// don't require address-of operator for converting
-	// a function into a function pointer
-	return var.stype()->isFunction()?
-		RValue(var.value(), SType::getPointer(context, var.stype())) :
-		Inst::Load(context, var);
+	auto type = var.stype();
+	if (type->isFunction())
+		// don't require address-of operator for converting
+		// a function into a function pointer
+		return RValue(var.value(), SType::getPointer(context, var.stype()));
+	else if (type->isEnum() && var.isConst())
+		// an enum value, not a variable, don't load it
+		return var;
+
+	return Inst::Load(context, var);
 }
 
 RValue NBaseVariable::loadVar(CodeContext& context)
 {
 	auto var = context.loadSymbol(name);
-	if (!var)
+	if (var)
+		return var;
+	auto userVar = SUserType::lookup(context, name);
+	if (!userVar) {
 		context.addError("variable " + *name + " not declared");
-	return var;
+		return var;
+	}
+	return RValue(ConstantInt::getFalse(context), userVar);
 }
 
 RValue NArrayVariable::loadVar(CodeContext& context)
@@ -200,7 +210,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 		context.addError("variable " + *getName() + " is not an array or vec");
 		return RValue();
 	}
-	Inst::CastTo(indexVal, SType::getInt(context, 64), context);
+	Inst::CastTo(context, indexVal, SType::getInt(context, 64));
 
 	vector<Value*> indexes;
 	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
@@ -223,8 +233,10 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 		return loadStruct(context, var, static_cast<SStructType*>(varType));
 	else if (varType->isUnion())
 		return loadUnion(context, var, static_cast<SUnionType*>(varType));
+	else if (varType->isEnum())
+		return loadEnum(context, static_cast<SEnumType*>(varType));
 
-	context.addError(*getName() + " is not a struct or union");
+	context.addError(*getName() + " is not a struct/union/enum");
 	return RValue();
 }
 
@@ -255,6 +267,17 @@ RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnio
 	auto ptr = PointerType::get(*item, 0);
 	auto castEl = new BitCastInst(baseValue, ptr, "", context);
 	return RValue(castEl, item);
+}
+
+RValue NMemberVariable::loadEnum(CodeContext& context, SEnumType* enumType)
+{
+	auto item = enumType->getItem(memberName);
+	if (!item) {
+		context.addError(*getName() +" doesn't have member " + *memberName);
+		return RValue();
+	}
+	auto val = RValue::getValue(context, *item);
+	return RValue(val.value(), enumType);
 }
 
 RValue NDereference::loadVar(CodeContext& context)
@@ -305,7 +328,7 @@ void NVariableDecl::genCode(CodeContext& context)
 	context.storeLocalSymbol(var, name);
 
 	if (initValue) {
-		Inst::CastTo(initValue, varType, context);
+		Inst::CastTo(context, initValue, varType);
 		new StoreInst(initValue, var, context);
 	}
 }
@@ -378,6 +401,38 @@ void NStructDeclaration::genCode(CodeContext& context)
 		valid &= item->addMembers(structVars, memberNames, context);
 	if (valid)
 		createUserType(structVars, context);
+}
+
+void NEnumDeclaration::genCode(CodeContext& context)
+{
+	int64_t val = 0;
+	set<string> names;
+	vector<pair<string,int64_t>> structure;
+
+	for (auto item : *variables) {
+		auto name = item->getName();
+		auto res = names.insert(*name);
+		if (!res.second) {
+			context.addError("enum member name " + *name + " already declared");
+			continue;
+		}
+		if (item->hasInit()) {
+			auto initExp = item->getInitExp();
+			if (!initExp->isConstant()) {
+				context.addError("enum initializer must be a constant");
+				continue;
+			}
+			auto constVal = static_cast<NConstant*>(initExp);
+			if (!constVal->isIntConst()) {
+				context.addError("enum initializer must be an int-like constant");
+				continue;
+			}
+			auto intVal = static_cast<NIntLikeConst*>(constVal);
+			val = intVal->getIntVal(context).getSExtValue();
+		}
+		structure.push_back(make_pair(*name, val++));
+	}
+	SUserType::createEnum(context, name, structure);
 }
 
 void NFunctionPrototype::genCode(CodeContext& context)
@@ -455,7 +510,7 @@ void NReturnStatement::genCode(CodeContext& context)
 	}
 	auto returnVal = value? value->genValue(context) : RValue();
 	if (returnVal)
-		Inst::CastTo(returnVal, funcReturn, context);
+		Inst::CastTo(context, returnVal, funcReturn);
 	ReturnInst::Create(context, returnVal, context);
 	context.pushBlock(context.createBlock());
 }
@@ -494,7 +549,7 @@ ConstantInt* NSwitchCase::getValue(CodeContext& context)
 void NSwitchStatement::genCode(CodeContext& context)
 {
 	auto switchValue = value->genValue(context);
-	Inst::CastTo(switchValue, SType::getInt(context, 32), context);
+	Inst::CastTo(context, switchValue, SType::getInt(context, 32));
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
@@ -674,7 +729,7 @@ RValue NAssignment::genValue(CodeContext& context)
 		auto lhsLocal = Inst::Load(context, lhsVar);
 		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
-	Inst::CastTo(rhsExp, lhsVar.stype(), context);
+	Inst::CastTo(context, rhsExp, lhsVar.stype());
 	new StoreInst(rhsExp, lhsVar, context);
 
 	return rhsExp;
@@ -683,7 +738,7 @@ RValue NAssignment::genValue(CodeContext& context)
 RValue NTernaryOperator::genValue(CodeContext& context)
 {
 	auto condExp = condition->genValue(context);
-	Inst::CastTo(condExp, SType::getBool(context), context);
+	Inst::CastTo(context, condExp, SType::getBool(context));
 
 	RValue trueExp, falseExp, retVal;
 	if (trueVal->isComplex() || falseVal->isComplex()) {
@@ -730,7 +785,7 @@ RValue NLogicalOperator::genValue(CodeContext& context)
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = rhs->genValue(context);
-	Inst::CastTo(rhsExp, SType::getBool(context), context);
+	Inst::CastTo(context, rhsExp, SType::getBool(context));
 	BranchInst::Create(secondBlock, context);
 
 	context.pushBlock(secondBlock);
@@ -763,7 +818,7 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto condition = lhsExp;
 
-	Inst::CastTo(condition, SType::getBool(context), context);
+	Inst::CastTo(context, condition, SType::getBool(context), false);
 	if (rhs->isComplex()) {
 		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
@@ -874,7 +929,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	int i = 0;
 	for (auto arg : *arguments) {
 		auto argExp = arg->genValue(context);
-		Inst::CastTo(argExp, func.getParam(i++), context);
+		Inst::CastTo(context, argExp, func.getParam(i++));
 		exp_list.push_back(argExp);
 	}
 	auto call = CallInst::Create(func, exp_list, "", context);

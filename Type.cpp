@@ -20,6 +20,7 @@
 #define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
 #define smart_strucTy(type, structure) unique_ptr<SUserType>(new SStructType(type, structure))
 #define smart_unionTy(type, structure, size) unique_ptr<SUserType>(new SUnionType(type, structure, size))
+#define smart_enumTy(type, structure) unique_ptr<SUserType>(new SEnumType(type, structure))
 
 SType* SType::getVoid(CodeContext& context)
 {
@@ -114,6 +115,11 @@ void SUserType::createUnion(CodeContext& context, string* name, const vector<pai
 	context.typeManager.createUnion(name, structure);
 }
 
+void SUserType::createEnum(CodeContext& context, string* name, const vector<pair<string, int64_t>>& structure)
+{
+	context.typeManager.createEnum(name, structure);
+}
+
 TypeManager::TypeManager(Module* module)
 : datalayout(module)
 {
@@ -195,4 +201,12 @@ void TypeManager::createUnion(string* name, vector<pair<string, SType*>> structu
 	vector<Type*> elements;
 	elements.push_back(*type);
 	item = smart_unionTy(StructType::create(elements, *name), structure, size);
+}
+
+void TypeManager::createEnum(string* name, vector<pair<string, int64_t> > structure)
+{
+	SUserPtr& item = usrMap[*name];
+	if (item.get() || !structure.size())
+		return;
+	item = smart_enumTy(getInt(32), structure);
 }

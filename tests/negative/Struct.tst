@@ -42,7 +42,7 @@ error: member name j already declared
 error: Good type already declared
 error: Nothing type not declared
 error: auto variable type requires initialization
-error: w is not a struct or union
+error: w is not a struct/union/enum
 error: k doesn't have member n
 error: can not perform operation on composite types
 error: can not cast complex types

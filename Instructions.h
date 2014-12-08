@@ -41,7 +41,7 @@ class Inst
 	static RValue PointerMath(int type, RValue ptr, RValue val, CodeContext& context);
 
 public:
-	static void CastTo(RValue& value, SType* type, CodeContext& context);
+	static void CastTo(CodeContext& context, RValue& value, SType* type, bool upcast = false);
 
 	static RValue BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context);
 

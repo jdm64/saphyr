@@ -77,6 +77,19 @@ public:
 	{
 		return val? isa<ConstantPointerNull>(val) : false;
 	}
+
+	bool isConst() const
+	{
+		return val? isa<Constant>(val) : false;
+	}
+
+	SType* castToSubtype()
+	{
+		auto sub = ty->subType();
+		if (sub)
+			ty = sub;
+		return ty;
+	}
 };
 
 class LValue : public RValue
