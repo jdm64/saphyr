@@ -17,7 +17,6 @@
 #ifndef __VALUE_H__
 #define __VALUE_H__
 
-#include <llvm/IR/Value.h>
 #include <llvm/IR/Constants.h>
 #include "Type.h"
 
@@ -33,36 +32,15 @@ public:
 	RValue(Value* value, SType* type)
 	: val(value), ty(type) {}
 
-	static RValue getZero(CodeContext &context, SType* type)
-	{
-		// llvm's Constant::getNullValue() supports every type
-		// except function, label, and opaque type
-		if (type->isFunction())
-			type = SType::getNumberLike(context, type);
-		return RValue(Constant::getNullValue(*type), type);
-	}
+	static RValue getZero(CodeContext &context, SType* type);
 
-	static RValue getNullPtr(CodeContext &context, SType* type)
-	{
-		auto ptrType = type->isPointer()? type : SType::getPointer(context, type);
-		return RValue::getZero(context, ptrType);
-	}
+	static RValue getNullPtr(CodeContext &context, SType* type);
 
-	static RValue getNumVal(CodeContext &context, SType* type, int64_t value = 1)
-	{
-		auto numlike = SType::getNumberLike(context, type);
-		auto basenum = numlike->getScalar();
-		auto one = basenum->isFloating()?
-			ConstantFP::get(*numlike, value) :
-			ConstantInt::getSigned(*numlike, value);
-		return RValue(one, numlike);
-	}
+	static RValue getNumVal(CodeContext &context, SType* type, int64_t value = 1);
 
-	static RValue getAllOne(CodeContext &context, SType* type)
-	{
-		auto numlike = SType::getNumberLike(context, type);
-		return RValue(Constant::getAllOnesValue(*numlike), type);
-	}
+	static RValue getAllOne(CodeContext &context, SType* type);
+
+	static RValue getValue(CodeContext &context, const APSInt& intVal);
 
 	operator bool() const
 	{

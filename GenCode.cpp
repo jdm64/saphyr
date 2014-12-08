@@ -908,10 +908,7 @@ APSInt NBoolConst::getIntVal(CodeContext& context)
 
 RValue NIntLikeConst::genValue(CodeContext& context)
 {
-	auto intVal = getIntVal(context);
-	auto val = ConstantInt::get(context, intVal);
-	auto type = SType::getInt(context, intVal.getBitWidth(), intVal.isUnsigned());
-	return RValue(val, type);
+	return RValue::getValue(context, getIntVal(context));
 }
 
 RValue NNullPointer::genValue(CodeContext& context)
