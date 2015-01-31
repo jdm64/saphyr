@@ -18,6 +18,7 @@
 
 #include <set>
 #include <fstream>
+#include <sstream>
 #include <llvm/IR/Constants.h>
 #include <llvm/PassManager.h>
 #include _LLVM_IR_VERIFIER_H
@@ -46,7 +47,15 @@ void CodeContext::genCode(NStatementList stms)
 		cout << "found " << errors.size() << " errors" << endl;
 		return;
 	}
-	verifyModule(*module);
+
+	ostringstream buff;
+	raw_os_ostream out(buff);
+	if (verifyModule(*module, &out)) {
+		returncode = 3;
+		cout << "compiler error: broken module" << endl << endl
+			<< buff.str() << endl;
+		return;
+	}
 
 	fstream file(filename.substr(0, filename.rfind('.')) + ".ll", fstream::out);
 	raw_os_ostream stream(file);
