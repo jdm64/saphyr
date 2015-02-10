@@ -22,6 +22,8 @@ void func3()
 	@int p;
 
 	v = p;
+
+	int a = p;
 }
 
 ========
@@ -32,4 +34,5 @@ error: can't cast value to pointer type
 error: pointer arithmetic only valid using ++/-- operators
 error: can't perform operation with two pointers
 error: can not cast pointer to vec type
-found 6 errors
+error: can't cast pointer to numeric type
+found 7 errors

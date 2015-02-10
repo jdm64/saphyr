@@ -115,6 +115,11 @@ void Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
 		return;
 	}
 
+	if (valueType->isPointer()) {
+		context.addError("can't cast pointer to numeric type");
+		return;
+	}
+
 	// unwrap enum type
 	if (valueType->isEnum())
 		valueType = value.castToSubtype();
