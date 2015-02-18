@@ -91,4 +91,6 @@ while		{ return ParserBase::TT_WHILE; }
 {NAME}			{ SAVE_TOKEN return ParserBase::TT_IDENTIFIER; }
 
 \'(\\.|[^'])\'	{ SAVE_TOKEN return ParserBase::TT_CHAR_LIT; }
+\"(\\.|[^"])*\"	{ SAVE_TOKEN return ParserBase::TT_STR_LIT; }
+`(\\.|[^`])*`	{ SAVE_TOKEN return ParserBase::TT_STR_LIT; }
 .		{ return matched()[0]; }

@@ -180,6 +180,24 @@ public:
 	RValue genValue(CodeContext& context);
 };
 
+class NStringLiteral : public NConstant
+{
+	string* value;
+
+public:
+	NStringLiteral(string* str)
+	{
+		value = new string(str->substr(1, str->size() - 2));
+	}
+
+	RValue genValue(CodeContext& context);
+
+	~NStringLiteral()
+	{
+		delete value;
+	}
+};
+
 class NIntLikeConst : public NConstant
 {
 public:

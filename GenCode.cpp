@@ -980,6 +980,22 @@ RValue NNullPointer::genValue(CodeContext& context)
 	return RValue::getNullPtr(context, SType::getInt(context, 8));
 }
 
+RValue NStringLiteral::genValue(CodeContext& context)
+{
+	auto arrData = ConstantDataArray::getString(context, *value, true);
+	auto arrTy = SType::getArray(context, SType::getInt(context, 8), value->size() + 1);
+	auto arrTyPtr = SType::getPointer(context, arrTy);
+	auto gVar = new GlobalVariable(*context.getModule(), *arrTy, true, GlobalValue::PrivateLinkage, arrData);
+	auto zero = ConstantInt::get(*SType::getInt(context, 32), 0);
+
+	std::vector<Constant*> idxs;
+	idxs.push_back(zero);
+
+	auto strPtr = ConstantExpr::getGetElementPtr(gVar, idxs);
+
+	return RValue(strPtr, arrTyPtr);
+}
+
 APSInt NIntConst::getIntVal(CodeContext& context)
 {
 	static const map<string, SType*> suffix = {

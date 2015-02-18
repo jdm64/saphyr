@@ -37,7 +37,7 @@
 %token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM
 %left TT_ELSE
 // constants and names
-%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT
+%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
 
 // integer constant
 %type <t_const_int> integer_constant
@@ -715,6 +715,10 @@ value_expression
 	| TT_CHAR_LIT
 	{
 		$$ = new NCharConst($1);
+	}
+	| TT_STR_LIT
+	{
+		$$ = new NStringLiteral($1);
 	}
 	| TT_FLOATING
 	{
