@@ -286,11 +286,11 @@ variable_declarations_list
 	: variable_declarations ';'
 	{
 		$$ = new NVariableDeclGroupList;
-		$$->addItem((NVariableDeclGroup*) $1);
+		$$->addItem(static_cast<NVariableDeclGroup*>($1));
 	}
 	| variable_declarations_list variable_declarations ';'
 	{
-		$1->addItem((NVariableDeclGroup*) $2);
+		$1->addItem(static_cast<NVariableDeclGroup*>($2));
 	}
 	;
 variable_declarations
@@ -382,7 +382,7 @@ explicit_data_type
 	}
 	| TT_VEC '<' integer_constant ',' base_type '>'
 	{
-		$$ = new NVecType($3, (NBaseType*) $5);
+		$$ = new NVecType($3, static_cast<NBaseType*>($5));
 	}
 	| '@' data_type
 	{
