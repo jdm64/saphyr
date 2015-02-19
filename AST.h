@@ -172,6 +172,38 @@ public:
 			return {value->substr(0, pos), value->substr(pos + 1)};
 	}
 
+	static string* unescape(const string &val)
+	{
+		auto str = new string;
+		str->reserve(val.size());
+
+		for (int i = 0;;) {
+			auto idx = val.find('\\', i);
+			if (idx == string::npos) {
+				str->append(val, i, string::npos);
+				break;
+			} else {
+				char c = val.at(++idx);
+				switch (c) {
+				case '0': c = '\0'; break;
+				case 'a': c = '\a'; break;
+				case 'b': c = '\b'; break;
+				case 'e': c =   27; break;
+				case 'f': c = '\f'; break;
+				case 'n': c = '\n'; break;
+				case 'r': c = '\r'; break;
+				case 't': c = '\t'; break;
+				case 'v': c = '\v'; break;
+				default:
+					break;
+				}
+				str->append(val, i, idx - i - 1);
+				*str += c;
+				i = idx + 1;
+			}
+		}
+		return str;
+	}
 };
 
 class NNullPointer : public NConstant
@@ -187,7 +219,7 @@ class NStringLiteral : public NConstant
 public:
 	NStringLiteral(string* str)
 	{
-		value = new string(str->substr(1, str->size() - 2));
+		value = unescape(str->substr(1, str->size() - 2));
 	}
 
 	RValue genValue(CodeContext& context);
