@@ -25,6 +25,11 @@ void main()
 	auto d = a * b, e = b * c;
 }
 
+void withSep()
+{
+	int a = 1'002'003, b = 0xf'4a'13;
+}
+
 ========
 
 define void @intFunc() {
@@ -100,5 +105,13 @@ define void @main() {
   %8 = mul i64 %5, %7
   %e = alloca i64
   store i64 %8, i64* %e
+  ret void
+}
+
+define void @withSep() {
+  %a = alloca i32
+  store i32 1002003, i32* %a
+  %b = alloca i32
+  store i32 1002003, i32* %b
   ret void
 }

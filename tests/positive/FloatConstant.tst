@@ -6,6 +6,11 @@ int main()
 	return c;
 }
 
+void withSep()
+{
+	double d = 1.5'5'5;
+}
+
 ========
 
 define i32 @main() {
@@ -22,4 +27,10 @@ define i32 @main() {
   %1 = load double* %c
   %2 = fptosi double %1 to i32
   ret i32 %2
+}
+
+define void @withSep() {
+  %d = alloca double
+  store double 1.555000e+00, double* %d
+  ret void
 }

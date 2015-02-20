@@ -4,10 +4,10 @@
 %lex-source "scanner.cpp"
 
 SPACE		[ \t\n\r]
-BIN		[01]
-OCT		[0-7]
-DEC		[0-9]
-HEX		[0-9a-fA-F]
+BIN		[01][']*
+OCT		[0-7][']*
+DEC		[0-9][']*
+HEX		[0-9a-fA-F][']*
 LETTER		[a-zA-Z_]
 NUMBER		{DEC}+
 NAME		{LETTER}({LETTER}|{DEC})*

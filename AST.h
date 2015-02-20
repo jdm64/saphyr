@@ -204,6 +204,11 @@ public:
 		}
 		return str;
 	}
+
+	static void remove(string* val, char c = '\'')
+	{
+		val->erase(std::remove(val->begin(), val->end(), c), val->end());
+	}
 };
 
 class NNullPointer : public NConstant
@@ -279,7 +284,10 @@ class NIntConst : public NIntLikeConst
 
 public:
 	NIntConst(string* value, int base = 10)
-	: value(value), base(base) {}
+	: value(value), base(base)
+	{
+		remove(value);
+	}
 
 	APSInt getIntVal(CodeContext& context);
 
@@ -295,7 +303,10 @@ class NFloatConst : public NConstant
 
 public:
 	NFloatConst(string* value)
-	: value(value) {}
+	: value(value)
+	{
+		remove(value);
+	}
 
 	RValue genValue(CodeContext& context);
 
