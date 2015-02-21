@@ -1,6 +1,6 @@
 CXX = g++
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
-CXXFLAGS = -std=gnu++0x `llvm-config --cxxflags` -ggdb -O3 $(WARNINGS) -fexceptions -D__STRICT_ANSI__
+CXXFLAGS = -std=c++11 `llvm-config --cxxflags` -ggdb -O3 $(WARNINGS) -fexceptions -D__STRICT_ANSI__
 LDFLAGS = `llvm-config --ldflags` -lLLVM-`llvm-config --version`
 TARGET = saphyr
 
