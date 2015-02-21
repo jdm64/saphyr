@@ -1042,8 +1042,8 @@ RValue NFloatConst::genValue(CodeContext& context)
 
 APSInt NCharConst::getIntVal(CodeContext& context)
 {
-	char cVal = '\0';
-	if (value->at(0) == '\\' && value->length() > 1) {
+	char cVal = value->at(0);
+	if (cVal == '\\' && value->length() > 1) {
 		switch (value->at(1)) {
 		case '0': cVal = '\0'; break;
 		case 'a': cVal = '\a'; break;
@@ -1056,8 +1056,6 @@ APSInt NCharConst::getIntVal(CodeContext& context)
 		case 'v': cVal = '\v'; break;
 		default: cVal = value->at(1);
 		}
-	} else {
-		cVal = value->at(0);
 	}
 	return APSInt(APInt(8, cVal, true));
 }
