@@ -729,17 +729,38 @@ error:
 RValue NAssignment::genValue(CodeContext& context)
 {
 	auto lhsVar = lhs->loadVar(context);
+
+	if (!lhsVar)
+		return RValue();
+
+	BasicBlock* endBlock = nullptr;
+
+	if (oper == ParserBase::TT_DQ_MARK) {
+		auto condExp = Inst::Load(context, lhsVar);
+		Inst::CastTo(context, condExp, SType::getBool(context));
+
+		auto trueBlock = context.createBlock();
+		endBlock = context.createBlock();
+
+		BranchInst::Create(endBlock, trueBlock, condExp, context);
+		context.pushBlock(trueBlock);
+	}
+
 	auto rhsExp = rhs->genValue(context);
+	if (!rhsExp)
+		return RValue();
 
-	if (!lhsVar || !rhsExp)
-		return context.errValue();
-
-	if (oper != '=') {
+	if (oper != '=' && oper != ParserBase::TT_DQ_MARK) {
 		auto lhsLocal = Inst::Load(context, lhsVar);
 		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
 	}
 	Inst::CastTo(context, rhsExp, lhsVar.stype());
 	new StoreInst(rhsExp, lhsVar, context);
+
+	if (oper == ParserBase::TT_DQ_MARK) {
+		BranchInst::Create(endBlock, context);
+		context.pushBlock(endBlock);
+	}
 
 	return rhsExp;
 }

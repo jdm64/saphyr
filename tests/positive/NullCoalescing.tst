@@ -12,6 +12,12 @@ int other(int a)
 	return (z + a) ?? (2 * c);
 }
 
+int more(int a)
+{
+	a ??= 5;
+	return a;
+}
+
 int main()
 {
 	int x = 10;
@@ -53,6 +59,22 @@ define i32 @other(i32 %a) {
 ; <label>:9                                       ; preds = %6, %0
   %10 = phi i32 [ %4, %0 ], [ %8, %6 ]
   ret i32 %10
+}
+
+define i32 @more(i32 %a) {
+  %1 = alloca i32
+  store i32 %a, i32* %1
+  %2 = load i32* %1
+  %3 = icmp ne i32 %2, 0
+  br i1 %3, label %5, label %4
+
+; <label>:4                                       ; preds = %0
+  store i32 5, i32* %1
+  br label %5
+
+; <label>:5                                       ; preds = %4, %0
+  %6 = load i32* %1
+  ret i32 %6
 }
 
 define i32 @main() {

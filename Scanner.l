@@ -42,6 +42,7 @@ SUFFIX		_{NAME}
 "++"	{ return ParserBase::TT_INC; }
 "--"	{ return ParserBase::TT_DEC; }
 "??"	{ return ParserBase::TT_DQ_MARK; }
+"??="	{ return ParserBase::TT_ASG_DQ; }
 
 true		{ return ParserBase::TT_TRUE; }
 false		{ return ParserBase::TT_FALSE; }

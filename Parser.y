@@ -32,6 +32,7 @@
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
 %token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
+%token <t_int> TT_ASG_DQ
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
 %token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM
@@ -494,6 +495,7 @@ assignment_operator
 	| TT_ASG_AND { $$ = '&'; }
 	| TT_ASG_OR  { $$ = '^'; }
 	| TT_ASG_XOR { $$ = '|'; }
+	| TT_ASG_DQ  { $$ = TT_DQ_MARK; }
 	;
 logical_or_expression
 	: logical_and_expression
