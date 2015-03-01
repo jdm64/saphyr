@@ -879,40 +879,17 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 
 RValue NSizeOfOperator::genValue(CodeContext& context)
 {
-	SType* stype = nullptr;
 	switch (type) {
 	case DATA:
-		stype = dtype->getType(context);
-		break;
+		return Inst::SizeOf(context, dtype);
 	case EXP:
-		stype = exp->genValue(context).stype();
-		break;
+		return Inst::SizeOf(context, exp);
 	case NAME:
-		auto isType = SUserType::lookup(context, name);
-		auto isVar = context.loadSymbol(name);
-
-		if (isType && isVar) {
-			context.addError(*name + " is ambigious, both a type and a variable");
-			return context.errValue();
-		} else if (isType) {
-			stype = isType;
-		} else if (isVar) {
-			stype = isVar.stype();
-		} else {
-			context.addError("type " + *name + " is not declared");
-			return context.errValue();
-		}
-		break;
+		return Inst::SizeOf(context, name);
+	default:
+		// shouldn't happen
+		return RValue();
 	}
-	if (!stype) {
-		return context.errValue();
-	} else if (stype->isVoid()) {
-		context.addError("size of void is invalid");
-		return context.errValue();
-	}
-	auto itype = SType::getInt(context, 64, true);
-	auto size = ConstantInt::get(*itype, SType::allocSize(context, stype));
-	return RValue(size, itype);
 }
 
 RValue NUnaryMathOperator::genValue(CodeContext& context)

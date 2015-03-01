@@ -313,3 +313,44 @@ RValue Inst::Deref(CodeContext& context, RValue value, bool recursive)
 	}
 	return retVal;
 }
+
+RValue Inst::SizeOf(CodeContext& context, SType* type)
+{
+	if (!type) {
+		return RValue();
+	} else if (type->isVoid()) {
+		context.addError("size of void is invalid");
+		return RValue();
+	}
+	auto itype = SType::getInt(context, 64, true);
+	auto size = ConstantInt::get(*itype, SType::allocSize(context, type));
+	return RValue(size, itype);
+}
+
+RValue Inst::SizeOf(CodeContext& context, NDataType* type)
+{
+	return SizeOf(context, type->getType(context));
+}
+
+RValue Inst::SizeOf(CodeContext& context, NExpression* exp)
+{
+	return SizeOf(context, exp->genValue(context).stype());
+}
+
+RValue Inst::SizeOf(CodeContext& context, string* name)
+{
+	auto isType = SUserType::lookup(context, name);
+	auto isVar = context.loadSymbol(name);
+	SType* stype = nullptr;
+
+	if (isType && isVar) {
+		context.addError(*name + " is ambigious, both a type and a variable");
+	} else if (isType) {
+		stype = isType;
+	} else if (isVar) {
+		stype = isVar.stype();
+	} else {
+		context.addError("type " + *name + " is not declared");
+	}
+	return SizeOf(context, stype);
+}
