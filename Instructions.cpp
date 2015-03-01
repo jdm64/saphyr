@@ -258,6 +258,9 @@ RValue Inst::PointerMath(int type, RValue ptr, RValue val, CodeContext& context)
 
 RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
+	if (!lhs || !rhs)
+		return RValue();
+
 	CastMatch(context, lhs, rhs, true);
 
 	switch ((lhs.stype()->isPointer() << 1) | rhs.stype()->isPointer()) {
