@@ -1061,6 +1061,22 @@ public:
 	}
 };
 
+class NNewExpression : public NExpression
+{
+	NDataType* type;
+
+public:
+	NNewExpression(NDataType* type)
+	: type(type) {}
+
+	RValue genValue(CodeContext& context);
+
+	~NNewExpression()
+	{
+		delete type;
+	}
+};
+
 class NBinaryOperator : public NExpression
 {
 protected:

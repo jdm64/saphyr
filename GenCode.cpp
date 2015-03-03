@@ -833,6 +833,34 @@ RValue NTernaryOperator::genValue(CodeContext& context)
 	return retVal;
 }
 
+RValue NNewExpression::genValue(CodeContext& context)
+{
+	static string mallocName = "malloc";
+
+	auto funcVal = context.loadSymbol(&mallocName);
+	if (!funcVal) {
+		vector<SType*> args;
+		args.push_back(SType::getInt(context, 64));
+		auto retType = SType::getPointer(context, SType::getInt(context, 8));
+		auto funcType = SType::getFunction(context, retType, args);
+
+		funcVal = SFunction::create(context, &mallocName, funcType);
+	} else if (!funcVal.isFunction()) {
+		context.addError("Compiler Error: malloc not function");
+		return RValue();
+	}
+
+	vector<Value*> exp_list;
+	exp_list.push_back(Inst::SizeOf(context, type));
+
+	auto func = static_cast<SFunction&>(funcVal);
+	auto call = CallInst::Create(func, exp_list, "", context);
+	auto ptr = RValue(call, func.returnTy());
+	auto ptrType = SType::getPointer(context, type->getType(context));
+
+	return RValue(new BitCastInst(ptr, *ptrType, "", context), ptrType);
+}
+
 RValue NLogicalOperator::genValue(CodeContext& context)
 {
 	auto saveBlock = context.currBlock();

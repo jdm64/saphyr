@@ -35,7 +35,7 @@
 %token <t_int> TT_ASG_DQ
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE
+%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW
 %left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
@@ -65,7 +65,7 @@
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
-%type <t_exp> sizeof_expression paren_expression
+%type <t_exp> sizeof_expression paren_expression new_expression
 // function prototype
 %type <t_func_pro> function_prototype
 // lists
@@ -481,8 +481,8 @@ assignment
 	}
 	;
 ternary_expression
-	: logical_or_expression
-	| logical_or_expression '?' logical_or_expression ':' logical_or_expression
+	: new_expression
+	| new_expression '?' new_expression ':' new_expression
 	{
 		$$ = new NTernaryOperator($1, $3, $5);
 	}
@@ -500,6 +500,13 @@ assignment_operator
 	| TT_ASG_OR  { $$ = '^'; }
 	| TT_ASG_XOR { $$ = '|'; }
 	| TT_ASG_DQ  { $$ = TT_DQ_MARK; }
+	;
+new_expression
+	: logical_or_expression
+	| TT_NEW data_type
+	{
+		$$ = new NNewExpression($2);
+	}
 	;
 logical_or_expression
 	: logical_and_expression
