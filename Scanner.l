@@ -68,6 +68,7 @@ break		{ return ParserBase::TT_BREAK; }
 case		{ return ParserBase::TT_CASE; }
 continue	{ return ParserBase::TT_CONTINUE; }
 default		{ return ParserBase::TT_DEFAULT; }
+delete		{ return ParserBase::TT_DELETE; }
 do		{ return ParserBase::TT_DO; }
 else		{ return ParserBase::TT_ELSE; }
 enum		{ return ParserBase::TT_ENUM; }

@@ -1006,6 +1006,22 @@ public:
 	void genCode(CodeContext& context);
 };
 
+class NDeleteStatement : public NStatement
+{
+	NVariable *variable;
+
+public:
+	NDeleteStatement(NVariable* variable)
+	: variable(variable) {}
+
+	void genCode(CodeContext& context);
+
+	~NDeleteStatement()
+	{
+		delete variable;
+	}
+};
+
 class NAssignment : public NExpression
 {
 	int oper;

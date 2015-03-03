@@ -726,6 +726,36 @@ error:
 	context.addError(typeName + " invalid outside a loop/switch block");
 }
 
+void NDeleteStatement::genCode(CodeContext& context)
+{
+	static string freeName = "free";
+
+	auto bytePtr = SType::getPointer(context, SType::getInt(context, 8));
+	auto func = context.loadSymbol(&freeName);
+	if (!func) {
+		vector<SType*> args;
+		args.push_back(bytePtr);
+		auto retType = SType::getVoid(context);
+		auto funcType = SType::getFunction(context, retType, args);
+
+		func = SFunction::create(context, &freeName, funcType);
+	} else if (!func.isFunction()) {
+		context.addError("Compiler Error: free not function");
+		return;
+	}
+
+	auto ptr = variable->genValue(context);
+	if (!ptr.stype()->isPointer()) {
+		context.addError("delete requires pointer type");
+		return;
+	}
+
+	vector<Value*> exp_list;
+	exp_list.push_back(new BitCastInst(ptr, *bytePtr, "", context));
+
+	CallInst::Create(static_cast<SFunction&>(func), exp_list, "", context);
+}
+
 RValue NAssignment::genValue(CodeContext& context)
 {
 	auto lhsVar = lhs->loadVar(context);
