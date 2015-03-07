@@ -36,7 +36,7 @@ class SFunction : public LValue
 	: LValue(function, type) {};
 
 public:
-	static SFunction create(CodeContext& context, string* name, SFunctionType* type);
+	static SFunction create(CodeContext& context, const string& name, SFunctionType* type);
 
 	SFunction()
 	: LValue() {};

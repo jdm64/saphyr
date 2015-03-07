@@ -290,15 +290,15 @@ class SUserType : public SType
 	: SType(typeClass, type, size, subtype) {}
 
 public:
-	static SUserType* lookup(CodeContext& context, string* name);
+	static SUserType* lookup(CodeContext& context, const string& name);
 
-	static void createAlias(CodeContext& context, string* name, SType* type);
+	static void createAlias(CodeContext& context, const string& name, SType* type);
 
-	static void createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
+	static void createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
-	static void createUnion(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
+	static void createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
-	static void createEnum(CodeContext& context, string* name, const vector<pair<string, int64_t>>& structure);
+	static void createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure);
 };
 
 class SAliasType : public SUserType
@@ -324,9 +324,9 @@ class SStructType : public SUserType
 	}
 
 public:
-	pair<int, SType*>* getItem(string* name)
+	pair<int, SType*>* getItem(const string& name)
 	{
-		auto iter = items.find(*name);
+		auto iter = items.find(name);
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
@@ -356,9 +356,9 @@ class SUnionType : public SUserType
 	}
 
 public:
-	SType* getItem(string* name)
+	SType* getItem(const string& name)
 	{
-		auto iter = items.find(*name);
+		auto iter = items.find(name);
 		return iter != items.end()? iter->second : nullptr;
 	}
 
@@ -391,9 +391,9 @@ class SEnumType : public SUserType
 	}
 
 public:
-	APSInt* getItem(string* name)
+	APSInt* getItem(const string& name)
 	{
-		auto iter = items.find(*name);
+		auto iter = items.find(name);
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
@@ -529,18 +529,18 @@ public:
 
 	SFunctionType* getFunction(SType* returnTy, vector<SType*> args);
 
-	SUserType* lookupUserType(string* name)
+	SUserType* lookupUserType(const string& name)
 	{
-		return usrMap[*name].get();
+		return usrMap[name].get();
 	}
 
-	void createAlias(string* name, SType* type);
+	void createAlias(const string& name, SType* type);
 
-	void createStruct(string* name, vector<pair<string, SType*>> structure);
+	void createStruct(const string& name, vector<pair<string, SType*>> structure);
 
-	void createUnion(string* name, vector<pair<string, SType*>> structure);
+	void createUnion(const string& name, vector<pair<string, SType*>> structure);
 
-	void createEnum(string* name, vector<pair<string,int64_t>> structure);
+	void createEnum(const string& name, vector<pair<string,int64_t>> structure);
 };
 
 #endif

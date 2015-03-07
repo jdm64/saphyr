@@ -59,7 +59,7 @@ public:
 
 	static RValue SizeOf(CodeContext& context, NExpression* type);
 
-	static RValue SizeOf(CodeContext& context, string* type);
+	static RValue SizeOf(CodeContext& context, const string& type);
 };
 
 #endif

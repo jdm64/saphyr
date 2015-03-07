@@ -49,14 +49,14 @@ class ScopeTable
 	map<string, LValue> table;
 
 public:
-	void storeSymbol(LValue var, string* name)
+	void storeSymbol(LValue var, const string& name)
 	{
-		table[*name] = var;
+		table[name] = var;
 	}
 
-	LValue loadSymbol(string* name) const
+	LValue loadSymbol(const string& name) const
 	{
-		auto varData = table.find(*name);
+		auto varData = table.find(name);
 		return varData != table.end()? varData->second : LValue();
 	}
 };
@@ -67,12 +67,12 @@ class SymbolTable
 	vector<ScopeTable> localTable;
 
 public:
-	void storeGlobalSymbol(LValue var, string* name)
+	void storeGlobalSymbol(LValue var, const string& name)
 	{
 		globalTable.storeSymbol(var, name);
 	}
 
-	void storeLocalSymbol(LValue var, string* name)
+	void storeLocalSymbol(LValue var, const string& name)
 	{
 		localTable.back().storeSymbol(var, name);
 	}
@@ -92,7 +92,7 @@ public:
 		localTable.clear();
 	}
 
-	LValue loadSymbol(string* name) const
+	LValue loadSymbol(const string& name) const
 	{
 		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
 			auto var = it->loadSymbol(name);
@@ -102,7 +102,7 @@ public:
 		return globalTable.loadSymbol(name);
 	}
 
-	LValue loadSymbolCurr(string* name) const
+	LValue loadSymbolCurr(const string& name) const
 	{
 		return localTable.empty()? globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
 	}
@@ -265,16 +265,16 @@ public:
 		popRedoBlock();
 	}
 
-	LabelBlock* getLabelBlock(string* name)
+	LabelBlock* getLabelBlock(const string& name)
 	{
-		return labelBlocks[*name].get();
+		return labelBlocks[name].get();
 	}
-	LabelBlock* createLabelBlock(string* name, bool isPlaceholder)
+	LabelBlock* createLabelBlock(const string& name, bool isPlaceholder)
 	{
-		LabelBlockPtr &item = labelBlocks[*name];
+		LabelBlockPtr &item = labelBlocks[name];
 		if (!item.get()) {
 			item = smart_label(createBlock(), isPlaceholder);
-			item.get()->block->setName(*name);
+			item.get()->block->setName(name);
 		}
 		return item.get();
 	}

@@ -162,6 +162,11 @@ public:
 
 class NConstant : public NExpression
 {
+protected:
+	const static string STR_TRUE;
+	const static string STR_FALSE;
+	const static string STR_NULL;
+
 public:
 	bool isConstant() const
 	{
@@ -178,24 +183,26 @@ public:
 		return false;
 	}
 
-	static vector<string> getValueAndSuffix(string* value)
+	virtual const string& getStrVal() const = 0;
+
+	static vector<string> getValueAndSuffix(const string& value)
 	{
-		auto pos = value->find('_');
+		auto pos = value.find('_');
 		if (pos == string::npos)
-			return {*value};
+			return {value};
 		else
-			return {value->substr(0, pos), value->substr(pos + 1)};
+			return {value.substr(0, pos), value.substr(pos + 1)};
 	}
 
-	static string* unescape(const string &val)
+	static string unescape(const string &val)
 	{
-		auto str = new string;
-		str->reserve(val.size());
+		string str;
+		str.reserve(val.size());
 
 		for (int i = 0;;) {
 			auto idx = val.find('\\', i);
 			if (idx == string::npos) {
-				str->append(val, i, string::npos);
+				str.append(val, i, string::npos);
 				break;
 			} else {
 				char c = val.at(++idx);
@@ -212,17 +219,17 @@ public:
 				default:
 					break;
 				}
-				str->append(val, i, idx - i - 1);
-				*str += c;
+				str.append(val, i, idx - i - 1);
+				str += c;
 				i = idx + 1;
 			}
 		}
 		return str;
 	}
 
-	static void remove(string* val, char c = '\'')
+	static void remove(string& val, char c = '\'')
 	{
-		val->erase(std::remove(val->begin(), val->end(), c), val->end());
+		val.erase(std::remove(val.begin(), val.end(), c), val.end());
 	}
 };
 
@@ -230,6 +237,11 @@ class NNullPointer : public NConstant
 {
 public:
 	RValue genValue(CodeContext& context);
+
+	const string& getStrVal() const
+	{
+		return STR_NULL;
+	}
 };
 
 class NStringLiteral : public NConstant
@@ -238,11 +250,17 @@ class NStringLiteral : public NConstant
 
 public:
 	NStringLiteral(string* str)
+	: value(str)
 	{
-		value = unescape(str->substr(1, str->size() - 2));
+		*value = unescape(value->substr(1, value->size() - 2));
 	}
 
 	RValue genValue(CodeContext& context);
+
+	const string& getStrVal() const
+	{
+		return *value;
+	}
 
 	~NStringLiteral()
 	{
@@ -272,6 +290,11 @@ public:
 	: value(value) {}
 
 	APSInt getIntVal(CodeContext& context);
+
+	const string& getStrVal() const
+	{
+		return value? STR_TRUE : STR_FALSE;
+	}
 };
 
 class NCharConst : public NIntLikeConst
@@ -285,6 +308,11 @@ public:
 	}
 
 	APSInt getIntVal(CodeContext& context);
+
+	const string& getStrVal() const
+	{
+		return *value;
+	}
 
 	~NCharConst()
 	{
@@ -301,10 +329,15 @@ public:
 	NIntConst(string* value, int base = 10)
 	: value(value), base(base)
 	{
-		remove(value);
+		remove(*value);
 	}
 
 	APSInt getIntVal(CodeContext& context);
+
+	const string& getStrVal() const
+	{
+		return *value;
+	}
 
 	~NIntConst()
 	{
@@ -320,10 +353,15 @@ public:
 	NFloatConst(string* value)
 	: value(value)
 	{
-		remove(value);
+		remove(*value);
 	}
 
 	RValue genValue(CodeContext& context);
+
+	const string& getStrVal() const
+	{
+		return *value;
+	}
 
 	~NFloatConst()
 	{
@@ -340,9 +378,9 @@ public:
 	NDeclaration(string* name = nullptr)
 	: name(name) {}
 
-	virtual string* getName()
+	virtual const string& getName() const
 	{
-		return name;
+		return *name;
 	}
 
 	~NDeclaration()
@@ -414,6 +452,11 @@ public:
 	: name(name) {}
 
 	SType* getType(CodeContext& context);
+
+	const string& getName() const
+	{
+		return *name;
+	}
 
 	~NUserType()
 	{
@@ -528,7 +571,7 @@ public:
 
 	virtual RValue loadVar(CodeContext& context) = 0;
 
-	virtual string* getName() const = 0;
+	virtual const string& getName() const = 0;
 };
 
 class NBaseVariable : public NVariable
@@ -541,9 +584,9 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
-		return name;
+		return *name;
 	}
 
 	bool isComplex() const
@@ -568,7 +611,7 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
 		return arrVar->getName();
 	}
@@ -597,9 +640,14 @@ public:
 
 	RValue loadEnum(CodeContext& context, SEnumType* enumType) const;
 
-	string* getName() const
+	const string& getName() const
 	{
 		return baseVar->getName();
+	}
+
+	const string& getMemberName() const
+	{
+		return *memberName;
 	}
 
 	~NMemberVariable()
@@ -611,6 +659,8 @@ public:
 
 class NExprVariable : public NVariable
 {
+	const static string STR_TMP_EXP;
+
 	NExpression* expr;
 
 public:
@@ -622,10 +672,9 @@ public:
 		return expr->genValue(context);
 	}
 
-	string* getName() const
+	const string& getName() const
 	{
-		static string name = "temp expression";
-		return &name;
+		return STR_TMP_EXP;
 	}
 
 	~NExprVariable()
@@ -644,7 +693,7 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
 		return derefVar->getName();
 	}
@@ -670,7 +719,7 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
 		return addVar->getName();
 	}
@@ -762,7 +811,7 @@ class NStructDeclaration : public NDeclaration
 protected:
 	virtual void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
 	{
-		SUserType::createStruct(context, name, structVars);
+		SUserType::createStruct(context, getName(), structVars);
 	}
 
 public:
@@ -782,7 +831,7 @@ class NUnionDeclaration : public NStructDeclaration
 protected:
 	void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
 	{
-		SUserType::createUnion(context, name, structVars);
+		SUserType::createUnion(context, getName(), structVars);
 	}
 
 public:
@@ -848,7 +897,7 @@ public:
 
 	void genCode(CodeContext& context);
 
-	string* getName()
+	const string& getName() const
 	{
 		return prototype->getName();
 	}
@@ -1001,6 +1050,11 @@ public:
 
 	void genCode(CodeContext& context);
 
+	const string& getName() const
+	{
+		return *name;
+	}
+
 	~NLabelStatement()
 	{
 		delete name;
@@ -1041,6 +1095,11 @@ public:
 	: name(name) {}
 
 	void genCode(CodeContext& context);
+
+	const string& getName() const
+	{
+		return *name;
+	}
 
 	~NGotoStatement()
 	{
@@ -1262,9 +1321,9 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
-		return name;
+		return *name;
 	}
 
 	~NFunctionCall()

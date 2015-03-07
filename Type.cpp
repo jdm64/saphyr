@@ -124,27 +124,27 @@ bool SType::validate(CodeContext& context, SType* type)
 	return validate(context, type->subType());
 }
 
-SUserType* SUserType::lookup(CodeContext& context, string* name)
+SUserType* SUserType::lookup(CodeContext& context, const string& name)
 {
 	return context.typeManager.lookupUserType(name);
 }
 
-void SUserType::createAlias(CodeContext& context, string* name, SType* type)
+void SUserType::createAlias(CodeContext& context, const string& name, SType* type)
 {
 	context.typeManager.createAlias(name, type);
 }
 
-void SUserType::createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure)
+void SUserType::createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
 {
 	context.typeManager.createStruct(name, structure);
 }
 
-void SUserType::createUnion(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure)
+void SUserType::createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
 {
 	context.typeManager.createUnion(name, structure);
 }
 
-void SUserType::createEnum(CodeContext& context, string* name, const vector<pair<string, int64_t>>& structure)
+void SUserType::createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure)
 {
 	context.typeManager.createEnum(name, structure);
 }
@@ -205,29 +205,29 @@ SFunctionType* TypeManager::getFunction(SType* returnTy, vector<SType*> args)
 	return item.get();
 }
 
-void TypeManager::createAlias(string* name, SType* type)
+void TypeManager::createAlias(const string& name, SType* type)
 {
-	SUserPtr& item = usrMap[*name];
+	SUserPtr& item = usrMap[name];
 	if (item.get())
 		return;
 	item = smart_aliasTy(type);
 }
 
-void TypeManager::createStruct(string* name, vector<pair<string, SType*>> structure)
+void TypeManager::createStruct(const string& name, vector<pair<string, SType*>> structure)
 {
-	SUserPtr& item = usrMap[*name];
+	SUserPtr& item = usrMap[name];
 	if (item.get())
 		return;
 	vector<Type*> elements;
 	for (auto item : structure)
 		elements.push_back(*item.second);
-	auto type = StructType::create(elements, *name);
+	auto type = StructType::create(elements, name);
 	item = smart_strucTy(type, structure);
 }
 
-void TypeManager::createUnion(string* name, vector<pair<string, SType*>> structure)
+void TypeManager::createUnion(const string& name, vector<pair<string, SType*>> structure)
 {
-	SUserPtr& item = usrMap[*name];
+	SUserPtr& item = usrMap[name];
 	if (item.get() || !structure.size())
 		return;
 	auto type = structure[0].second;
@@ -241,12 +241,12 @@ void TypeManager::createUnion(string* name, vector<pair<string, SType*>> structu
 	}
 	vector<Type*> elements;
 	elements.push_back(*type);
-	item = smart_unionTy(StructType::create(elements, *name), structure, size);
+	item = smart_unionTy(StructType::create(elements, name), structure, size);
 }
 
-void TypeManager::createEnum(string* name, vector<pair<string, int64_t> > structure)
+void TypeManager::createEnum(const string& name, vector<pair<string, int64_t> > structure)
 {
-	SUserPtr& item = usrMap[*name];
+	SUserPtr& item = usrMap[name];
 	if (item.get() || !structure.size())
 		return;
 	item = smart_enumTy(getInt(32), structure);

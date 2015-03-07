@@ -21,6 +21,13 @@
 #include "Instructions.h"
 #include "ModuleWriter.h"
 
+NStatementList* programBlock;
+
+const string NConstant::STR_TRUE = "true";
+const string NConstant::STR_FALSE = "false";
+const string NConstant::STR_NULL = "null";
+const string NExprVariable::STR_TMP_EXP = "temp expression";
+
 void CodeContext::genCode(const NStatementList *stms)
 {
 	stms->genCode(*this);
@@ -122,9 +129,10 @@ SType* NVecType::getType(CodeContext& context)
 
 SType* NUserType::getType(CodeContext& context)
 {
-	auto type = SUserType::lookup(context, name);
+	auto typeName = getName();
+	auto type = SUserType::lookup(context, typeName);
 	if (!type) {
-		context.addError(*name + " type not declared");
+		context.addError(typeName + " type not declared");
 		return nullptr;
 	}
 	return type->isAlias()? type->subType() : type;
@@ -188,12 +196,13 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 
 RValue NBaseVariable::loadVar(CodeContext& context)
 {
-	auto var = context.loadSymbol(name);
+	auto varName = getName();
+	auto var = context.loadSymbol(varName);
 	if (var)
 		return var;
-	auto userVar = SUserType::lookup(context, name);
+	auto userVar = SUserType::lookup(context, varName);
 	if (!userVar) {
-		context.addError("variable " + *name + " not declared");
+		context.addError("variable " + varName + " not declared");
 		return var;
 	}
 	return RValue(ConstantInt::getFalse(context), userVar);
@@ -216,7 +225,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	var = Inst::Deref(context, var, true);
 
 	if (!var.stype()->isSequence()) {
-		context.addError("variable " + *getName() + " is not an array or vec");
+		context.addError("variable " + getName() + " is not an array or vec");
 		return RValue();
 	}
 	Inst::CastTo(context, indexVal, SType::getInt(context, 64));
@@ -245,15 +254,16 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 	else if (varType->isEnum())
 		return loadEnum(context, static_cast<SEnumType*>(varType));
 
-	context.addError(*getName() + " is not a struct/union/enum");
+	context.addError(getName() + " is not a struct/union/enum");
 	return RValue();
 }
 
 RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType) const
 {
-	auto item = structType->getItem(memberName);
+	auto member = getMemberName();
+	auto item = structType->getItem(member);
 	if (!item) {
-		context.addError(*getName() +" doesn't have member " + *memberName);
+		context.addError(getName() +" doesn't have member " + member);
 		return RValue();
 	}
 
@@ -267,9 +277,10 @@ RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStr
 
 RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType) const
 {
-	auto item = unionType->getItem(memberName);
+	auto member = getMemberName();
+	auto item = unionType->getItem(member);
 	if (!item) {
-		context.addError(*getName() +" doesn't have member " + *memberName);
+		context.addError(getName() +" doesn't have member " + member);
 		return RValue();
 	}
 
@@ -280,9 +291,10 @@ RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnio
 
 RValue NMemberVariable::loadEnum(CodeContext& context, SEnumType* enumType) const
 {
-	auto item = enumType->getItem(memberName);
+	auto member = getMemberName();
+	auto item = enumType->getItem(member);
 	if (!item) {
-		context.addError(*getName() +" doesn't have member " + *memberName);
+		context.addError(getName() +" doesn't have member " + member);
 		return RValue();
 	}
 	auto val = RValue::getValue(context, *item);
@@ -295,7 +307,7 @@ RValue NDereference::loadVar(CodeContext& context)
 	if (!var) {
 		return var;
 	} else if (!var.stype()->isPointer()) {
-		context.addError("variable " + *getName() + " can not be dereferenced");
+		context.addError("variable " + getName() + " can not be dereferenced");
 		return RValue();
 	}
 	return Inst::Deref(context, var);
@@ -311,7 +323,7 @@ void NParameter::genCode(CodeContext& context)
 	auto stype = type->getType(context);
 	auto stackAlloc = new AllocaInst(*stype, "", context);
 	new StoreInst(arg, stackAlloc, context);
-	context.storeLocalSymbol(LValue(stackAlloc, stype), name);
+	context.storeLocalSymbol(LValue(stackAlloc, stype), getName());
 }
 
 void NVariableDecl::genCode(CodeContext& context)
@@ -335,11 +347,11 @@ void NVariableDecl::genCode(CodeContext& context)
 
 	auto name = getName();
 	if (context.loadSymbolCurr(name)) {
-		context.addError("variable " + *name + " already defined");
+		context.addError("variable " + name + " already defined");
 		return;
 	}
 
-	auto var = LValue(new AllocaInst(*varType, *name, context), varType);
+	auto var = LValue(new AllocaInst(*varType, name, context), varType);
 	context.storeLocalSymbol(var, name);
 
 	if (initValue) {
@@ -382,11 +394,11 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 
 	auto name = getName();
 	if (context.loadSymbolCurr(name)) {
-		context.addError("variable " + *name + " already defined");
+		context.addError("variable " + name + " already defined");
 		return;
 	}
 
-	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), *name);
+	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), name);
 	context.storeGlobalSymbol(LValue(var, varType), name);
 }
 
@@ -404,13 +416,13 @@ bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector,
 		if (var->hasInit())
 			context.addError("structs don't support variable initialization");
 		auto name = var->getName();
-		auto res = memberNames.insert(*name);
+		auto res = memberNames.insert(name);
 		if (!res.second) {
-			context.addError("member name " + *name + " already declared");
+			context.addError("member name " + name + " already declared");
 			valid = false;
 			continue;
 		}
-		structVector.push_back(make_pair(*name, stype));
+		structVector.push_back(make_pair(name, stype));
 	}
 	return valid;
 }
@@ -425,14 +437,15 @@ void NAliasDeclaration::genCode(CodeContext& context)
 		return;
 	}
 
-	SAliasType::createAlias(context, name, realType);
+	SAliasType::createAlias(context, getName(), realType);
 }
 
 void NStructDeclaration::genCode(CodeContext& context)
 {
-	auto utype = SUserType::lookup(context, name);
+	auto structName = getName();
+	auto utype = SUserType::lookup(context, structName);
 	if (utype) {
-		context.addError(*name + " type already declared");
+		context.addError(structName + " type already declared");
 		return;
 	}
 	vector<pair<string, SType*> > structVars;
@@ -452,9 +465,9 @@ void NEnumDeclaration::genCode(CodeContext& context)
 
 	for (auto item : *variables) {
 		auto name = item->getName();
-		auto res = names.insert(*name);
+		auto res = names.insert(name);
 		if (!res.second) {
-			context.addError("enum member name " + *name + " already declared");
+			context.addError("enum member name " + name + " already declared");
 			continue;
 		}
 		if (item->hasInit()) {
@@ -471,9 +484,9 @@ void NEnumDeclaration::genCode(CodeContext& context)
 			auto intVal = static_cast<NIntLikeConst*>(constVal);
 			val = intVal->getIntVal(context).getSExtValue();
 		}
-		structure.push_back(make_pair(*name, val++));
+		structure.push_back(make_pair(name, val++));
 	}
-	SUserType::createEnum(context, name, structure);
+	SUserType::createEnum(context, getName(), structure);
 }
 
 void NFunctionPrototype::genCode(CodeContext& context)
@@ -483,16 +496,17 @@ void NFunctionPrototype::genCode(CodeContext& context)
 
 SFunction NFunctionPrototype::genFunction(CodeContext& context)
 {
-	auto sym = context.loadSymbol(name);
+	auto funcName = getName();
+	auto sym = context.loadSymbol(funcName);
 	if (sym) {
 		if (sym.isFunction())
 			return static_cast<SFunction&>(sym);
-		context.addError("variable " + *name + " already defined");
+		context.addError("variable " + funcName + " already defined");
 		return SFunction();
 	}
 
 	auto funcType = getFunctionType(context);
-	return funcType? SFunction::create(context, name, funcType) : SFunction();
+	return funcType? SFunction::create(context, funcName, funcType) : SFunction();
 }
 
 void NFunctionPrototype::genCodeParams(SFunction function, CodeContext& context) const
@@ -500,7 +514,7 @@ void NFunctionPrototype::genCodeParams(SFunction function, CodeContext& context)
 	int i = 0;
 	for (auto arg = function.arg_begin(); arg != function.arg_end(); arg++, i++) {
 		auto param = params->at(i);
-		arg->setName(*param->getName());
+		arg->setName(param->getName());
 		param->setArgument(RValue(arg, function.getParam(i)));
 		param->genCode(context);
 	}
@@ -512,7 +526,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 	if (!function || !body) { // no body means only function prototype
 		return;
 	} else if (function.size()) {
-		context.addError("function " + *prototype->getName() + " already declared");
+		context.addError("function " + prototype->getName() + " already declared");
 		return;
 	}
 
@@ -525,7 +539,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 	}
 
 	if (prototype->getFunctionType(context) != function.stype()) {
-		context.addError("function type for " + *prototype->getName() + " doesn't match definition");
+		context.addError("function type for " + prototype->getName() + " doesn't match definition");
 		return;
 	}
 
@@ -708,16 +722,17 @@ void NIfStatement::genCode(CodeContext& context)
 void NLabelStatement::genCode(CodeContext& context)
 {
 	// check if label already declared
-	auto label = context.getLabelBlock(name);
+	auto labelName = getName();
+	auto label = context.getLabelBlock(labelName);
 	if (label) {
 		if (!label->isPlaceholder) {
-			context.addError("label " + *name + " already defined");
+			context.addError("label " + labelName + " already defined");
 			return;
 		}
 		// a used label is no longer a placeholder
 		label->isPlaceholder = false;
 	} else {
-		label = context.createLabelBlock(name, false);
+		label = context.createLabelBlock(labelName, false);
 	}
 	BranchInst::Create(label->block, context);
 	context.pushBlock(label->block);
@@ -725,12 +740,13 @@ void NLabelStatement::genCode(CodeContext& context)
 
 void NGotoStatement::genCode(CodeContext& context)
 {
+	auto labelName = getName();
 	auto skip = context.createBlock();
-	auto label = context.getLabelBlock(name);
+	auto label = context.getLabelBlock(labelName);
 	if (!label) {
 		// trying to jump to a non-existant label. create place holder and
 		// later check if it's used at the end of the function.
-		label = context.createLabelBlock(name, true);
+		label = context.createLabelBlock(labelName, true);
 	}
 	BranchInst::Create(label->block, context);
 	context.pushBlock(skip);
@@ -780,14 +796,14 @@ void NDeleteStatement::genCode(CodeContext& context)
 	static string freeName = "free";
 
 	auto bytePtr = SType::getPointer(context, SType::getInt(context, 8));
-	auto func = context.loadSymbol(&freeName);
+	auto func = context.loadSymbol(freeName);
 	if (!func) {
 		vector<SType*> args;
 		args.push_back(bytePtr);
 		auto retType = SType::getVoid(context);
 		auto funcType = SType::getFunction(context, retType, args);
 
-		func = SFunction::create(context, &freeName, funcType);
+		func = SFunction::create(context, freeName, funcType);
 	} else if (!func.isFunction()) {
 		context.addError("Compiler Error: free not function");
 		return;
@@ -888,14 +904,14 @@ RValue NNewExpression::genValue(CodeContext& context)
 {
 	static string mallocName = "malloc";
 
-	auto funcVal = context.loadSymbol(&mallocName);
+	auto funcVal = context.loadSymbol(mallocName);
 	if (!funcVal) {
 		vector<SType*> args;
 		args.push_back(SType::getInt(context, 64));
 		auto retType = SType::getPointer(context, SType::getInt(context, 8));
 		auto funcType = SType::getFunction(context, retType, args);
 
-		funcVal = SFunction::create(context, &mallocName, funcType);
+		funcVal = SFunction::create(context, mallocName, funcType);
 	} else if (!funcVal.isFunction()) {
 		context.addError("Compiler Error: malloc not function");
 		return RValue();
@@ -1005,7 +1021,7 @@ RValue NSizeOfOperator::genValue(CodeContext& context)
 	case EXP:
 		return Inst::SizeOf(context, exp);
 	case NAME:
-		return Inst::SizeOf(context, name);
+		return Inst::SizeOf(context, *name);
 	default:
 		// shouldn't happen
 		return RValue();
@@ -1033,14 +1049,15 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 
 RValue NFunctionCall::genValue(CodeContext& context)
 {
-	auto sym = context.loadSymbol(name);
+	auto funcName = getName();
+	auto sym = context.loadSymbol(funcName);
 	if (!sym) {
-		context.addError("symbol " + *name + " not defined");
+		context.addError("symbol " + funcName + " not defined");
 		return sym;
 	}
 	auto deSym = Inst::Deref(context, sym, true);
 	if (!deSym.isFunction()) {
-		context.addError("symbol " + *name + " doesn't reference a function");
+		context.addError("symbol " + funcName + " doesn't reference a function");
 		return RValue();
 	}
 
@@ -1102,8 +1119,9 @@ RValue NNullPointer::genValue(CodeContext& context)
 
 RValue NStringLiteral::genValue(CodeContext& context)
 {
-	auto arrData = ConstantDataArray::getString(context, *value, true);
-	auto arrTy = SType::getArray(context, SType::getInt(context, 8), value->size() + 1);
+	auto strVal = getStrVal();
+	auto arrData = ConstantDataArray::getString(context, strVal, true);
+	auto arrTy = SType::getArray(context, SType::getInt(context, 8), strVal.size() + 1);
 	auto arrTyPtr = SType::getPointer(context, arrTy);
 	auto gVar = new GlobalVariable(*context.getModule(), *arrTy, true, GlobalValue::PrivateLinkage, arrData);
 	auto zero = ConstantInt::get(*SType::getInt(context, 32), 0);
@@ -1129,7 +1147,7 @@ APSInt NIntConst::getIntVal(CodeContext& context)
 		{"u64", SType::getInt(context, 64, true)} };
 	auto type = SType::getInt(context, 32); // default is int32
 
-	auto data = NConstant::getValueAndSuffix(value);
+	auto data = NConstant::getValueAndSuffix(getStrVal());
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
@@ -1148,7 +1166,7 @@ RValue NFloatConst::genValue(CodeContext& context)
 		{"d", SType::getFloat(context, true)} };
 	auto type = SType::getFloat(context, true);
 
-	auto data = NConstant::getValueAndSuffix(value);
+	auto data = NConstant::getValueAndSuffix(getStrVal());
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
@@ -1162,9 +1180,10 @@ RValue NFloatConst::genValue(CodeContext& context)
 
 APSInt NCharConst::getIntVal(CodeContext& context)
 {
-	char cVal = value->at(0);
-	if (cVal == '\\' && value->length() > 1) {
-		switch (value->at(1)) {
+	auto strVal = getStrVal();
+	char cVal = strVal.at(0);
+	if (cVal == '\\' && strVal.length() > 1) {
+		switch (strVal.at(1)) {
 		case '0': cVal = '\0'; break;
 		case 'a': cVal = '\a'; break;
 		case 'b': cVal = '\b'; break;
@@ -1174,7 +1193,7 @@ APSInt NCharConst::getIntVal(CodeContext& context)
 		case 'r': cVal = '\r'; break;
 		case 't': cVal = '\t'; break;
 		case 'v': cVal = '\v'; break;
-		default: cVal = value->at(1);
+		default: cVal = strVal.at(1);
 		}
 	}
 	return APSInt(APInt(8, cVal, true));
