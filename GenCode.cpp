@@ -249,7 +249,7 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 	return RValue();
 }
 
-RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType)
+RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType) const
 {
 	auto item = structType->getItem(memberName);
 	if (!item) {
@@ -265,7 +265,7 @@ RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStr
 	return RValue(getEl, item->second);
 }
 
-RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType)
+RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType) const
 {
 	auto item = unionType->getItem(memberName);
 	if (!item) {
@@ -278,7 +278,7 @@ RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnio
 	return RValue(castEl, item);
 }
 
-RValue NMemberVariable::loadEnum(CodeContext& context, SEnumType* enumType)
+RValue NMemberVariable::loadEnum(CodeContext& context, SEnumType* enumType) const
 {
 	auto item = enumType->getItem(memberName);
 	if (!item) {

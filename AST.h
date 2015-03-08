@@ -433,7 +433,7 @@ public:
 
 	SType* getType(CodeContext& context)
 	{
-		auto ptr = NFuncPointerType::getType(context, returnType, params);
+		auto ptr = getType(context, returnType, params);
 		return ptr? SType::getPointer(context, ptr) : nullptr;
 	}
 
@@ -577,11 +577,11 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	RValue loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType);
+	RValue loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType) const;
 
-	RValue loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType);
+	RValue loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType) const;
 
-	RValue loadEnum(CodeContext& context, SEnumType* enumType);
+	RValue loadEnum(CodeContext& context, SEnumType* enumType) const;
 
 	string* getName() const
 	{
