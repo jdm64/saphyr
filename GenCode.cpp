@@ -1021,7 +1021,7 @@ RValue NSizeOfOperator::genValue(CodeContext& context)
 	case EXP:
 		return Inst::SizeOf(context, exp);
 	case NAME:
-		return Inst::SizeOf(context, *name);
+		return Inst::SizeOf(context, name->str);
 	default:
 		// shouldn't happen
 		return RValue();

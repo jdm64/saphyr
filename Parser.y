@@ -5,7 +5,7 @@
 
 %union {
 	int t_int;
-	std::string* t_str;
+	Token* t_tok;
 	NIntConst* t_const_int;
 	NDataType* t_dtype;
 	NVariable* t_var;
@@ -39,7 +39,7 @@
 %token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS
 %left TT_ELSE
 // constants and names
-%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
+%token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
 
 // integer constant
 %type <t_const_int> integer_constant

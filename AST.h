@@ -27,6 +27,16 @@
 // forward declaration
 class CodeContext;
 
+class Token
+{
+public:
+	Token(const string& token, int lineNum)
+	: str(token), line(lineNum) {}
+
+	string str;
+	int line;
+};
+
 class Node
 {
 public:
@@ -246,20 +256,20 @@ public:
 
 class NStringLiteral : public NConstant
 {
-	string* value;
+	Token* value;
 
 public:
-	NStringLiteral(string* str)
+	NStringLiteral(Token* str)
 	: value(str)
 	{
-		*value = unescape(value->substr(1, value->size() - 2));
+		value->str = unescape(value->str.substr(1, value->str.size() - 2));
 	}
 
 	RValue genValue(CodeContext& context);
 
 	const string& getStrVal() const
 	{
-		return *value;
+		return value->str;
 	}
 
 	~NStringLiteral()
@@ -299,19 +309,20 @@ public:
 
 class NCharConst : public NIntLikeConst
 {
-	string* value;
+	Token* value;
 
 public:
-	NCharConst(string* charStr)
+	NCharConst(Token* charStr)
+	: value(charStr)
 	{
-		value = new string(charStr->substr(1, charStr->length() - 2));
+		value->str = value->str.substr(1, value->str.length() - 2);
 	}
 
 	APSInt getIntVal(CodeContext& context);
 
 	const string& getStrVal() const
 	{
-		return *value;
+		return value->str;
 	}
 
 	~NCharConst()
@@ -322,21 +333,21 @@ public:
 
 class NIntConst : public NIntLikeConst
 {
-	string* value;
+	Token* value;
 	int base;
 
 public:
-	NIntConst(string* value, int base = 10)
+	NIntConst(Token* value, int base = 10)
 	: value(value), base(base)
 	{
-		remove(*value);
+		remove(value->str);
 	}
 
 	APSInt getIntVal(CodeContext& context);
 
 	const string& getStrVal() const
 	{
-		return *value;
+		return value->str;
 	}
 
 	~NIntConst()
@@ -347,20 +358,20 @@ public:
 
 class NFloatConst : public NConstant
 {
-	string* value;
+	Token* value;
 
 public:
-	NFloatConst(string* value)
+	NFloatConst(Token* value)
 	: value(value)
 	{
-		remove(*value);
+		remove(value->str);
 	}
 
 	RValue genValue(CodeContext& context);
 
 	const string& getStrVal() const
 	{
-		return *value;
+		return value->str;
 	}
 
 	~NFloatConst()
@@ -372,15 +383,20 @@ public:
 class NDeclaration : public NStatement
 {
 protected:
-	string* name;
+	Token* name;
 
 public:
-	NDeclaration(string* name = nullptr)
+	NDeclaration(Token* name = nullptr)
 	: name(name) {}
+
+	Token* getNameToken() const
+	{
+		return name;
+	}
 
 	virtual const string& getName() const
 	{
-		return *name;
+		return name->str;
 	}
 
 	~NDeclaration()
@@ -445,17 +461,17 @@ public:
 
 class NUserType : public NDataType
 {
-	string* name;
+	Token* name;
 
 public:
-	NUserType(string* name)
+	NUserType(Token* name)
 	: name(name) {}
 
 	SType* getType(CodeContext& context);
 
 	const string& getName() const
 	{
-		return *name;
+		return name->str;
 	}
 
 	~NUserType()
@@ -511,7 +527,7 @@ protected:
 	NDataType* type;
 
 public:
-	NVariableDecl(string* name, NExpression* initExp = nullptr)
+	NVariableDecl(Token* name, NExpression* initExp = nullptr)
 	: NDeclaration(name), initExp(initExp), type(nullptr) {}
 
 	// NOTE: must be called before genCode()
@@ -553,7 +569,7 @@ public:
 class NGlobalVariableDecl : public NVariableDecl
 {
 public:
-	NGlobalVariableDecl(string* name, NExpression* initExp = nullptr)
+	NGlobalVariableDecl(Token* name, NExpression* initExp = nullptr)
 	: NVariableDecl(name, initExp) {}
 
 	void genCode(CodeContext& context);
@@ -576,17 +592,17 @@ public:
 
 class NBaseVariable : public NVariable
 {
-	string* name;
+	Token* name;
 
 public:
-	NBaseVariable(string* name)
+	NBaseVariable(Token* name)
 	: name(name) {}
 
 	RValue loadVar(CodeContext& context);
 
 	const string& getName() const
 	{
-		return *name;
+		return name->str;
 	}
 
 	bool isComplex() const
@@ -626,10 +642,10 @@ public:
 class NMemberVariable : public NVariable
 {
 	NVariable* baseVar;
-	string* memberName;
+	Token* memberName;
 
 public:
-	NMemberVariable(NVariable* baseVar, string* memberName)
+	NMemberVariable(NVariable* baseVar, Token* memberName)
 	: baseVar(baseVar), memberName(memberName) {}
 
 	RValue loadVar(CodeContext& context);
@@ -647,7 +663,7 @@ public:
 
 	const string& getMemberName() const
 	{
-		return *memberName;
+		return memberName->str;
 	}
 
 	~NMemberVariable()
@@ -736,7 +752,7 @@ class NParameter : public NDeclaration
 	RValue arg; // NOTE: not owned by NParameter
 
 public:
-	NParameter(NDataType* type, string* name)
+	NParameter(NDataType* type, Token* name)
 	: NDeclaration(name), type(type) {}
 
 	// NOTE: this must be called before genCode()
@@ -793,7 +809,7 @@ class NAliasDeclaration : public NDeclaration
 	NDataType* type;
 
 public:
-	NAliasDeclaration(string* name, NDataType* type)
+	NAliasDeclaration(Token* name, NDataType* type)
 	: NDeclaration(name), type(type) {}
 
 	void genCode(CodeContext& context);
@@ -815,7 +831,7 @@ protected:
 	}
 
 public:
-	NStructDeclaration(string* name, NVariableDeclGroupList* list)
+	NStructDeclaration(Token* name, NVariableDeclGroupList* list)
 	: NDeclaration(name), list(list) {}
 
 	void genCode(CodeContext& context);
@@ -835,7 +851,7 @@ protected:
 	}
 
 public:
-	NUnionDeclaration(string* name, NVariableDeclGroupList* list)
+	NUnionDeclaration(Token* name, NVariableDeclGroupList* list)
 	: NStructDeclaration(name, list) {}
 };
 
@@ -844,7 +860,7 @@ class NEnumDeclaration : public NDeclaration
 	NVariableDeclList* variables;
 
 public:
-	NEnumDeclaration(string* name, NVariableDeclList* variables)
+	NEnumDeclaration(Token* name, NVariableDeclList* variables)
 	: NDeclaration(name), variables(variables) {}
 
 	void genCode(CodeContext& context);
@@ -861,7 +877,7 @@ class NFunctionPrototype : public NDeclaration
 	NParameterList* params;
 
 public:
-	NFunctionPrototype(string* name, NDataType* rtype, NParameterList* params)
+	NFunctionPrototype(Token* name, NDataType* rtype, NParameterList* params)
 	: NDeclaration(name), rtype(rtype), params(params) {}
 
 	void genCode(CodeContext& context) final;
@@ -1042,17 +1058,17 @@ public:
 
 class NLabelStatement : public NStatement
 {
-	string* name;
+	Token* name;
 
 public:
-	NLabelStatement(string* name)
+	NLabelStatement(Token* name)
 	: name(name) {}
 
 	void genCode(CodeContext& context);
 
 	const string& getName() const
 	{
-		return *name;
+		return name->str;
 	}
 
 	~NLabelStatement()
@@ -1088,17 +1104,17 @@ public:
 
 class NGotoStatement : public NJumpStatement
 {
-	string* name;
+	Token* name;
 
 public:
-	NGotoStatement(string* name)
+	NGotoStatement(Token* name)
 	: name(name) {}
 
 	void genCode(CodeContext& context);
 
 	const string& getName() const
 	{
-		return *name;
+		return name->str;
 	}
 
 	~NGotoStatement()
@@ -1256,7 +1272,7 @@ class NSizeOfOperator : public NExpression
 	OfType type;
 	NDataType* dtype;
 	NExpression* exp;
-	string* name;
+	Token* name;
 
 public:
 	NSizeOfOperator(NDataType* dtype)
@@ -1265,7 +1281,7 @@ public:
 	NSizeOfOperator(NExpression* exp)
 	: type(EXP), dtype(nullptr), exp(exp), name(nullptr) {}
 
-	NSizeOfOperator(string* name)
+	NSizeOfOperator(Token* name)
 	: type(NAME), dtype(nullptr), exp(nullptr), name(name) {}
 
 	RValue genValue(CodeContext& context);
@@ -1310,11 +1326,11 @@ public:
 
 class NFunctionCall : public NVariable
 {
-	string* name;
+	Token* name;
 	NExpressionList* arguments;
 
 public:
-	NFunctionCall(string* name, NExpressionList* arguments)
+	NFunctionCall(Token* name, NExpressionList* arguments)
 	: name(name), arguments(arguments) {}
 
 	RValue genValue(CodeContext& context);
@@ -1323,7 +1339,7 @@ public:
 
 	const string& getName() const
 	{
-		return *name;
+		return name->str;
 	}
 
 	~NFunctionCall()

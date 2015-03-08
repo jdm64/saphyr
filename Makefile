@@ -44,7 +44,7 @@ scanner.cpp : Scanner.l parser.cpp
 	sed -i -e '/insert lexFunctionDecl/a\void setSval(ParserBase::STYPE__ *dval){ sval = dval; } ParserBase::STYPE__* sval;' scanner.h
 	sed -i -e '/nsert baseclass_h/a\#include "parserbase.h"' scanner.h
 	sed -i -e '/insert class_h/a\#include "parserbase.h"' scanner.ih
-	sed -i -e '/insert class_h/a\#define SAVE_TOKEN sval->t_str = new std::string(matched());' scanner.ih
+	sed -i -e '/insert class_h/a\#define SAVE_TOKEN sval->t_tok = new Token(matched(), lineNr());' scanner.ih
 
 clean :
 	rm -f $(TARGET) *.o *~
