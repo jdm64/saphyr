@@ -16,9 +16,9 @@ int func()
 
 ========
 
-error: global variables only support constant value initializer
-error: global variable initialization requires exact type matching
-error: auto variable type requires initialization
-error: variable u already defined
-error: variable h not declared
+Variable.syp: global variables only support constant value initializer
+Variable.syp: global variable initialization requires exact type matching
+Variable.syp: auto variable type requires initialization
+Variable.syp: variable u already defined
+Variable.syp: variable h not declared
 found 5 errors

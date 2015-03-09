@@ -20,10 +20,10 @@ int main()
 
 ========
 
-error: enum initializer must be a constant
-error: enum initializer must be an int-like constant
-error: enum member name A already declared
-error: c is not a struct/union/enum
-error: can't cast to enum type
-error: Color doesn't have member NotFound
+Enum.syp: enum initializer must be a constant
+Enum.syp: enum initializer must be an int-like constant
+Enum.syp: enum member name A already declared
+Enum.syp: c is not a struct/union/enum
+Enum.syp: can't cast to enum type
+Enum.syp: Color doesn't have member NotFound
 found 6 errors

@@ -42,8 +42,13 @@ void CodeContext::genCode(NStatementList stms)
 
 	if (!errors.empty()) {
 		returncode = 2;
-		for (auto& error : errors)
-			cout << "error: " << error << endl;
+		string filename = filepath.substr(filepath.find_last_of('/') + 1);
+		for (auto& error : errors) {
+			cout << filename << ":";
+			if (error.first)
+				cout << error.first << ":";
+			cout << " " << error.second << endl;
+		}
 		cout << "found " << errors.size() << " errors" << endl;
 		return;
 	}
@@ -57,7 +62,7 @@ void CodeContext::genCode(NStatementList stms)
 		return;
 	}
 
-	fstream file(filename.substr(0, filename.rfind('.')) + ".ll", fstream::out);
+	fstream file(filepath.substr(0, filepath.rfind('.')) + ".ll", fstream::out);
 	raw_os_ostream stream(file);
 
 	PassManager pm;

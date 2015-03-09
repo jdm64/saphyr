@@ -14,9 +14,9 @@ int one()
 
 ========
 
-error: AND operator invalid for float types
-error: OR operator invalid for float types
-error: shift operator invalid for float types
-error: shift operator invalid for float types
-error: XOR operator invalid for float types
+InvalidFloatOp.syp: AND operator invalid for float types
+InvalidFloatOp.syp: OR operator invalid for float types
+InvalidFloatOp.syp: shift operator invalid for float types
+InvalidFloatOp.syp: shift operator invalid for float types
+InvalidFloatOp.syp: XOR operator invalid for float types
 found 5 errors

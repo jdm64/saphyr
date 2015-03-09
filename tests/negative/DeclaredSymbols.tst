@@ -23,8 +23,8 @@ int main()
 
 ========
 
-error: variable f already defined
-error: variable g already defined
-error: symbol f doesn't reference a function
-error: can not cast complex types
+DeclaredSymbols.syp: variable f already defined
+DeclaredSymbols.syp: variable g already defined
+DeclaredSymbols.syp: symbol f doesn't reference a function
+DeclaredSymbols.syp: can not cast complex types
 found 4 errors

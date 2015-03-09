@@ -36,15 +36,15 @@ void func2()
 
 ========
 
-error: struct members must not have auto type
-error: structs don't support variable initialization
-error: member name j already declared
-error: Good type already declared
-error: Nothing type not declared
-error: auto variable type requires initialization
-error: w is not a struct/union/enum
-error: k doesn't have member n
-error: can not perform operation on composite types
-error: can not cast complex types
-error: can not perform operation on composite types
+Struct.syp: struct members must not have auto type
+Struct.syp: structs don't support variable initialization
+Struct.syp: member name j already declared
+Struct.syp: Good type already declared
+Struct.syp: Nothing type not declared
+Struct.syp: auto variable type requires initialization
+Struct.syp: w is not a struct/union/enum
+Struct.syp: k doesn't have member n
+Struct.syp: can not perform operation on composite types
+Struct.syp: can not cast complex types
+Struct.syp: can not perform operation on composite types
 found 11 errors

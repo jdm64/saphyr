@@ -11,6 +11,6 @@ int arr()
 
 ========
 
-error: array index is not able to be cast to an int
-error: variable w is not an array or vec
+Arrays.syp: array index is not able to be cast to an int
+Arrays.syp: variable w is not an array or vec
 found 2 errors

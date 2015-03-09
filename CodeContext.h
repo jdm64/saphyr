@@ -117,8 +117,8 @@ class CodeContext : public SymbolTable
 	vector<BasicBlock*> redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
 
-	string filename;
-	vector<string> errors;
+	string filepath;
+	vector<pair<int,string>> errors;
 	int returncode;
 
 	Module* module;
@@ -140,8 +140,8 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	CodeContext(string& filename)
-	: filename(filename), returncode(0), module(new Module(filename, getGlobalContext())),
+	CodeContext(string& filepath)
+	: filepath(filepath), returncode(0), module(new Module(filepath, getGlobalContext())),
 	typeManager(module)
 	{
 	}
@@ -171,9 +171,9 @@ public:
 		return currFunc;
 	}
 
-	void addError(string error)
+	void addError(string error, int line = 0)
 	{
-		errors.push_back(error);
+		errors.push_back({line, error});
 	}
 
 	BasicBlock* currBlock() const

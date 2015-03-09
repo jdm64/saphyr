@@ -23,6 +23,6 @@ int func()
 
 ========
 
-error: switch statement has more than one default
-error: switch case values are not unique
+Switch.syp: switch statement has more than one default
+Switch.syp: switch case values are not unique
 found 2 errors

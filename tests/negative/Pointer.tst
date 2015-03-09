@@ -28,11 +28,11 @@ void func3()
 
 ========
 
-error: variable a can not be dereferenced
-error: variable q not declared
-error: can't cast value to pointer type
-error: pointer arithmetic only valid using ++/-- operators
-error: can't perform operation with two pointers
-error: can not cast pointer to vec type
-error: can't cast pointer to numeric type
+Pointer.syp: variable a can not be dereferenced
+Pointer.syp: variable q not declared
+Pointer.syp: can't cast value to pointer type
+Pointer.syp: pointer arithmetic only valid using ++/-- operators
+Pointer.syp: can't perform operation with two pointers
+Pointer.syp: can not cast pointer to vec type
+Pointer.syp: can't cast pointer to numeric type
 found 7 errors

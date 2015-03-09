@@ -23,10 +23,10 @@ void func3()
 
 ========
 
-error: function type for func1 doesn't match definition
-error: symbol notdefined not defined
-error: function func2 declared non-void, but void return found
-error: argument count for func2 function invalid, 1 arguments given, but 0 required.
-error: function func3 declared void, but non-void return found
-error: function func3 already declared
+FunctionReturn.syp: function type for func1 doesn't match definition
+FunctionReturn.syp: symbol notdefined not defined
+FunctionReturn.syp: function func2 declared non-void, but void return found
+FunctionReturn.syp: argument count for func2 function invalid, 1 arguments given, but 0 required.
+FunctionReturn.syp: function func3 declared void, but non-void return found
+FunctionReturn.syp: function func3 already declared
 found 6 errors

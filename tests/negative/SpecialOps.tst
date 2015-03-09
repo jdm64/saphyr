@@ -16,8 +16,8 @@ void func()
 
 ========
 
-error: return types of ternary must match
-error: return types of null coalescing operator must match
-error: size of void is invalid
-error: STR is ambigious, both a type and a variable
+SpecialOps.syp: return types of ternary must match
+SpecialOps.syp: return types of null coalescing operator must match
+SpecialOps.syp: size of void is invalid
+SpecialOps.syp: STR is ambigious, both a type and a variable
 found 4 errors
