@@ -157,8 +157,11 @@ SType* TypeManager::getVec(SType* vecType, int64_t size)
 SType* TypeManager::getPointer(SType* ptrType)
 {
 	STypePtr &item = ptrMap[ptrType];
-	if (!item.get())
-		item = smart_stype(SType::POINTER | SType::UNSIGNED, PointerType::getUnqual(*ptrType), 0, ptrType);
+	if (!item.get()) {
+		// pointer to void must be i8*
+		auto llptr = PointerType::getUnqual(*(ptrType->isVoid()? int8Ty.get() : ptrType));
+		item = smart_stype(SType::POINTER | SType::UNSIGNED, llptr, 0, ptrType);
+	}
 	return item.get();
 }
 

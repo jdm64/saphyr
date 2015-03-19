@@ -57,6 +57,9 @@ void Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
 			// a new one using the right type
 			value = RValue::getNullPtr(context, type);
 			return;
+		} else if (type->subType()->isVoid()) {
+			value = RValue(new BitCastInst(value, *type, "", context), type);
+			return;
 		}
 		context.addError("can't cast value to pointer type");
 		return;

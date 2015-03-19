@@ -273,8 +273,8 @@ RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnio
 		return RValue();
 	}
 
-	auto ptr = PointerType::get(*item, 0);
-	auto castEl = new BitCastInst(baseValue, ptr, "", context);
+	auto ptr = SType::getPointer(context, item);
+	auto castEl = new BitCastInst(baseValue, *ptr, "", context);
 	return RValue(castEl, item);
 }
 
