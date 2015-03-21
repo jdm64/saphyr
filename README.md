@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jdm64/saphyr.svg)](https://travis-ci.org/jdm64/saphyr)
+
 # Saphyr Compiler #
 -------------------
 
