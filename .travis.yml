@@ -6,6 +6,6 @@ compiler:
 
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install flexc++ bisonc++ llvm-dev
+ - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev
 
 script: make && make tests
