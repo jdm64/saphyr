@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.org/jdm64/saphyr.svg)](https://travis-ci.org/jdm64/saphyr)
-
-# Saphyr Compiler #
+# Saphyr Compiler [![Build Status](https://travis-ci.org/jdm64/saphyr.svg)](https://travis-ci.org/jdm64/saphyr) [![Scan Status](https://scan.coverity.com/projects/4591/badge.svg)](https://scan.coverity.com/projects/4591)#
 -------------------
 
 A C-Like compiler using LLVM as a backend.
