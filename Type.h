@@ -198,6 +198,11 @@ public:
 	{
 		return isSequence()? subtype->getScalar() : this;
 	}
+
+	virtual ~SType()
+	{
+		// nothing to do
+	}
 };
 
 class SUserType : public SType
