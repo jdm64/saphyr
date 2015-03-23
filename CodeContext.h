@@ -286,7 +286,7 @@ public:
 		return RValue::getZero(*this, typeManager.getInt(32));
 	}
 
-	void genCode(NStatementList stms);
+	void genCode(const NStatementList &stms);
 
 	int returnCode() const
 	{

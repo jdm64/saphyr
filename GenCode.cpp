@@ -32,7 +32,7 @@
 
 NStatementList* programBlock;
 
-void CodeContext::genCode(NStatementList stms)
+void CodeContext::genCode(const NStatementList &stms)
 {
 	stms.genCode(*this);
 
