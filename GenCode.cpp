@@ -32,6 +32,27 @@
 
 NStatementList* programBlock;
 
+bool validModule(const Module &module)
+{
+#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
+	ostringstream buff;
+	raw_os_ostream out(buff);
+	if (verifyModule(module, &out)) {
+		cout << "compiler error: broken module" << endl << endl
+			<< buff.str() << endl;
+		return true;
+	}
+#else
+	string err;
+	if (verifyModule(module, ReturnStatusAction, &err)) {
+		cout << "compiler error: broken module" << endl << endl
+			<< err << endl;
+		return true;
+	}
+#endif
+	return false;
+}
+
 void CodeContext::genCode(const NStatementList &stms)
 {
 	stms.genCode(*this);
@@ -53,14 +74,8 @@ void CodeContext::genCode(const NStatementList &stms)
 		return;
 	}
 
-	ostringstream buff;
-	raw_os_ostream out(buff);
-	if (verifyModule(*module, &out)) {
-		returncode = 3;
-		cout << "compiler error: broken module" << endl << endl
-			<< buff.str() << endl;
+	if ((returncode = validModule(*module)))
 		return;
-	}
 
 	fstream file(filepath.substr(0, filepath.rfind('.')) + ".ll", fstream::out);
 	raw_os_ostream stream(file);
