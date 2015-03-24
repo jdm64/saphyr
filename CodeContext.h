@@ -281,11 +281,6 @@ public:
 		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
 	}
 
-	RValue errValue()
-	{
-		return RValue::getZero(*this, typeManager.getInt(32));
-	}
-
 	void genCode(const NStatementList &stms);
 
 	int returnCode() const

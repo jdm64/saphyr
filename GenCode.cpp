@@ -192,7 +192,7 @@ SFunctionType* NFuncPointerType::getType(CodeContext& context, NDataType* retTyp
 RValue NVariable::genValue(CodeContext& context, RValue var)
 {
 	if (!var)
-		return context.errValue();
+		return var;
 
 	auto type = var.stype();
 	if (type->isFunction())
@@ -985,7 +985,7 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 		return Inst::BinaryOp('^', RValue::getAllOne(context, type), unaryExp, context);
 	default:
 		context.addError("invalid unary operator " + to_string(oper));
-		return context.errValue();
+		return RValue();
 	}
 }
 
@@ -994,7 +994,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	auto sym = context.loadSymbol(name);
 	if (!sym) {
 		context.addError("symbol " + *name + " not defined");
-		return context.errValue();
+		return sym;
 	}
 	auto deSym = Inst::Deref(context, sym, true);
 	if (!deSym.isFunction()) {
@@ -1008,7 +1008,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	if (argCount != paramCount) {
 		context.addError("argument count for " + func.name().str() + " function invalid, "
 			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.");
-		return context.errValue();
+		return RValue();
 	}
 	vector<Value*> exp_list;
 	int i = 0;
