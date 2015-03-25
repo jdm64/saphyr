@@ -1,0 +1,35 @@
+
+int foo()
+{
+	int a = 0;
+
+	loop {
+		if (a > 10)
+			break;
+		a++;
+	}
+	return a;
+}
+
+========
+
+define i32 @foo() {
+  %a = alloca i32
+  store i32 0, i32* %a
+  br label %1
+
+; <label>:1                                       ; preds = %4, %0
+  %2 = load i32* %a
+  %3 = icmp sgt i32 %2, 10
+  br i1 %3, label %7, label %4
+
+; <label>:4                                       ; preds = %1
+  %5 = load i32* %a
+  %6 = add i32 %5, 1
+  store i32 %6, i32* %a
+  br label %1
+
+; <label>:7                                       ; preds = %1
+  %8 = load i32* %a
+  ret i32 %8
+}

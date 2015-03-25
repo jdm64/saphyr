@@ -544,6 +544,23 @@ void NReturnStatement::genCode(CodeContext& context)
 	context.pushBlock(context.createBlock());
 }
 
+void NLoopStatement::genCode(CodeContext& context)
+{
+	auto bodyBlock = context.createContinueBlock();
+	auto endBlock = context.createBreakBlock();
+
+	context.pushLocalTable();
+
+	BranchInst::Create(bodyBlock, context);
+	context.pushBlock(bodyBlock);
+	body->genCode(context);
+	BranchInst::Create(bodyBlock, context);
+
+	context.pushBlock(endBlock);
+	context.popLocalTable();
+	context.popLoopBranchBlocks();
+}
+
 void NWhileStatement::genCode(CodeContext& context)
 {
 	auto condBlock = context.createContinueBlock();

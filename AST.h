@@ -832,6 +832,15 @@ public:
 	}
 };
 
+class NLoopStatement : public NConditionStmt
+{
+public:
+	NLoopStatement(NStatementList* body)
+	: NConditionStmt(nullptr, body) {}
+
+	void genCode(CodeContext& context);
+};
+
 class NWhileStatement : public NConditionStmt
 {
 	bool isDoWhile;

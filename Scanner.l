@@ -75,6 +75,7 @@ enum		{ return ParserBase::TT_ENUM; }
 for		{ return ParserBase::TT_FOR; }
 goto		{ return ParserBase::TT_GOTO; }
 if		{ return ParserBase::TT_IF; }
+loop		{ return ParserBase::TT_LOOP; }
 new		{ return ParserBase::TT_NEW; }
 redo		{ return ParserBase::TT_REDO; }
 return		{ return ParserBase::TT_RETURN; }
