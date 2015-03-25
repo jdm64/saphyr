@@ -8,6 +8,6 @@ before_install:
  - sudo cp /etc/apt/sources.list /etc/apt/sources.list.d/trusty.list
  - sudo sed -i 's/precise/trusty/g' /etc/apt/sources.list.d/trusty.list
  - sudo apt-get update -qq
- - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev g++ clang python3
+ - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev python3
 
 script: make && make tests
