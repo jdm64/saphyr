@@ -765,7 +765,9 @@ void NDeleteStatement::genCode(CodeContext& context)
 	}
 
 	auto ptr = variable->genValue(context);
-	if (!ptr.stype()->isPointer()) {
+	if (!ptr) {
+		return;
+	} else if (!ptr.stype()->isPointer()) {
 		context.addError("delete requires pointer type");
 		return;
 	}
