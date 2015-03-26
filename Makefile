@@ -16,7 +16,6 @@ compiler : $(objs)
 parser.cpp : Parser.y
 	rm -f parser*
 	bisonc++ -V Parser.y
-	sed -i -e '/define ParserBase_h_included/a\#include "AST.h"' parserbase.h
 	sed -i -e '/Scanner d_scanner;/c\	Scanner* d_scanner;' parser.h
 	sed -i -e '/public:/a\	Parser(string filename){ d_scanner = new Scanner(filename, "-"); d_scanner->setSval(&d_val__); }' parser.h
 	sed -i -e '/return d_scanner.lex();/c\	return d_scanner->lex();' parser.ih

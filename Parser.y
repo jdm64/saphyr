@@ -1,3 +1,4 @@
+%baseclass-preinclude AST.h
 %scanner scanner.h
 %filenames parser
 %parsefun-source parser.cpp
