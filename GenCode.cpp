@@ -126,13 +126,15 @@ SType* NBaseType::getType(CodeContext& context)
 
 SType* NArrayType::getType(CodeContext& context)
 {
+	auto btype = baseType->getType(context);
+	if (!btype)
+		return nullptr;
 	auto arrSize = size->getIntVal(context).getSExtValue();
-	if (arrSize < 0) {
-		context.addError("Array size must be non-negative");
+	if (arrSize <= 0) {
+		context.addError("Array size must be positive");
 		return nullptr;
 	}
-	auto btype = baseType->getType(context);
-	return btype? SType::getArray(context, btype, arrSize) : nullptr;
+	return SType::getArray(context, btype, arrSize);
 }
 
 SType* NVecType::getType(CodeContext& context)
