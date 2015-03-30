@@ -359,7 +359,7 @@ class NArrayType : public NDataType
 	NIntConst* size;
 
 public:
-	NArrayType(NIntConst* size, NDataType* baseType)
+	NArrayType(NDataType* baseType, NIntConst* size = nullptr)
 	: baseType(baseType), size(size) {}
 
 	SType* getType(CodeContext& context);

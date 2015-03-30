@@ -127,12 +127,16 @@ SType* NArrayType::getType(CodeContext& context)
 	auto btype = baseType->getType(context);
 	if (!btype)
 		return nullptr;
-	auto arrSize = size->getIntVal(context).getSExtValue();
-	if (arrSize <= 0) {
-		context.addError("Array size must be positive");
-		return nullptr;
+	if (size) {
+		auto arrSize = size->getIntVal(context).getSExtValue();
+		if (arrSize <= 0) {
+			context.addError("Array size must be positive");
+			return nullptr;
+		}
+		return SType::getArray(context, btype, arrSize);
+	} else {
+		return SType::getArray(context, btype, 0);
 	}
-	return SType::getArray(context, btype, arrSize);
 }
 
 SType* NVecType::getType(CodeContext& context)
@@ -174,7 +178,7 @@ SFunctionType* NFuncPointerType::getType(CodeContext& context, NDataType* retTyp
 	vector<SType*> args;
 	for (auto item : *params) {
 		auto param = item->getType(context);
-		if (param) {
+		if (param && SType::validate(context, param)) {
 			args.push_back(param);
 		} else {
 			context.addError("function parameter type not resolved");
@@ -345,6 +349,8 @@ void NVariableDecl::genCode(CodeContext& context)
 			return;
 		}
 		varType = initValue.stype();
+	} else if (!SType::validate(context, varType)) {
+		return;
 	}
 
 	auto name = getName();
@@ -377,7 +383,10 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 			return;
 		}
 		varType = initValue.stype();
+	} else if (!SType::validate(context, varType)) {
+		return;
 	}
+
 	if (initValue) {
 		if (initValue.isNullPtr()) {
 			Inst::CastTo(context, initValue, varType);

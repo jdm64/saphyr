@@ -72,6 +72,14 @@ public:
 		return getInt(context, 32);
 	}
 
+	/**
+	 * used to the validity of types that can't be checked as its build.
+	 * checks include:
+	 *
+	 * zero-size arrays on the stack
+	 */
+	static bool validate(CodeContext& context, SType* type);
+
 	static uint64_t allocSize(CodeContext& context, SType* type);
 
 	static SType* numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);

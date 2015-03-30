@@ -388,7 +388,11 @@ explicit_data_type
 	: base_type
 	| '[' integer_constant ']' data_type
 	{
-		$$ = new NArrayType($2, $4);
+		$$ = new NArrayType($4, $2);
+	}
+	| '[' ']' data_type
+	{
+		$$ = new NArrayType($3);
 	}
 	| TT_VEC '<' integer_constant ',' base_type '>'
 	{

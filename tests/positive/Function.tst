@@ -18,6 +18,12 @@ double calcTime(double a, double b)
 	return s * t + a + b;
 }
 
+int get(@[]int arr, int x)
+{
+	@[]int b = arr;
+	return b[x];
+}
+
 int main()
 {
 	run();
@@ -71,6 +77,22 @@ define void @run() {
   %b = alloca double
   store double %9, double* %b
   ret void
+}
+
+define i32 @get([0 x i32]* %arr, i32 %x) {
+  %1 = alloca [0 x i32]*
+  store [0 x i32]* %arr, [0 x i32]** %1
+  %2 = alloca i32
+  store i32 %x, i32* %2
+  %3 = load [0 x i32]** %1
+  %b = alloca [0 x i32]*
+  store [0 x i32]* %3, [0 x i32]** %b
+  %4 = load i32* %2
+  %5 = load [0 x i32]** %b
+  %6 = sext i32 %4 to i64
+  %7 = getelementptr [0 x i32]* %5, i32 0, i64 %6
+  %8 = load i32* %7
+  ret i32 %8
 }
 
 define i32 @main() {
