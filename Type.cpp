@@ -22,6 +22,12 @@
 #define smart_unionTy(type, structure, size) unique_ptr<SUserType>(new SUnionType(type, structure, size))
 #define smart_enumTy(type, structure) unique_ptr<SUserType>(new SEnumType(type, structure))
 
+void SType::dump() const
+{
+	print(dbgs());
+	dbgs() << '\n';
+}
+
 SType* SType::getVoid(CodeContext& context)
 {
 	return context.typeManager.getVoid();

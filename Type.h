@@ -20,6 +20,8 @@
 #include <map>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/ADT/APSInt.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Debug.h>
 
 // forward declaration
 class CodeContext;
@@ -199,6 +201,43 @@ public:
 		return isSequence()? subtype->getScalar() : this;
 	}
 
+	virtual void print(raw_ostream &os) const
+	{
+		if (isArray()) {
+			os << "[" << size() << "]";
+			subtype->print(os);
+		} else if (isPointer()) {
+			os << "@";
+			subtype->print(os);
+		} else if (isVec()) {
+			os << "vec<" << size() << ",";
+			subtype->print(os);
+			os << ">";
+		} else if (isDouble()) {
+			os << "double:";
+			ltype->print(os);
+		} else if (isFloating()) {
+			os << "float:";
+			ltype->print(os);
+		} else if (isBool()) {
+			os << "bool:";
+			ltype->print(os);
+		} else if (isVoid()) {
+			os << "void:";
+			ltype->print(os);
+		} else if (isInteger()) {
+			if (isUnsigned())
+				os << "u";
+			os << "int" << size() << ":";
+			ltype->print(os);
+		} else {
+			os << "err:" << tclass << ":";
+			ltype->print(os);
+		}
+	}
+
+	void dump() const;
+
 	virtual ~SType()
 	{
 		// nothing to do
@@ -244,6 +283,17 @@ public:
 		auto iter = items.find(*name);
 		return iter != items.end()? &iter->second : nullptr;
 	}
+
+	void print(raw_ostream &os) const
+	{
+		os << "S:{|";
+		for (auto i : items) {
+			os << i.first << "=" << i.second.first << ":";
+			i.second.second->print(os);
+			os << "|";
+		}
+		os << "}";
+	}
 };
 
 class SUnionType : public SUserType
@@ -264,6 +314,17 @@ public:
 	{
 		auto iter = items.find(*name);
 		return iter != items.end()? iter->second : nullptr;
+	}
+
+	void print(raw_ostream &os) const
+	{
+		os << "U:{|";
+		for (auto i : items) {
+			os << i.first << "=";
+			i.second->print(os);
+			os << "|";
+		}
+		os << "}";
 	}
 };
 
@@ -288,6 +349,15 @@ public:
 	{
 		auto iter = items.find(*name);
 		return iter != items.end()? &iter->second : nullptr;
+	}
+
+	void print(raw_ostream &os) const
+	{
+		os << "E:{|";
+		for (auto i : items) {
+			os << i.first << "=" << i.second << "|";
+		}
+		os << "}";
 	}
 };
 
@@ -326,6 +396,17 @@ public:
 	SType* getParam(int index) const
 	{
 		return params[index];
+	}
+
+	void print(raw_ostream &os) const
+	{
+		os << "(|";
+		for (auto i : params) {
+			i->print(os);
+			os << "|";
+		}
+		os << ")";
+		returnTy()->print(os);
 	}
 };
 
