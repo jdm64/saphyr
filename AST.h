@@ -112,7 +112,6 @@ public:
 			item->genCode(context);
 	}
 };
-extern NStatementList* programBlock;
 
 class NExpression : public NStatement
 {

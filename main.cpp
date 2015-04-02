@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	CodeContext context(file);
-	context.genCode(*programBlock);
+	context.genCode(parser.getRoot());
 
 	return context.returnCode();
 }

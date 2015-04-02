@@ -281,7 +281,7 @@ public:
 		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
 	}
 
-	void genCode(const NStatementList &stms);
+	void genCode(const NStatementList* stms);
 
 	int returnCode() const
 	{

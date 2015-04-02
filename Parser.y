@@ -84,7 +84,7 @@
 file
 	: declaration_list
 	{
-		programBlock = $1;
+		root = unique_ptr<NStatementList>($1);
 	}
 	;
 declaration_list

@@ -30,8 +30,6 @@
 #include "Instructions.h"
 #include "Pass.h"
 
-NStatementList* programBlock;
-
 bool validModule(const Module &module)
 {
 #if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
@@ -53,9 +51,9 @@ bool validModule(const Module &module)
 	return false;
 }
 
-void CodeContext::genCode(const NStatementList &stms)
+void CodeContext::genCode(const NStatementList *stms)
 {
-	stms.genCode(*this);
+	stms->genCode(*this);
 
 	PassManager clean;
 	clean.add(new SimpleBlockClean());
