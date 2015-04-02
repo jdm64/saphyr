@@ -1,8 +1,10 @@
 language: cpp
 
-compiler:
- - clang
- - gcc
+matrix:
+   include:
+    - compiler: clang
+    - compiler: gcc
+      env: COVERAGE=true
 
 before_install:
  - sudo cp /etc/apt/sources.list /etc/apt/sources.list.d/trusty.list
@@ -10,5 +12,9 @@ before_install:
  - export CXX_PKG=$(if [[ $CXX == "g++" ]]; then echo "g++"; fi)
  - sudo apt-get update -qq
  - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev $CXX_PKG python3
+ - if [[ $CXX == "g++" ]]; then sudo pip install cpp-coveralls; fi
 
 script: make && make tests
+
+after_success:
+ - coveralls -t $(COV_TOKEN)
