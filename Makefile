@@ -13,13 +13,14 @@ endif
 # set coverage only if using g++
 ifeq ($(COVERAGE),true)
 ifeq ($(CXX),g++)
-	COV = coverage
+	COV_CXX = --coverage
+	COV_LD  = -coverage
 endif
 endif
 
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
-CXXFLAGS = -std=c++11 `llvm-config --cxxflags` $(O_LEVEL) --$(COV) $(WARNINGS) -fexceptions -D__STRICT_ANSI__
-LDFLAGS = `llvm-config --ldflags` -lLLVM-`llvm-config --version` -$(COV)
+CXXFLAGS = -std=c++11 `llvm-config --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -fexceptions -D__STRICT_ANSI__
+LDFLAGS = `llvm-config --ldflags` -lLLVM-`llvm-config --version` $(COV_LD)
 TARGET = saphyr
 
 objs = scanner.o parser.o Type.o Value.o Function.o Instructions.o GenCode.o Pass.o main.o
