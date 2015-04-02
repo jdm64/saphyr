@@ -17,4 +17,4 @@ before_install:
 script: make && make tests
 
 after_success:
- - coveralls --gcov-options '\-lp' -t $COV_TOKEN
+ - coveralls --gcov-options '\-lp' -E "scanner*" -E "parser*" -t $COV_TOKEN
