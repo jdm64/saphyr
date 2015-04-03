@@ -17,5 +17,4 @@ before_install:
 script: make tests
 
 after_success:
- - make frontend-clean
- - coveralls --gcov-options '\-lp' -t $COV_TOKEN
+ - coveralls --gcov-options '\-lp' -t $COV_TOKEN -e scanner.cpp -e scanner.h -e scannerbase.h -e parser.cpp -e parser.h -e parser.ih -e parserbase.h
