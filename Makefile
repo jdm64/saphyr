@@ -48,8 +48,10 @@ scanner.cpp : Scanner.l parser.cpp
 clean :
 	rm -f $(TARGET) *.o *~
 
-fullclean : clean
+frontend-clean :
 	rm -f parser* scanner*
+
+fullclean : clean frontend-clean
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
