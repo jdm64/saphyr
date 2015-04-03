@@ -14,7 +14,7 @@ before_install:
  - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev $CXX_PKG python3
  - if [[ $CXX == "g++" ]]; then sudo pip install cpp-coveralls; fi
 
-script: make && make tests
+script: make tests
 
 after_success:
  - make frontend-clean
