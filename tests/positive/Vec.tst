@@ -20,7 +20,7 @@ void vecCasting()
 	vec<3,int16> b;
 	vec<3,bool> c;
 
-	c = a + b;
+	c = 23 + a + b;
 }
 
 int vecEquality()
@@ -81,11 +81,15 @@ define void @vecCasting() {
   %b = alloca <3 x i16>
   %c = alloca <3 x i1>
   %4 = load <3 x i8>* %a
-  %5 = load <3 x i16>* %b
-  %6 = sext <3 x i8> %4 to <3 x i16>
-  %7 = add <3 x i16> %6, %5
-  %8 = icmp ne <3 x i16> %7, zeroinitializer
-  store <3 x i1> %8, <3 x i1>* %c
+  %5 = trunc i32 23 to i8
+  %6 = insertelement <1 x i8> undef, i8 %5, i32 0
+  %7 = shufflevector <1 x i8> %6, <1 x i8> undef, <3 x i32> zeroinitializer
+  %8 = add <3 x i8> %7, %4
+  %9 = load <3 x i16>* %b
+  %10 = sext <3 x i8> %8 to <3 x i16>
+  %11 = add <3 x i16> %10, %9
+  %12 = icmp ne <3 x i16> %11, zeroinitializer
+  store <3 x i1> %12, <3 x i1>* %c
   ret void
 }
 

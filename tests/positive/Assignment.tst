@@ -13,6 +13,7 @@ void two()
 
 	f *= 10.3;
 	f /= 3;
+	f %= 2;
 }
 
 void three()
@@ -48,6 +49,10 @@ define void @two() {
   %6 = sitofp i32 3 to float
   %7 = fdiv float %5, %6
   store float %7, float* %f
+  %8 = load float* %f
+  %9 = sitofp i32 2 to float
+  %10 = frem float %8, %9
+  store float %10, float* %f
   ret void
 }
 

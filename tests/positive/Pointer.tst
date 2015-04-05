@@ -35,6 +35,12 @@ int other()
 	return p;
 }
 
+int main()
+{
+	@void p = getPtr();
+	return 0;
+}
+
 ========
 
 define void @test() {
@@ -94,4 +100,12 @@ define i32* @getPtr() {
   store i32 %5, i32* %4
   %6 = load i32** %p
   ret i32* %6
+}
+
+define i32 @main() {
+  %1 = call i32* @getPtr()
+  %p = alloca i8*
+  %2 = bitcast i32* %1 to i8*
+  store i8* %2, i8** %p
+  ret i32 0
 }

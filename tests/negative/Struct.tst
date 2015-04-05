@@ -32,6 +32,7 @@ void func2()
 
 	auto z = x + y;
 	z = x + w;
+	k.e++;
 }
 
 ========
@@ -47,4 +48,5 @@ Struct.syp: k doesn't have member n
 Struct.syp: can not perform operation on composite types
 Struct.syp: can not cast complex types
 Struct.syp: can not perform operation on composite types
-found 11 errors
+Struct.syp: variable k not declared
+found 12 errors

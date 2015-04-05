@@ -1052,6 +1052,8 @@ RValue NIncrement::genValue(CodeContext& context)
 {
 	auto varPtr = variable->loadVar(context);
 	auto varVal = variable->genValue(context, varPtr);
+	if (!varPtr || !varVal)
+		return RValue();
 	auto incType = varVal.stype()->isPointer()? SType::getInt(context, 32) : varVal.stype();
 
 	auto result = Inst::BinaryOp(type, varVal, RValue::getNumVal(context, incType, type == ParserBase::TT_INC? 1:-1), context);
