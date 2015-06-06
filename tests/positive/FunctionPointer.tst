@@ -4,14 +4,20 @@ int func(int a)
 	return a + 1;
 }
 
+int complexFunc(@int a, int b)
+{
+	return a@ + b;
+}
+
 int func2()
 {
 	@(int)int a = func;
 	@(int)int b = null;
+	@(@int,int)int c = complexFunc;
 
 	b = func$;
 
-	return a(5) + b(4);
+	return c(a(5)$, b(4));
 }
 
 int main()
@@ -37,18 +43,35 @@ define i32 @func(i32 %a) {
   ret i32 %3
 }
 
+define i32 @complexFunc(i32* %a, i32 %b) {
+  %1 = alloca i32*
+  store i32* %a, i32** %1
+  %2 = alloca i32
+  store i32 %b, i32* %2
+  %3 = load i32** %1
+  %4 = load i32* %3
+  %5 = load i32* %2
+  %6 = add i32 %4, %5
+  ret i32 %6
+}
+
 define i32 @func2() {
   %a = alloca i32 (i32)*
   store i32 (i32)* @func, i32 (i32)** %a
   %b = alloca i32 (i32)*
   store i32 (i32)* null, i32 (i32)** %b
+  %c = alloca i32 (i32*, i32)*
+  store i32 (i32*, i32)* @complexFunc, i32 (i32*, i32)** %c
   store i32 (i32)* @func, i32 (i32)** %b
-  %1 = load i32 (i32)** %a
-  %2 = call i32 %1(i32 5)
-  %3 = load i32 (i32)** %b
-  %4 = call i32 %3(i32 4)
-  %5 = add i32 %2, %4
-  ret i32 %5
+  %1 = load i32 (i32*, i32)** %c
+  %2 = load i32 (i32)** %a
+  %3 = call i32 %2(i32 5)
+  %4 = alloca i32
+  store i32 %3, i32* %4
+  %5 = load i32 (i32)** %b
+  %6 = call i32 %5(i32 4)
+  %7 = call i32 %1(i32* %4, i32 %6)
+  ret i32 %7
 }
 
 define i32 @main() {

@@ -27,6 +27,13 @@ void func4()
 	}
 }
 
+void func5()
+{
+	int i = 0;
+	while (i++ < 5)
+		; // empty loop
+}
+
 int main()
 {
 	int x;
@@ -113,6 +120,22 @@ define void @func4() {
   br i1 %4, label %5, label %1
 
 ; <label>:5                                       ; preds = %2, %1
+  ret void
+}
+
+define void @func5() {
+  %i = alloca i32
+  store i32 0, i32* %i
+  br label %1
+
+; <label>:1                                       ; preds = %1, %0
+  %2 = load i32* %i
+  %3 = add i32 %2, 1
+  store i32 %3, i32* %i
+  %4 = icmp slt i32 %2, 5
+  br i1 %4, label %1, label %5
+
+; <label>:5                                       ; preds = %1
   ret void
 }
 

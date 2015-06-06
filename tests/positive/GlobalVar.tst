@@ -5,7 +5,7 @@ struct MyStruct
 	[4]double c;
 }
 
-int global = 234;
+int global = 234, g2 = 2;
 [7]int gArr;
 MyStruct mStr;
 
@@ -28,6 +28,7 @@ int main()
 %MyStruct = type { i32, i32, [4 x double] }
 
 @global = global i32 234
+@g2 = global i32 2
 @gArr = external global [7 x i32]
 @mStr = external global %MyStruct
 
