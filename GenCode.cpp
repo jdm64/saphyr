@@ -378,9 +378,13 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 		}
 		varType = initValue.stype();
 	}
-	if (initValue && varType != initValue.stype()) {
-		context.addError("global variable initialization requires exact type matching");
-		return;
+	if (initValue) {
+		if (initValue.isNullPtr()) {
+			Inst::CastTo(context, initValue, varType);
+		} else if (varType != initValue.stype()) {
+			context.addError("global variable initialization requires exact type matching");
+			return;
+		}
 	}
 
 	auto name = getName();

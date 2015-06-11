@@ -7,6 +7,7 @@ struct MyStruct
 
 int global = 234, g2 = 2;
 [7]int gArr;
+@int p = null;
 MyStruct mStr;
 
 void run()
@@ -30,6 +31,7 @@ int main()
 @global = global i32 234
 @g2 = global i32 2
 @gArr = external global [7 x i32]
+@p = global i32* null
 @mStr = external global %MyStruct
 
 define void @run() {
