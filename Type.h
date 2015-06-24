@@ -46,9 +46,20 @@ protected:
 	: tclass(typeClass), ltype(type), tsize(size), subtype(subtype) {}
 
 public:
-	enum { VOID = 0x1, INTEGER = 0x2, UNSIGNED = 0x4, FLOATING = 0x8, DOUBLE = 0x10,
-		ARRAY = 0x20, FUNCTION = 0x40, STRUCT = 0x80, VEC = 0x100, UNION = 0x200,
-		POINTER = 0x400, ENUM = 0x800 };
+	enum {
+		INTEGER  = 1 << 0,
+		UNSIGNED = 1 << 1,
+		FLOATING = 1 << 2,
+		DOUBLE   = 1 << 3,
+		POINTER  = 1 << 4,
+		VEC      = 1 << 5,
+		ARRAY    = 1 << 6,
+		ENUM     = 1 << 7,
+		STRUCT   = 1 << 8,
+		UNION    = 1 << 9,
+		FUNCTION = 1 << 10,
+		VOID     = 1 << 11,
+	};
 
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
