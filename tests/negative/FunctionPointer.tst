@@ -15,11 +15,9 @@ int main()
 
 ========
 
-FunctionPointer.syp: function parameter type not resolved
-FunctionPointer.syp: function return type not resolved
+FunctionPointer.syp: parameter can not be auto type
+FunctionPointer.syp: function return type can not be auto
 FunctionPointer.syp: symbol f not defined
-FunctionPointer.syp: function return type not resolved
-FunctionPointer.syp: auto variable type requires initialization
-FunctionPointer.syp: function parameter type not resolved
-FunctionPointer.syp: auto variable type requires initialization
-found 7 errors
+FunctionPointer.syp: function return type can not be auto
+FunctionPointer.syp: parameter can not be auto type
+found 5 errors

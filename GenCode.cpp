@@ -118,15 +118,19 @@ SType* NBaseType::getType(CodeContext& context)
 		return SType::getFloat(context, true);
 	case ParserBase::TT_AUTO:
 	default:
-		return nullptr;
+		return SType::getAuto(context);
 	}
 }
 
 SType* NArrayType::getType(CodeContext& context)
 {
 	auto btype = baseType->getType(context);
-	if (!btype)
+	if (!btype) {
 		return nullptr;
+	} else if (btype->isAuto()) {
+		context.addError("can't create array of auto types");
+		return nullptr;
+	}
 	if (size) {
 		auto arrSize = size->getIntVal(context).getSExtValue();
 		if (arrSize <= 0) {
@@ -148,6 +152,8 @@ SType* NVecType::getType(CodeContext& context)
 	}
 	auto btype = baseType->getType(context);
 	if (!btype) {
+		return nullptr;
+	} else if (btype->isAuto()) {
 		context.addError("vec type can not be auto");
 		return nullptr;
 	}
@@ -169,7 +175,13 @@ SType* NUserType::getType(CodeContext& context)
 SType* NPointerType::getType(CodeContext& context)
 {
 	auto btype = baseType->getType(context);
-	return btype? SType::getPointer(context, btype) : nullptr;
+	if (!btype) {
+		return nullptr;
+	} else if (btype->isAuto()) {
+		context.addError("can't create pointer to auto type");
+		return nullptr;
+	}
+	return SType::getPointer(context, btype);
 }
 
 SFunctionType* NFuncPointerType::getType(CodeContext& context, NDataType* retType, NDataTypeList* params)
@@ -178,17 +190,23 @@ SFunctionType* NFuncPointerType::getType(CodeContext& context, NDataType* retTyp
 	vector<SType*> args;
 	for (auto item : *params) {
 		auto param = item->getType(context);
-		if (param && SType::validate(context, param)) {
-			args.push_back(param);
-		} else {
-			context.addError("function parameter type not resolved");
+		if (!param) {
 			valid = false;
+		} else if (param->isAuto()) {
+			context.addError("parameter can not be auto type");
+			valid = false;
+		} else if (SType::validate(context, param)) {
+			args.push_back(param);
 		}
 	}
 
 	auto returnType = retType->getType(context);
-	if (!returnType)
-		context.addError("function return type not resolved");
+	if (!returnType) {
+		return nullptr;
+	} else if (returnType->isAuto()) {
+		context.addError("function return type can not be auto");
+		return nullptr;
+	}
 
 	return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
 }
@@ -343,7 +361,9 @@ void NVariableDecl::genCode(CodeContext& context)
 	auto initValue = initExp? initExp->genValue(context) : RValue();
 	auto varType = type->getType(context);
 
-	if (!varType) { // auto type
+	if (!varType) {
+		return;
+	} else if (varType->isAuto()) {
 		if (!initValue) { // auto type requires initialization
 			context.addError("auto variable type requires initialization");
 			return;
@@ -377,7 +397,9 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 	auto initValue = initExp? initExp->genValue(context) : RValue();
 	auto varType = type->getType(context);
 
-	if (!varType) { // auto type
+	if (!varType) {
+		return;
+	} else if (varType->isAuto()) {
 		if (!initValue) { // auto type requires initialization
 			context.addError("auto variable type requires initialization");
 			return;
@@ -410,6 +432,8 @@ bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector,
 {
 	auto stype = type->getType(context);
 	if (!stype) {
+		return false;
+	} else if (stype->isAuto()) {
 		context.addError("struct members must not have auto type");
 		return false;
 	}
@@ -902,13 +926,24 @@ RValue NNewExpression::genValue(CodeContext& context)
 		return RValue();
 	}
 
+	auto nType = type->getType(context);
+	if (!nType) {
+		return RValue();
+	} else if (nType->isAuto()) {
+		context.addError("can't call new on auto type");
+		return RValue();
+	} else if (nType->isVoid()) {
+		context.addError("can't call new on void type");
+		return RValue();
+	}
+
 	vector<Value*> exp_list;
-	exp_list.push_back(Inst::SizeOf(context, type));
+	exp_list.push_back(Inst::SizeOf(context, nType));
 
 	auto func = static_cast<SFunction&>(funcVal);
 	auto call = CallInst::Create(func, exp_list, "", context);
 	auto ptr = RValue(call, func.returnTy());
-	auto ptrType = SType::getPointer(context, type->getType(context));
+	auto ptrType = SType::getPointer(context, nType);
 
 	return RValue(new BitCastInst(ptr, *ptrType, "", context), ptrType);
 }

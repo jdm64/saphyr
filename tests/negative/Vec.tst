@@ -25,7 +25,5 @@ Vec.syp: can not cast vec type to bool
 Vec.syp: can not cast vec types of different sizes
 Vec.syp: can not cast vec types of different sizes
 Vec.syp: vec size must be greater than 0
-Vec.syp: auto variable type requires initialization
 Vec.syp: vec type can not be auto
-Vec.syp: auto variable type requires initialization
-found 7 errors
+found 5 errors

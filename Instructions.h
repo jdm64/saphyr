@@ -40,8 +40,6 @@ class Inst
 
 	static RValue PointerMath(int type, RValue ptr, RValue val, CodeContext& context);
 
-	static RValue SizeOf(CodeContext& context, SType* type);
-
 public:
 	static void CastTo(CodeContext& context, RValue& value, SType* type, bool upcast = false);
 
@@ -54,6 +52,8 @@ public:
 	static RValue Load(CodeContext& context, RValue value);
 
 	static RValue Deref(CodeContext& context, RValue value, bool recursive = false);
+
+	static RValue SizeOf(CodeContext& context, SType* type);
 
 	static RValue SizeOf(CodeContext& context, NDataType* type);
 

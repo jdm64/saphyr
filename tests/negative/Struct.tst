@@ -42,11 +42,10 @@ Struct.syp: structs don't support variable initialization
 Struct.syp: member name j already declared
 Struct.syp: Good type already declared
 Struct.syp: Nothing type not declared
-Struct.syp: auto variable type requires initialization
 Struct.syp: w is not a struct/union/enum
 Struct.syp: k doesn't have member n
 Struct.syp: can not perform operation on composite types
 Struct.syp: can not cast complex types
 Struct.syp: can not perform operation on composite types
 Struct.syp: variable k not declared
-found 12 errors
+found 11 errors

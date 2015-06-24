@@ -59,6 +59,7 @@ public:
 		UNION    = 1 << 9,
 		FUNCTION = 1 << 10,
 		VOID     = 1 << 11,
+		AUTO     = 1 << 12,
 	};
 
 	static vector<Type*> convertArr(vector<SType*> arr)
@@ -95,6 +96,8 @@ public:
 
 	static SType* numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
 
+	static SType* getAuto(CodeContext& context);
+
 	static SType* getVoid(CodeContext& context);
 
 	static SType* getBool(CodeContext& context);
@@ -119,6 +122,11 @@ public:
 	Type* type() const
 	{
 		return ltype;
+	}
+
+	bool isAuto() const
+	{
+		return tclass & AUTO;
 	}
 
 	bool isVoid() const
@@ -249,6 +257,8 @@ public:
 				os << "u";
 			os << "int" << size() << ":";
 			ltype->print(os);
+		} else if (isAuto()) {
+			os << "auto";
 		} else {
 			os << "err:" << tclass << ":";
 			ltype->print(os);
@@ -438,7 +448,7 @@ class TypeManager
 	DataLayout datalayout;
 
 	// built-in types
-	STypePtr voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
+	STypePtr autoTy, voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
 		uint8Ty, uint16Ty, uint32Ty, uint64Ty;
 
 	// array & vec types
@@ -460,6 +470,11 @@ public:
 	uint64_t allocSize(SType* stype)
 	{
 		return datalayout.getTypeAllocSize(*stype);
+	}
+
+	SType* getAuto() const
+	{
+		return autoTy.get();
 	}
 
 	SType* getVoid() const

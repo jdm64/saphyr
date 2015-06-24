@@ -33,5 +33,6 @@ Variable.syp: variable u already defined
 Variable.syp: can't create a non-pointer to a zero size array
 Variable.syp: variable h not declared
 Variable.syp: can't create a non-pointer to a zero size array
-Variable.syp: function parameter type not resolved
-found 10 errors
+Variable.syp: can't create a non-pointer to a zero size array
+Variable.syp: variable arr not declared
+found 11 errors

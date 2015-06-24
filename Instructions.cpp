@@ -324,6 +324,9 @@ RValue Inst::SizeOf(CodeContext& context, SType* type)
 {
 	if (!type) {
 		return RValue();
+	} else if (type->isAuto()) {
+		context.addError("size of auto is invalid");
+		return RValue();
 	} else if (type->isVoid()) {
 		context.addError("size of void is invalid");
 		return RValue();

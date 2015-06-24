@@ -28,6 +28,11 @@ void SType::dump() const
 	dbgs() << '\n';
 }
 
+SType* SType::getAuto(CodeContext& context)
+{
+	return context.typeManager.getAuto();
+}
+
 SType* SType::getVoid(CodeContext& context)
 {
 	return context.typeManager.getVoid();
@@ -142,6 +147,7 @@ TypeManager::TypeManager(Module* module)
 : datalayout(module)
 {
 	auto &context = module->getContext();
+	autoTy = smart_stype(SType::AUTO, Type::getInt32Ty(context), 0, nullptr);
 	voidTy = smart_stype(SType::VOID, Type::getVoidTy(context), 0, nullptr);
 	boolTy = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt1Ty(context), 1, nullptr);
 	int8Ty = smart_stype(SType::INTEGER, Type::getInt8Ty(context), 8, nullptr);
