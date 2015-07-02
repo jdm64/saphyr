@@ -16,48 +16,14 @@
  */
 #include "LLVM_Defines.h"
 
-#include <set>
-#include <fstream>
-#include <sstream>
-#include <llvm/IR/Constants.h>
-#include <llvm/PassManager.h>
-#include _LLVM_IR_VERIFIER_H
-#include <llvm/Support/FormattedStream.h>
-#include <llvm/Support/raw_os_ostream.h>
-#include _LLVM_IR_PRINTING_PASSES_H
 #include "parserbase.h"
 #include "AST.h"
 #include "Instructions.h"
-#include "Pass.h"
-
-bool validModule(const Module &module)
-{
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
-	ostringstream buff;
-	raw_os_ostream out(buff);
-	if (verifyModule(module, &out)) {
-		cout << "compiler error: broken module" << endl << endl
-			<< buff.str() << endl;
-		return true;
-	}
-#else
-	string err;
-	if (verifyModule(module, ReturnStatusAction, &err)) {
-		cout << "compiler error: broken module" << endl << endl
-			<< err << endl;
-		return true;
-	}
-#endif
-	return false;
-}
+#include "ModuleWriter.h"
 
 void CodeContext::genCode(const NStatementList *stms)
 {
 	stms->genCode(*this);
-
-	PassManager clean;
-	clean.add(new SimpleBlockClean());
-	clean.run(*module);
 
 	if (!errors.empty()) {
 		returncode = 2;
@@ -72,19 +38,9 @@ void CodeContext::genCode(const NStatementList *stms)
 		return;
 	}
 
-	if ((returncode = validModule(*module)))
-		return;
+	ModuleWriter writer(*module, filepath);
 
-	fstream file(filepath.substr(0, filepath.rfind('.')) + ".ll", fstream::out);
-	raw_os_ostream stream(file);
-
-	PassManager pm;
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
-	pm.add(createPrintModulePass(stream));
-#else
-	pm.add(createPrintModulePass(&stream));
-#endif
-	pm.run(*module);
+	returncode = writer.run();
 }
 
 SType* NBaseType::getType(CodeContext& context)

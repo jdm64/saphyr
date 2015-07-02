@@ -23,7 +23,7 @@ CXXFLAGS = -std=c++11 `llvm-config --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS)
 LDFLAGS = `llvm-config --ldflags` -lLLVM-`llvm-config --version` $(COV_LD)
 TARGET = saphyr
 
-objs = scanner.o parser.o Type.o Value.o Function.o Instructions.o GenCode.o Pass.o main.o
+objs = scanner.o parser.o Type.o Value.o Function.o Instructions.o ModuleWriter.o GenCode.o Pass.o main.o
 
 compiler : $(objs)
 	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)
