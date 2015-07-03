@@ -18,7 +18,9 @@
 #ifndef __MODULE_WRITER_H__
 #define __MODULE_WRITER_H__
 
+#include <llvm/PassManager.h>
 #include <llvm/IR/Module.h>
+#include <llvm/Support/ToolOutputFile.h>
 
 using namespace std;
 using namespace llvm;
@@ -29,6 +31,12 @@ class ModuleWriter
 	string filename;
 
 	bool validModule();
+
+	tool_output_file* getOutFile(const string& name);
+
+	void initTarget();
+
+	TargetMachine* getMachine();
 
 public:
 	ModuleWriter(Module &module, string filename)

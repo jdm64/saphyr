@@ -23,10 +23,18 @@
 #include <sstream>
 
 #include <llvm/PassManager.h>
+#include <llvm/ADT/Triple.h>
 #include _LLVM_IR_PRINTING_PASSES_H
 #include _LLVM_IR_VERIFIER_H
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/Host.h>
+#include <llvm/Support/TargetRegistry.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/FileSystem.h>
 #include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
 
 #include "Pass.h"
 
@@ -51,6 +59,40 @@ bool ModuleWriter::validModule()
 	return false;
 }
 
+tool_output_file* ModuleWriter::getOutFile(const string& name)
+{
+	sys::fs::OpenFlags OpenFlags = sys::fs::F_None;
+
+	error_code error;
+	auto outFile = new tool_output_file(name, error, OpenFlags);
+
+	if (error) {
+		delete outFile;
+		cout << "compiler error: error opening file" << endl << error << endl;
+		return nullptr;
+	}
+	return outFile;
+}
+
+void ModuleWriter::initTarget()
+{
+	InitializeAllTargets();
+	InitializeAllTargetMCs();
+	InitializeAllAsmPrinters();
+	InitializeAllAsmParsers();
+}
+
+TargetMachine* ModuleWriter::getMachine()
+{
+	TargetOptions options;
+	string err, features;
+	Triple triple;
+
+	triple.setTriple(sys::getDefaultTargetTriple());
+	auto target = TargetRegistry::lookupTarget(triple.getTriple(), err);
+	return target->createTargetMachine(triple.getTriple(), sys::getHostCPUName(), features, options);
+}
+
 int ModuleWriter::run()
 {
 	PassManager clean;
@@ -70,6 +112,12 @@ int ModuleWriter::run()
 #else
 	pm.add(createPrintModulePass(&irStream));
 #endif
+
+	initTarget();
+	auto objFile = getOutFile(filename.substr(0, filename.rfind('.')) + ".o");
+	formatted_raw_ostream objStream(objFile->os());
+	unique_ptr<TargetMachine> machine(getMachine());
+	machine->addPassesToEmitFile(pm, objStream, TargetMachine::CGFT_ObjectFile);
 
 	pm.run(module);
 
