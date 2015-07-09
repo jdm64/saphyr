@@ -18,12 +18,15 @@
 #define __CODE_CONTEXT_H__
 
 #include <stack>
+#include <boost/program_options.hpp>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
 #include "Value.h"
 #include "Function.h"
+
+using namespace boost::program_options;
 
 // forward declarations
 class NStatement;
@@ -118,6 +121,7 @@ class CodeContext : public SymbolTable
 	map<string, LabelBlockPtr> labelBlocks;
 
 	string filepath;
+	variables_map config;
 	vector<pair<int,string>> errors;
 	int returncode;
 
@@ -140,8 +144,8 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	CodeContext(string& filepath)
-	: filepath(filepath), returncode(0), module(new Module(filepath, getGlobalContext())),
+	CodeContext(string& filepath, variables_map& config)
+	: filepath(filepath), config(config), returncode(0), module(new Module(filepath, getGlobalContext())),
 	typeManager(module)
 	{
 	}

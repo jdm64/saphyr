@@ -110,7 +110,7 @@ class TestCase:
 			log.write(p.out)
 
 	def runExe(self):
-		proc = Cmd([SAPHYR_BIN, self.srcFile])
+		proc = Cmd([SAPHYR_BIN, "--llvmir", self.srcFile])
 		if proc.ext < 0:
 			self.writeLog(proc)
 			return True, "[crash]"

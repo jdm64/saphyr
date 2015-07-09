@@ -102,6 +102,15 @@ int ModuleWriter::run()
 	if (validModule())
 		return 1;
 
+	if (config.count("llvmir"))
+		outputIR();
+	else
+		outputNative();
+	return 0;
+}
+
+void ModuleWriter::outputIR()
+{
 	PassManager pm;
 
 	fstream irFile(filename.substr(0, filename.rfind('.')) + ".ll", fstream::out);
@@ -113,6 +122,13 @@ int ModuleWriter::run()
 	pm.add(createPrintModulePass(&irStream));
 #endif
 
+	pm.run(module);
+}
+
+void ModuleWriter::outputNative()
+{
+	PassManager pm;
+
 	initTarget();
 	auto objFile = getOutFile(filename.substr(0, filename.rfind('.')) + ".o");
 	formatted_raw_ostream objStream(objFile->os());
@@ -120,6 +136,4 @@ int ModuleWriter::run()
 	machine->addPassesToEmitFile(pm, objStream, TargetMachine::CGFT_ObjectFile);
 
 	pm.run(module);
-
-	return 0;
 }

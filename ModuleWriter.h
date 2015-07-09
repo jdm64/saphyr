@@ -18,29 +18,36 @@
 #ifndef __MODULE_WRITER_H__
 #define __MODULE_WRITER_H__
 
+#include <boost/program_options.hpp>
 #include <llvm/PassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/ToolOutputFile.h>
 
 using namespace std;
 using namespace llvm;
+using namespace boost::program_options;
 
 class ModuleWriter
 {
 	Module& module;
 	string filename;
+	variables_map config;
 
 	bool validModule();
 
 	tool_output_file* getOutFile(const string& name);
 
-	void initTarget();
+	static void initTarget();
 
 	TargetMachine* getMachine();
 
+	void outputIR();
+
+	void outputNative();
+
 public:
-	ModuleWriter(Module &module, string filename)
-	: module(module), filename(filename) {}
+	ModuleWriter(Module &module, string filename, variables_map& config)
+	: module(module), filename(filename), config(config) {}
 
 	int run();
 };

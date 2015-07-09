@@ -38,7 +38,7 @@ void CodeContext::genCode(const NStatementList *stms)
 		return;
 	}
 
-	ModuleWriter writer(*module, filepath);
+	ModuleWriter writer(*module, filepath, config);
 
 	returncode = writer.run();
 }

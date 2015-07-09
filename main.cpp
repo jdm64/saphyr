@@ -15,13 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/program_options.hpp>
-
 #include "parser.h"
 #include "AST.h"
 #include "CodeContext.h"
-
-using namespace boost::program_options;
 
 options_description progOpts;
 
@@ -29,7 +25,8 @@ void initOptions()
 {
 	progOpts.add_options()
 		("help", "produce help message")
-		("input", "input file");
+		("input", "input file")
+		("llvmir", "output LLVM IR instead of object code");
 }
 
 void loadOptions(int argc, char** argv, variables_map &vm)
@@ -62,7 +59,7 @@ int main(int argc, char** argv)
 	if (parser.parse()) {
 		return 1;
 	}
-	CodeContext context(file);
+	CodeContext context(file, vm);
 	context.genCode(parser.getRoot());
 
 	return context.returnCode();
