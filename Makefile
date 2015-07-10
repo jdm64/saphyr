@@ -19,7 +19,7 @@ endif
 endif
 
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
-CXXFLAGS = -std=c++11 `llvm-config --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -fexceptions -D__STRICT_ANSI__
+CXXFLAGS = -std=c++11 `llvm-config --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__
 LDFLAGS = -lboost_program_options `llvm-config --ldflags` -lLLVM-`llvm-config --version` $(COV_LD)
 TARGET = saphyr
 
