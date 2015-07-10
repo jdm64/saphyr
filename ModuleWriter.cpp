@@ -33,7 +33,6 @@
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/raw_os_ostream.h>
-#include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 
 #include "Pass.h"
@@ -63,10 +62,17 @@ tool_output_file* ModuleWriter::getOutFile(const string& name)
 {
 	sys::fs::OpenFlags OpenFlags = sys::fs::F_None;
 
+#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
 	error_code error;
 	auto outFile = new tool_output_file(name, error, OpenFlags);
 
 	if (error) {
+#else
+	string error;
+	auto outFile = new tool_output_file(name.c_str(), error, OpenFlags);
+
+	if (!error.empty()) {
+#endif
 		delete outFile;
 		cout << "compiler error: error opening file" << endl << error << endl;
 		return nullptr;

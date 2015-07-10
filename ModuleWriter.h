@@ -22,6 +22,7 @@
 #include <llvm/PassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/ToolOutputFile.h>
+#include <llvm/Target/TargetMachine.h>
 
 using namespace std;
 using namespace llvm;
