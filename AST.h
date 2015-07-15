@@ -714,6 +714,22 @@ public:
 };
 typedef NodeList<NVariableDeclGroup> NVariableDeclGroupList;
 
+class NAliasDeclaration : public NDeclaration
+{
+	NDataType* type;
+
+public:
+	NAliasDeclaration(string* name, NDataType* type)
+	: NDeclaration(name), type(type) {}
+
+	void genCode(CodeContext& context);
+
+	~NAliasDeclaration()
+	{
+		delete type;
+	}
+};
+
 class NStructDeclaration : public NDeclaration
 {
 	NVariableDeclGroupList* list;

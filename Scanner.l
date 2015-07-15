@@ -64,6 +64,7 @@ uint64		{ return ParserBase::TT_UINT64; }
 float		{ return ParserBase::TT_FLOAT; }
 double		{ return ParserBase::TT_DOUBLE; }
 
+alias		{ return ParserBase::TT_ALIAS; }
 break		{ return ParserBase::TT_BREAK; }
 case		{ return ParserBase::TT_CASE; }
 continue	{ return ParserBase::TT_CONTINUE; }

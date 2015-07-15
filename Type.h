@@ -60,6 +60,7 @@ public:
 		FUNCTION = 1 << 10,
 		VOID     = 1 << 11,
 		AUTO     = 1 << 12,
+		ALIAS    = 1 << 13
 	};
 
 	static vector<Type*> convertArr(vector<SType*> arr)
@@ -122,6 +123,11 @@ public:
 	Type* type() const
 	{
 		return ltype;
+	}
+
+	bool isAlias() const
+	{
+		return tclass & ALIAS;
 	}
 
 	bool isAuto() const
@@ -278,6 +284,7 @@ class SUserType : public SType
 	friend class SStructType;
 	friend class SUnionType;
 	friend class SEnumType;
+	friend class SAliasType;
 
 	SUserType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
 	: SType(typeClass, type, size, subtype) {}
@@ -285,11 +292,21 @@ class SUserType : public SType
 public:
 	static SUserType* lookup(CodeContext& context, string* name);
 
+	static void createAlias(CodeContext& context, string* name, SType* type);
+
 	static void createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
 
 	static void createUnion(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
 
 	static void createEnum(CodeContext& context, string* name, const vector<pair<string, int64_t>>& structure);
+};
+
+class SAliasType : public SUserType
+{
+	friend class TypeManager;
+
+	SAliasType(SType* type)
+	: SUserType(ALIAS, type->type(), 0, type) {}
 };
 
 class SStructType : public SUserType
@@ -516,6 +533,8 @@ public:
 	{
 		return usrMap[*name].get();
 	}
+
+	void createAlias(string* name, SType* type);
 
 	void createStruct(string* name, vector<pair<string, SType*>> structure);
 

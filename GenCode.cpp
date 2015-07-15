@@ -123,9 +123,11 @@ SType* NVecType::getType(CodeContext& context)
 SType* NUserType::getType(CodeContext& context)
 {
 	auto type = SUserType::lookup(context, name);
-	if (!type)
+	if (!type) {
 		context.addError(*name + " type not declared");
-	return type;
+		return nullptr;
+	}
+	return type->isAlias()? type->subType() : type;
 }
 
 SType* NPointerType::getType(CodeContext& context)
@@ -407,6 +409,19 @@ bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector,
 		structVector.push_back(make_pair(*name, stype));
 	}
 	return valid;
+}
+
+void NAliasDeclaration::genCode(CodeContext& context)
+{
+	auto realType = type->getType(context);
+	if (!realType) {
+		return;
+	} else if (realType->isAuto()) {
+		context.addError("can not create alias to auto type");
+		return;
+	}
+
+	SAliasType::createAlias(context, name, realType);
 }
 
 void NStructDeclaration::genCode(CodeContext& context)

@@ -36,7 +36,7 @@
 %token <t_int> TT_ASG_DQ
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP
+%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS
 %left TT_ELSE
 // constants and names
 %token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
@@ -59,7 +59,7 @@
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
-%type <t_stm> struct_declaration union_declaration enum_declaration
+%type <t_stm> struct_declaration union_declaration enum_declaration alias_declaration
 %type <t_case> switch_case
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
@@ -101,6 +101,7 @@ declaration_list
 declaration
 	: function_declaration
 	| global_variable_declaration
+	| alias_declaration
 	| struct_declaration
 	| union_declaration
 	| enum_declaration
@@ -109,6 +110,12 @@ global_variable_declaration
 	: data_type global_variable_list ';'
 	{
 		$$ = new NVariableDeclGroup($1, $2);
+	}
+	;
+alias_declaration
+	: TT_ALIAS TT_IDENTIFIER '=' data_type ';'
+	{
+		$$ = new NAliasDeclaration($2, $4);
 	}
 	;
 struct_declaration

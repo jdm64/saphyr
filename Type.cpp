@@ -18,6 +18,7 @@
 
 #define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
 #define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
+#define smart_aliasTy(type) unique_ptr<SAliasType>(new SAliasType(type))
 #define smart_strucTy(type, structure) unique_ptr<SUserType>(new SStructType(type, structure))
 #define smart_unionTy(type, structure, size) unique_ptr<SUserType>(new SUnionType(type, structure, size))
 #define smart_enumTy(type, structure) unique_ptr<SUserType>(new SEnumType(type, structure))
@@ -128,6 +129,11 @@ SUserType* SUserType::lookup(CodeContext& context, string* name)
 	return context.typeManager.lookupUserType(name);
 }
 
+void SUserType::createAlias(CodeContext& context, string* name, SType* type)
+{
+	context.typeManager.createAlias(name, type);
+}
+
 void SUserType::createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure)
 {
 	context.typeManager.createStruct(name, structure);
@@ -197,6 +203,14 @@ SFunctionType* TypeManager::getFunction(SType* returnTy, vector<SType*> args)
 		item = smart_sfuncTy(func, returnTy, args);
 	}
 	return item.get();
+}
+
+void TypeManager::createAlias(string* name, SType* type)
+{
+	SUserPtr& item = usrMap[*name];
+	if (item.get())
+		return;
+	item = smart_aliasTy(type);
 }
 
 void TypeManager::createStruct(string* name, vector<pair<string, SType*>> structure)
