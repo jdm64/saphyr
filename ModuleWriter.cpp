@@ -62,7 +62,7 @@ tool_output_file* ModuleWriter::getOutFile(const string& name)
 {
 	sys::fs::OpenFlags OpenFlags = sys::fs::F_None;
 
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
+#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 6
 	error_code error;
 	auto outFile = new tool_output_file(name, error, OpenFlags);
 
