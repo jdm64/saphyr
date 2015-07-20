@@ -13,7 +13,7 @@ matrix:
 
 before_install:
  - sudo cp /etc/apt/sources.list /etc/apt/sources.list.d/$REPO.list
- - sudo sed -i 's/precise/$REPO/g' /etc/apt/sources.list.d/$REPO.list
+ - sudo sed -i "s/precise/$REPO/g" /etc/apt/sources.list.d/$REPO.list
  - export CXX_PKG=$(if [[ $CXX == "g++" ]]; then echo "g++"; fi)
  - sudo apt-get update -qq
  - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev $CXX_PKG python3 libboost-program-options-dev
