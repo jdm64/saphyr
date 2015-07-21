@@ -23,6 +23,11 @@ Debian 7 (Wheezy) and Ubuntu 14.04 (Trusty) or newer have all the required packa
 
 `sudo apt-get install flexc++ bisonc++ make llvm-dev clang python3 libboost-program-options-dev`
 
+### Gentoo ###
+
+A local portage overlay containing bison/flexc++/bisonc++ is provided in `scripts/portage`.
+After adding the overlay run `emerge saphyr` to install all required dependencies.
+
 ## Build Instructions ##
 
 Run `make` in the root directory and it will build the compiler binary `saphyr`.
