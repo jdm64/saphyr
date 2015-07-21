@@ -17,7 +17,7 @@ before_install:
  - export CXX_PKG=$(if [[ $CXX == "g++" ]]; then echo "g++"; fi)
  - sudo apt-get update -qq
  - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev $CXX_PKG python3 libboost-program-options-dev
- - if [[ $CXX == "g++" ]]; then sudo pip install cpp-coveralls; fi
+ - if [[ $CXX == "g++" ]]; then pip install cpp-coveralls; fi
 
 script: make tests
 
