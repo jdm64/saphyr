@@ -18,9 +18,12 @@ ifeq ($(CXX),g++)
 endif
 endif
 
+# set LLVM_VER to build with a non-default llvm version
+# example: export LLVM_VER="-3.5"
+
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
-CXXFLAGS = -std=c++11 `llvm-config --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__
-LDFLAGS = -lboost_program_options `llvm-config --ldflags` -lLLVM-`llvm-config --version` $(COV_LD)
+CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__
+LDFLAGS = -lboost_program_options `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version` $(COV_LD)
 TARGET = saphyr
 
 objs = scanner.o parser.o Type.o Value.o Function.o Instructions.o ModuleWriter.o GenCode.o Pass.o main.o
