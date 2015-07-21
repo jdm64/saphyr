@@ -1,22 +1,41 @@
 language: cpp
 
+sudo: false
+
 matrix:
    include:
     - compiler: clang
-      env: REPO=trusty
+      env: LLVM_VER="-3.4"
     - compiler: clang
-      env: REPO=utopic
+      env: LLVM_VER="-3.5"
     - compiler: clang
-      env: REPO=vivid
+      env: LLVM_VER="-3.6"
+    - compiler: clang
+      env: LLVM_VER="-3.7"
     - compiler: gcc
-      env: COVERAGE=true REPO=trusty
+      env: COVERAGE=true
+
+addons:
+   apt:
+      sources:
+       - llvm-toolchain-precise-3.5
+       - llvm-toolchain-precise-3.6
+       - llvm-toolchain-precise-3.7
+       - ubuntu-toolchain-r-test
+       - debian-sid
+      packages:
+       - flexc++
+       - bisonc++
+       - g++-4.8
+       - llvm-3.4-dev
+       - llvm-3.5-dev
+       - llvm-3.6-dev
+       - llvm-3.7-dev
+       - python3
+       - libboost-program-options-dev
 
 before_install:
- - sudo cp /etc/apt/sources.list /etc/apt/sources.list.d/$REPO.list
- - sudo sed -i "s/precise/$REPO/g" /etc/apt/sources.list.d/$REPO.list
- - export CXX_PKG=$(if [[ $CXX == "g++" ]]; then echo "g++"; fi)
- - sudo apt-get update -qq
- - sudo apt-get install -qq -y flexc++ bisonc++ llvm-dev $CXX_PKG python3 libboost-program-options-dev
+ - if [[ $CXX == "g++" ]]; then export CXX="g++-4.8"; fi
  - if [[ $CXX == "g++" ]]; then pip install cpp-coveralls; fi
 
 script: make tests
