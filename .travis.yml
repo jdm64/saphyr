@@ -1,6 +1,6 @@
 language: cpp
 
-sudo: false
+sudo: true
 
 matrix:
    include:
@@ -10,33 +10,15 @@ matrix:
       env: LLVM_VER="-3.5"
     - compiler: clang
       env: LLVM_VER="-3.6"
-    - compiler: clang
-      env: LLVM_VER="-3.7"
     - compiler: gcc
       env: COVERAGE=true
 
-addons:
-   apt:
-      sources:
-       - llvm-toolchain-precise-3.5
-       - llvm-toolchain-precise-3.6
-       - llvm-toolchain-precise-3.7
-       - ubuntu-toolchain-r-test
-       - debian-sid
-      packages:
-       - flexc++
-       - bisonc++
-       - g++-4.8
-       - llvm-3.4-dev
-       - llvm-3.5-dev
-       - llvm-3.6-dev
-       - llvm-3.7-dev
-       - python3
-       - libboost-program-options-dev
-
 before_install:
- - if [[ $CXX == "g++" ]]; then pip install cpp-coveralls; fi
- - if [[ $CXX == "g++" ]]; then export CXX="g++-4.8"; fi
+ - if [[ $CXX == "g++" ]]; then pip install cpp-coveralls; export CXX="g++-4.8"; export CXX_PKG="g++-4.8"; fi
+ - sudo cp /etc/apt/sources.list /etc/apt/sources.list.d/trusty.list
+ - sudo sed -i "s/precise/trusty/g" /etc/apt/sources.list.d/trusty.list
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq -y flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev python3
 
 script: make tests
 
