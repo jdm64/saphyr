@@ -21,7 +21,7 @@ from subprocess import call, Popen, PIPE
 
 SAPHYR_BIN = "../saphyr"
 ENCODING = "utf-8"
-TEST_EXT = ".tst"
+TEST_EXT = ".test"
 SYP_EXT = ".syp"
 LL_EXT = ".ll"
 ERR_EXT = ".err"
