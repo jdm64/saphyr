@@ -19,7 +19,9 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 
 ### Debian/Ubuntu ###
 
-`sudo apt-get install flexc++ bisonc++ make llvm-dev clang python3`
+Debian 7 (Wheezy) and Ubuntu 14.04 (Trusty) or newer have all the required packages in their repositories.
+
+`sudo apt-get install flexc++ bisonc++ make llvm-dev clang python3 libboost-program-options-dev`
 
 ## Build Instructions ##
 
