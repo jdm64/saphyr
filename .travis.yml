@@ -14,11 +14,12 @@ matrix:
       env: COVERAGE=true
 
 before_install:
- - if [[ $CXX == "g++" ]]; then sudo pip install cpp-coveralls; export CXX="g++-4.8"; export CXX_PKG="g++-4.8"; fi
+ - if [[ $CXX == "g++" ]]; then export CXX="g++-4.8"; export CXX_PKG="g++-4.8"; fi
  - sudo cp /etc/apt/sources.list /etc/apt/sources.list.d/trusty.list
  - sudo sed -i "s/precise/trusty/g" /etc/apt/sources.list.d/trusty.list
  - sudo apt-get update -qq
  - sudo apt-get install -qq -y flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev python3
+ - if [[ $COVERAGE == "true" ]]; then sudo pip install cpp-coveralls; fi
 
 script: make tests
 
