@@ -12,10 +12,8 @@ endif
 
 # set coverage only if using g++
 ifeq ($(COVERAGE),true)
-ifeq ($(CXX),g++)
 	COV_CXX = --coverage
 	COV_LD  = -coverage
-endif
 endif
 
 # set LLVM_VER to build with a non-default llvm version
