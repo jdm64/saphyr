@@ -17,28 +17,27 @@
 #include "Instructions.h"
 #include "parserbase.h"
 
-void Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast)
+bool Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast)
 {
 	auto ltype = lhs.stype();
 	auto rtype = rhs.stype();
 
 	if (ltype == rtype) {
-		return;
+		return false;
 	} else if (ltype->isComplex() || rtype->isComplex()) {
 		context.addError("can not cast complex types");
-		return;
+		return true;
 	} else if (ltype->isPointer() || rtype->isPointer()) {
 		// different pointer types can't be cast automatically
 		// the operations need to handle pointers specially
-		return;
+		return false;
 	}
 
 	auto toType = SType::numericConv(context, ltype, rtype, upcast);
-	CastTo(context, lhs, toType, upcast);
-	CastTo(context, rhs, toType, upcast);
+	return CastTo(context, lhs, toType, upcast) || CastTo(context, rhs, toType, upcast);
 }
 
-void Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
+bool Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
 {
 	auto valueType = value.stype();
 
@@ -47,22 +46,22 @@ void Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
 		// must result in an int type to keep enum variables within range.
 		if (upcast && valueType->isEnum())
 			value.castToSubtype();
-		return;
+		return false;
 	} else if (type->isComplex() || valueType->isComplex()) {
 		context.addError("can not cast complex types");
-		return;
+		return true;
 	} else if (type->isPointer()) {
 		if (value.isNullPtr()) {
 			// NOTE: discard current null value and create
 			// a new one using the right type
 			value = RValue::getNullPtr(context, type);
-			return;
+			return false;
 		} else if (type->subType()->isVoid()) {
 			value = RValue(new BitCastInst(value, *type, "", context), type);
-			return;
+			return false;
 		}
 		context.addError("can't cast value to pointer type");
-		return;
+		return true;
 	} else if (type->isVec()) {
 		// unwrap enum type
 		if (valueType->isEnum())
@@ -78,34 +77,34 @@ void Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
 			auto retVal = new ShuffleVectorInst(instEle, udef, mask, "", context);
 
 			value = RValue(retVal, type);
-			return;
+			return false;
 		} else if (valueType->isPointer()) {
 			context.addError("can not cast pointer to vec type");
-			return;
+			return true;
 		} else if (type->size() != valueType->size()) {
 			context.addError("can not cast vec types of different sizes");
-			return;
+			return true;
 		} else if (type->subType()->isBool()) {
 			// cast to bool is value != 0
 			auto pred = getPredicate(ParserBase::TT_NEQ, valueType, context);
 			auto op = valueType->subType()->isFloating()? Instruction::FCmp : Instruction::ICmp;
 			auto val = CmpInst::Create(op, pred, value, RValue::getZero(context, valueType), "", context);
 			value = RValue(val, type);
-			return;
+			return false;
 		} else {
 			auto op = getCastOp(valueType->subType(), type->subType());
 			auto val = CastInst::Create(op, value, *type, "", context);
 			value = RValue(val, type);
-			return;
+			return false;
 		}
 	} else if (type->isEnum()) {
 		// casting to enum would violate value constraints
 		context.addError("can't cast to enum type");
-		return;
+		return true;
 	} else if (type->isBool()) {
 		if (valueType->isVec()) {
 			context.addError("can not cast vec type to bool");
-			return;
+			return true;
 		} else if (valueType->isEnum()) {
 			valueType = value.castToSubtype();
 		}
@@ -115,12 +114,12 @@ void Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
 		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
 		auto val = CmpInst::Create(op, pred, value, RValue::getZero(context, valueType), "", context);
 		value = RValue(val, type);
-		return;
+		return false;
 	}
 
 	if (valueType->isPointer()) {
 		context.addError("can't cast pointer to numeric type");
-		return;
+		return true;
 	}
 
 	// unwrap enum type
@@ -130,6 +129,7 @@ void Inst::CastTo(CodeContext& context, RValue& value, SType* type, bool upcast)
 	auto op = getCastOp(valueType, type);
 	auto val = op != Instruction::AddrSpaceCast? CastInst::Create(op, value, *type, "", context) : value;
 	value = RValue(val, type);
+	return false;
 }
 
 CastOps Inst::getCastOp(SType* from, SType* to)
@@ -264,7 +264,8 @@ RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
 	if (!lhs || !rhs)
 		return RValue();
 
-	CastMatch(context, lhs, rhs, true);
+	if (CastMatch(context, lhs, rhs, true))
+		return RValue();
 
 	switch ((lhs.stype()->isPointer() << 1) | rhs.stype()->isPointer()) {
 	default:
@@ -293,7 +294,8 @@ RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* 
 
 RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
 {
-	CastMatch(context, lhs, rhs);
+	if (CastMatch(context, lhs, rhs))
+		return RValue();
 	auto pred = getPredicate(type, lhs.stype(), context);
 	auto cmpType = lhs.stype()->isVec()? lhs.stype()->subType() : lhs.stype();
 	auto op = cmpType->isFloating()? Instruction::FCmp : Instruction::ICmp;

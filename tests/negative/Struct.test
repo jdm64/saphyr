@@ -46,6 +46,5 @@ Struct.syp: w is not a struct/union/enum
 Struct.syp: k doesn't have member n
 Struct.syp: can not perform operation on composite types
 Struct.syp: can not cast complex types
-Struct.syp: can not perform operation on composite types
 Struct.syp: variable k not declared
-found 11 errors
+found 10 errors

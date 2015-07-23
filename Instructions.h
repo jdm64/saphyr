@@ -36,12 +36,12 @@ class Inst
 	 */
 	static CastOps getCastOp(SType* from, SType* to);
 
-	static void CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast = false);
+	static bool CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast = false);
 
 	static RValue PointerMath(int type, RValue ptr, RValue val, CodeContext& context);
 
 public:
-	static void CastTo(CodeContext& context, RValue& value, SType* type, bool upcast = false);
+	static bool CastTo(CodeContext& context, RValue& value, SType* type, bool upcast = false);
 
 	static RValue BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context);
 
