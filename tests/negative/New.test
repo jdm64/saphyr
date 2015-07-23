@@ -1,0 +1,14 @@
+
+int main()
+{
+	auto a = new void;
+	auto b = new [0]int;
+
+	return 0;
+}
+
+========
+
+New.syp: can't call new on void type
+New.syp: Array size must be positive
+found 2 errors

@@ -19,7 +19,7 @@ int main()
 	[4]int64 b;
 
 	int s = sizeof a + sizeof b;
-	int z = sizeof int64 + sizeof [4]int64;
+	int z = sizeof int64 + sizeof ([4]int64);
 
 	return 0;
 }
