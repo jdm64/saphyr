@@ -322,8 +322,10 @@ void NVariableDecl::genCode(CodeContext& context)
 	if (!varType) {
 		return;
 	} else if (varType->isAuto()) {
-		if (!initValue) { // auto type requires initialization
+		if (!initExp) { // auto type requires initialization
 			context.addError("auto variable type requires initialization");
+			return;
+		} else if (!initValue) {
 			return;
 		}
 		varType = initValue.stype();
@@ -358,8 +360,10 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 	if (!varType) {
 		return;
 	} else if (varType->isAuto()) {
-		if (!initValue) { // auto type requires initialization
+		if (!initExp) { // auto type requires initialization
 			context.addError("auto variable type requires initialization");
+			return;
+		} else if (!initValue) {
 			return;
 		}
 		varType = initValue.stype();

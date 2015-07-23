@@ -24,7 +24,6 @@ Enum.syp: enum initializer must be a constant
 Enum.syp: enum initializer must be an int-like constant
 Enum.syp: enum member name A already declared
 Enum.syp: c is not a struct/union/enum
-Enum.syp: auto variable type requires initialization
 Enum.syp: can't cast to enum type
 Enum.syp: Color doesn't have member NotFound
-found 7 errors
+found 6 errors
