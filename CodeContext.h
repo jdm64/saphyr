@@ -127,10 +127,13 @@ class CodeContext : public SymbolTable
 	friend class SUnionType;
 	friend class SEnumType;
 
-	vector<BasicBlock*> funcBlocks;
-	vector<BasicBlock*> continueBlocks;
-	vector<BasicBlock*> breakBlocks;
-	vector<BasicBlock*> redoBlocks;
+	typedef vector<llvm::BasicBlock*> BlockVector;
+	typedef BlockVector::iterator block_iterator;
+
+	BlockVector funcBlocks;
+	BlockVector continueBlocks;
+	BlockVector breakBlocks;
+	BlockVector redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
 
 	vector<pair<Token,string>> errors;
@@ -148,7 +151,7 @@ class CodeContext : public SymbolTable
 		}
 	}
 
-	BasicBlock* loopBranchLevel(const vector<BasicBlock*>& branchBlocks, size_t level) const
+	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, size_t level) const
 	{
 		auto idx = level > 0? branchBlocks.size() - level : abs(level) - 1;
 		return (idx >= 0 && idx < branchBlocks.size())? branchBlocks[idx] : nullptr;
