@@ -34,23 +34,25 @@ public:
 	virtual ~Node() {};
 };
 
-template<typename NType>
+template<typename T>
 class NodeList : public Node
 {
-	typedef typename vector<NType*>::iterator NTypeIter;
+	typedef vector<T*> container;
+	typedef typename container::iterator iterator;
+
 	bool doDelete;
 
 protected:
-	vector<NType*> list;
+	container list;
 
 public:
 	explicit NodeList(bool doDelete = true)
 	: doDelete(doDelete) {}
 
-	template<typename OtherList>
-	OtherList* move()
+	template<typename L>
+	L* move()
 	{
-		auto other = new OtherList;
+		auto other = new L;
 		for (const auto item : *this)
 			other->addItem(item);
 
@@ -70,37 +72,37 @@ public:
 		return list.size();
 	}
 
-	NTypeIter begin()
+	iterator begin()
 	{
 		return list.begin();
 	}
 
-	NTypeIter end()
+	iterator end()
 	{
 		return list.end();
 	}
 
-	void addItem(NType* item)
+	void addItem(T* item)
 	{
 		list.push_back(item);
 	}
 
-	void addItemFront(NType* item)
+	void addItemFront(T* item)
 	{
 		list.insert(list.begin(), item);
 	}
 
-	NType* at(int i)
+	T* at(int i)
 	{
 		return list.at(i);
 	}
 
-	NType* front()
+	T* front()
 	{
 		return list.empty()? nullptr : list.front();
 	}
 
-	NType* back()
+	T* back()
 	{
 		return list.empty()? nullptr : list.back();
 	}
