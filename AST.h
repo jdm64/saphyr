@@ -33,19 +33,22 @@ public:
 	virtual ~Node() {};
 };
 
-template<typename NType>
+template<typename T>
 class NodeList : public Node
 {
-	typedef typename vector<NType*>::iterator NTypeIter;
+	typedef typename std::vector<NType*> container;
+	typedef container::iterator iterator;
+	// if needed
+	//typedef container::const_iterator const_iterator;
 
 protected:
-	vector<NType*> list;
+	container list;
 
 public:
-	template<typename OtherList>
-	OtherList* copy()
+	template<typename L>
+	L* copy()
 	{
-		auto other = new OtherList;
+		auto other = new L;
 		for (const auto item : *this)
 			other->addItem(item);
 		return other;
@@ -61,12 +64,12 @@ public:
 		return list.size();
 	}
 
-	NTypeIter begin()
+	iterator begin()
 	{
 		return list.begin();
 	}
 
-	NTypeIter end()
+	iterator end()
 	{
 		return list.end();
 	}
@@ -76,17 +79,17 @@ public:
 		list.push_back(item);
 	}
 
-	NType* at(int i)
+	T* at(int i)
 	{
 		return list.at(i);
 	}
 
-	NType* front()
+	T* front()
 	{
 		return list.empty()? nullptr : list.front();
 	}
 
-	NType* back()
+	T* back()
 	{
 		return list.empty()? nullptr : list.back();
 	}
