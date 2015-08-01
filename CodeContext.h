@@ -46,7 +46,7 @@ typedef unique_ptr<LabelBlock> LabelBlockPtr;
 
 class ScopeTable
 {
-	map<string, LValue> table;
+	std::map<string, LValue> table;
 
 public:
 	void storeSymbol(LValue var, string* name)
@@ -64,7 +64,7 @@ public:
 class SymbolTable
 {
 	ScopeTable globalTable;
-	vector<ScopeTable> localTable;
+	std::vector<ScopeTable> localTable;
 
 public:
 	void storeGlobalSymbol(LValue var, string* name)
@@ -113,11 +113,14 @@ class CodeContext : public SymbolTable
 	friend class SType;
 	friend class SFunction;
 	friend class SUserType;
+	typedef std::vector<llvm::BasicBlock*> BlockVector;
+	typedef BlockVector::iterator block_iterator;
 
-	vector<BasicBlock*> funcBlocks;
-	vector<BasicBlock*> continueBlocks;
-	vector<BasicBlock*> breakBlocks;
-	vector<BasicBlock*> redoBlocks;
+	
+	BlockVector funcBlocks;
+	BlockVector continueBlocks;
+	BlockVector breakBlocks;
+	BlockVector redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
 
 	string filepath;
@@ -137,7 +140,7 @@ class CodeContext : public SymbolTable
 		}
 	}
 
-	BasicBlock* loopBranchLevel(const vector<BasicBlock*>& branchBlocks, size_t level) const
+	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, size_t level) const
 	{
 		auto idx = level > 0? branchBlocks.size() - level : abs(level) - 1;
 		return (idx >= 0 && idx < branchBlocks.size())? branchBlocks[idx] : nullptr;

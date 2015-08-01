@@ -37,6 +37,13 @@
 
 #include "Pass.h"
 
+// declare what you're using instead of using namespace
+using std::ostringstream;
+using std::string;
+using std::cout;
+using std::endl;
+using llvm::raw_os_ostream;
+
 bool ModuleWriter::validModule()
 {
 #if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
@@ -50,8 +57,7 @@ bool ModuleWriter::validModule()
 #else
 	string err;
 	if (verifyModule(module, ReturnStatusAction, &err)) {
-		cout << "compiler error: broken module" << endl << endl
-			<< err << endl;
+		cout << "compiler error: broken module" << endl << endl << err << endl;
 		return true;
 	}
 #endif

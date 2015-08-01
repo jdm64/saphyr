@@ -24,8 +24,8 @@
 #include <llvm/Support/ToolOutputFile.h>
 #include <llvm/Target/TargetMachine.h>
 
-using namespace std;
-using namespace llvm;
+using std::string;
+using llvm::Module;
 using namespace boost::program_options;
 
 class ModuleWriter
