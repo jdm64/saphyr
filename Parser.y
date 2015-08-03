@@ -477,8 +477,7 @@ expression_or_empty
 declaration_or_expression_list
 	: expression_list
 	{
-		$$ = $1->copy<NStatementList>();
-		delete $1;
+		$$ = $1->move<NStatementList>();
 	}
 	| variable_declarations
 	{

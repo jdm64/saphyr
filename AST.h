@@ -37,17 +37,25 @@ template<typename NType>
 class NodeList : public Node
 {
 	typedef typename vector<NType*>::iterator NTypeIter;
+	bool doDelete;
 
 protected:
 	vector<NType*> list;
 
 public:
+	NodeList(bool doDelete = true)
+	: doDelete(doDelete) {}
+
 	template<typename OtherList>
-	OtherList* copy()
+	OtherList* move()
 	{
 		auto other = new OtherList;
 		for (const auto item : *this)
 			other->addItem(item);
+
+		doDelete = false;
+		delete this;
+
 		return other;
 	}
 
@@ -89,6 +97,14 @@ public:
 	NType* back()
 	{
 		return list.empty()? nullptr : list.back();
+	}
+
+	~NodeList()
+	{
+		if (doDelete) {
+			for (auto i : list)
+				delete i;
+		}
 	}
 };
 
@@ -321,10 +337,10 @@ protected:
 	string* name;
 
 public:
-	NDeclaration(string* name)
+	NDeclaration(string* name = nullptr)
 	: name(name) {}
 
-	string* getName()
+	virtual string* getName()
 	{
 		return name;
 	}
@@ -476,7 +492,6 @@ public:
 	~NVariableDecl()
 	{
 		delete initExp;
-		delete type;
 	}
 };
 
@@ -633,6 +648,11 @@ public:
 	{
 		return derefVar->getName();
 	}
+
+	~NDereference()
+	{
+		delete derefVar;
+	}
 };
 
 class NAddressOf : public NVariable
@@ -653,6 +673,11 @@ public:
 	string* getName() const
 	{
 		return addVar->getName();
+	}
+
+	~NAddressOf()
+	{
+		delete addVar;
 	}
 };
 
@@ -798,7 +823,7 @@ public:
 
 	SFunctionType* getFunctionType(CodeContext& context)
 	{
-		NDataTypeList typeList;
+		NDataTypeList typeList(false);
 		for (auto item : *params) {
 			typeList.addItem(item->getTypeNode());
 		}
@@ -819,9 +844,14 @@ class NFunctionDeclaration : public NDeclaration
 
 public:
 	NFunctionDeclaration(NFunctionPrototype* prototype, NStatementList* body)
-	: NDeclaration(prototype->getName()), prototype(prototype), body(body) {}
+	: prototype(prototype), body(body) {}
 
 	void genCode(CodeContext& context);
+
+	string* getName()
+	{
+		return prototype->getName();
+	}
 
 	~NFunctionDeclaration()
 	{
@@ -1028,6 +1058,11 @@ public:
 	: type(type), level(level) {}
 
 	void genCode(CodeContext& context);
+
+	~NLoopBranch()
+	{
+		delete level;
+	}
 };
 
 class NDeleteStatement : public NStatement
@@ -1234,6 +1269,7 @@ public:
 
 	~NFunctionCall()
 	{
+		delete name;
 		delete arguments;
 	}
 };
