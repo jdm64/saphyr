@@ -17,16 +17,27 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 * C++11 compiler (either GCC or Clang)
 * Python 3 (for running tests)
 
+Note: Building FlexC++/BisonC++ from sources requires the [Icmake](http://icmake.sourceforge.net/) build
+system and the [Bobcat](http://bobcat.sourceforge.net/) library which requires a C++14 compiler.
+
 ### Debian/Ubuntu ###
 
 Debian 7 (Wheezy) and Ubuntu 14.04 (Trusty) or newer have all the required packages in their repositories.
 
-`sudo apt-get install flexc++ bisonc++ make llvm-dev clang python3 libboost-program-options-dev`
+`sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev`
+`sudo apt-get install clang python3`
 
 ### Gentoo ###
 
-A local portage overlay containing bison/flexc++/bisonc++ is provided in `scripts/portage`.
+A local portage overlay containing bobcat/flexc++/bisonc++ is provided in `scripts/portage`.
 After adding the overlay run `emerge saphyr` to install all required dependencies.
+
+=== Arch ===
+
+FlexC++/BisonC++ can be found in the AUR along with their dependencies icmake and libbobcat.
+The other dependencies can be install using:
+
+`pacman -S make llvm boost clang`
 
 ## Build Instructions ##
 
