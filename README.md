@@ -32,7 +32,7 @@ Debian 7 (Wheezy) and Ubuntu 14.04 (Trusty) or newer have all the required packa
 A local portage overlay containing bobcat/flexc++/bisonc++ is provided in `scripts/portage`.
 After adding the overlay run `emerge saphyr` to install all required dependencies.
 
-=== Arch ===
+### Arch ###
 
 FlexC++/BisonC++ can be found in the AUR along with their dependencies icmake and libbobcat.
 The other dependencies can be install using:
