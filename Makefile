@@ -26,8 +26,13 @@ TARGET = saphyr
 
 objs = scanner.o parser.o Type.o Value.o Function.o Instructions.o ModuleWriter.o GenCode.o Pass.o main.o
 
-compiler : $(objs)
+compiler : frontend $(objs)
 	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)
+
+frontend : parser.cpp scanner.cpp
+
+frontend-docker :
+	sudo docker run --rm -v $(PWD):/usr/src/saphyr -w /usr/src/saphyr jdm64/saphyr make frontend
 
 parser.cpp : Parser.y
 	rm -f parser*

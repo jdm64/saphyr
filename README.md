@@ -39,6 +39,16 @@ The other dependencies can be install using:
 
 `pacman -S make llvm boost clang`
 
+### Other Linux ###
+
+Install the LLVM development headers / runtime libraries and python3 for your Linux distribution.
+If your distribution doesn't have flexc++/bisonc++ then you can use the `jdm64/saphyr` docker image
+to build the frontend by running:
+
+`sudo docker run --rm -v "$PWD":/usr/src/saphyr -w /usr/src/saphyr jdm64/saphyr make frontend`
+
+NOTE: On Fedora you must disable SELinux (`sudo -c "setenforce 0"`) or you will get a permission error.
+
 ## Build Instructions ##
 
 Run `make` in the root directory and it will build the compiler binary `saphyr`.
