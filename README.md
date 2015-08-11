@@ -35,7 +35,7 @@ After adding the overlay run `emerge saphyr` to install all required dependencie
 ### Arch ###
 
 FlexC++/BisonC++ can be found in the AUR along with their dependencies icmake and libbobcat.
-The other dependencies can be install using:
+The other dependencies can be installed using:
 
 `pacman -S make llvm boost clang`
 
