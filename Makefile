@@ -24,7 +24,7 @@ CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) 
 LDFLAGS = -lboost_program_options `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version` $(COV_LD)
 TARGET = saphyr
 
-objs = scanner.o parser.o Type.o Value.o Function.o Instructions.o ModuleWriter.o GenCode.o Pass.o main.o
+objs = parser.o scanner.o Type.o Value.o Function.o Instructions.o ModuleWriter.o GenCode.o Pass.o main.o
 
 compiler : frontend $(objs)
 	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)
