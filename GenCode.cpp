@@ -23,9 +23,6 @@
 
 NStatementList* programBlock;
 
-const string NConstant::STR_TRUE = "true";
-const string NConstant::STR_FALSE = "false";
-const string NConstant::STR_NULL = "null";
 const string NExprVariable::STR_TMP_EXP = "temp expression";
 
 void CodeContext::genCode(const NStatementList *stms)
@@ -1104,7 +1101,7 @@ RValue NIncrement::genValue(CodeContext& context)
 
 APSInt NBoolConst::getIntVal(CodeContext& context)
 {
-	return APSInt(APInt(1, value));
+	return APSInt(APInt(1, bvalue));
 }
 
 RValue NIntLikeConst::genValue(CodeContext& context)

@@ -25,7 +25,7 @@
 }
 
 // predefined constants
-%token <t_int> TT_FALSE TT_TRUE TT_NULL
+%token <t_tok> TT_FALSE TT_TRUE TT_NULL
 // qualifiers
 %token <t_int> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
 %token <t_int> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64 TT_VEC
@@ -754,15 +754,15 @@ value_expression
 	}
 	| TT_TRUE
 	{
-		$$ = new NBoolConst(true);
+		$$ = new NBoolConst($1, true);
 	}
 	| TT_FALSE
 	{
-		$$ = new NBoolConst(false);
+		$$ = new NBoolConst($1, false);
 	}
 	| TT_NULL
 	{
-		$$ = new NNullPointer();
+		$$ = new NNullPointer($1);
 	}
 	;
 integer_constant

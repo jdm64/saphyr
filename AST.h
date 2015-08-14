@@ -173,11 +173,17 @@ public:
 class NConstant : public NExpression
 {
 protected:
-	const static string STR_TRUE;
-	const static string STR_FALSE;
-	const static string STR_NULL;
+	Token* value;
 
 public:
+	NConstant(Token* token)
+	: value(token) {}
+
+	Token* getToken() const
+	{
+		return value;
+	}
+
 	bool isConstant() const
 	{
 		return true;
@@ -193,7 +199,10 @@ public:
 		return false;
 	}
 
-	virtual const string& getStrVal() const = 0;
+	const string& getStrVal() const
+	{
+		return value->str;
+	}
 
 	static vector<string> getValueAndSuffix(const string& value)
 	{
@@ -241,46 +250,40 @@ public:
 	{
 		val.erase(std::remove(val.begin(), val.end(), c), val.end());
 	}
-};
 
-class NNullPointer : public NConstant
-{
-public:
-	RValue genValue(CodeContext& context);
-
-	const string& getStrVal() const
-	{
-		return STR_NULL;
-	}
-};
-
-class NStringLiteral : public NConstant
-{
-	Token* value;
-
-public:
-	NStringLiteral(Token* str)
-	: value(str)
-	{
-		value->str = unescape(value->str.substr(1, value->str.size() - 2));
-	}
-
-	RValue genValue(CodeContext& context);
-
-	const string& getStrVal() const
-	{
-		return value->str;
-	}
-
-	~NStringLiteral()
+	~NConstant()
 	{
 		delete value;
 	}
 };
 
+class NNullPointer : public NConstant
+{
+public:
+	NNullPointer(Token* token)
+	: NConstant(token) {}
+
+	RValue genValue(CodeContext& context);
+};
+
+class NStringLiteral : public NConstant
+{
+public:
+	NStringLiteral(Token* str)
+	: NConstant(str)
+	{
+		value->str = unescape(value->str.substr(1, value->str.size() - 2));
+	}
+
+	RValue genValue(CodeContext& context);
+};
+
 class NIntLikeConst : public NConstant
 {
 public:
+	NIntLikeConst(Token* token)
+	: NConstant(token) {}
+
 	RValue genValue(CodeContext& context) final;
 
 	virtual APSInt getIntVal(CodeContext& context) = 0;
@@ -293,91 +296,51 @@ public:
 
 class NBoolConst : public NIntLikeConst
 {
-	bool value;
+	bool bvalue;
 
 public:
-	NBoolConst(bool value)
-	: value(value) {}
+	NBoolConst(Token* token, bool value)
+	: NIntLikeConst(token), bvalue(value) {}
 
 	APSInt getIntVal(CodeContext& context);
-
-	const string& getStrVal() const
-	{
-		return value? STR_TRUE : STR_FALSE;
-	}
 };
 
 class NCharConst : public NIntLikeConst
 {
-	Token* value;
-
 public:
 	NCharConst(Token* charStr)
-	: value(charStr)
+	: NIntLikeConst(charStr)
 	{
 		value->str = value->str.substr(1, value->str.length() - 2);
 	}
 
 	APSInt getIntVal(CodeContext& context);
-
-	const string& getStrVal() const
-	{
-		return value->str;
-	}
-
-	~NCharConst()
-	{
-		delete value;
-	}
 };
 
 class NIntConst : public NIntLikeConst
 {
-	Token* value;
 	int base;
 
 public:
 	NIntConst(Token* value, int base = 10)
-	: value(value), base(base)
+	: NIntLikeConst(value), base(base)
 	{
 		remove(value->str);
 	}
 
 	APSInt getIntVal(CodeContext& context);
-
-	const string& getStrVal() const
-	{
-		return value->str;
-	}
-
-	~NIntConst()
-	{
-		delete value;
-	}
 };
 
 class NFloatConst : public NConstant
 {
-	Token* value;
-
 public:
 	NFloatConst(Token* value)
-	: value(value)
+	: NConstant(value)
 	{
 		remove(value->str);
 	}
 
 	RValue genValue(CodeContext& context);
-
-	const string& getStrVal() const
-	{
-		return value->str;
-	}
-
-	~NFloatConst()
-	{
-		delete value;
-	}
 };
 
 class NDeclaration : public NStatement

@@ -44,9 +44,9 @@ SUFFIX		_{NAME}
 "??"	{ return ParserBase::TT_DQ_MARK; }
 "??="	{ return ParserBase::TT_ASG_DQ; }
 
-true		{ return ParserBase::TT_TRUE; }
-false		{ return ParserBase::TT_FALSE; }
-null		{ return ParserBase::TT_NULL; }
+true		{ SAVE_TOKEN return ParserBase::TT_TRUE; }
+false		{ SAVE_TOKEN return ParserBase::TT_FALSE; }
+null		{ SAVE_TOKEN return ParserBase::TT_NULL; }
 
 auto		{ return ParserBase::TT_AUTO; }
 void		{ return ParserBase::TT_VOID; }
