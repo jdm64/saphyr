@@ -48,7 +48,7 @@ class ModuleWriter
 
 public:
 	ModuleWriter(Module &module, string filename, variables_map& config)
-	: module(module), filename(filename), config(config) {}
+	: module(module), filename(std::move(filename)), config(config) {}
 
 	int run();
 };

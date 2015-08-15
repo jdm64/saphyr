@@ -30,8 +30,8 @@ class CodeContext;
 class Token
 {
 public:
-	Token(const string& token, int lineNum)
-	: str(token), line(lineNum) {}
+	Token(string token, int lineNum)
+	: str(std::move(token)), line(lineNum) {}
 
 	string str;
 	int line;
