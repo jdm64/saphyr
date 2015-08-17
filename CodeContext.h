@@ -18,6 +18,7 @@
 #define __CODE_CONTEXT_H__
 
 #include <stack>
+#include <iostream>
 #include <boost/program_options.hpp>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/BasicBlock.h>
@@ -27,10 +28,6 @@
 #include "Function.h"
 
 using namespace boost::program_options;
-
-// forward declarations
-class NStatement;
-class NStatementList;
 
 struct LabelBlock
 {
@@ -121,9 +118,7 @@ class CodeContext : public SymbolTable
 	map<string, LabelBlockPtr> labelBlocks;
 
 	string filepath;
-	variables_map config;
 	vector<pair<int,string>> errors;
-	int returncode;
 
 	Module* module;
 	TypeManager typeManager;
@@ -144,15 +139,9 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	CodeContext(string& filepath, variables_map& config)
-	: filepath(filepath), config(config), returncode(0), module(new Module(filepath, getGlobalContext())),
-	typeManager(module)
+	CodeContext(string& filepath, Module* module)
+	: filepath(filepath), module(module), typeManager(module)
 	{
-	}
-
-	~CodeContext()
-	{
-		delete module;
 	}
 
 	operator LLVMContext&()
@@ -285,11 +274,23 @@ public:
 		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
 	}
 
-	void genCode(const NStatementList* stms);
-
-	int returnCode() const
+	/*
+	 * Returns true on errors
+	 */
+	bool handleErrors()
 	{
-		return returncode;
+		if (errors.empty())
+			return false;
+
+		string filename = filepath.substr(filepath.find_last_of('/') + 1);
+		for (auto& error : errors) {
+			cout << filename << ":";
+			if (error.first)
+				cout << error.first << ":";
+			cout << " " << error.second << endl;
+		}
+		cout << "found " << errors.size() << " errors" << endl;
+		return true;
 	}
 };
 

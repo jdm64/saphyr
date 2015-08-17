@@ -19,33 +19,10 @@
 #include "parserbase.h"
 #include "AST.h"
 #include "Instructions.h"
-#include "ModuleWriter.h"
 
 NStatementList* programBlock;
 
 const string NExprVariable::STR_TMP_EXP = "temp expression";
-
-void CodeContext::genCode(const NStatementList *stms)
-{
-	stms->genCode(*this);
-
-	if (!errors.empty()) {
-		returncode = 2;
-		string filename = filepath.substr(filepath.find_last_of('/') + 1);
-		for (auto& error : errors) {
-			cout << filename << ":";
-			if (error.first)
-				cout << error.first << ":";
-			cout << " " << error.second << endl;
-		}
-		cout << "found " << errors.size() << " errors" << endl;
-		return;
-	}
-
-	ModuleWriter writer(*module, filepath, config);
-
-	returncode = writer.run();
-}
 
 SType* NBaseType::getType(CodeContext& context)
 {
