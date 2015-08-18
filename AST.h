@@ -1019,25 +1019,13 @@ public:
 	}
 };
 
-class NLabelStatement : public NStatement
+class NLabelStatement : public NDeclaration
 {
-	Token* name;
-
 public:
 	NLabelStatement(Token* name)
-	: name(name) {}
+	: NDeclaration(name) {}
 
 	void genCode(CodeContext& context);
-
-	const string& getName() const
-	{
-		return name->str;
-	}
-
-	~NLabelStatement()
-	{
-		delete name;
-	}
 };
 
 class NJumpStatement : public NStatement
