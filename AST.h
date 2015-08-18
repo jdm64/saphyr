@@ -21,21 +21,12 @@
 #include <set>
 #include <llvm/ADT/APSInt.h>
 #include <llvm/IR/Instructions.h>
+#include "Token.h"
 #include "Value.h"
 #include "Function.h"
 
 // forward declaration
 class CodeContext;
-
-class Token
-{
-public:
-	Token(string token, int lineNum)
-	: str(std::move(token)), line(lineNum) {}
-
-	string str;
-	int line;
-};
 
 class Node
 {
