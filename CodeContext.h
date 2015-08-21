@@ -24,6 +24,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
+#include "Token.h"
 #include "Value.h"
 #include "Function.h"
 
@@ -117,8 +118,7 @@ class CodeContext : public SymbolTable
 	vector<BasicBlock*> redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
 
-	string filepath;
-	vector<pair<int,string>> errors;
+	vector<pair<Token,string>> errors;
 
 	Module* module;
 	TypeManager typeManager;
@@ -139,8 +139,8 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	CodeContext(string& filepath, Module* module)
-	: filepath(filepath), module(module), typeManager(module)
+	CodeContext(Module* module)
+	: module(module), typeManager(module)
 	{
 	}
 
@@ -164,9 +164,12 @@ public:
 		return currFunc;
 	}
 
-	void addError(string error, int line = 0)
+	void addError(string error, Token* token = nullptr)
 	{
-		errors.push_back({line, error});
+		if (token)
+			errors.push_back({*token, error});
+		else
+			errors.push_back({Token(), error});
 	}
 
 	BasicBlock* currBlock() const
@@ -277,16 +280,19 @@ public:
 	/*
 	 * Returns true on errors
 	 */
-	bool handleErrors()
+	bool handleErrors(string filename)
 	{
 		if (errors.empty())
 			return false;
 
-		string filename = filepath.substr(filepath.find_last_of('/') + 1);
+		filename = filename.substr(filename.find_last_of('/') + 1);
 		for (auto& error : errors) {
-			cout << filename << ":";
-			if (error.first)
-				cout << error.first << ":";
+			if (error.first.line) {
+				cout << error.first.filename << ":"
+					<< error.first.line << ":";
+			} else {
+				cout << filename << ":";
+			}
 			cout << " " << error.second << endl;
 		}
 		cout << "found " << errors.size() << " errors" << endl;

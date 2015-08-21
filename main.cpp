@@ -62,10 +62,10 @@ int main(int argc, char** argv)
 	}
 
 	unique_ptr<Module> module(new Module(file, getGlobalContext()));
-	CodeContext context(file, module.get());
+	CodeContext context(module.get());
 
 	parser.getRoot()->genCode(context);
-	if (context.handleErrors())
+	if (context.handleErrors(file))
 		return 2;
 
 	ModuleWriter writer(*module.get(), file, vm);

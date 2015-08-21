@@ -25,9 +25,13 @@ using namespace std;
 class Token
 {
 public:
-	Token(string token, int lineNum)
-	: str(std::move(token)), line(lineNum) {}
+	Token()
+	: line(0) {}
 
+	Token(string filename, string token, int lineNum)
+	: filename(std::move(filename)), str(std::move(token)), line(lineNum) {}
+
+	string filename;
 	string str;
 	int line;
 };
