@@ -366,13 +366,38 @@ public:
 };
 typedef NodeList<NDataType> NDataTypeList;
 
-class NBaseType : public NDataType
+class NNamedType : public NDataType
+{
+protected:
+	Token* token;
+
+public:
+	NNamedType(Token* token)
+	: token(token) {}
+
+	Token* getToken() const
+	{
+		return token;
+	}
+
+	const string& getName() const
+	{
+		return token->str;
+	}
+
+	~NNamedType()
+	{
+		delete token;
+	}
+};
+
+class NBaseType : public NNamedType
 {
 	int type;
 
 public:
-	NBaseType(int type)
-	: type(type) {}
+	NBaseType(Token* token, int type)
+	: NNamedType(token), type(type) {}
 
 	SType* getType(CodeContext& context);
 };
@@ -413,25 +438,13 @@ public:
 	}
 };
 
-class NUserType : public NDataType
+class NUserType : public NNamedType
 {
-	Token* name;
-
 public:
 	NUserType(Token* name)
-	: name(name) {}
+	: NNamedType(name) {}
 
 	SType* getType(CodeContext& context);
-
-	const string& getName() const
-	{
-		return name->str;
-	}
-
-	~NUserType()
-	{
-		delete name;
-	}
 };
 
 class NPointerType : public NDataType

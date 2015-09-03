@@ -48,21 +48,21 @@ true		{ SAVE_TOKEN return ParserBase::TT_TRUE; }
 false		{ SAVE_TOKEN return ParserBase::TT_FALSE; }
 null		{ SAVE_TOKEN return ParserBase::TT_NULL; }
 
-auto		{ return ParserBase::TT_AUTO; }
-void		{ return ParserBase::TT_VOID; }
-bool		{ return ParserBase::TT_BOOL; }
-int		{ return ParserBase::TT_INT; }
-int8		{ return ParserBase::TT_INT8; }
-int16		{ return ParserBase::TT_INT16; }
-int32		{ return ParserBase::TT_INT32; }
-int64		{ return ParserBase::TT_INT64; }
-uint		{ return ParserBase::TT_UINT; }
-uint8		{ return ParserBase::TT_UINT8; }
-uint16		{ return ParserBase::TT_UINT16; }
-uint32		{ return ParserBase::TT_UINT32; }
-uint64		{ return ParserBase::TT_UINT64; }
-float		{ return ParserBase::TT_FLOAT; }
-double		{ return ParserBase::TT_DOUBLE; }
+auto		{ SAVE_TOKEN return ParserBase::TT_AUTO; }
+void		{ SAVE_TOKEN return ParserBase::TT_VOID; }
+bool		{ SAVE_TOKEN return ParserBase::TT_BOOL; }
+int		{ SAVE_TOKEN return ParserBase::TT_INT; }
+int8		{ SAVE_TOKEN return ParserBase::TT_INT8; }
+int16		{ SAVE_TOKEN return ParserBase::TT_INT16; }
+int32		{ SAVE_TOKEN return ParserBase::TT_INT32; }
+int64		{ SAVE_TOKEN return ParserBase::TT_INT64; }
+uint		{ SAVE_TOKEN return ParserBase::TT_UINT; }
+uint8		{ SAVE_TOKEN return ParserBase::TT_UINT8; }
+uint16		{ SAVE_TOKEN return ParserBase::TT_UINT16; }
+uint32		{ SAVE_TOKEN return ParserBase::TT_UINT32; }
+uint64		{ SAVE_TOKEN return ParserBase::TT_UINT64; }
+float		{ SAVE_TOKEN return ParserBase::TT_FLOAT; }
+double		{ SAVE_TOKEN return ParserBase::TT_DOUBLE; }
 
 alias		{ return ParserBase::TT_ALIAS; }
 break		{ return ParserBase::TT_BREAK; }

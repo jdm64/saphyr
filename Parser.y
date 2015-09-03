@@ -26,9 +26,9 @@
 
 // predefined constants
 %token <t_tok> TT_FALSE TT_TRUE TT_NULL
-// qualifiers
-%token <t_int> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
-%token <t_int> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64 TT_VEC
+// base types
+%token <t_tok> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
+%token <t_tok> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64
 // operators
 %token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 %token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
@@ -36,7 +36,7 @@
 %token <t_int> TT_ASG_DQ
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS
+%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC
 %left TT_ELSE
 // constants and names
 %token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
@@ -55,7 +55,7 @@
 %type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
 %type <t_int> assignment_operator unary_operator increment_decrement_operator
 // keywords
-%type <t_int> branch_keyword base_type_keyword
+%type <t_int> branch_keyword
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
@@ -430,27 +430,21 @@ data_type_list
 	}
 	;
 base_type
-	: base_type_keyword
-	{
-		$$ = new NBaseType($1);
-	}
-	;
-base_type_keyword
-	: TT_AUTO { $$ = TT_AUTO; }
-	| TT_VOID { $$ = TT_VOID; }
-	| TT_BOOL { $$ = TT_BOOL; }
-	| TT_INT { $$ = TT_INT; }
-	| TT_INT8 { $$ = TT_INT8; }
-	| TT_INT16 { $$ = TT_INT16; }
-	| TT_INT32 { $$ = TT_INT32; }
-	| TT_INT64 { $$ = TT_INT64; }
-	| TT_UINT { $$ = TT_UINT; }
-	| TT_UINT8 { $$ = TT_UINT8; }
-	| TT_UINT16 { $$ = TT_UINT16; }
-	| TT_UINT32 { $$ = TT_UINT32; }
-	| TT_UINT64 { $$ = TT_UINT64; }
-	| TT_FLOAT { $$ = TT_FLOAT; }
-	| TT_DOUBLE { $$ = TT_DOUBLE; }
+	: TT_AUTO   { $$ = new NBaseType($1, TT_AUTO);   }
+	| TT_VOID   { $$ = new NBaseType($1, TT_VOID);   }
+	| TT_BOOL   { $$ = new NBaseType($1, TT_BOOL);   }
+	| TT_INT    { $$ = new NBaseType($1, TT_INT);    }
+	| TT_INT8   { $$ = new NBaseType($1, TT_INT8);   }
+	| TT_INT16  { $$ = new NBaseType($1, TT_INT16);  }
+	| TT_INT32  { $$ = new NBaseType($1, TT_INT32);  }
+	| TT_INT64  { $$ = new NBaseType($1, TT_INT64);  }
+	| TT_UINT   { $$ = new NBaseType($1, TT_UINT);   }
+	| TT_UINT8  { $$ = new NBaseType($1, TT_UINT8);  }
+	| TT_UINT16 { $$ = new NBaseType($1, TT_UINT16); }
+	| TT_UINT32 { $$ = new NBaseType($1, TT_UINT32); }
+	| TT_UINT64 { $$ = new NBaseType($1, TT_UINT64); }
+	| TT_FLOAT  { $$ = new NBaseType($1, TT_FLOAT);  }
+	| TT_DOUBLE { $$ = new NBaseType($1, TT_DOUBLE); }
 	;
 expression_list
 	:
