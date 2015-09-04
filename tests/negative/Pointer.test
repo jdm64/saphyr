@@ -29,7 +29,7 @@ void func3()
 ========
 
 Pointer.syp: variable a can not be dereferenced
-Pointer.syp: variable q not declared
+negative/Pointer.syp:8: variable q not declared
 Pointer.syp: can't cast value to pointer type
 Pointer.syp: pointer arithmetic only valid using ++/-- operators
 Pointer.syp: can't perform operation with two pointers

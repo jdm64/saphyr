@@ -21,9 +21,9 @@ int main()
 ========
 
 Enum.syp: enum initializer must be a constant
-Enum.syp: enum initializer must be an int-like constant
-Enum.syp: enum member name A already declared
+negative/Enum.syp:6: enum initializer must be an int-like constant
+negative/Enum.syp:6: enum member name A already declared
 Enum.syp: c is not a struct/union/enum
 Enum.syp: can't cast to enum type
-Enum.syp: Color doesn't have member NotFound
+negative/Enum.syp:18: Color doesn't have member NotFound
 found 6 errors

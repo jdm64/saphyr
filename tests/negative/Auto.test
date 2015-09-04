@@ -25,13 +25,13 @@ int main()
 
 ========
 
-Auto.syp: function return type can not be auto
-Auto.syp: parameter can not be auto type
-Auto.syp: can't create pointer to auto type
-Auto.syp: can't create array of auto types
-Auto.syp: vec type can not be auto
-Auto.syp: function return type can not be auto
-Auto.syp: parameter can not be auto type
+negative/Auto.syp:2: function return type can not be auto
+negative/Auto.syp:6: parameter can not be auto type
+negative/Auto.syp:13: can't create pointer to auto type
+negative/Auto.syp:14: can't create array of auto types
+negative/Auto.syp:15: vec type can not be auto
+negative/Auto.syp:16: function return type can not be auto
+negative/Auto.syp:17: parameter can not be auto type
 Auto.syp: size of auto is invalid
 Auto.syp: can't call new on auto type
 found 9 errors
