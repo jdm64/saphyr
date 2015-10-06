@@ -79,7 +79,7 @@ uint64_t SType::allocSize(CodeContext& context, SType* type)
 	return context.typeManager.allocSize(type);
 }
 
-SType* SType::numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min)
+SType* SType::numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min)
 {
 	switch (ltype->isVec() | (rtype->isVec() << 1)) {
 	default:
@@ -93,10 +93,10 @@ SType* SType::numericConv(CodeContext& context, SType* ltype, SType* rtype, bool
 		return rtype;
 	case 3: // both vector
 		if (ltype->size() != rtype->size()) {
-			context.addError("can not cast vec types of different sizes");
+			context.addError("can not cast vec types of different sizes", optToken);
 			return ltype;
 		}
-		auto subType = numericConv(context, ltype->subType(), rtype->subType(), false);
+		auto subType = numericConv(context, optToken, ltype->subType(), rtype->subType(), false);
 		return SType::getVec(context, subType, ltype->size());
 	}
 novec:

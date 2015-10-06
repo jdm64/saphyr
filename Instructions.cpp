@@ -17,7 +17,7 @@
 #include "Instructions.h"
 #include "parserbase.h"
 
-bool Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast)
+bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast)
 {
 	auto ltype = lhs.stype();
 	auto rtype = rhs.stype();
@@ -25,7 +25,7 @@ bool Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast
 	if (ltype == rtype) {
 		return false;
 	} else if (ltype->isComplex() || rtype->isComplex()) {
-		context.addError("can not cast complex types");
+		context.addError("can not cast complex types", optToken);
 		return true;
 	} else if (ltype->isPointer() || rtype->isPointer()) {
 		// different pointer types can't be cast automatically
@@ -33,7 +33,7 @@ bool Inst::CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast
 		return false;
 	}
 
-	auto toType = SType::numericConv(context, ltype, rtype, upcast);
+	auto toType = SType::numericConv(context, optToken, ltype, rtype, upcast);
 	return CastTo(context, lhs, toType, upcast) || CastTo(context, rhs, toType, upcast);
 }
 
@@ -155,12 +155,12 @@ CastOps Inst::getCastOp(SType* from, SType* to)
 	return Instruction::AddrSpaceCast;
 }
 
-BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
+BinaryOps Inst::getOperator(int oper, Token* optToken, SType* type, CodeContext& context)
 {
 	if (type->isVec()) {
 		type = type->subType();
 	} else if (type->isComplex()) {
-		context.addError("can not perform operation on composite types");
+		context.addError("can not perform operation on composite types", optToken);
 		return Instruction::Add;
 	}
 	switch (oper) {
@@ -182,26 +182,26 @@ BinaryOps Inst::getOperator(int oper, SType* type, CodeContext& context)
 		return type->isFloating()? Instruction::FSub : Instruction::Sub;
 	case ParserBase::TT_LSHIFT:
 		if (type->isFloating())
-			context.addError("shift operator invalid for float types");
+			context.addError("shift operator invalid for float types", optToken);
 		return Instruction::Shl;
 	case ParserBase::TT_RSHIFT:
 		if (type->isFloating())
-			context.addError("shift operator invalid for float types");
+			context.addError("shift operator invalid for float types", optToken);
 		return type->isUnsigned()? Instruction::LShr : Instruction::AShr;
 	case '&':
 		if (type->isFloating())
-			context.addError("AND operator invalid for float types");
+			context.addError("AND operator invalid for float types", optToken);
 		return Instruction::And;
 	case '|':
 		if (type->isFloating())
-			context.addError("OR operator invalid for float types");
+			context.addError("OR operator invalid for float types", optToken);
 		return Instruction::Or;
 	case '^':
 		if (type->isFloating())
-			context.addError("XOR operator invalid for float types");
+			context.addError("XOR operator invalid for float types", optToken);
 		return Instruction::Xor;
 	default:
-		context.addError("unrecognized operator " + to_string(oper));
+		context.addError("unrecognized operator " + to_string(oper), optToken);
 		return Instruction::Add;
 	}
 }
@@ -249,37 +249,37 @@ Predicate Inst::getPredicate(int oper, SType* type, CodeContext& context)
 	return predArr[offset];
 }
 
-RValue Inst::PointerMath(int type, RValue ptr, RValue val, CodeContext& context)
+RValue Inst::PointerMath(int type, Token* optToken, RValue ptr, RValue val, CodeContext& context)
 {
 	if (type != ParserBase::TT_INC && type != ParserBase::TT_DEC) {
-		context.addError("pointer arithmetic only valid using ++/-- operators");
+		context.addError("pointer arithmetic only valid using ++/-- operators", optToken);
 		return ptr;
 	}
 	auto ptrVal = GetElementPtrInst::Create(ptr, val.value(), "", context);
 	return RValue(ptrVal, ptr.stype());
 }
 
-RValue Inst::BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context)
+RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context)
 {
 	if (!lhs || !rhs)
 		return RValue();
 
-	if (CastMatch(context, lhs, rhs, true))
+	if (CastMatch(context, optToken, lhs, rhs, true))
 		return RValue();
 
 	switch ((lhs.stype()->isPointer() << 1) | rhs.stype()->isPointer()) {
 	default:
 	case 0: // no pointer
 	{
-		auto llvmOp = getOperator(type, lhs.stype(), context);
+		auto llvmOp = getOperator(type, optToken, lhs.stype(), context);
 		return RValue(BinaryOperator::Create(llvmOp, lhs, rhs, "", context), lhs.stype());
 	}
 	case 1: // lhs != ptr, rhs == ptr
 		swap(lhs, rhs);
 	case 2: // lhs == ptr, rhs != ptr
-		return PointerMath(type, lhs, rhs, context);
+		return PointerMath(type, optToken, lhs, rhs, context);
 	case 3: // both ptr
-		context.addError("can't perform operation with two pointers");
+		context.addError("can't perform operation with two pointers", optToken);
 		return lhs;
 	}
 }
@@ -292,9 +292,9 @@ RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* 
 	return condValue;
 }
 
-RValue Inst::Cmp(int type, RValue lhs, RValue rhs, CodeContext& context)
+RValue Inst::Cmp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context)
 {
-	if (CastMatch(context, lhs, rhs))
+	if (CastMatch(context, optToken, lhs, rhs))
 		return RValue();
 	auto pred = getPredicate(type, lhs.stype(), context);
 	auto cmpType = lhs.stype()->isVec()? lhs.stype()->subType() : lhs.stype();

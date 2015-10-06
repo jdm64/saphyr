@@ -835,7 +835,7 @@ RValue NAssignment::genValue(CodeContext& context)
 
 	if (oper != '=' && oper != ParserBase::TT_DQ_MARK) {
 		auto lhsLocal = Inst::Load(context, lhsVar);
-		rhsExp = Inst::BinaryOp(oper, lhsLocal, rhsExp, context);
+		rhsExp = Inst::BinaryOp(oper, opTok, lhsLocal, rhsExp, context);
 	}
 	Inst::CastTo(context, rhsExp, lhsVar.stype());
 	new StoreInst(rhsExp, lhsVar, context);
@@ -953,7 +953,7 @@ RValue NCompareOperator::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto rhsExp = rhs->genValue(context);
 
-	return Inst::Cmp(oper, lhsExp, rhsExp, context);
+	return Inst::Cmp(oper, opTok, lhsExp, rhsExp, context);
 }
 
 RValue NBinaryMathOperator::genValue(CodeContext& context)
@@ -961,7 +961,7 @@ RValue NBinaryMathOperator::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto rhsExp = rhs->genValue(context);
 
-	return Inst::BinaryOp(oper, lhsExp, rhsExp, context);
+	return Inst::BinaryOp(oper, opTok, lhsExp, rhsExp, context);
 }
 
 RValue NNullCoalescing::genValue(CodeContext& context)
@@ -995,7 +995,7 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 	}
 
 	if (lhsExp.stype() != rhsExp.stype())
-		context.addError("return types of null coalescing operator must match");
+		context.addError("return types of null coalescing operator must match", opTok);
 	return retVal;
 }
 
@@ -1022,13 +1022,13 @@ RValue NUnaryMathOperator::genValue(CodeContext& context)
 	switch (oper) {
 	case '+':
 	case '-':
-		return Inst::BinaryOp(oper, RValue::getZero(context, type), unaryExp, context);
+		return Inst::BinaryOp(oper, opTok, RValue::getZero(context, type), unaryExp, context);
 	case '!':
-		return Inst::Cmp(ParserBase::TT_EQ, RValue::getZero(context, type), unaryExp, context);
+		return Inst::Cmp(ParserBase::TT_EQ, opTok, RValue::getZero(context, type), unaryExp, context);
 	case '~':
-		return Inst::BinaryOp('^', RValue::getAllOne(context, type), unaryExp, context);
+		return Inst::BinaryOp('^', opTok, RValue::getAllOne(context, type), unaryExp, context);
 	default:
-		context.addError("invalid unary operator " + to_string(oper));
+		context.addError("invalid unary operator " + to_string(oper), opTok);
 		return RValue();
 	}
 }
@@ -1082,7 +1082,7 @@ RValue NIncrement::genValue(CodeContext& context)
 		return RValue();
 	auto incType = varVal.stype()->isPointer()? SType::getInt(context, 32) : varVal.stype();
 
-	auto result = Inst::BinaryOp(oper, varVal, RValue::getNumVal(context, incType, oper == ParserBase::TT_INC? 1:-1), context);
+	auto result = Inst::BinaryOp(oper, opTok, varVal, RValue::getNumVal(context, incType, oper == ParserBase::TT_INC? 1:-1), context);
 	new StoreInst(result, varPtr, context);
 
 	return isPostfix? varVal : RValue(result, varVal.stype());

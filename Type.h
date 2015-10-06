@@ -22,6 +22,7 @@
 #include <llvm/ADT/APSInt.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/Debug.h>
+#include "Token.h"
 
 // forward declaration
 class CodeContext;
@@ -95,7 +96,7 @@ public:
 
 	static uint64_t allocSize(CodeContext& context, SType* type);
 
-	static SType* numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
+	static SType* numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min = true);
 
 	static SType* getAuto(CodeContext& context);
 
