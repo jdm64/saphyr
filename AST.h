@@ -1111,15 +1111,30 @@ public:
 	}
 };
 
-class NAssignment : public NExpression
+class NOperatorExpr : public NExpression
 {
+protected:
 	int oper;
+	Token* opTok;
+
+public:
+	NOperatorExpr(int oper, Token* opTok)
+	: oper(oper), opTok(opTok) {}
+
+	~NOperatorExpr()
+	{
+		delete opTok;
+	}
+};
+
+class NAssignment : public NOperatorExpr
+{
 	NVariable* lhs;
 	NExpression* rhs;
 
 public:
-	NAssignment(int oper, NVariable* lhs, NExpression* rhs)
-	: oper(oper), lhs(lhs), rhs(rhs) {}
+	NAssignment(int oper, Token* opToken, NVariable* lhs, NExpression* rhs)
+	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
 
 	RValue genValue(CodeContext& context);
 
@@ -1166,16 +1181,15 @@ public:
 	}
 };
 
-class NBinaryOperator : public NExpression
+class NBinaryOperator : public NOperatorExpr
 {
 protected:
-	int oper;
 	NExpression* lhs;
 	NExpression* rhs;
 
 public:
-	NBinaryOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: oper(oper), lhs(lhs), rhs(rhs) {}
+	NBinaryOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
 
 	~NBinaryOperator()
 	{
@@ -1187,8 +1201,8 @@ public:
 class NLogicalOperator : public NBinaryOperator
 {
 public:
-	NLogicalOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(oper, lhs, rhs) {}
+	NLogicalOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1196,8 +1210,8 @@ public:
 class NCompareOperator : public NBinaryOperator
 {
 public:
-	NCompareOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(oper, lhs, rhs) {}
+	NCompareOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1205,8 +1219,8 @@ public:
 class NBinaryMathOperator : public NBinaryOperator
 {
 public:
-	NBinaryMathOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(oper, lhs, rhs) {}
+	NBinaryMathOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1214,8 +1228,8 @@ public:
 class NNullCoalescing : public NBinaryOperator
 {
 public:
-	NNullCoalescing(NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(0, lhs, rhs) {}
+	NNullCoalescing(Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(0, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1254,15 +1268,14 @@ public:
 	}
 };
 
-class NUnaryOperator : public NExpression
+class NUnaryOperator : public NOperatorExpr
 {
 protected:
-	int oper;
 	NExpression* unary;
 
 public:
-	NUnaryOperator(int oper, NExpression* unary)
-	: oper(oper), unary(unary) {}
+	NUnaryOperator(int oper, Token* opToken, NExpression* unary)
+	: NOperatorExpr(oper, opToken), unary(unary) {}
 
 	~NUnaryOperator()
 	{
@@ -1273,8 +1286,8 @@ public:
 class NUnaryMathOperator : public NUnaryOperator
 {
 public:
-	NUnaryMathOperator(int oper, NExpression* unaryExp)
-	: NUnaryOperator(oper, unaryExp) {}
+	NUnaryMathOperator(int oper, Token* opToken, NExpression* unaryExp)
+	: NUnaryOperator(oper, opToken, unaryExp) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1304,15 +1317,14 @@ public:
 	}
 };
 
-class NIncrement : public NExpression
+class NIncrement : public NOperatorExpr
 {
 	NVariable* variable;
-	int type;
 	bool isPostfix;
 
 public:
-	NIncrement(NVariable* variable, int type, bool isPostfix)
-	: variable(variable), type(type), isPostfix(isPostfix) {}
+	NIncrement(int oper, Token* opToken, NVariable* variable, bool isPostfix)
+	: NOperatorExpr(oper, opToken), variable(variable), isPostfix(isPostfix) {}
 
 	RValue genValue(CodeContext& context);
 

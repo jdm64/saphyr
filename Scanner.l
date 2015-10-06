@@ -21,28 +21,28 @@ SUFFIX		_{NAME}
 {SPACE}+		;
 
 
-"<<"	{ return ParserBase::TT_LSHIFT; }
-">>"	{ return ParserBase::TT_RSHIFT; }
-"<="	{ return ParserBase::TT_LEQ; }
-">="	{ return ParserBase::TT_GEQ; }
-"!="	{ return ParserBase::TT_NEQ; }
-"=="	{ return ParserBase::TT_EQ; }
-"&&"	{ return ParserBase::TT_LOG_AND; }
-"||"	{ return ParserBase::TT_LOG_OR; }
-"*="	{ return ParserBase::TT_ASG_MUL; }
-"/="	{ return ParserBase::TT_ASG_DIV; }
-"%="	{ return ParserBase::TT_ASG_MOD; }
-"+="	{ return ParserBase::TT_ASG_ADD; }
-"-="	{ return ParserBase::TT_ASG_SUB; }
-"<<="	{ return ParserBase::TT_ASG_LSH; }
-">>="	{ return ParserBase::TT_ASG_RSH; }
-"&="	{ return ParserBase::TT_ASG_AND; }
-"^="	{ return ParserBase::TT_ASG_OR; }
-"|="	{ return ParserBase::TT_ASG_XOR; }
-"++"	{ return ParserBase::TT_INC; }
-"--"	{ return ParserBase::TT_DEC; }
-"??"	{ return ParserBase::TT_DQ_MARK; }
-"??="	{ return ParserBase::TT_ASG_DQ; }
+"<<"	{ SAVE_TOKEN return ParserBase::TT_LSHIFT; }
+">>"	{ SAVE_TOKEN return ParserBase::TT_RSHIFT; }
+"<="	{ SAVE_TOKEN return ParserBase::TT_LEQ; }
+">="	{ SAVE_TOKEN return ParserBase::TT_GEQ; }
+"!="	{ SAVE_TOKEN return ParserBase::TT_NEQ; }
+"=="	{ SAVE_TOKEN return ParserBase::TT_EQ; }
+"&&"	{ SAVE_TOKEN return ParserBase::TT_LOG_AND; }
+"||"	{ SAVE_TOKEN return ParserBase::TT_LOG_OR; }
+"*="	{ SAVE_TOKEN return ParserBase::TT_ASG_MUL; }
+"/="	{ SAVE_TOKEN return ParserBase::TT_ASG_DIV; }
+"%="	{ SAVE_TOKEN return ParserBase::TT_ASG_MOD; }
+"+="	{ SAVE_TOKEN return ParserBase::TT_ASG_ADD; }
+"-="	{ SAVE_TOKEN return ParserBase::TT_ASG_SUB; }
+"<<="	{ SAVE_TOKEN return ParserBase::TT_ASG_LSH; }
+">>="	{ SAVE_TOKEN return ParserBase::TT_ASG_RSH; }
+"&="	{ SAVE_TOKEN return ParserBase::TT_ASG_AND; }
+"^="	{ SAVE_TOKEN return ParserBase::TT_ASG_OR; }
+"|="	{ SAVE_TOKEN return ParserBase::TT_ASG_XOR; }
+"++"	{ SAVE_TOKEN return ParserBase::TT_INC; }
+"--"	{ SAVE_TOKEN return ParserBase::TT_DEC; }
+"??"	{ SAVE_TOKEN return ParserBase::TT_DQ_MARK; }
+"??="	{ SAVE_TOKEN return ParserBase::TT_ASG_DQ; }
 
 true		{ SAVE_TOKEN return ParserBase::TT_TRUE; }
 false		{ SAVE_TOKEN return ParserBase::TT_FALSE; }
@@ -98,4 +98,4 @@ while		{ return ParserBase::TT_WHILE; }
 \'(\\.|[^'])\'	{ SAVE_TOKEN return ParserBase::TT_CHAR_LIT; }
 \"(\\.|[^"])*\"	{ SAVE_TOKEN return ParserBase::TT_STR_LIT; }
 `(\\.|[^`])*`	{ SAVE_TOKEN return ParserBase::TT_STR_LIT; }
-.		{ return matched()[0]; }
+.		{ SAVE_TOKEN return matched()[0]; }
