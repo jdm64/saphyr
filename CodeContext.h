@@ -33,14 +33,15 @@ using namespace boost::program_options;
 struct LabelBlock
 {
 	BasicBlock* block;
+	Token token;
 	bool isPlaceholder;
 
-	LabelBlock(BasicBlock* block, bool isPlaceholder)
-	: block(block), isPlaceholder(isPlaceholder) {}
+	LabelBlock(BasicBlock* block, Token* token, bool isPlaceholder)
+	: block(block), token(*token), isPlaceholder(isPlaceholder) {}
 };
 
 typedef unique_ptr<LabelBlock> LabelBlockPtr;
-#define smart_label(block, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, placeholder))
+#define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, token, placeholder))
 
 class ScopeTable
 {
@@ -128,7 +129,7 @@ class CodeContext : public SymbolTable
 	{
 		for (auto& item : labelBlocks) {
 			if (item.second->isPlaceholder)
-				addError("label " + item.first + " not defined");
+				addError("label " + item.first + " not defined", &item.second->token);
 		}
 	}
 
@@ -261,12 +262,12 @@ public:
 	{
 		return labelBlocks[name].get();
 	}
-	LabelBlock* createLabelBlock(const string& name, bool isPlaceholder)
+	LabelBlock* createLabelBlock(Token* name, bool isPlaceholder)
 	{
-		LabelBlockPtr &item = labelBlocks[name];
+		LabelBlockPtr &item = labelBlocks[name->str];
 		if (!item.get()) {
-			item = smart_label(createBlock(), isPlaceholder);
-			item.get()->block->setName(name);
+			item = smart_label(createBlock(), name, isPlaceholder);
+			item.get()->block->setName(name->str);
 		}
 		return item.get();
 	}

@@ -1067,6 +1067,11 @@ public:
 
 	void genCode(CodeContext& context);
 
+	Token* getNameToken() const
+	{
+		return name;
+	}
+
 	const string& getName() const
 	{
 		return name->str;
