@@ -497,7 +497,7 @@ ternary_expression
 	: new_expression
 	| new_expression '?' new_expression ':' new_expression
 	{
-		$$ = new NTernaryOperator($1, $3, $5);
+		$$ = new NTernaryOperator($1, $3, $4.t_tok, $5);
 	}
 	;
 assignment_operator

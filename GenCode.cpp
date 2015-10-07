@@ -882,7 +882,7 @@ RValue NTernaryOperator::genValue(CodeContext& context)
 	}
 
 	if (trueExp.stype() != falseExp.stype())
-		context.addError("return types of ternary must match");
+		context.addError("return types of ternary must match", colTok);
 	return retVal;
 }
 

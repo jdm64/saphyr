@@ -1157,10 +1157,11 @@ class NTernaryOperator : public NExpression
 	NExpression* condition;
 	NExpression* trueVal;
 	NExpression* falseVal;
+	Token* colTok;
 
 public:
-	NTernaryOperator(NExpression* condition, NExpression* trueVal, NExpression* falseVal)
-	: condition(condition), trueVal(trueVal), falseVal(falseVal) {}
+	NTernaryOperator(NExpression* condition, NExpression* trueVal, Token *colTok, NExpression* falseVal)
+	: condition(condition), trueVal(trueVal), falseVal(falseVal), colTok(colTok) {}
 
 	RValue genValue(CodeContext& context);
 
@@ -1169,6 +1170,7 @@ public:
 		delete condition;
 		delete trueVal;
 		delete falseVal;
+		delete colTok;
 	}
 };
 
