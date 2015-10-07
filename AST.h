@@ -610,10 +610,11 @@ class NMemberVariable : public NVariable
 {
 	NVariable* baseVar;
 	Token* memberName;
+	Token* dotToken;
 
 public:
-	NMemberVariable(NVariable* baseVar, Token* memberName)
-	: baseVar(baseVar), memberName(memberName) {}
+	NMemberVariable(NVariable* baseVar, Token* memberName, Token* dotToken)
+	: baseVar(baseVar), memberName(memberName), dotToken(dotToken) {}
 
 	RValue loadVar(CodeContext& context);
 
@@ -637,6 +638,7 @@ public:
 	{
 		delete baseVar;
 		delete memberName;
+		delete dotToken;
 	}
 };
 

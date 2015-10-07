@@ -234,7 +234,7 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 	else if (varType->isEnum())
 		return loadEnum(context, static_cast<SEnumType*>(varType));
 
-	context.addError(getName() + " is not a struct/union/enum");
+	context.addError(getName() + " is not a struct/union/enum", dotToken);
 	return RValue();
 }
 

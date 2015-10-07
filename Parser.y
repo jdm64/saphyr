@@ -684,7 +684,7 @@ paren_expression
 	}
 	| paren_expression '.' TT_IDENTIFIER
 	{
-		$$ = new NMemberVariable(new NExprVariable($1), $3);
+		$$ = new NMemberVariable(new NExprVariable($1), $3, $2.t_tok);
 	}
 	;
 function_call
@@ -722,7 +722,7 @@ explicit_variable_expresion
 	}
 	| variable_expresion '.' TT_IDENTIFIER
 	{
-		$$ = new NMemberVariable($1, $3);
+		$$ = new NMemberVariable($1, $3, $2.t_tok);
 	}
 	| variable_expresion '@'
 	{
