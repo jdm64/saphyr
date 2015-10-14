@@ -38,7 +38,7 @@ void func2()
 ========
 
 negative/Struct.syp:4: struct members must not have auto type
-Struct.syp: structs don't support variable initialization
+negative/Struct.syp:5: structs don't support variable initialization
 negative/Struct.syp:6: member name j already declared
 negative/Struct.syp:15: Good type already declared
 negative/Struct.syp:21: Nothing type not declared

@@ -195,7 +195,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	if (!indexVal) {
 		return indexVal;
 	} else if (!indexVal.stype()->isNumeric()) {
-		context.addError("array index is not able to be cast to an int");
+		context.addError("array index is not able to be cast to an int", brackTok);
 		return RValue();
 	}
 
@@ -205,10 +205,10 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	var = Inst::Deref(context, var, true);
 
 	if (!var.stype()->isSequence()) {
-		context.addError("variable " + getName() + " is not an array or vec");
+		context.addError("variable " + getName() + " is not an array or vec", brackTok);
 		return RValue();
 	}
-	Inst::CastTo(context, indexVal, SType::getInt(context, 64));
+	Inst::CastTo(context, brackTok, indexVal, SType::getInt(context, 64));
 
 	vector<Value*> indexes;
 	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
@@ -336,7 +336,7 @@ void NVariableDecl::genCode(CodeContext& context)
 	context.storeLocalSymbol(var, name);
 
 	if (initValue) {
-		Inst::CastTo(context, initValue, varType);
+		Inst::CastTo(context, eqToken, initValue, varType);
 		new StoreInst(initValue, var, context);
 	}
 }
@@ -344,7 +344,7 @@ void NVariableDecl::genCode(CodeContext& context)
 void NGlobalVariableDecl::genCode(CodeContext& context)
 {
 	if (initExp && !initExp->isConstant()) {
-		context.addError("global variables only support constant value initializer");
+		context.addError("global variables only support constant value initializer", eqToken);
 		return;
 	}
 	auto initValue = initExp? initExp->genValue(context) : RValue();
@@ -367,9 +367,9 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 
 	if (initValue) {
 		if (initValue.isNullPtr()) {
-			Inst::CastTo(context, initValue, varType);
+			Inst::CastTo(context, eqToken, initValue, varType);
 		} else if (varType != initValue.stype()) {
-			context.addError("global variable initialization requires exact type matching");
+			context.addError("global variable initialization requires exact type matching", eqToken);
 			return;
 		}
 	}
@@ -397,7 +397,7 @@ bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector,
 	bool valid = true;
 	for (auto var : *variables) {
 		if (var->hasInit())
-			context.addError("structs don't support variable initialization");
+			context.addError("structs don't support variable initialization", var->getEqToken());
 		auto name = var->getName();
 		auto res = memberNames.insert(name);
 		if (!res.second) {
@@ -459,7 +459,7 @@ void NEnumDeclaration::genCode(CodeContext& context)
 		if (item->hasInit()) {
 			auto initExp = item->getInitExp();
 			if (!initExp->isConstant()) {
-				context.addError("enum initializer must be a constant");
+				context.addError("enum initializer must be a constant", item->getEqToken());
 				continue;
 			}
 			auto constVal = static_cast<NConstant*>(initExp);
@@ -542,16 +542,16 @@ void NReturnStatement::genCode(CodeContext& context)
 
 	if (funcReturn->isVoid()) {
 		if (value) {
-			context.addError("function " + func.name().str() + " declared void, but non-void return found");
+			context.addError("function " + func.name().str() + " declared void, but non-void return found", retToken);
 			return;
 		}
 	} else if (!value) {
-		context.addError("function " + func.name().str() + " declared non-void, but void return found");
+		context.addError("function " + func.name().str() + " declared non-void, but void return found", retToken);
 		return;
 	}
 	auto returnVal = value? value->genValue(context) : RValue();
 	if (returnVal)
-		Inst::CastTo(context, returnVal, funcReturn);
+		Inst::CastTo(context, retToken, returnVal, funcReturn);
 	ReturnInst::Create(context, returnVal, context);
 	context.pushBlock(context.createBlock());
 }
@@ -607,7 +607,7 @@ ConstantInt* NSwitchCase::getValue(CodeContext& context)
 void NSwitchStatement::genCode(CodeContext& context)
 {
 	auto switchValue = value->genValue(context);
-	Inst::CastTo(context, switchValue, SType::getInt(context, 32));
+	Inst::CastTo(context, lparen, switchValue, SType::getInt(context, 32));
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
@@ -820,7 +820,7 @@ RValue NAssignment::genValue(CodeContext& context)
 
 	if (oper == ParserBase::TT_DQ_MARK) {
 		auto condExp = Inst::Load(context, lhsVar);
-		Inst::CastTo(context, condExp, SType::getBool(context));
+		Inst::CastTo(context, opTok, condExp, SType::getBool(context));
 
 		auto trueBlock = context.createBlock();
 		endBlock = context.createBlock();
@@ -837,7 +837,7 @@ RValue NAssignment::genValue(CodeContext& context)
 		auto lhsLocal = Inst::Load(context, lhsVar);
 		rhsExp = Inst::BinaryOp(oper, opTok, lhsLocal, rhsExp, context);
 	}
-	Inst::CastTo(context, rhsExp, lhsVar.stype());
+	Inst::CastTo(context, opTok, rhsExp, lhsVar.stype());
 	new StoreInst(rhsExp, lhsVar, context);
 
 	if (oper == ParserBase::TT_DQ_MARK) {
@@ -851,7 +851,7 @@ RValue NAssignment::genValue(CodeContext& context)
 RValue NTernaryOperator::genValue(CodeContext& context)
 {
 	auto condExp = condition->genValue(context);
-	Inst::CastTo(context, condExp, SType::getBool(context));
+	Inst::CastTo(context, colTok, condExp, SType::getBool(context));
 
 	RValue trueExp, falseExp, retVal;
 	if (trueVal->isComplex() || falseVal->isComplex()) {
@@ -937,7 +937,7 @@ RValue NLogicalOperator::genValue(CodeContext& context)
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = rhs->genValue(context);
-	Inst::CastTo(context, rhsExp, SType::getBool(context));
+	Inst::CastTo(context, opTok, rhsExp, SType::getBool(context));
 	BranchInst::Create(secondBlock, context);
 
 	context.pushBlock(secondBlock);
@@ -970,7 +970,7 @@ RValue NNullCoalescing::genValue(CodeContext& context)
 	auto lhsExp = lhs->genValue(context);
 	auto condition = lhsExp;
 
-	Inst::CastTo(context, condition, SType::getBool(context), false);
+	Inst::CastTo(context, opTok, condition, SType::getBool(context), false);
 	if (rhs->isComplex()) {
 		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
@@ -1059,7 +1059,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	int i = 0;
 	for (auto arg : *arguments) {
 		auto argExp = arg->genValue(context);
-		Inst::CastTo(context, argExp, func.getParam(i++));
+		Inst::CastTo(context, name, argExp, func.getParam(i++));
 		exp_list.push_back(argExp);
 	}
 	auto call = CallInst::Create(func, exp_list, "", context);

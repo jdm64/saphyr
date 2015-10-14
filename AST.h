@@ -492,10 +492,11 @@ class NVariableDecl : public NDeclaration
 protected:
 	NExpression* initExp;
 	NDataType* type;
+	Token* eqToken;
 
 public:
-	NVariableDecl(Token* name, NExpression* initExp = nullptr)
-	: NDeclaration(name), initExp(initExp), type(nullptr) {}
+	NVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
+	: NDeclaration(name), initExp(initExp), type(nullptr), eqToken(eqToken) {}
 
 	// NOTE: must be called before genCode()
 	void setDataType(NDataType* qtype)
@@ -513,11 +514,17 @@ public:
 		return initExp;
 	}
 
+	Token* getEqToken() const
+	{
+		return eqToken;
+	}
+
 	void genCode(CodeContext& context);
 
 	~NVariableDecl()
 	{
 		delete initExp;
+		delete eqToken;
 	}
 };
 
@@ -536,8 +543,8 @@ public:
 class NGlobalVariableDecl : public NVariableDecl
 {
 public:
-	NGlobalVariableDecl(Token* name, NExpression* initExp = nullptr)
-	: NVariableDecl(name, initExp) {}
+	NGlobalVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
+	: NVariableDecl(name, eqToken, initExp) {}
 
 	void genCode(CodeContext& context);
 };
@@ -587,10 +594,11 @@ class NArrayVariable : public NVariable
 {
 	NVariable* arrVar;
 	NExpression* index;
+	Token* brackTok;
 
 public:
-	NArrayVariable(NVariable* arrVar, NExpression* index)
-	: arrVar(arrVar), index(index) {}
+	NArrayVariable(NVariable* arrVar, Token* brackTok, NExpression* index)
+	: arrVar(arrVar), index(index), brackTok(brackTok) {}
 
 	RValue loadVar(CodeContext& context);
 
@@ -603,6 +611,7 @@ public:
 	{
 		delete arrVar;
 		delete index;
+		delete brackTok;
 	}
 };
 
@@ -977,10 +986,11 @@ class NSwitchStatement : public NStatement
 {
 	NExpression* value;
 	NSwitchCaseList* cases;
+	Token* lparen;
 
 public:
-	NSwitchStatement(NExpression* value, NSwitchCaseList* cases)
-	: value(value), cases(cases) {}
+	NSwitchStatement(Token* lparen, NExpression* value, NSwitchCaseList* cases)
+	: value(value), cases(cases), lparen(lparen) {}
 
 	void genCode(CodeContext& context);
 
@@ -988,6 +998,7 @@ public:
 	{
 		delete value;
 		delete cases;
+		delete lparen;
 	}
 };
 
@@ -1046,16 +1057,18 @@ public:
 class NReturnStatement : public NJumpStatement
 {
 	NExpression* value;
+	Token* retToken;
 
 public:
-	NReturnStatement(NExpression* value = nullptr)
-	: value(value) {}
+	NReturnStatement(Token* retToken = nullptr, NExpression* value = nullptr)
+	: value(value), retToken(retToken) {}
 
 	void genCode(CodeContext& context);
 
 	~NReturnStatement()
 	{
 		delete value;
+		delete retToken;
 	}
 };
 

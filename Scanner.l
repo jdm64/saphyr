@@ -79,7 +79,7 @@ if		{ return ParserBase::TT_IF; }
 loop		{ return ParserBase::TT_LOOP; }
 new		{ return ParserBase::TT_NEW; }
 redo		{ return ParserBase::TT_REDO; }
-return		{ return ParserBase::TT_RETURN; }
+return		{ SAVE_TOKEN return ParserBase::TT_RETURN; }
 sizeof		{ return ParserBase::TT_SIZEOF; }
 struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }

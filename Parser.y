@@ -206,7 +206,7 @@ statement
 	}
 	| TT_SWITCH '(' expression ')' '{' switch_case_list '}'
 	{
-		$$ = new NSwitchStatement($3, $6);
+		$$ = new NSwitchStatement($2.t_tok, $3, $6);
 	}
 	| TT_IDENTIFIER ':'
 	{
@@ -218,7 +218,7 @@ statement
 	}
 	| TT_RETURN expression_or_empty ';'
 	{
-		$$ = new NReturnStatement($2);
+		$$ = new NReturnStatement($1.t_tok, $2);
 	}
 	| TT_DELETE variable_expresion ';'
 	{
@@ -354,7 +354,7 @@ variable
 	}
 	| TT_IDENTIFIER '=' expression
 	{
-		$$ = new NVariableDecl($1, $3);
+		$$ = new NVariableDecl($1, $2.t_tok, $3);
 	}
 	;
 global_variable
@@ -364,7 +364,7 @@ global_variable
 	}
 	| TT_IDENTIFIER '=' expression
 	{
-		$$ = new NGlobalVariableDecl($1, $3);
+		$$ = new NGlobalVariableDecl($1, $2.t_tok, $3);
 	}
 	;
 parameter_list
@@ -680,7 +680,7 @@ paren_expression
 	}
 	| paren_expression '[' expression ']'
 	{
-		$$ = new NArrayVariable(new NExprVariable($1), $3);
+		$$ = new NArrayVariable(new NExprVariable($1), $2.t_tok, $3);
 	}
 	| paren_expression '.' TT_IDENTIFIER
 	{
@@ -718,7 +718,7 @@ variable_expresion
 explicit_variable_expresion
 	: variable_expresion '[' expression ']'
 	{
-		$$ = new NArrayVariable($1, $3);
+		$$ = new NArrayVariable($1, $2.t_tok, $3);
 	}
 	| variable_expresion '.' TT_IDENTIFIER
 	{

@@ -28,7 +28,7 @@ class Inst
 {
 	static BinaryOps getOperator(int oper, Token* optToken, SType* type, CodeContext& context);
 
-	static Predicate getPredicate(int oper, SType* type, CodeContext& context);
+	static Predicate getPredicate(int oper, Token* token, SType* type, CodeContext& context);
 
 	/**
 	 * @return the CastOps required to cast from -> to. Only supports numeric casts.
@@ -41,7 +41,7 @@ class Inst
 	static RValue PointerMath(int type, Token* optToken, RValue ptr, RValue val, CodeContext& context);
 
 public:
-	static bool CastTo(CodeContext& context, RValue& value, SType* type, bool upcast = false);
+	static bool CastTo(CodeContext& context, Token* token, RValue& value, SType* type, bool upcast = false);
 
 	static RValue BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 
