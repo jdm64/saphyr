@@ -931,12 +931,13 @@ public:
 
 class NWhileStatement : public NConditionStmt
 {
+	Token* lparen;
 	bool isDoWhile;
 	bool isUntil;
 
 public:
-	NWhileStatement(NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
-	: NConditionStmt(condition, body), isDoWhile(isDoWhile), isUntil(isUntil) {}
+	NWhileStatement(Token* lparen, NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
+	: NConditionStmt(condition, body), lparen(lparen), isDoWhile(isDoWhile), isUntil(isUntil) {}
 
 	void genCode(CodeContext& context);
 };
@@ -1006,10 +1007,11 @@ class NForStatement : public NConditionStmt
 {
 	NStatementList* preStm;
 	NExpressionList* postExp;
+	Token* semiCol2;
 
 public:
-	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
-	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp) {}
+	NForStatement(NStatementList* preStm, NExpression* condition, Token* semiCol2, NExpressionList* postExp, NStatementList* body)
+	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp), semiCol2(semiCol2) {}
 
 	void genCode(CodeContext& context);
 
@@ -1017,22 +1019,25 @@ public:
 	{
 		delete preStm;
 		delete postExp;
+		delete semiCol2;
 	}
 };
 
 class NIfStatement : public NConditionStmt
 {
 	NStatementList* elseBody;
+	Token* lparen;
 
 public:
-	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
-	: NConditionStmt(condition, ifBody), elseBody(elseBody) {}
+	NIfStatement(Token* lparen, NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
+	: NConditionStmt(condition, ifBody), elseBody(elseBody), lparen(lparen) {}
 
 	void genCode(CodeContext& context);
 
 	~NIfStatement()
 	{
 		delete elseBody;
+		delete lparen;
 	}
 };
 

@@ -21,7 +21,7 @@ int func()
 
 ========
 
-Vec.syp: can not cast vec type to bool
+negative/Vec.syp:7: can not cast vec type to bool
 negative/Vec.syp:8: can not cast vec types of different sizes
 negative/Vec.syp:8: can not cast vec types of different sizes
 negative/Vec.syp:16: vec size must be greater than 0

@@ -226,7 +226,7 @@ statement
 	}
 	| TT_FOR '(' declaration_or_expression_list ';' expression_or_empty ';' expression_list ')' single_statement
 	{
-		$$ = new NForStatement($3, $5, $7, $9);
+		$$ = new NForStatement($3, $5, $6.t_tok, $7, $9);
 	}
 	| TT_LOOP single_statement
 	{
@@ -236,19 +236,19 @@ statement
 while_loop
 	: TT_WHILE '(' expression_or_empty ')' single_statement
 	{
-		$$ = new NWhileStatement($3, $5);
+		$$ = new NWhileStatement($2.t_tok, $3, $5);
 	}
 	| TT_DO single_statement TT_WHILE '(' expression_or_empty ')' ';'
 	{
-		$$ = new NWhileStatement($5, $2, true);
+		$$ = new NWhileStatement($4.t_tok, $5, $2, true);
 	}
 	| TT_UNTIL '(' expression_or_empty ')' single_statement
 	{
-		$$ = new NWhileStatement($3, $5, false, true);
+		$$ = new NWhileStatement($2.t_tok, $3, $5, false, true);
 	}
 	| TT_DO single_statement TT_UNTIL '(' expression_or_empty ')' ';'
 	{
-		$$ = new NWhileStatement($5, $2, true, true);
+		$$ = new NWhileStatement($4.t_tok, $5, $2, true, true);
 	}
 	;
 switch_case_list
@@ -290,7 +290,7 @@ branch_keyword
 condition_statement
 	: TT_IF '(' expression ')' single_statement else_statement
 	{
-		$$ = new NIfStatement($3, $5, $6);
+		$$ = new NIfStatement($2.t_tok, $3, $5, $6);
 	}
 	;
 else_statement

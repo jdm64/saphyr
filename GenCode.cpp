@@ -588,7 +588,7 @@ void NWhileStatement::genCode(CodeContext& context)
 	BranchInst::Create(startBlock, context);
 
 	context.pushBlock(condBlock);
-	Inst::Branch(trueBlock, falseBlock, condition, context);
+	Inst::Branch(trueBlock, falseBlock, condition, lparen, context);
 
 	context.pushBlock(bodyBlock);
 	body->genCode(context);
@@ -664,7 +664,7 @@ void NForStatement::genCode(CodeContext& context)
 	BranchInst::Create(condBlock, context);
 
 	context.pushBlock(condBlock);
-	Inst::Branch(bodyBlock, endBlock, condition, context);
+	Inst::Branch(bodyBlock, endBlock, condition, semiCol2, context);
 
 	context.pushBlock(bodyBlock);
 	body->genCode(context);
@@ -687,7 +687,7 @@ void NIfStatement::genCode(CodeContext& context)
 
 	context.pushLocalTable();
 
-	Inst::Branch(ifBlock, elseBlock, condition, context);
+	Inst::Branch(ifBlock, elseBlock, condition, lparen, context);
 
 	context.pushBlock(ifBlock);
 	body->genCode(context);
@@ -933,7 +933,7 @@ RValue NLogicalOperator::genValue(CodeContext& context)
 	auto trueBlock = (oper == ParserBase::TT_LOG_AND)? firstBlock : secondBlock;
 	auto falseBlock = (oper == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
 
-	auto lhsExp = Inst::Branch(trueBlock, falseBlock, lhs, context);
+	auto lhsExp = Inst::Branch(trueBlock, falseBlock, lhs, opTok, context);
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = rhs->genValue(context);

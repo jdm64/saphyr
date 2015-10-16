@@ -45,7 +45,7 @@ public:
 
 	static RValue BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 
-	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context);
+	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, Token* token, CodeContext& context);
 
 	static RValue Cmp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 

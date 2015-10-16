@@ -284,10 +284,10 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 	}
 }
 
-RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
+RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, Token* token, CodeContext& context)
 {
 	auto condValue = condExp? condExp->genValue(context) : RValue::getNumVal(context, SType::getBool(context));
-	CastTo(context, nullptr, condValue, SType::getBool(context));
+	CastTo(context, token, condValue, SType::getBool(context));
 	BranchInst::Create(trueBlock, falseBlock, condValue, context);
 	return condValue;
 }
