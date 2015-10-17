@@ -322,15 +322,15 @@ RValue Inst::Deref(CodeContext& context, RValue value, bool recursive)
 	return retVal;
 }
 
-RValue Inst::SizeOf(CodeContext& context, SType* type)
+RValue Inst::SizeOf(CodeContext& context, Token* token, SType* type)
 {
 	if (!type) {
 		return RValue();
 	} else if (type->isAuto()) {
-		context.addError("size of auto is invalid");
+		context.addError("size of auto is invalid", token);
 		return RValue();
 	} else if (type->isVoid()) {
-		context.addError("size of void is invalid");
+		context.addError("size of void is invalid", token);
 		return RValue();
 	}
 	auto itype = SType::getInt(context, 64, true);
@@ -338,30 +338,30 @@ RValue Inst::SizeOf(CodeContext& context, SType* type)
 	return RValue(size, itype);
 }
 
-RValue Inst::SizeOf(CodeContext& context, NDataType* type)
+RValue Inst::SizeOf(CodeContext& context, Token* token, NDataType* type)
 {
-	return SizeOf(context, type->getType(context));
+	return SizeOf(context, token, type->getType(context));
 }
 
-RValue Inst::SizeOf(CodeContext& context, NExpression* exp)
+RValue Inst::SizeOf(CodeContext& context, Token* token, NExpression* exp)
 {
-	return SizeOf(context, exp->genValue(context).stype());
+	return SizeOf(context, token, exp->genValue(context).stype());
 }
 
-RValue Inst::SizeOf(CodeContext& context, const string& name)
+RValue Inst::SizeOf(CodeContext& context, Token* token, const string& name)
 {
 	auto isType = SUserType::lookup(context, name);
 	auto isVar = context.loadSymbol(name);
 	SType* stype = nullptr;
 
 	if (isType && isVar) {
-		context.addError(name + " is ambigious, both a type and a variable");
+		context.addError(name + " is ambigious, both a type and a variable", token);
 	} else if (isType) {
 		stype = isType;
 	} else if (isVar) {
 		stype = isVar.stype();
 	} else {
-		context.addError("type " + name + " is not declared");
+		context.addError("type " + name + " is not declared", token);
 	}
-	return SizeOf(context, stype);
+	return SizeOf(context, token, stype);
 }

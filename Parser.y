@@ -639,27 +639,27 @@ unary_operator
 sizeof_expression
 	: TT_SIZEOF explicit_variable_expresion
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NSizeOfOperator($1.t_tok, $2);
 	}
 	| TT_SIZEOF explicit_data_type
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NSizeOfOperator($1.t_tok, $2);
 	}
 	| TT_SIZEOF TT_IDENTIFIER
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NSizeOfOperator($1.t_tok, $2);
 	}
 	| TT_SIZEOF '(' explicit_variable_expresion ')'
 	{
-		$$ = new NSizeOfOperator($3);
+		$$ = new NSizeOfOperator($1.t_tok, $3);
 	}
 	| TT_SIZEOF '(' explicit_data_type ')'
 	{
-		$$ = new NSizeOfOperator($3);
+		$$ = new NSizeOfOperator($1.t_tok, $3);
 	}
 	| TT_SIZEOF '(' TT_IDENTIFIER ')'
 	{
-		$$ = new NSizeOfOperator($3);
+		$$ = new NSizeOfOperator($1.t_tok, $3);
 	}
 	;
 primary_expression

@@ -915,7 +915,7 @@ RValue NNewExpression::genValue(CodeContext& context)
 	}
 
 	vector<Value*> exp_list;
-	exp_list.push_back(Inst::SizeOf(context, nType));
+	exp_list.push_back(Inst::SizeOf(context, token, nType));
 
 	auto func = static_cast<SFunction&>(funcVal);
 	auto call = CallInst::Create(func, exp_list, "", context);
@@ -1003,11 +1003,11 @@ RValue NSizeOfOperator::genValue(CodeContext& context)
 {
 	switch (type) {
 	case DATA:
-		return Inst::SizeOf(context, dtype);
+		return Inst::SizeOf(context, sizeTok, dtype);
 	case EXP:
-		return Inst::SizeOf(context, exp);
+		return Inst::SizeOf(context, sizeTok, exp);
 	case NAME:
-		return Inst::SizeOf(context, name->str);
+		return Inst::SizeOf(context, sizeTok, name->str);
 	default:
 		// shouldn't happen
 		return RValue();

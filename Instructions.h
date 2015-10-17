@@ -53,13 +53,13 @@ public:
 
 	static RValue Deref(CodeContext& context, RValue value, bool recursive = false);
 
-	static RValue SizeOf(CodeContext& context, SType* type);
+	static RValue SizeOf(CodeContext& context, Token* token, SType* type);
 
-	static RValue SizeOf(CodeContext& context, NDataType* type);
+	static RValue SizeOf(CodeContext& context, Token* token, NDataType* type);
 
-	static RValue SizeOf(CodeContext& context, NExpression* type);
+	static RValue SizeOf(CodeContext& context, Token* token, NExpression* type);
 
-	static RValue SizeOf(CodeContext& context, const string& type);
+	static RValue SizeOf(CodeContext& context, Token* token, const string& type);
 };
 
 #endif

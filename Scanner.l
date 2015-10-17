@@ -80,7 +80,7 @@ loop		{ return ParserBase::TT_LOOP; }
 new		{ SAVE_TOKEN return ParserBase::TT_NEW; }
 redo		{ SAVE_TOKEN return ParserBase::TT_REDO; }
 return		{ SAVE_TOKEN return ParserBase::TT_RETURN; }
-sizeof		{ return ParserBase::TT_SIZEOF; }
+sizeof		{ SAVE_TOKEN return ParserBase::TT_SIZEOF; }
 struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }
 union		{ return ParserBase::TT_UNION; }

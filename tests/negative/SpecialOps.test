@@ -18,6 +18,6 @@ void func()
 
 negative/SpecialOps.syp:10: return types of ternary must match
 negative/SpecialOps.syp:12: return types of null coalescing operator must match
-SpecialOps.syp: size of void is invalid
-SpecialOps.syp: STR is ambigious, both a type and a variable
+negative/SpecialOps.syp:14: size of void is invalid
+negative/SpecialOps.syp:14: STR is ambigious, both a type and a variable
 found 4 errors

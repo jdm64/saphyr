@@ -1280,16 +1280,17 @@ class NSizeOfOperator : public NExpression
 	NDataType* dtype;
 	NExpression* exp;
 	Token* name;
+	Token* sizeTok;
 
 public:
-	NSizeOfOperator(NDataType* dtype)
-	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr) {}
+	NSizeOfOperator(Token* sizeTok, NDataType* dtype)
+	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr), sizeTok(sizeTok) {}
 
-	NSizeOfOperator(NExpression* exp)
-	: type(EXP), dtype(nullptr), exp(exp), name(nullptr) {}
+	NSizeOfOperator(Token* sizeTok, NExpression* exp)
+	: type(EXP), dtype(nullptr), exp(exp), name(nullptr), sizeTok(sizeTok) {}
 
-	NSizeOfOperator(Token* name)
-	: type(NAME), dtype(nullptr), exp(nullptr), name(name) {}
+	NSizeOfOperator(Token* sizeTok, Token* name)
+	: type(NAME), dtype(nullptr), exp(nullptr), name(name), sizeTok(sizeTok) {}
 
 	RValue genValue(CodeContext& context);
 
@@ -1303,6 +1304,7 @@ public:
 		delete dtype;
 		delete exp;
 		delete name;
+		delete sizeTok;
 	}
 };
 
