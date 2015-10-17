@@ -9,6 +9,6 @@ int main()
 
 ========
 
-New.syp: can't call new on void type
+negative/New.syp:4: can't call new on void type
 negative/New.syp:5: Array size must be positive
 found 2 errors

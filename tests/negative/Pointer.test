@@ -28,7 +28,7 @@ void func3()
 
 ========
 
-Pointer.syp: variable a can not be dereferenced
+negative/Pointer.syp:6: variable a can not be dereferenced
 negative/Pointer.syp:8: variable q not declared
 negative/Pointer.syp:13: can't cast value to pointer type
 negative/Pointer.syp:15: pointer arithmetic only valid using ++/-- operators

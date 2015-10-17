@@ -287,7 +287,7 @@ RValue NDereference::loadVar(CodeContext& context)
 	if (!var) {
 		return var;
 	} else if (!var.stype()->isPointer()) {
-		context.addError("variable " + getName() + " can not be dereferenced");
+		context.addError("variable " + getName() + " can not be dereferenced", atTok);
 		return RValue();
 	}
 	return Inst::Deref(context, var);
@@ -621,11 +621,11 @@ void NSwitchStatement::genCode(CodeContext& context)
 		if (caseItem->isValueCase()) {
 			auto val = caseItem->getValue(context);
 			if (!unique.insert(val->getSExtValue()).second)
-				context.addError("switch case values are not unique");
+				context.addError("switch case values are not unique", caseItem->getToken());
 			switchInst->addCase(val, caseBlock);
 		} else {
 			if (hasDefault)
-				context.addError("switch statement has more than one default");
+				context.addError("switch statement has more than one default", caseItem->getToken());
 			hasDefault = true;
 			defaultBlock = caseBlock;
 		}
@@ -767,14 +767,14 @@ void NLoopBranch::genCode(CodeContext& context)
 		}
 		break;
 	default:
-		context.addError("undefined loop branch type: " + to_string(type));
+		context.addError("undefined loop branch type: " + to_string(type), token);
 		return;
 	}
 	BranchInst::Create(block, context);
 	context.pushBlock(context.createBlock());
 	return;
 error:
-	context.addError(typeName + " invalid outside a loop/switch block");
+	context.addError(typeName + " invalid outside a loop/switch block", token);
 }
 
 void NDeleteStatement::genCode(CodeContext& context)
@@ -791,7 +791,7 @@ void NDeleteStatement::genCode(CodeContext& context)
 
 		func = SFunction::create(context, freeName, funcType);
 	} else if (!func.isFunction()) {
-		context.addError("Compiler Error: free not function", nullptr);
+		context.addError("Compiler Error: free not function", token);
 		return;
 	}
 
@@ -799,7 +799,7 @@ void NDeleteStatement::genCode(CodeContext& context)
 	if (!ptr) {
 		return;
 	} else if (!ptr.stype()->isPointer()) {
-		context.addError("delete requires pointer type");
+		context.addError("delete requires pointer type", token);
 		return;
 	}
 
@@ -899,7 +899,7 @@ RValue NNewExpression::genValue(CodeContext& context)
 
 		funcVal = SFunction::create(context, mallocName, funcType);
 	} else if (!funcVal.isFunction()) {
-		context.addError("Compiler Error: malloc not function", nullptr);
+		context.addError("Compiler Error: malloc not function", token);
 		return RValue();
 	}
 
@@ -907,10 +907,10 @@ RValue NNewExpression::genValue(CodeContext& context)
 	if (!nType) {
 		return RValue();
 	} else if (nType->isAuto()) {
-		context.addError("can't call new on auto type");
+		context.addError("can't call new on auto type", token);
 		return RValue();
 	} else if (nType->isVoid()) {
-		context.addError("can't call new on void type");
+		context.addError("can't call new on void type", token);
 		return RValue();
 	}
 

@@ -65,11 +65,11 @@ float		{ SAVE_TOKEN return ParserBase::TT_FLOAT; }
 double		{ SAVE_TOKEN return ParserBase::TT_DOUBLE; }
 
 alias		{ return ParserBase::TT_ALIAS; }
-break		{ return ParserBase::TT_BREAK; }
-case		{ return ParserBase::TT_CASE; }
-continue	{ return ParserBase::TT_CONTINUE; }
-default		{ return ParserBase::TT_DEFAULT; }
-delete		{ return ParserBase::TT_DELETE; }
+break		{ SAVE_TOKEN return ParserBase::TT_BREAK; }
+case		{ SAVE_TOKEN return ParserBase::TT_CASE; }
+continue	{ SAVE_TOKEN return ParserBase::TT_CONTINUE; }
+default		{ SAVE_TOKEN return ParserBase::TT_DEFAULT; }
+delete		{ SAVE_TOKEN return ParserBase::TT_DELETE; }
 do		{ return ParserBase::TT_DO; }
 else		{ return ParserBase::TT_ELSE; }
 enum		{ return ParserBase::TT_ENUM; }
@@ -77,8 +77,8 @@ for		{ return ParserBase::TT_FOR; }
 goto		{ return ParserBase::TT_GOTO; }
 if		{ return ParserBase::TT_IF; }
 loop		{ return ParserBase::TT_LOOP; }
-new		{ return ParserBase::TT_NEW; }
-redo		{ return ParserBase::TT_REDO; }
+new		{ SAVE_TOKEN return ParserBase::TT_NEW; }
+redo		{ SAVE_TOKEN return ParserBase::TT_REDO; }
 return		{ SAVE_TOKEN return ParserBase::TT_RETURN; }
 sizeof		{ return ParserBase::TT_SIZEOF; }
 struct		{ return ParserBase::TT_STRUCT; }

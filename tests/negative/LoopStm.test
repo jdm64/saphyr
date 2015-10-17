@@ -8,5 +8,5 @@ void foo()
 
 ========
 
-LoopStm.syp: redo invalid outside a loop/switch block
+negative/LoopStm.syp:5: redo invalid outside a loop/switch block
 found 1 errors

@@ -680,10 +680,11 @@ public:
 class NDereference : public NVariable
 {
 	NVariable* derefVar;
+	Token* atTok;
 
 public:
-	NDereference(NVariable* derefVar)
-	: derefVar(derefVar) {}
+	NDereference(NVariable* derefVar, Token* atTok)
+	: derefVar(derefVar), atTok(atTok) {}
 
 	RValue loadVar(CodeContext& context);
 
@@ -695,6 +696,7 @@ public:
 	~NDereference()
 	{
 		delete derefVar;
+		delete atTok;
 	}
 };
 
@@ -946,18 +948,20 @@ class NSwitchCase : public NStatement
 {
 	NIntConst* value;
 	NStatementList* body;
+	Token* token;
 
 public:
-	// used for default case
-	NSwitchCase(NStatementList* body)
-	: value(nullptr), body(body) {}
-
-	NSwitchCase(NIntConst* value, NStatementList* body)
-	: value(value), body(body) {}
+	NSwitchCase(Token* token, NStatementList* body, NIntConst* value = nullptr)
+	: value(value), body(body), token(token) {}
 
 	void genCode(CodeContext& context)
 	{
 		body->genCode(context);
+	}
+
+	Token* getToken() const
+	{
+		return token;
 	}
 
 	ConstantInt* getValue(CodeContext& context);
@@ -979,6 +983,7 @@ public:
 	{
 		delete value;
 		delete body;
+		delete token;
 	}
 };
 typedef NodeList<NSwitchCase> NSwitchCaseList;
@@ -1105,17 +1110,19 @@ public:
 
 class NLoopBranch : public NJumpStatement
 {
+	Token* token;
 	int type;
 	NIntConst* level;
 
 public:
-	NLoopBranch(int type, NIntConst* level = nullptr)
-	: type(type), level(level) {}
+	NLoopBranch(Token* token, int type, NIntConst* level = nullptr)
+	: token(token), type(type), level(level) {}
 
 	void genCode(CodeContext& context);
 
 	~NLoopBranch()
 	{
+		delete token;
 		delete level;
 	}
 };
@@ -1123,16 +1130,18 @@ public:
 class NDeleteStatement : public NStatement
 {
 	NVariable *variable;
+	Token* token;
 
 public:
-	NDeleteStatement(NVariable* variable)
-	: variable(variable) {}
+	NDeleteStatement(Token* token, NVariable* variable)
+	: variable(variable), token(token) {}
 
 	void genCode(CodeContext& context);
 
 	~NDeleteStatement()
 	{
 		delete variable;
+		delete token;
 	}
 };
 
@@ -1195,16 +1204,18 @@ public:
 class NNewExpression : public NExpression
 {
 	NDataType* type;
+	Token* token;
 
 public:
-	NNewExpression(NDataType* type)
-	: type(type) {}
+	NNewExpression(Token* token, NDataType* type)
+	: type(type), token(token) {}
 
 	RValue genValue(CodeContext& context);
 
 	~NNewExpression()
 	{
 		delete type;
+		delete token;
 	}
 };
 

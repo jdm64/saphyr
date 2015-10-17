@@ -59,7 +59,7 @@
 %type <t_tok_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
 %type <t_tok_int> assignment_operator unary_operator increment_decrement_operator
 // keywords
-%type <t_int> branch_keyword
+%type <t_tok_int> branch_keyword
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
@@ -222,7 +222,7 @@ statement
 	}
 	| TT_DELETE variable_expresion ';'
 	{
-		$$ = new NDeleteStatement($2);
+		$$ = new NDeleteStatement($1.t_tok, $2);
 	}
 	| TT_FOR '(' declaration_or_expression_list ';' expression_or_empty ';' expression_list ')' single_statement
 	{
@@ -265,27 +265,27 @@ switch_case_list
 switch_case
 	: TT_CASE integer_constant ':' statement_list_or_empty
 	{
-		$$ = new NSwitchCase($2, $4);
+		$$ = new NSwitchCase($1.t_tok, $4, $2);
 	}
 	| TT_DEFAULT ':' statement_list_or_empty
 	{
-		$$ = new NSwitchCase($3);
+		$$ = new NSwitchCase($1.t_tok, $3);
 	}
 	;
 branch_statement
 	: branch_keyword ';'
 	{
-		$$ = new NLoopBranch($1);
+		$$ = new NLoopBranch(($1).tok, ($1).op);
 	}
 	| branch_keyword integer_constant ';'
 	{
-		$$ = new NLoopBranch($1, $2);
+		$$ = new NLoopBranch(($1).tok, ($1).op, $2);
 	}
 	;
 branch_keyword
-	: TT_CONTINUE { $$ = TT_CONTINUE; }
-	| TT_BREAK { $$ = TT_BREAK; }
-	| TT_REDO { $$ = TT_REDO; }
+	: TT_CONTINUE { $$ = {$1.t_tok, TT_CONTINUE}; }
+	| TT_BREAK    { $$ = {$1.t_tok, TT_BREAK}; }
+	| TT_REDO     { $$ = {$1.t_tok, TT_REDO}; }
 	;
 condition_statement
 	: TT_IF '(' expression ')' single_statement else_statement
@@ -518,7 +518,7 @@ new_expression
 	: logical_or_expression
 	| TT_NEW data_type
 	{
-		$$ = new NNewExpression($2);
+		$$ = new NNewExpression($1.t_tok, $2);
 	}
 	;
 logical_or_expression
@@ -726,7 +726,7 @@ explicit_variable_expresion
 	}
 	| variable_expresion '@'
 	{
-		$$ = new NDereference($1);
+		$$ = new NDereference($1, $2.t_tok);
 	}
 	| variable_expresion '$'
 	{
