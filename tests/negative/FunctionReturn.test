@@ -26,7 +26,7 @@ void func3()
 negative/FunctionReturn.syp:4: function type for func1 doesn't match definition
 negative/FunctionReturn.syp:10: symbol notdefined not defined
 negative/FunctionReturn.syp:11: function func2 declared non-void, but void return found
-FunctionReturn.syp: argument count for func2 function invalid, 1 arguments given, but 0 required.
+negative/FunctionReturn.syp:16: argument count for func2 function invalid, 1 arguments given, but 0 required.
 negative/FunctionReturn.syp:17: function func3 declared void, but non-void return found
 negative/FunctionReturn.syp:20: function func3 already declared
 found 6 errors

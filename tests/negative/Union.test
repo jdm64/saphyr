@@ -13,6 +13,6 @@ int main()
 
 ========
 
-Union.syp: no return for a non-void function
+negative/Union.syp:7: no return for a non-void function
 negative/Union.syp:11: x doesn't have member t
 found 2 errors

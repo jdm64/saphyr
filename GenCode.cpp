@@ -521,7 +521,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 		if (returnType->isVoid())
 			body->addItem(new NReturnStatement);
 		else
-			context.addError("no return for a non-void function");
+			context.addError("no return for a non-void function", prototype->getNameToken());
 	}
 
 	if (prototype->getFunctionType(context) != function.stype()) {
@@ -1052,7 +1052,7 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	auto paramCount = func.numParams();
 	if (argCount != paramCount) {
 		context.addError("argument count for " + func.name().str() + " function invalid, "
-			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.");
+			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.", name);
 		return RValue();
 	}
 	vector<Value*> exp_list;
