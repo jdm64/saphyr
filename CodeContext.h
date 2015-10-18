@@ -165,7 +165,7 @@ public:
 		return currFunc;
 	}
 
-	void addError(string error, Token* token = nullptr)
+	void addError(string error, Token* token)
 	{
 		if (token)
 			errors.push_back({*token, error});
