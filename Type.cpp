@@ -112,16 +112,16 @@ novec:
 		return (int32min && rbits < 31)? SType::getInt(context, 32) : rtype;
 }
 
-bool SType::validate(CodeContext& context, SType* type)
+bool SType::validate(CodeContext& context, Token* token, SType* type)
 {
 	if (!type->isArray())
 		return true;
 
 	if (!type->size()) {
-		context.addError("can't create a non-pointer to a zero size array");
+		context.addError("can't create a non-pointer to a zero size array", token);
 		return false;
 	}
-	return validate(context, type->subType());
+	return validate(context, token, type->subType());
 }
 
 SUserType* SUserType::lookup(CodeContext& context, const string& name)

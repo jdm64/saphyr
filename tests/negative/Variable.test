@@ -27,12 +27,12 @@ void func2([3][]int arr)
 negative/Variable.syp:3: global variables only support constant value initializer
 negative/Variable.syp:4: global variable initialization requires exact type matching
 negative/Variable.syp:5: auto variable type requires initialization
-Variable.syp: can't create a non-pointer to a zero size array
+negative/Variable.syp:6: can't create a non-pointer to a zero size array
 negative/Variable.syp:10: auto variable type requires initialization
 negative/Variable.syp:12: variable u already defined
-Variable.syp: can't create a non-pointer to a zero size array
+negative/Variable.syp:13: can't create a non-pointer to a zero size array
 negative/Variable.syp:15: variable h not declared
-Variable.syp: can't create a non-pointer to a zero size array
-Variable.syp: can't create a non-pointer to a zero size array
+negative/Variable.syp:20: can't create a non-pointer to a zero size array
+negative/Variable.syp:20: can't create a non-pointer to a zero size array
 negative/Variable.syp:22: variable arr not declared
 found 11 errors

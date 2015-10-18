@@ -92,7 +92,7 @@ public:
 	 *
 	 * zero-size arrays on the stack
 	 */
-	static bool validate(CodeContext& context, SType* type);
+	static bool validate(CodeContext& context, Token* token, SType* type);
 
 	static uint64_t allocSize(CodeContext& context, SType* type);
 

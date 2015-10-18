@@ -128,7 +128,7 @@ SType* NPointerType::getType(CodeContext& context)
 	return SType::getPointer(context, btype);
 }
 
-SFunctionType* NFuncPointerType::getType(CodeContext& context, NDataType* retType, NDataTypeList* params)
+SFunctionType* NFuncPointerType::getType(CodeContext& context, Token* atToken, NDataType* retType, NDataTypeList* params)
 {
 	bool valid = true;
 	vector<SType*> args;
@@ -140,7 +140,7 @@ SFunctionType* NFuncPointerType::getType(CodeContext& context, NDataType* retTyp
 			auto token = static_cast<NNamedType*>(item)->getToken();
 			context.addError("parameter can not be auto type", token);
 			valid = false;
-		} else if (SType::validate(context, param)) {
+		} else if (SType::validate(context, atToken, param)) {
 			args.push_back(param);
 		}
 	}
@@ -322,7 +322,7 @@ void NVariableDecl::genCode(CodeContext& context)
 			return;
 		}
 		varType = initValue.stype();
-	} else if (!SType::validate(context, varType)) {
+	} else if (!SType::validate(context, getNameToken(), varType)) {
 		return;
 	}
 
@@ -361,7 +361,7 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 			return;
 		}
 		varType = initValue.stype();
-	} else if (!SType::validate(context, varType)) {
+	} else if (!SType::validate(context, getNameToken(), varType)) {
 		return;
 	}
 
@@ -491,7 +491,7 @@ SFunction NFunctionPrototype::genFunction(CodeContext& context)
 		return SFunction();
 	}
 
-	auto funcType = getFunctionType(context);
+	auto funcType = getFunctionType(context, getNameToken());
 	return funcType? SFunction::create(context, funcName, funcType) : SFunction();
 }
 
@@ -524,7 +524,7 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 			context.addError("no return for a non-void function", prototype->getNameToken());
 	}
 
-	if (prototype->getFunctionType(context) != function.stype()) {
+	if (prototype->getFunctionType(context, prototype->getNameToken()) != function.stype()) {
 		context.addError("function type for " + prototype->getName() + " doesn't match definition", prototype->getNameToken());
 		return;
 	}

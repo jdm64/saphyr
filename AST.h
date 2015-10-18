@@ -467,23 +467,25 @@ class NFuncPointerType : public NDataType
 {
 	NDataType* returnType;
 	NDataTypeList* params;
+	Token* atTok;
 
 public:
-	NFuncPointerType(NDataType* returnType, NDataTypeList* params)
-	: returnType(returnType), params(params) {}
+	NFuncPointerType(Token* atTok, NDataType* returnType, NDataTypeList* params)
+	: returnType(returnType), params(params), atTok(atTok) {}
 
 	SType* getType(CodeContext& context)
 	{
-		auto ptr = getType(context, returnType, params);
+		auto ptr = getType(context, atTok, returnType, params);
 		return ptr? SType::getPointer(context, ptr) : nullptr;
 	}
 
-	static SFunctionType* getType(CodeContext& context, NDataType* retType, NDataTypeList* params);
+	static SFunctionType* getType(CodeContext& context, Token* atToken, NDataType* retType, NDataTypeList* params);
 
 	~NFuncPointerType()
 	{
 		delete returnType;
 		delete params;
+		delete atTok;
 	}
 };
 
@@ -866,13 +868,13 @@ public:
 
 	void genCodeParams(SFunction function, CodeContext& context) const;
 
-	SFunctionType* getFunctionType(CodeContext& context)
+	SFunctionType* getFunctionType(CodeContext& context, Token* token)
 	{
 		NDataTypeList typeList(false);
 		for (auto item : *params) {
 			typeList.addItem(item->getTypeNode());
 		}
-		return NFuncPointerType::getType(context, rtype, &typeList);
+		return NFuncPointerType::getType(context, token, rtype, &typeList);
 	}
 
 	~NFunctionPrototype()

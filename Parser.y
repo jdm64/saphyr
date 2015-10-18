@@ -415,7 +415,7 @@ explicit_data_type
 	}
 	| '@' '(' data_type_list ')' data_type
 	{
-		$$ = new NFuncPointerType($5, $3);
+		$$ = new NFuncPointerType($1.t_tok, $5, $3);
 	}
 	;
 data_type_list
