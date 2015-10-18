@@ -21,6 +21,7 @@
 #include <set>
 #include <llvm/ADT/APSInt.h>
 #include <llvm/IR/Instructions.h>
+#include "Token.h"
 #include "Value.h"
 #include "Function.h"
 
@@ -162,7 +163,18 @@ public:
 
 class NConstant : public NExpression
 {
+protected:
+	Token* value;
+
 public:
+	NConstant(Token* token)
+	: value(token) {}
+
+	Token* getToken() const
+	{
+		return value;
+	}
+
 	bool isConstant() const
 	{
 		return true;
@@ -178,24 +190,29 @@ public:
 		return false;
 	}
 
-	static vector<string> getValueAndSuffix(string* value)
+	const string& getStrVal() const
 	{
-		auto pos = value->find('_');
-		if (pos == string::npos)
-			return {*value};
-		else
-			return {value->substr(0, pos), value->substr(pos + 1)};
+		return value->str;
 	}
 
-	static string* unescape(const string &val)
+	static vector<string> getValueAndSuffix(const string& value)
 	{
-		auto str = new string;
-		str->reserve(val.size());
+		auto pos = value.find('_');
+		if (pos == string::npos)
+			return {value};
+		else
+			return {value.substr(0, pos), value.substr(pos + 1)};
+	}
+
+	static string unescape(const string &val)
+	{
+		string str;
+		str.reserve(val.size());
 
 		for (int i = 0;;) {
 			auto idx = val.find('\\', i);
 			if (idx == string::npos) {
-				str->append(val, i, string::npos);
+				str.append(val, i, string::npos);
 				break;
 			} else {
 				char c = val.at(++idx);
@@ -212,47 +229,52 @@ public:
 				default:
 					break;
 				}
-				str->append(val, i, idx - i - 1);
-				*str += c;
+				str.append(val, i, idx - i - 1);
+				str += c;
 				i = idx + 1;
 			}
 		}
 		return str;
 	}
 
-	static void remove(string* val, char c = '\'')
+	static void remove(string& val, char c = '\'')
 	{
-		val->erase(std::remove(val->begin(), val->end(), c), val->end());
+		val.erase(std::remove(val.begin(), val.end(), c), val.end());
+	}
+
+	~NConstant()
+	{
+		delete value;
 	}
 };
 
 class NNullPointer : public NConstant
 {
 public:
+	NNullPointer(Token* token)
+	: NConstant(token) {}
+
 	RValue genValue(CodeContext& context);
 };
 
 class NStringLiteral : public NConstant
 {
-	string* value;
-
 public:
-	NStringLiteral(string* str)
+	NStringLiteral(Token* str)
+	: NConstant(str)
 	{
-		value = unescape(str->substr(1, str->size() - 2));
+		value->str = unescape(value->str.substr(1, value->str.size() - 2));
 	}
 
 	RValue genValue(CodeContext& context);
-
-	~NStringLiteral()
-	{
-		delete value;
-	}
 };
 
 class NIntLikeConst : public NConstant
 {
 public:
+	NIntLikeConst(Token* token)
+	: NConstant(token) {}
+
 	RValue genValue(CodeContext& context) final;
 
 	virtual APSInt getIntVal(CodeContext& context) = 0;
@@ -265,84 +287,70 @@ public:
 
 class NBoolConst : public NIntLikeConst
 {
-	bool value;
+	bool bvalue;
 
 public:
-	NBoolConst(bool value)
-	: value(value) {}
+	NBoolConst(Token* token, bool value)
+	: NIntLikeConst(token), bvalue(value) {}
 
 	APSInt getIntVal(CodeContext& context);
 };
 
 class NCharConst : public NIntLikeConst
 {
-	string* value;
-
 public:
-	NCharConst(string* charStr)
+	NCharConst(Token* charStr)
+	: NIntLikeConst(charStr)
 	{
-		value = new string(charStr->substr(1, charStr->length() - 2));
+		value->str = value->str.substr(1, value->str.length() - 2);
 	}
 
 	APSInt getIntVal(CodeContext& context);
-
-	~NCharConst()
-	{
-		delete value;
-	}
 };
 
 class NIntConst : public NIntLikeConst
 {
-	string* value;
 	int base;
 
 public:
-	NIntConst(string* value, int base = 10)
-	: value(value), base(base)
+	NIntConst(Token* value, int base = 10)
+	: NIntLikeConst(value), base(base)
 	{
-		remove(value);
+		remove(value->str);
 	}
 
 	APSInt getIntVal(CodeContext& context);
-
-	~NIntConst()
-	{
-		delete value;
-	}
 };
 
 class NFloatConst : public NConstant
 {
-	string* value;
-
 public:
-	NFloatConst(string* value)
-	: value(value)
+	NFloatConst(Token* value)
+	: NConstant(value)
 	{
-		remove(value);
+		remove(value->str);
 	}
 
 	RValue genValue(CodeContext& context);
-
-	~NFloatConst()
-	{
-		delete value;
-	}
 };
 
 class NDeclaration : public NStatement
 {
 protected:
-	string* name;
+	Token* name;
 
 public:
-	NDeclaration(string* name = nullptr)
+	NDeclaration(Token* name = nullptr)
 	: name(name) {}
 
-	virtual string* getName()
+	Token* getNameToken() const
 	{
 		return name;
+	}
+
+	virtual const string& getName() const
+	{
+		return name->str;
 	}
 
 	~NDeclaration()
@@ -358,13 +366,38 @@ public:
 };
 typedef NodeList<NDataType> NDataTypeList;
 
-class NBaseType : public NDataType
+class NNamedType : public NDataType
+{
+protected:
+	Token* token;
+
+public:
+	NNamedType(Token* token)
+	: token(token) {}
+
+	Token* getToken() const
+	{
+		return token;
+	}
+
+	const string& getName() const
+	{
+		return token->str;
+	}
+
+	~NNamedType()
+	{
+		delete token;
+	}
+};
+
+class NBaseType : public NNamedType
 {
 	int type;
 
 public:
-	NBaseType(int type)
-	: type(type) {}
+	NBaseType(Token* token, int type)
+	: NNamedType(token), type(type) {}
 
 	SType* getType(CodeContext& context);
 };
@@ -405,20 +438,13 @@ public:
 	}
 };
 
-class NUserType : public NDataType
+class NUserType : public NNamedType
 {
-	string* name;
-
 public:
-	NUserType(string* name)
-	: name(name) {}
+	NUserType(Token* name)
+	: NNamedType(name) {}
 
 	SType* getType(CodeContext& context);
-
-	~NUserType()
-	{
-		delete name;
-	}
 };
 
 class NPointerType : public NDataType
@@ -441,23 +467,25 @@ class NFuncPointerType : public NDataType
 {
 	NDataType* returnType;
 	NDataTypeList* params;
+	Token* atTok;
 
 public:
-	NFuncPointerType(NDataType* returnType, NDataTypeList* params)
-	: returnType(returnType), params(params) {}
+	NFuncPointerType(Token* atTok, NDataType* returnType, NDataTypeList* params)
+	: returnType(returnType), params(params), atTok(atTok) {}
 
 	SType* getType(CodeContext& context)
 	{
-		auto ptr = getType(context, returnType, params);
+		auto ptr = getType(context, atTok, returnType, params);
 		return ptr? SType::getPointer(context, ptr) : nullptr;
 	}
 
-	static SFunctionType* getType(CodeContext& context, NDataType* retType, NDataTypeList* params);
+	static SFunctionType* getType(CodeContext& context, Token* atToken, NDataType* retType, NDataTypeList* params);
 
 	~NFuncPointerType()
 	{
 		delete returnType;
 		delete params;
+		delete atTok;
 	}
 };
 
@@ -466,10 +494,11 @@ class NVariableDecl : public NDeclaration
 protected:
 	NExpression* initExp;
 	NDataType* type;
+	Token* eqToken;
 
 public:
-	NVariableDecl(string* name, NExpression* initExp = nullptr)
-	: NDeclaration(name), initExp(initExp), type(nullptr) {}
+	NVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
+	: NDeclaration(name), initExp(initExp), type(nullptr), eqToken(eqToken) {}
 
 	// NOTE: must be called before genCode()
 	void setDataType(NDataType* qtype)
@@ -487,11 +516,17 @@ public:
 		return initExp;
 	}
 
+	Token* getEqToken() const
+	{
+		return eqToken;
+	}
+
 	void genCode(CodeContext& context);
 
 	~NVariableDecl()
 	{
 		delete initExp;
+		delete eqToken;
 	}
 };
 
@@ -510,8 +545,8 @@ public:
 class NGlobalVariableDecl : public NVariableDecl
 {
 public:
-	NGlobalVariableDecl(string* name, NExpression* initExp = nullptr)
-	: NVariableDecl(name, initExp) {}
+	NGlobalVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
+	: NVariableDecl(name, eqToken, initExp) {}
 
 	void genCode(CodeContext& context);
 };
@@ -528,22 +563,22 @@ public:
 
 	virtual RValue loadVar(CodeContext& context) = 0;
 
-	virtual string* getName() const = 0;
+	virtual const string& getName() const = 0;
 };
 
 class NBaseVariable : public NVariable
 {
-	string* name;
+	Token* name;
 
 public:
-	NBaseVariable(string* name)
+	NBaseVariable(Token* name)
 	: name(name) {}
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
-		return name;
+		return name->str;
 	}
 
 	bool isComplex() const
@@ -561,14 +596,15 @@ class NArrayVariable : public NVariable
 {
 	NVariable* arrVar;
 	NExpression* index;
+	Token* brackTok;
 
 public:
-	NArrayVariable(NVariable* arrVar, NExpression* index)
-	: arrVar(arrVar), index(index) {}
+	NArrayVariable(NVariable* arrVar, Token* brackTok, NExpression* index)
+	: arrVar(arrVar), index(index), brackTok(brackTok) {}
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
 		return arrVar->getName();
 	}
@@ -577,17 +613,19 @@ public:
 	{
 		delete arrVar;
 		delete index;
+		delete brackTok;
 	}
 };
 
 class NMemberVariable : public NVariable
 {
 	NVariable* baseVar;
-	string* memberName;
+	Token* memberName;
+	Token* dotToken;
 
 public:
-	NMemberVariable(NVariable* baseVar, string* memberName)
-	: baseVar(baseVar), memberName(memberName) {}
+	NMemberVariable(NVariable* baseVar, Token* memberName, Token* dotToken)
+	: baseVar(baseVar), memberName(memberName), dotToken(dotToken) {}
 
 	RValue loadVar(CodeContext& context);
 
@@ -597,20 +635,28 @@ public:
 
 	RValue loadEnum(CodeContext& context, SEnumType* enumType) const;
 
-	string* getName() const
+	const string& getName() const
 	{
 		return baseVar->getName();
+	}
+
+	const string& getMemberName() const
+	{
+		return memberName->str;
 	}
 
 	~NMemberVariable()
 	{
 		delete baseVar;
 		delete memberName;
+		delete dotToken;
 	}
 };
 
 class NExprVariable : public NVariable
 {
+	const static string STR_TMP_EXP;
+
 	NExpression* expr;
 
 public:
@@ -622,10 +668,9 @@ public:
 		return expr->genValue(context);
 	}
 
-	string* getName() const
+	const string& getName() const
 	{
-		static string name = "temp expression";
-		return &name;
+		return STR_TMP_EXP;
 	}
 
 	~NExprVariable()
@@ -637,14 +682,15 @@ public:
 class NDereference : public NVariable
 {
 	NVariable* derefVar;
+	Token* atTok;
 
 public:
-	NDereference(NVariable* derefVar)
-	: derefVar(derefVar) {}
+	NDereference(NVariable* derefVar, Token* atTok)
+	: derefVar(derefVar), atTok(atTok) {}
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
 		return derefVar->getName();
 	}
@@ -652,6 +698,7 @@ public:
 	~NDereference()
 	{
 		delete derefVar;
+		delete atTok;
 	}
 };
 
@@ -670,7 +717,7 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
 		return addVar->getName();
 	}
@@ -687,7 +734,7 @@ class NParameter : public NDeclaration
 	RValue arg; // NOTE: not owned by NParameter
 
 public:
-	NParameter(NDataType* type, string* name)
+	NParameter(NDataType* type, Token* name)
 	: NDeclaration(name), type(type) {}
 
 	// NOTE: this must be called before genCode()
@@ -744,7 +791,7 @@ class NAliasDeclaration : public NDeclaration
 	NDataType* type;
 
 public:
-	NAliasDeclaration(string* name, NDataType* type)
+	NAliasDeclaration(Token* name, NDataType* type)
 	: NDeclaration(name), type(type) {}
 
 	void genCode(CodeContext& context);
@@ -762,11 +809,11 @@ class NStructDeclaration : public NDeclaration
 protected:
 	virtual void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
 	{
-		SUserType::createStruct(context, name, structVars);
+		SUserType::createStruct(context, getName(), structVars);
 	}
 
 public:
-	NStructDeclaration(string* name, NVariableDeclGroupList* list)
+	NStructDeclaration(Token* name, NVariableDeclGroupList* list)
 	: NDeclaration(name), list(list) {}
 
 	void genCode(CodeContext& context);
@@ -782,11 +829,11 @@ class NUnionDeclaration : public NStructDeclaration
 protected:
 	void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
 	{
-		SUserType::createUnion(context, name, structVars);
+		SUserType::createUnion(context, getName(), structVars);
 	}
 
 public:
-	NUnionDeclaration(string* name, NVariableDeclGroupList* list)
+	NUnionDeclaration(Token* name, NVariableDeclGroupList* list)
 	: NStructDeclaration(name, list) {}
 };
 
@@ -795,7 +842,7 @@ class NEnumDeclaration : public NDeclaration
 	NVariableDeclList* variables;
 
 public:
-	NEnumDeclaration(string* name, NVariableDeclList* variables)
+	NEnumDeclaration(Token* name, NVariableDeclList* variables)
 	: NDeclaration(name), variables(variables) {}
 
 	void genCode(CodeContext& context);
@@ -812,7 +859,7 @@ class NFunctionPrototype : public NDeclaration
 	NParameterList* params;
 
 public:
-	NFunctionPrototype(string* name, NDataType* rtype, NParameterList* params)
+	NFunctionPrototype(Token* name, NDataType* rtype, NParameterList* params)
 	: NDeclaration(name), rtype(rtype), params(params) {}
 
 	void genCode(CodeContext& context) final;
@@ -821,13 +868,13 @@ public:
 
 	void genCodeParams(SFunction function, CodeContext& context) const;
 
-	SFunctionType* getFunctionType(CodeContext& context)
+	SFunctionType* getFunctionType(CodeContext& context, Token* token)
 	{
 		NDataTypeList typeList(false);
 		for (auto item : *params) {
 			typeList.addItem(item->getTypeNode());
 		}
-		return NFuncPointerType::getType(context, rtype, &typeList);
+		return NFuncPointerType::getType(context, token, rtype, &typeList);
 	}
 
 	~NFunctionPrototype()
@@ -848,7 +895,7 @@ public:
 
 	void genCode(CodeContext& context);
 
-	string* getName()
+	const string& getName() const
 	{
 		return prototype->getName();
 	}
@@ -888,12 +935,13 @@ public:
 
 class NWhileStatement : public NConditionStmt
 {
+	Token* lparen;
 	bool isDoWhile;
 	bool isUntil;
 
 public:
-	NWhileStatement(NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
-	: NConditionStmt(condition, body), isDoWhile(isDoWhile), isUntil(isUntil) {}
+	NWhileStatement(Token* lparen, NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
+	: NConditionStmt(condition, body), lparen(lparen), isDoWhile(isDoWhile), isUntil(isUntil) {}
 
 	void genCode(CodeContext& context);
 };
@@ -902,18 +950,20 @@ class NSwitchCase : public NStatement
 {
 	NIntConst* value;
 	NStatementList* body;
+	Token* token;
 
 public:
-	// used for default case
-	NSwitchCase(NStatementList* body)
-	: value(nullptr), body(body) {}
-
-	NSwitchCase(NIntConst* value, NStatementList* body)
-	: value(value), body(body) {}
+	NSwitchCase(Token* token, NStatementList* body, NIntConst* value = nullptr)
+	: value(value), body(body), token(token) {}
 
 	void genCode(CodeContext& context)
 	{
 		body->genCode(context);
+	}
+
+	Token* getToken() const
+	{
+		return token;
 	}
 
 	ConstantInt* getValue(CodeContext& context);
@@ -935,6 +985,7 @@ public:
 	{
 		delete value;
 		delete body;
+		delete token;
 	}
 };
 typedef NodeList<NSwitchCase> NSwitchCaseList;
@@ -943,10 +994,11 @@ class NSwitchStatement : public NStatement
 {
 	NExpression* value;
 	NSwitchCaseList* cases;
+	Token* lparen;
 
 public:
-	NSwitchStatement(NExpression* value, NSwitchCaseList* cases)
-	: value(value), cases(cases) {}
+	NSwitchStatement(Token* lparen, NExpression* value, NSwitchCaseList* cases)
+	: value(value), cases(cases), lparen(lparen) {}
 
 	void genCode(CodeContext& context);
 
@@ -954,6 +1006,7 @@ public:
 	{
 		delete value;
 		delete cases;
+		delete lparen;
 	}
 };
 
@@ -961,10 +1014,11 @@ class NForStatement : public NConditionStmt
 {
 	NStatementList* preStm;
 	NExpressionList* postExp;
+	Token* semiCol2;
 
 public:
-	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
-	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp) {}
+	NForStatement(NStatementList* preStm, NExpression* condition, Token* semiCol2, NExpressionList* postExp, NStatementList* body)
+	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp), semiCol2(semiCol2) {}
 
 	void genCode(CodeContext& context);
 
@@ -972,39 +1026,35 @@ public:
 	{
 		delete preStm;
 		delete postExp;
+		delete semiCol2;
 	}
 };
 
 class NIfStatement : public NConditionStmt
 {
 	NStatementList* elseBody;
+	Token* lparen;
 
 public:
-	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
-	: NConditionStmt(condition, ifBody), elseBody(elseBody) {}
+	NIfStatement(Token* lparen, NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
+	: NConditionStmt(condition, ifBody), elseBody(elseBody), lparen(lparen) {}
 
 	void genCode(CodeContext& context);
 
 	~NIfStatement()
 	{
 		delete elseBody;
+		delete lparen;
 	}
 };
 
-class NLabelStatement : public NStatement
+class NLabelStatement : public NDeclaration
 {
-	string* name;
-
 public:
-	NLabelStatement(string* name)
-	: name(name) {}
+	NLabelStatement(Token* name)
+	: NDeclaration(name) {}
 
 	void genCode(CodeContext& context);
-
-	~NLabelStatement()
-	{
-		delete name;
-	}
 };
 
 class NJumpStatement : public NStatement
@@ -1019,28 +1069,40 @@ public:
 class NReturnStatement : public NJumpStatement
 {
 	NExpression* value;
+	Token* retToken;
 
 public:
-	NReturnStatement(NExpression* value = nullptr)
-	: value(value) {}
+	NReturnStatement(Token* retToken = nullptr, NExpression* value = nullptr)
+	: value(value), retToken(retToken) {}
 
 	void genCode(CodeContext& context);
 
 	~NReturnStatement()
 	{
 		delete value;
+		delete retToken;
 	}
 };
 
 class NGotoStatement : public NJumpStatement
 {
-	string* name;
+	Token* name;
 
 public:
-	NGotoStatement(string* name)
+	NGotoStatement(Token* name)
 	: name(name) {}
 
 	void genCode(CodeContext& context);
+
+	Token* getNameToken() const
+	{
+		return name;
+	}
+
+	const string& getName() const
+	{
+		return name->str;
+	}
 
 	~NGotoStatement()
 	{
@@ -1050,17 +1112,19 @@ public:
 
 class NLoopBranch : public NJumpStatement
 {
+	Token* token;
 	int type;
 	NIntConst* level;
 
 public:
-	NLoopBranch(int type, NIntConst* level = nullptr)
-	: type(type), level(level) {}
+	NLoopBranch(Token* token, int type, NIntConst* level = nullptr)
+	: token(token), type(type), level(level) {}
 
 	void genCode(CodeContext& context);
 
 	~NLoopBranch()
 	{
+		delete token;
 		delete level;
 	}
 };
@@ -1068,28 +1132,45 @@ public:
 class NDeleteStatement : public NStatement
 {
 	NVariable *variable;
+	Token* token;
 
 public:
-	NDeleteStatement(NVariable* variable)
-	: variable(variable) {}
+	NDeleteStatement(Token* token, NVariable* variable)
+	: variable(variable), token(token) {}
 
 	void genCode(CodeContext& context);
 
 	~NDeleteStatement()
 	{
 		delete variable;
+		delete token;
 	}
 };
 
-class NAssignment : public NExpression
+class NOperatorExpr : public NExpression
 {
+protected:
 	int oper;
+	Token* opTok;
+
+public:
+	NOperatorExpr(int oper, Token* opTok)
+	: oper(oper), opTok(opTok) {}
+
+	~NOperatorExpr()
+	{
+		delete opTok;
+	}
+};
+
+class NAssignment : public NOperatorExpr
+{
 	NVariable* lhs;
 	NExpression* rhs;
 
 public:
-	NAssignment(int oper, NVariable* lhs, NExpression* rhs)
-	: oper(oper), lhs(lhs), rhs(rhs) {}
+	NAssignment(int oper, Token* opToken, NVariable* lhs, NExpression* rhs)
+	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
 
 	RValue genValue(CodeContext& context);
 
@@ -1105,10 +1186,11 @@ class NTernaryOperator : public NExpression
 	NExpression* condition;
 	NExpression* trueVal;
 	NExpression* falseVal;
+	Token* colTok;
 
 public:
-	NTernaryOperator(NExpression* condition, NExpression* trueVal, NExpression* falseVal)
-	: condition(condition), trueVal(trueVal), falseVal(falseVal) {}
+	NTernaryOperator(NExpression* condition, NExpression* trueVal, Token *colTok, NExpression* falseVal)
+	: condition(condition), trueVal(trueVal), falseVal(falseVal), colTok(colTok) {}
 
 	RValue genValue(CodeContext& context);
 
@@ -1117,35 +1199,37 @@ public:
 		delete condition;
 		delete trueVal;
 		delete falseVal;
+		delete colTok;
 	}
 };
 
 class NNewExpression : public NExpression
 {
 	NDataType* type;
+	Token* token;
 
 public:
-	NNewExpression(NDataType* type)
-	: type(type) {}
+	NNewExpression(Token* token, NDataType* type)
+	: type(type), token(token) {}
 
 	RValue genValue(CodeContext& context);
 
 	~NNewExpression()
 	{
 		delete type;
+		delete token;
 	}
 };
 
-class NBinaryOperator : public NExpression
+class NBinaryOperator : public NOperatorExpr
 {
 protected:
-	int oper;
 	NExpression* lhs;
 	NExpression* rhs;
 
 public:
-	NBinaryOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: oper(oper), lhs(lhs), rhs(rhs) {}
+	NBinaryOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
 
 	~NBinaryOperator()
 	{
@@ -1157,8 +1241,8 @@ public:
 class NLogicalOperator : public NBinaryOperator
 {
 public:
-	NLogicalOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(oper, lhs, rhs) {}
+	NLogicalOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1166,8 +1250,8 @@ public:
 class NCompareOperator : public NBinaryOperator
 {
 public:
-	NCompareOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(oper, lhs, rhs) {}
+	NCompareOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1175,8 +1259,8 @@ public:
 class NBinaryMathOperator : public NBinaryOperator
 {
 public:
-	NBinaryMathOperator(int oper, NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(oper, lhs, rhs) {}
+	NBinaryMathOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1184,8 +1268,8 @@ public:
 class NNullCoalescing : public NBinaryOperator
 {
 public:
-	NNullCoalescing(NExpression* lhs, NExpression* rhs)
-	: NBinaryOperator(0, lhs, rhs) {}
+	NNullCoalescing(Token* opToken, NExpression* lhs, NExpression* rhs)
+	: NBinaryOperator(0, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
 };
@@ -1197,17 +1281,18 @@ class NSizeOfOperator : public NExpression
 	OfType type;
 	NDataType* dtype;
 	NExpression* exp;
-	string* name;
+	Token* name;
+	Token* sizeTok;
 
 public:
-	NSizeOfOperator(NDataType* dtype)
-	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr) {}
+	NSizeOfOperator(Token* sizeTok, NDataType* dtype)
+	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr), sizeTok(sizeTok) {}
 
-	NSizeOfOperator(NExpression* exp)
-	: type(EXP), dtype(nullptr), exp(exp), name(nullptr) {}
+	NSizeOfOperator(Token* sizeTok, NExpression* exp)
+	: type(EXP), dtype(nullptr), exp(exp), name(nullptr), sizeTok(sizeTok) {}
 
-	NSizeOfOperator(string* name)
-	: type(NAME), dtype(nullptr), exp(nullptr), name(name) {}
+	NSizeOfOperator(Token* sizeTok, Token* name)
+	: type(NAME), dtype(nullptr), exp(nullptr), name(name), sizeTok(sizeTok) {}
 
 	RValue genValue(CodeContext& context);
 
@@ -1221,18 +1306,18 @@ public:
 		delete dtype;
 		delete exp;
 		delete name;
+		delete sizeTok;
 	}
 };
 
-class NUnaryOperator : public NExpression
+class NUnaryOperator : public NOperatorExpr
 {
 protected:
-	int oper;
 	NExpression* unary;
 
 public:
-	NUnaryOperator(int oper, NExpression* unary)
-	: oper(oper), unary(unary) {}
+	NUnaryOperator(int oper, Token* opToken, NExpression* unary)
+	: NOperatorExpr(oper, opToken), unary(unary) {}
 
 	~NUnaryOperator()
 	{
@@ -1243,28 +1328,28 @@ public:
 class NUnaryMathOperator : public NUnaryOperator
 {
 public:
-	NUnaryMathOperator(int oper, NExpression* unaryExp)
-	: NUnaryOperator(oper, unaryExp) {}
+	NUnaryMathOperator(int oper, Token* opToken, NExpression* unaryExp)
+	: NUnaryOperator(oper, opToken, unaryExp) {}
 
 	RValue genValue(CodeContext& context);
 };
 
 class NFunctionCall : public NVariable
 {
-	string* name;
+	Token* name;
 	NExpressionList* arguments;
 
 public:
-	NFunctionCall(string* name, NExpressionList* arguments)
+	NFunctionCall(Token* name, NExpressionList* arguments)
 	: name(name), arguments(arguments) {}
 
 	RValue genValue(CodeContext& context);
 
 	RValue loadVar(CodeContext& context);
 
-	string* getName() const
+	const string& getName() const
 	{
-		return name;
+		return name->str;
 	}
 
 	~NFunctionCall()
@@ -1274,15 +1359,14 @@ public:
 	}
 };
 
-class NIncrement : public NExpression
+class NIncrement : public NOperatorExpr
 {
 	NVariable* variable;
-	int type;
 	bool isPostfix;
 
 public:
-	NIncrement(NVariable* variable, int type, bool isPostfix)
-	: variable(variable), type(type), isPostfix(isPostfix) {}
+	NIncrement(int oper, Token* opToken, NVariable* variable, bool isPostfix)
+	: NOperatorExpr(oper, opToken), variable(variable), isPostfix(isPostfix) {}
 
 	RValue genValue(CodeContext& context);
 

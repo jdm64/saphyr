@@ -18,45 +18,44 @@
 #define __CODE_CONTEXT_H__
 
 #include <stack>
+#include <iostream>
 #include <boost/program_options.hpp>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
+#include "Token.h"
 #include "Value.h"
 #include "Function.h"
 
 using namespace boost::program_options;
 
-// forward declarations
-class NStatement;
-class NStatementList;
-
 struct LabelBlock
 {
 	BasicBlock* block;
+	Token token;
 	bool isPlaceholder;
 
-	LabelBlock(BasicBlock* block, bool isPlaceholder)
-	: block(block), isPlaceholder(isPlaceholder) {}
+	LabelBlock(BasicBlock* block, Token* token, bool isPlaceholder)
+	: block(block), token(*token), isPlaceholder(isPlaceholder) {}
 };
 
 typedef unique_ptr<LabelBlock> LabelBlockPtr;
-#define smart_label(block, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, placeholder))
+#define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, token, placeholder))
 
 class ScopeTable
 {
 	map<string, LValue> table;
 
 public:
-	void storeSymbol(LValue var, string* name)
+	void storeSymbol(LValue var, const string& name)
 	{
-		table[*name] = var;
+		table[name] = var;
 	}
 
-	LValue loadSymbol(string* name) const
+	LValue loadSymbol(const string& name) const
 	{
-		auto varData = table.find(*name);
+		auto varData = table.find(name);
 		return varData != table.end()? varData->second : LValue();
 	}
 };
@@ -67,12 +66,12 @@ class SymbolTable
 	vector<ScopeTable> localTable;
 
 public:
-	void storeGlobalSymbol(LValue var, string* name)
+	void storeGlobalSymbol(LValue var, const string& name)
 	{
 		globalTable.storeSymbol(var, name);
 	}
 
-	void storeLocalSymbol(LValue var, string* name)
+	void storeLocalSymbol(LValue var, const string& name)
 	{
 		localTable.back().storeSymbol(var, name);
 	}
@@ -92,7 +91,7 @@ public:
 		localTable.clear();
 	}
 
-	LValue loadSymbol(string* name) const
+	LValue loadSymbol(const string& name) const
 	{
 		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
 			auto var = it->loadSymbol(name);
@@ -102,7 +101,7 @@ public:
 		return globalTable.loadSymbol(name);
 	}
 
-	LValue loadSymbolCurr(string* name) const
+	LValue loadSymbolCurr(const string& name) const
 	{
 		return localTable.empty()? globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
 	}
@@ -120,10 +119,7 @@ class CodeContext : public SymbolTable
 	vector<BasicBlock*> redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
 
-	string filepath;
-	variables_map config;
-	vector<pair<int,string>> errors;
-	int returncode;
+	vector<pair<Token,string>> errors;
 
 	Module* module;
 	TypeManager typeManager;
@@ -133,7 +129,7 @@ class CodeContext : public SymbolTable
 	{
 		for (auto& item : labelBlocks) {
 			if (item.second->isPlaceholder)
-				addError("label " + item.first + " not defined");
+				addError("label " + item.first + " not defined", &item.second->token);
 		}
 	}
 
@@ -144,15 +140,9 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	CodeContext(string& filepath, variables_map& config)
-	: filepath(filepath), config(config), returncode(0), module(new Module(filepath, getGlobalContext())),
-	typeManager(module)
+	CodeContext(Module* module)
+	: module(module), typeManager(module)
 	{
-	}
-
-	~CodeContext()
-	{
-		delete module;
 	}
 
 	operator LLVMContext&()
@@ -175,9 +165,12 @@ public:
 		return currFunc;
 	}
 
-	void addError(string error, int line = 0)
+	void addError(string error, Token* token)
 	{
-		errors.push_back({line, error});
+		if (token)
+			errors.push_back({*token, error});
+		else
+			errors.push_back({Token(), error});
 	}
 
 	BasicBlock* currBlock() const
@@ -265,16 +258,16 @@ public:
 		popRedoBlock();
 	}
 
-	LabelBlock* getLabelBlock(string* name)
+	LabelBlock* getLabelBlock(const string& name)
 	{
-		return labelBlocks[*name].get();
+		return labelBlocks[name].get();
 	}
-	LabelBlock* createLabelBlock(string* name, bool isPlaceholder)
+	LabelBlock* createLabelBlock(Token* name, bool isPlaceholder)
 	{
-		LabelBlockPtr &item = labelBlocks[*name];
+		LabelBlockPtr &item = labelBlocks[name->str];
 		if (!item.get()) {
-			item = smart_label(createBlock(), isPlaceholder);
-			item.get()->block->setName(*name);
+			item = smart_label(createBlock(), name, isPlaceholder);
+			item.get()->block->setName(name->str);
 		}
 		return item.get();
 	}
@@ -285,11 +278,26 @@ public:
 		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
 	}
 
-	void genCode(const NStatementList* stms);
-
-	int returnCode() const
+	/*
+	 * Returns true on errors
+	 */
+	bool handleErrors(string filename)
 	{
-		return returncode;
+		if (errors.empty())
+			return false;
+
+		filename = filename.substr(filename.find_last_of('/') + 1);
+		for (auto& error : errors) {
+			if (error.first.line) {
+				cout << error.first.filename << ":"
+					<< error.first.line << ":";
+			} else {
+				cout << filename << ":";
+			}
+			cout << " " << error.second << endl;
+		}
+		cout << "found " << errors.size() << " errors" << endl;
+		return true;
 	}
 };
 

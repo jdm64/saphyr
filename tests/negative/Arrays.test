@@ -20,9 +20,9 @@ void foo()
 
 ========
 
-Arrays.syp: can not cast complex types
-Arrays.syp: array index is not able to be cast to an int
-Arrays.syp: variable w is not an array or vec
-Arrays.syp: Array size must be positive
-Arrays.syp: variable z not declared
+negative/Arrays.syp:9: can not cast complex types
+negative/Arrays.syp:11: array index is not able to be cast to an int
+negative/Arrays.syp:11: variable w is not an array or vec
+negative/Arrays.syp:16: Array size must be positive
+negative/Arrays.syp:18: variable z not declared
 found 5 errors

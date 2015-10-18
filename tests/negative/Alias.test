@@ -11,7 +11,7 @@ int main()
 
 ========
 
-Alias.syp: can not create alias to auto type
-Alias.syp: can't create pointer to auto type
-Alias.syp: MyAuto type not declared
+negative/Alias.syp:2: can not create alias to auto type
+negative/Alias.syp:3: can't create pointer to auto type
+negative/Alias.syp:7: MyAuto type not declared
 found 3 errors

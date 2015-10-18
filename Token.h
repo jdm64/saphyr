@@ -15,42 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MODULE_WRITER_H__
-#define __MODULE_WRITER_H__
+#ifndef __TOKEN_H__
+#define __TOKEN_H__
 
-#include <boost/program_options.hpp>
-#include <llvm/PassManager.h>
-#include <llvm/IR/Module.h>
-#include <llvm/Support/ToolOutputFile.h>
-#include <llvm/Target/TargetMachine.h>
+#include <string>
 
 using namespace std;
-using namespace llvm;
-using namespace boost::program_options;
 
-class ModuleWriter
+class Token
 {
-	Module& module;
-	string filename;
-	variables_map config;
-
-	bool validModule();
-
-	tool_output_file* getOutFile(const string& name);
-
-	static void initTarget();
-
-	TargetMachine* getMachine();
-
-	void outputIR();
-
-	void outputNative();
-
 public:
-	ModuleWriter(Module &module, string filename, variables_map& config)
-	: module(module), filename(std::move(filename)), config(config) {}
+	Token()
+	: line(0) {}
 
-	int run();
+	Token(string filename, string token, int lineNum)
+	: filename(std::move(filename)), str(std::move(token)), line(lineNum) {}
+
+	string filename;
+	string str;
+	int line;
 };
 
 #endif

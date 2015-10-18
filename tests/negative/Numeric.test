@@ -9,6 +9,6 @@ int number()
 
 ========
 
-Numeric.syp: invalid integer suffix: r
-Numeric.syp: invalid float suffix: z
+negative/Numeric.syp:4: invalid integer suffix: r
+negative/Numeric.syp:5: invalid float suffix: z
 found 2 errors

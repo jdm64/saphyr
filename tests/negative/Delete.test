@@ -7,5 +7,5 @@ void foo()
 
 ========
 
-Delete.syp: delete requires pointer type
+negative/Delete.syp:5: delete requires pointer type
 found 1 errors

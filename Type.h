@@ -22,6 +22,7 @@
 #include <llvm/ADT/APSInt.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/Debug.h>
+#include "Token.h"
 
 // forward declaration
 class CodeContext;
@@ -91,11 +92,11 @@ public:
 	 *
 	 * zero-size arrays on the stack
 	 */
-	static bool validate(CodeContext& context, SType* type);
+	static bool validate(CodeContext& context, Token* token, SType* type);
 
 	static uint64_t allocSize(CodeContext& context, SType* type);
 
-	static SType* numericConv(CodeContext& context, SType* ltype, SType* rtype, bool int32min = true);
+	static SType* numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min = true);
 
 	static SType* getAuto(CodeContext& context);
 
@@ -290,15 +291,15 @@ class SUserType : public SType
 	: SType(typeClass, type, size, subtype) {}
 
 public:
-	static SUserType* lookup(CodeContext& context, string* name);
+	static SUserType* lookup(CodeContext& context, const string& name);
 
-	static void createAlias(CodeContext& context, string* name, SType* type);
+	static void createAlias(CodeContext& context, const string& name, SType* type);
 
-	static void createStruct(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
+	static void createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
-	static void createUnion(CodeContext& context, string* name, const vector<pair<string, SType*>>& structure);
+	static void createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
-	static void createEnum(CodeContext& context, string* name, const vector<pair<string, int64_t>>& structure);
+	static void createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure);
 };
 
 class SAliasType : public SUserType
@@ -324,9 +325,9 @@ class SStructType : public SUserType
 	}
 
 public:
-	pair<int, SType*>* getItem(string* name)
+	pair<int, SType*>* getItem(const string& name)
 	{
-		auto iter = items.find(*name);
+		auto iter = items.find(name);
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
@@ -356,9 +357,9 @@ class SUnionType : public SUserType
 	}
 
 public:
-	SType* getItem(string* name)
+	SType* getItem(const string& name)
 	{
-		auto iter = items.find(*name);
+		auto iter = items.find(name);
 		return iter != items.end()? iter->second : nullptr;
 	}
 
@@ -391,9 +392,9 @@ class SEnumType : public SUserType
 	}
 
 public:
-	APSInt* getItem(string* name)
+	APSInt* getItem(const string& name)
 	{
-		auto iter = items.find(*name);
+		auto iter = items.find(name);
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
@@ -414,7 +415,7 @@ class SFunctionType : public SType
 	vector<SType*> params;
 
 	SFunctionType(FunctionType* type, SType* returnTy, vector<SType*> params)
-	: SType(FUNCTION, type, 0, returnTy), params(params) {}
+	: SType(FUNCTION, type, 0, returnTy), params(std::move(params)) {}
 
 public:
 	using ParamIter = vector<SType*>::iterator;
@@ -529,18 +530,18 @@ public:
 
 	SFunctionType* getFunction(SType* returnTy, vector<SType*> args);
 
-	SUserType* lookupUserType(string* name)
+	SUserType* lookupUserType(const string& name)
 	{
-		return usrMap[*name].get();
+		return usrMap[name].get();
 	}
 
-	void createAlias(string* name, SType* type);
+	void createAlias(const string& name, SType* type);
 
-	void createStruct(string* name, vector<pair<string, SType*>> structure);
+	void createStruct(const string& name, vector<pair<string, SType*>> structure);
 
-	void createUnion(string* name, vector<pair<string, SType*>> structure);
+	void createUnion(const string& name, vector<pair<string, SType*>> structure);
 
-	void createEnum(string* name, vector<pair<string,int64_t>> structure);
+	void createEnum(const string& name, vector<pair<string,int64_t>> structure);
 };
 
 #endif

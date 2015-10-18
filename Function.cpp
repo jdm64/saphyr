@@ -17,9 +17,9 @@
 #include "Function.h"
 #include "CodeContext.h"
 
-SFunction SFunction::create(CodeContext& context, string* name, SFunctionType* type)
+SFunction SFunction::create(CodeContext& context, const string& name, SFunctionType* type)
 {
-	auto func = Function::Create(*type, GlobalValue::ExternalLinkage, *name, context.getModule());
+	auto func = Function::Create(*type, GlobalValue::ExternalLinkage, name, context.getModule());
 	auto sfunc = SFunction(func, type);
 	context.storeGlobalSymbol(sfunc, name);
 	return sfunc;

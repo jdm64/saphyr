@@ -26,9 +26,9 @@ typedef Instruction::CastOps CastOps;
 
 class Inst
 {
-	static BinaryOps getOperator(int oper, SType* type, CodeContext& context);
+	static BinaryOps getOperator(int oper, Token* optToken, SType* type, CodeContext& context);
 
-	static Predicate getPredicate(int oper, SType* type, CodeContext& context);
+	static Predicate getPredicate(int oper, Token* token, SType* type, CodeContext& context);
 
 	/**
 	 * @return the CastOps required to cast from -> to. Only supports numeric casts.
@@ -36,30 +36,30 @@ class Inst
 	 */
 	static CastOps getCastOp(SType* from, SType* to);
 
-	static bool CastMatch(CodeContext& context, RValue& lhs, RValue& rhs, bool upcast = false);
+	static bool CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast = false);
 
-	static RValue PointerMath(int type, RValue ptr, RValue val, CodeContext& context);
+	static RValue PointerMath(int type, Token* optToken, RValue ptr, RValue val, CodeContext& context);
 
 public:
-	static bool CastTo(CodeContext& context, RValue& value, SType* type, bool upcast = false);
+	static bool CastTo(CodeContext& context, Token* token, RValue& value, SType* type, bool upcast = false);
 
-	static RValue BinaryOp(int type, RValue lhs, RValue rhs, CodeContext& context);
+	static RValue BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 
-	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context);
+	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, Token* token, CodeContext& context);
 
-	static RValue Cmp(int type, RValue lhs, RValue rhs, CodeContext& context);
+	static RValue Cmp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 
 	static RValue Load(CodeContext& context, RValue value);
 
 	static RValue Deref(CodeContext& context, RValue value, bool recursive = false);
 
-	static RValue SizeOf(CodeContext& context, SType* type);
+	static RValue SizeOf(CodeContext& context, Token* token, SType* type);
 
-	static RValue SizeOf(CodeContext& context, NDataType* type);
+	static RValue SizeOf(CodeContext& context, Token* token, NDataType* type);
 
-	static RValue SizeOf(CodeContext& context, NExpression* type);
+	static RValue SizeOf(CodeContext& context, Token* token, NExpression* type);
 
-	static RValue SizeOf(CodeContext& context, string* type);
+	static RValue SizeOf(CodeContext& context, Token* token, const string& type);
 };
 
 #endif

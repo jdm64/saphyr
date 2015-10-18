@@ -5,7 +5,11 @@
 
 %union {
 	int t_int;
-	std::string* t_str;
+	Token* t_tok;
+	struct {
+		Token* tok;
+		int op;
+	} t_tok_int;
 	NIntConst* t_const_int;
 	NDataType* t_dtype;
 	NVariable* t_var;
@@ -25,21 +29,21 @@
 }
 
 // predefined constants
-%token <t_int> TT_FALSE TT_TRUE TT_NULL
-// qualifiers
-%token <t_int> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
-%token <t_int> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64 TT_VEC
+%token <t_tok> TT_FALSE TT_TRUE TT_NULL
+// base types
+%token <t_tok> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
+%token <t_tok> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64
 // operators
-%token <t_int> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
-%token <t_int> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
-%token <t_int> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
-%token <t_int> TT_ASG_DQ
+%token <t_tok> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
+%token <t_tok> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
+%token <t_tok> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
+%token <t_tok> TT_ASG_DQ
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS
+%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC
 %left TT_ELSE
 // constants and names
-%token <t_str> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
+%token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
 
 // integer constant
 %type <t_const_int> integer_constant
@@ -52,10 +56,10 @@
 // variable declaration
 %type <t_var_decl> variable global_variable
 // operators
-%type <t_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
-%type <t_int> assignment_operator unary_operator increment_decrement_operator
+%type <t_tok_int> multiplication_operator addition_operator shift_operator greater_or_less_operator equals_operator
+%type <t_tok_int> assignment_operator unary_operator increment_decrement_operator
 // keywords
-%type <t_int> branch_keyword base_type_keyword
+%type <t_tok_int> branch_keyword
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
@@ -202,7 +206,7 @@ statement
 	}
 	| TT_SWITCH '(' expression ')' '{' switch_case_list '}'
 	{
-		$$ = new NSwitchStatement($3, $6);
+		$$ = new NSwitchStatement($2.t_tok, $3, $6);
 	}
 	| TT_IDENTIFIER ':'
 	{
@@ -214,15 +218,15 @@ statement
 	}
 	| TT_RETURN expression_or_empty ';'
 	{
-		$$ = new NReturnStatement($2);
+		$$ = new NReturnStatement($1.t_tok, $2);
 	}
 	| TT_DELETE variable_expresion ';'
 	{
-		$$ = new NDeleteStatement($2);
+		$$ = new NDeleteStatement($1.t_tok, $2);
 	}
 	| TT_FOR '(' declaration_or_expression_list ';' expression_or_empty ';' expression_list ')' single_statement
 	{
-		$$ = new NForStatement($3, $5, $7, $9);
+		$$ = new NForStatement($3, $5, $6.t_tok, $7, $9);
 	}
 	| TT_LOOP single_statement
 	{
@@ -232,19 +236,19 @@ statement
 while_loop
 	: TT_WHILE '(' expression_or_empty ')' single_statement
 	{
-		$$ = new NWhileStatement($3, $5);
+		$$ = new NWhileStatement($2.t_tok, $3, $5);
 	}
 	| TT_DO single_statement TT_WHILE '(' expression_or_empty ')' ';'
 	{
-		$$ = new NWhileStatement($5, $2, true);
+		$$ = new NWhileStatement($4.t_tok, $5, $2, true);
 	}
 	| TT_UNTIL '(' expression_or_empty ')' single_statement
 	{
-		$$ = new NWhileStatement($3, $5, false, true);
+		$$ = new NWhileStatement($2.t_tok, $3, $5, false, true);
 	}
 	| TT_DO single_statement TT_UNTIL '(' expression_or_empty ')' ';'
 	{
-		$$ = new NWhileStatement($5, $2, true, true);
+		$$ = new NWhileStatement($4.t_tok, $5, $2, true, true);
 	}
 	;
 switch_case_list
@@ -261,32 +265,32 @@ switch_case_list
 switch_case
 	: TT_CASE integer_constant ':' statement_list_or_empty
 	{
-		$$ = new NSwitchCase($2, $4);
+		$$ = new NSwitchCase($1.t_tok, $4, $2);
 	}
 	| TT_DEFAULT ':' statement_list_or_empty
 	{
-		$$ = new NSwitchCase($3);
+		$$ = new NSwitchCase($1.t_tok, $3);
 	}
 	;
 branch_statement
 	: branch_keyword ';'
 	{
-		$$ = new NLoopBranch($1);
+		$$ = new NLoopBranch(($1).tok, ($1).op);
 	}
 	| branch_keyword integer_constant ';'
 	{
-		$$ = new NLoopBranch($1, $2);
+		$$ = new NLoopBranch(($1).tok, ($1).op, $2);
 	}
 	;
 branch_keyword
-	: TT_CONTINUE { $$ = TT_CONTINUE; }
-	| TT_BREAK { $$ = TT_BREAK; }
-	| TT_REDO { $$ = TT_REDO; }
+	: TT_CONTINUE { $$ = {$1.t_tok, TT_CONTINUE}; }
+	| TT_BREAK    { $$ = {$1.t_tok, TT_BREAK}; }
+	| TT_REDO     { $$ = {$1.t_tok, TT_REDO}; }
 	;
 condition_statement
 	: TT_IF '(' expression ')' single_statement else_statement
 	{
-		$$ = new NIfStatement($3, $5, $6);
+		$$ = new NIfStatement($2.t_tok, $3, $5, $6);
 	}
 	;
 else_statement
@@ -350,7 +354,7 @@ variable
 	}
 	| TT_IDENTIFIER '=' expression
 	{
-		$$ = new NVariableDecl($1, $3);
+		$$ = new NVariableDecl($1, $2.t_tok, $3);
 	}
 	;
 global_variable
@@ -360,7 +364,7 @@ global_variable
 	}
 	| TT_IDENTIFIER '=' expression
 	{
-		$$ = new NGlobalVariableDecl($1, $3);
+		$$ = new NGlobalVariableDecl($1, $2.t_tok, $3);
 	}
 	;
 parameter_list
@@ -411,7 +415,7 @@ explicit_data_type
 	}
 	| '@' '(' data_type_list ')' data_type
 	{
-		$$ = new NFuncPointerType($5, $3);
+		$$ = new NFuncPointerType($1.t_tok, $5, $3);
 	}
 	;
 data_type_list
@@ -430,27 +434,21 @@ data_type_list
 	}
 	;
 base_type
-	: base_type_keyword
-	{
-		$$ = new NBaseType($1);
-	}
-	;
-base_type_keyword
-	: TT_AUTO { $$ = TT_AUTO; }
-	| TT_VOID { $$ = TT_VOID; }
-	| TT_BOOL { $$ = TT_BOOL; }
-	| TT_INT { $$ = TT_INT; }
-	| TT_INT8 { $$ = TT_INT8; }
-	| TT_INT16 { $$ = TT_INT16; }
-	| TT_INT32 { $$ = TT_INT32; }
-	| TT_INT64 { $$ = TT_INT64; }
-	| TT_UINT { $$ = TT_UINT; }
-	| TT_UINT8 { $$ = TT_UINT8; }
-	| TT_UINT16 { $$ = TT_UINT16; }
-	| TT_UINT32 { $$ = TT_UINT32; }
-	| TT_UINT64 { $$ = TT_UINT64; }
-	| TT_FLOAT { $$ = TT_FLOAT; }
-	| TT_DOUBLE { $$ = TT_DOUBLE; }
+	: TT_AUTO   { $$ = new NBaseType($1, TT_AUTO);   }
+	| TT_VOID   { $$ = new NBaseType($1, TT_VOID);   }
+	| TT_BOOL   { $$ = new NBaseType($1, TT_BOOL);   }
+	| TT_INT    { $$ = new NBaseType($1, TT_INT);    }
+	| TT_INT8   { $$ = new NBaseType($1, TT_INT8);   }
+	| TT_INT16  { $$ = new NBaseType($1, TT_INT16);  }
+	| TT_INT32  { $$ = new NBaseType($1, TT_INT32);  }
+	| TT_INT64  { $$ = new NBaseType($1, TT_INT64);  }
+	| TT_UINT   { $$ = new NBaseType($1, TT_UINT);   }
+	| TT_UINT8  { $$ = new NBaseType($1, TT_UINT8);  }
+	| TT_UINT16 { $$ = new NBaseType($1, TT_UINT16); }
+	| TT_UINT32 { $$ = new NBaseType($1, TT_UINT32); }
+	| TT_UINT64 { $$ = new NBaseType($1, TT_UINT64); }
+	| TT_FLOAT  { $$ = new NBaseType($1, TT_FLOAT);  }
+	| TT_DOUBLE { $$ = new NBaseType($1, TT_DOUBLE); }
 	;
 expression_list
 	:
@@ -492,135 +490,135 @@ assignment
 	: ternary_expression
 	| variable_expresion assignment_operator expression
 	{
-		$$ = new NAssignment($2, $1, $3);
+		$$ = new NAssignment(($2).op, ($2).tok, $1, $3);
 	}
 	;
 ternary_expression
 	: new_expression
 	| new_expression '?' new_expression ':' new_expression
 	{
-		$$ = new NTernaryOperator($1, $3, $5);
+		$$ = new NTernaryOperator($1, $3, $4.t_tok, $5);
 	}
 	;
 assignment_operator
-	: '=' { $$ = '='; }
-	| TT_ASG_MUL { $$ = '*'; }
-	| TT_ASG_DIV { $$ = '/'; }
-	| TT_ASG_MOD { $$ = '%'; }
-	| TT_ASG_ADD { $$ = '+'; }
-	| TT_ASG_SUB { $$ = '-'; }
-	| TT_ASG_LSH { $$ = TT_LSHIFT; }
-	| TT_ASG_RSH { $$ = TT_RSHIFT; }
-	| TT_ASG_AND { $$ = '&'; }
-	| TT_ASG_OR  { $$ = '^'; }
-	| TT_ASG_XOR { $$ = '|'; }
-	| TT_ASG_DQ  { $$ = TT_DQ_MARK; }
+	: '=' { $$ = {$1.t_tok, '='}; }
+	| TT_ASG_MUL { $$ = {$1, '*'}; }
+	| TT_ASG_DIV { $$ = {$1, '/'}; }
+	| TT_ASG_MOD { $$ = {$1, '%'}; }
+	| TT_ASG_ADD { $$ = {$1, '+'}; }
+	| TT_ASG_SUB { $$ = {$1, '-'}; }
+	| TT_ASG_LSH { $$ = {$1, TT_LSHIFT}; }
+	| TT_ASG_RSH { $$ = {$1, TT_RSHIFT}; }
+	| TT_ASG_AND { $$ = {$1, '&'}; }
+	| TT_ASG_OR  { $$ = {$1, '^'}; }
+	| TT_ASG_XOR { $$ = {$1, '|'}; }
+	| TT_ASG_DQ  { $$ = {$1, TT_DQ_MARK}; }
 	;
 new_expression
 	: logical_or_expression
 	| TT_NEW data_type
 	{
-		$$ = new NNewExpression($2);
+		$$ = new NNewExpression($1.t_tok, $2);
 	}
 	;
 logical_or_expression
 	: logical_and_expression
 	| logical_or_expression TT_LOG_OR logical_and_expression
 	{
-		$$ = new NLogicalOperator(TT_LOG_OR, $1, $3);
+		$$ = new NLogicalOperator(TT_LOG_OR, $2, $1, $3);
 	}
 	;
 logical_and_expression
 	: equals_expression
 	| logical_and_expression TT_LOG_AND equals_expression
 	{
-		$$ = new NLogicalOperator(TT_LOG_AND, $1, $3);
+		$$ = new NLogicalOperator(TT_LOG_AND, $2, $1, $3);
 	}
 	;
 equals_expression
 	: greater_or_less_expression
 	| equals_expression equals_operator greater_or_less_expression
 	{
-		$$ = new NCompareOperator($2, $1, $3);
+		$$ = new NCompareOperator(($2).op, ($2).tok, $1, $3);
 	}
 	;
 equals_operator
-	: TT_EQ { $$ = TT_EQ; }
-	| TT_NEQ { $$ = TT_NEQ; }
+	: TT_EQ { $$ = {$1, TT_EQ}; }
+	| TT_NEQ { $$ = {$1, TT_NEQ}; }
 	;
 greater_or_less_expression
 	: bit_or_expression
 	| greater_or_less_expression greater_or_less_operator bit_or_expression
 	{
-		$$ = new NCompareOperator($2, $1, $3);
+		$$ = new NCompareOperator(($2).op, ($2).tok, $1, $3);
 	}
 	;
 greater_or_less_operator
-	: '<' { $$ = '<'; }
-	| '>' { $$ = '>'; }
-	| TT_LEQ { $$ = TT_LEQ; }
-	| TT_GEQ { $$ = TT_GEQ; }
+	: '<' { $$ = {$1.t_tok, '<'}; }
+	| '>' { $$ = {$1.t_tok, '>'}; }
+	| TT_LEQ { $$ = {$1, TT_LEQ}; }
+	| TT_GEQ { $$ = {$1, TT_GEQ}; }
 	;
 bit_or_expression
 	: bit_xor_expression
 	| bit_or_expression '|' bit_xor_expression
 	{
-		$$ = new NBinaryMathOperator('|', $1, $3);
+		$$ = new NBinaryMathOperator('|', $2.t_tok, $1, $3);
 	}
 	;
 bit_xor_expression
 	: bit_and_expression
 	| bit_xor_expression '^' bit_and_expression
 	{
-		$$ = new NBinaryMathOperator('^', $1, $3);
+		$$ = new NBinaryMathOperator('^', $2.t_tok, $1, $3);
 	}
 	;
 bit_and_expression
 	: shift_expression
 	| bit_and_expression '&' shift_expression
 	{
-		$$ = new NBinaryMathOperator('&', $1, $3);
+		$$ = new NBinaryMathOperator('&', $2.t_tok, $1, $3);
 	}
 	;
 shift_expression
 	: addition_expression
 	| shift_expression shift_operator addition_expression
 	{
-		$$ = new NBinaryMathOperator($2, $1, $3);
+		$$ = new NBinaryMathOperator(($2).op, ($2).tok, $1, $3);
 	}
 	;
 shift_operator
-	: TT_LSHIFT { $$ = TT_LSHIFT; }
-	| TT_RSHIFT { $$ = TT_RSHIFT; }
+	: TT_LSHIFT { $$ = {$1, TT_LSHIFT}; }
+	| TT_RSHIFT { $$ = {$1, TT_RSHIFT}; }
 	;
 addition_expression
 	: multiplication_expression
 	| addition_expression addition_operator multiplication_expression
 	{
-		$$ = new NBinaryMathOperator($2, $1, $3);
+		$$ = new NBinaryMathOperator(($2).op, ($2).tok, $1, $3);
 	}
 	;
 addition_operator
-	: '+' { $$ = '+'; }
-	| '-' { $$ = '-'; }
+	: '+' { $$ = {$1.t_tok, '+'}; }
+	| '-' { $$ = {$1.t_tok, '-'}; }
 	;
 multiplication_expression
 	: null_coalescing_expression
 	| multiplication_expression multiplication_operator null_coalescing_expression
 	{
-		$$ = new NBinaryMathOperator($2, $1, $3);
+		$$ = new NBinaryMathOperator(($2).op, ($2).tok, $1, $3);
 	}
 	;
 multiplication_operator
-	: '*' { $$ = '*'; }
-	| '/' { $$ = '/'; }
-	| '%' { $$ = '%'; }
+	: '*' { $$ = {$1.t_tok, '*'}; }
+	| '/' { $$ = {$1.t_tok, '/'}; }
+	| '%' { $$ = {$1.t_tok, '%'}; }
 	;
 null_coalescing_expression
 	: unary_expression
 	| unary_expression TT_DQ_MARK unary_expression
 	{
-		$$ = new NNullCoalescing($1, $3);
+		$$ = new NNullCoalescing($2, $1, $3);
 	}
 	;
 unary_expression
@@ -629,39 +627,39 @@ unary_expression
 	| sizeof_expression
 	| unary_operator primary_expression
 	{
-		$$ = new NUnaryMathOperator($1, $2);
+		$$ = new NUnaryMathOperator(($1).op, ($1).tok, $2);
 	}
 	;
 unary_operator
-	: '+' { $$ = '+'; }
-	| '-' { $$ = '-'; }
-	| '!' { $$ = '!'; }
-	| '~' { $$ = '~'; }
+	: '+' { $$ = {$1.t_tok, '+'}; }
+	| '-' { $$ = {$1.t_tok, '-'}; }
+	| '!' { $$ = {$1.t_tok, '!'}; }
+	| '~' { $$ = {$1.t_tok, '~'}; }
 	;
 sizeof_expression
 	: TT_SIZEOF explicit_variable_expresion
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NSizeOfOperator($1.t_tok, $2);
 	}
 	| TT_SIZEOF explicit_data_type
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NSizeOfOperator($1.t_tok, $2);
 	}
 	| TT_SIZEOF TT_IDENTIFIER
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NSizeOfOperator($1.t_tok, $2);
 	}
 	| TT_SIZEOF '(' explicit_variable_expresion ')'
 	{
-		$$ = new NSizeOfOperator($3);
+		$$ = new NSizeOfOperator($1.t_tok, $3);
 	}
 	| TT_SIZEOF '(' explicit_data_type ')'
 	{
-		$$ = new NSizeOfOperator($3);
+		$$ = new NSizeOfOperator($1.t_tok, $3);
 	}
 	| TT_SIZEOF '(' TT_IDENTIFIER ')'
 	{
-		$$ = new NSizeOfOperator($3);
+		$$ = new NSizeOfOperator($1.t_tok, $3);
 	}
 	;
 primary_expression
@@ -682,11 +680,11 @@ paren_expression
 	}
 	| paren_expression '[' expression ']'
 	{
-		$$ = new NArrayVariable(new NExprVariable($1), $3);
+		$$ = new NArrayVariable(new NExprVariable($1), $2.t_tok, $3);
 	}
 	| paren_expression '.' TT_IDENTIFIER
 	{
-		$$ = new NMemberVariable(new NExprVariable($1), $3);
+		$$ = new NMemberVariable(new NExprVariable($1), $3, $2.t_tok);
 	}
 	;
 function_call
@@ -698,16 +696,16 @@ function_call
 increment_decrement_expression
 	: increment_decrement_operator variable_expresion
 	{
-		$$ = new NIncrement($2, $1, false);
+		$$ = new NIncrement(($1).op, ($1).tok, $2, false);
 	}
 	| variable_expresion increment_decrement_operator
 	{
-		$$ = new NIncrement($1, $2, true);
+		$$ = new NIncrement(($2).op, ($2).tok, $1, true);
 	}
 	;
 increment_decrement_operator
-	: TT_INC { $$ = TT_INC; }
-	| TT_DEC { $$ = TT_DEC; }
+	: TT_INC { $$ = {$1, TT_INC}; }
+	| TT_DEC { $$ = {$1, TT_DEC}; }
 	;
 variable_expresion
 	: TT_IDENTIFIER
@@ -720,15 +718,15 @@ variable_expresion
 explicit_variable_expresion
 	: variable_expresion '[' expression ']'
 	{
-		$$ = new NArrayVariable($1, $3);
+		$$ = new NArrayVariable($1, $2.t_tok, $3);
 	}
 	| variable_expresion '.' TT_IDENTIFIER
 	{
-		$$ = new NMemberVariable($1, $3);
+		$$ = new NMemberVariable($1, $3, $2.t_tok);
 	}
 	| variable_expresion '@'
 	{
-		$$ = new NDereference($1);
+		$$ = new NDereference($1, $2.t_tok);
 	}
 	| variable_expresion '$'
 	{
@@ -754,15 +752,15 @@ value_expression
 	}
 	| TT_TRUE
 	{
-		$$ = new NBoolConst(true);
+		$$ = new NBoolConst($1, true);
 	}
 	| TT_FALSE
 	{
-		$$ = new NBoolConst(false);
+		$$ = new NBoolConst($1, false);
 	}
 	| TT_NULL
 	{
-		$$ = new NNullPointer();
+		$$ = new NNullPointer($1);
 	}
 	;
 integer_constant

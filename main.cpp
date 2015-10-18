@@ -18,6 +18,7 @@
 #include "parser.h"
 #include "AST.h"
 #include "CodeContext.h"
+#include "ModuleWriter.h"
 
 options_description progOpts;
 
@@ -59,8 +60,15 @@ int main(int argc, char** argv)
 	if (parser.parse()) {
 		return 1;
 	}
-	CodeContext context(file, vm);
-	context.genCode(parser.getRoot());
 
-	return context.returnCode();
+	unique_ptr<Module> module(new Module(file, getGlobalContext()));
+	CodeContext context(module.get());
+
+	parser.getRoot()->genCode(context);
+	if (context.handleErrors(file))
+		return 2;
+
+	ModuleWriter writer(*module.get(), file, vm);
+
+	return writer.run();
 }
