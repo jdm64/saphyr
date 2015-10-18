@@ -44,7 +44,7 @@ protected:
 	vector<NType*> list;
 
 public:
-	NodeList(bool doDelete = true)
+	explicit NodeList(bool doDelete = true)
 	: doDelete(doDelete) {}
 
 	template<typename OtherList>
@@ -167,7 +167,7 @@ protected:
 	Token* value;
 
 public:
-	NConstant(Token* token)
+	explicit NConstant(Token* token)
 	: value(token) {}
 
 	Token* getToken() const
@@ -251,7 +251,7 @@ public:
 class NNullPointer : public NConstant
 {
 public:
-	NNullPointer(Token* token)
+	explicit NNullPointer(Token* token)
 	: NConstant(token) {}
 
 	RValue genValue(CodeContext& context);
@@ -260,7 +260,7 @@ public:
 class NStringLiteral : public NConstant
 {
 public:
-	NStringLiteral(Token* str)
+	explicit NStringLiteral(Token* str)
 	: NConstant(str)
 	{
 		value->str = unescape(value->str.substr(1, value->str.size() - 2));
@@ -272,7 +272,7 @@ public:
 class NIntLikeConst : public NConstant
 {
 public:
-	NIntLikeConst(Token* token)
+	explicit NIntLikeConst(Token* token)
 	: NConstant(token) {}
 
 	RValue genValue(CodeContext& context) final;
@@ -299,7 +299,7 @@ public:
 class NCharConst : public NIntLikeConst
 {
 public:
-	NCharConst(Token* charStr)
+	explicit NCharConst(Token* charStr)
 	: NIntLikeConst(charStr)
 	{
 		value->str = value->str.substr(1, value->str.length() - 2);
@@ -325,7 +325,7 @@ public:
 class NFloatConst : public NConstant
 {
 public:
-	NFloatConst(Token* value)
+	explicit NFloatConst(Token* value)
 	: NConstant(value)
 	{
 		remove(value->str);
@@ -340,7 +340,7 @@ protected:
 	Token* name;
 
 public:
-	NDeclaration(Token* name = nullptr)
+	explicit NDeclaration(Token* name = nullptr)
 	: name(name) {}
 
 	Token* getNameToken() const
@@ -372,7 +372,7 @@ protected:
 	Token* token;
 
 public:
-	NNamedType(Token* token)
+	explicit NNamedType(Token* token)
 	: token(token) {}
 
 	Token* getToken() const
@@ -441,7 +441,7 @@ public:
 class NUserType : public NNamedType
 {
 public:
-	NUserType(Token* name)
+	explicit NUserType(Token* name)
 	: NNamedType(name) {}
 
 	SType* getType(CodeContext& context);
@@ -452,7 +452,7 @@ class NPointerType : public NDataType
 	NDataType* baseType;
 
 public:
-	NPointerType(NDataType* baseType)
+	explicit NPointerType(NDataType* baseType)
 	: baseType(baseType) {}
 
 	SType* getType(CodeContext& context);
@@ -571,7 +571,7 @@ class NBaseVariable : public NVariable
 	Token* name;
 
 public:
-	NBaseVariable(Token* name)
+	explicit NBaseVariable(Token* name)
 	: name(name) {}
 
 	RValue loadVar(CodeContext& context);
@@ -660,7 +660,7 @@ class NExprVariable : public NVariable
 	NExpression* expr;
 
 public:
-	NExprVariable(NExpression* expr)
+	explicit NExprVariable(NExpression* expr)
 	: expr(expr) {}
 
 	RValue loadVar(CodeContext& context)
@@ -707,7 +707,7 @@ class NAddressOf : public NVariable
 	NVariable* addVar;
 
 public:
-	NAddressOf(NVariable* addVar)
+	explicit NAddressOf(NVariable* addVar)
 	: addVar(addVar) {}
 
 	RValue genValue(CodeContext& context, RValue var)
@@ -927,7 +927,7 @@ public:
 class NLoopStatement : public NConditionStmt
 {
 public:
-	NLoopStatement(NStatementList* body)
+	explicit NLoopStatement(NStatementList* body)
 	: NConditionStmt(nullptr, body) {}
 
 	void genCode(CodeContext& context);
@@ -1051,7 +1051,7 @@ public:
 class NLabelStatement : public NDeclaration
 {
 public:
-	NLabelStatement(Token* name)
+	explicit NLabelStatement(Token* name)
 	: NDeclaration(name) {}
 
 	void genCode(CodeContext& context);
@@ -1089,7 +1089,7 @@ class NGotoStatement : public NJumpStatement
 	Token* name;
 
 public:
-	NGotoStatement(Token* name)
+	explicit NGotoStatement(Token* name)
 	: name(name) {}
 
 	void genCode(CodeContext& context);

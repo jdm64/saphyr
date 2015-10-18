@@ -306,7 +306,7 @@ class SAliasType : public SUserType
 {
 	friend class TypeManager;
 
-	SAliasType(SType* type)
+	explicit SAliasType(SType* type)
 	: SUserType(ALIAS, type->type(), 0, type) {}
 };
 
@@ -483,7 +483,7 @@ class TypeManager
 	map<pair<SType*, vector<SType*> >, SFuncPtr> funcMap;
 
 public:
-	TypeManager(Module* module);
+	explicit TypeManager(Module* module);
 
 	uint64_t allocSize(SType* stype)
 	{

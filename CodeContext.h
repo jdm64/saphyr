@@ -140,7 +140,7 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	CodeContext(Module* module)
+	explicit CodeContext(Module* module)
 	: module(module), typeManager(module)
 	{
 	}
@@ -281,7 +281,7 @@ public:
 	/*
 	 * Returns true on errors
 	 */
-	bool handleErrors(string filename)
+	bool handleErrors(string filename) const
 	{
 		if (errors.empty())
 			return false;
