@@ -91,14 +91,8 @@ SType* NVecType::getType(CodeContext& context)
 	auto btype = baseType->getType(context);
 	if (!btype) {
 		return nullptr;
-	} else if (btype->isAuto()) {
-		auto token = static_cast<NNamedType*>(baseType)->getToken();
-		context.addError("vec type can not be auto", token);
-		return nullptr;
-	}
-	if (!btype->isNumeric()) {
-		auto token = static_cast<NNamedType*>(baseType)->getToken();
-		context.addError("vec type only supports basic numeric types", token);
+	} else if (!btype->isNumeric() && !btype->isPointer()) {
+		context.addError("vec type only supports numeric and pointer types", vecToken);
 		return nullptr;
 	}
 	return SType::getVec(context, btype, arrSize);

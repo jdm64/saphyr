@@ -422,12 +422,13 @@ public:
 
 class NVecType : public NDataType
 {
-	NBaseType* baseType;
+	NDataType* baseType;
 	NIntConst* size;
+	Token* vecToken;
 
 public:
-	NVecType(NIntConst* size, NBaseType* baseType)
-	: baseType(baseType), size(size) {}
+	NVecType(Token* vecToken, NIntConst* size, NDataType* baseType)
+	: baseType(baseType), size(size), vecToken(vecToken) {}
 
 	SType* getType(CodeContext& context);
 

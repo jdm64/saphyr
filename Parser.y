@@ -405,9 +405,9 @@ explicit_data_type
 	{
 		$$ = new NArrayType($3);
 	}
-	| TT_VEC '<' integer_constant ',' base_type '>'
+	| TT_VEC '<' integer_constant ',' data_type '>'
 	{
-		$$ = new NVecType($3, static_cast<NBaseType*>($5));
+		$$ = new NVecType($1.t_tok, $3, $5);
 	}
 	| '@' data_type
 	{

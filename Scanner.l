@@ -85,7 +85,7 @@ struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }
 union		{ return ParserBase::TT_UNION; }
 until		{ return ParserBase::TT_UNTIL; }
-vec		{ return ParserBase::TT_VEC; }
+vec		{ SAVE_TOKEN return ParserBase::TT_VEC; }
 while		{ return ParserBase::TT_WHILE; }
 
 0b{BIN}+{SUFFIX}?	{ SAVE_TOKEN return ParserBase::TT_INT_BIN; }
