@@ -38,7 +38,9 @@ int other()
 int main()
 {
 	@void p = getPtr();
-	return 0;
+	if (!p)
+		return 0;
+	return 1;
 }
 
 ========
@@ -107,5 +109,13 @@ define i32 @main() {
   %p = alloca i8*
   %2 = bitcast i32* %1 to i8*
   store i8* %2, i8** %p
+  %3 = load i8** %p
+  %4 = icmp eq i8* null, %3
+  br i1 %4, label %5, label %6
+
+; <label>:5                                       ; preds = %0
   ret i32 0
+
+; <label>:6                                       ; preds = %0
+  ret i32 1
 }

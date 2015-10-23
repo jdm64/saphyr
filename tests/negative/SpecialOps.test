@@ -11,7 +11,7 @@ void func()
 
 	auto y = a ?? b;
 
-	a = sizeof void + sizeof STR;
+	a = sizeof void + sizeof STR + sizeof notdefined;
 }
 
 ========
@@ -20,4 +20,5 @@ negative/SpecialOps.syp:10: return types of ternary must match
 negative/SpecialOps.syp:12: return types of null coalescing operator must match
 negative/SpecialOps.syp:14: size of void is invalid
 negative/SpecialOps.syp:14: STR is ambigious, both a type and a variable
-found 4 errors
+negative/SpecialOps.syp:14: type notdefined is not declared
+found 5 errors
