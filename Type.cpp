@@ -25,8 +25,7 @@
 
 void SType::dump() const
 {
-	print(dbgs());
-	dbgs() << '\n';
+	dbgs() << str(nullptr) << '\n';
 }
 
 SType* SType::getAuto(CodeContext& context)
@@ -122,6 +121,52 @@ bool SType::validate(CodeContext& context, Token* token, SType* type)
 		return false;
 	}
 	return validate(context, token, type->subType());
+}
+
+string SStructType::str(CodeContext* context) const
+{
+	stringstream os;
+	if (context) {
+		os << context->typeManager.getUserTypeName(this);
+	} else {
+		os << "S:{|";
+		for (auto i : items) {
+			os << i.first << "=" << i.second.first << ":"
+				<< i.second.second->str(context) << "|";
+		}
+		os << "}";
+	}
+	return os.str();
+}
+
+string SUnionType::str(CodeContext* context) const
+{
+	stringstream os;
+	if (context) {
+		os << context->typeManager.getUserTypeName(this);
+	} else {
+		os << "U:{|";
+		for (auto i : items) {
+			os << i.first << "=" << i.second->str(context) << "|";
+		}
+		os << "}";
+	}
+	return os.str();
+}
+
+string SEnumType::str(CodeContext* context) const
+{
+	stringstream os;
+	if (context) {
+		os << context->typeManager.getUserTypeName(this);
+	} else {
+		os << "E:{|";
+		for (auto i : items) {
+			os << i.first << "=" << i.second.getSExtValue() << "|";
+		}
+		os << "}";
+	}
+	return os.str();
 }
 
 SUserType* SUserType::lookup(CodeContext& context, const string& name)

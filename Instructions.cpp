@@ -17,6 +17,11 @@
 #include "Instructions.h"
 #include "parserbase.h"
 
+void Inst::castError(CodeContext& context, SType* from, SType* to, Token* token)
+{
+	context.addError("can not cast " + from->str(&context) + " to " + to->str(&context), token);
+}
+
 bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast)
 {
 	auto ltype = lhs.stype();
@@ -25,7 +30,7 @@ bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue&
 	if (ltype == rtype) {
 		return false;
 	} else if (ltype->isComplex() || rtype->isComplex()) {
-		context.addError("can not cast complex types", optToken);
+		context.addError("can not cast between " + ltype->str(&context) + " and " + rtype->str(&context) + " types", optToken);
 		return true;
 	} else if (ltype->isPointer() || rtype->isPointer()) {
 		// different pointer types can't be cast automatically
@@ -48,7 +53,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value.castToSubtype();
 		return false;
 	} else if (type->isComplex() || valueType->isComplex()) {
-		context.addError("can not cast complex types", token);
+		castError(context, valueType, type, token);
 		return true;
 	} else if (type->isPointer()) {
 		if (value.isNullPtr()) {
@@ -60,7 +65,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value = RValue(new BitCastInst(value, *type, "", context), type);
 			return false;
 		}
-		context.addError("can't cast value to pointer type", token);
+		castError(context, valueType, type, token);
 		return true;
 	} else if (type->isVec()) {
 		// unwrap enum type
@@ -79,7 +84,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value = RValue(retVal, type);
 			return false;
 		} else if (valueType->isPointer()) {
-			context.addError("can not cast pointer to vec type", token);
+			castError(context, valueType, type, token);
 			return true;
 		} else if (type->size() != valueType->size()) {
 			context.addError("can not cast vec types of different sizes", token);
@@ -99,11 +104,11 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		}
 	} else if (type->isEnum()) {
 		// casting to enum would violate value constraints
-		context.addError("can't cast to enum type", token);
+		castError(context, valueType, type, token);
 		return true;
 	} else if (type->isBool()) {
 		if (valueType->isVec()) {
-			context.addError("can not cast vec type to bool", token);
+			castError(context, valueType, type, token);
 			return true;
 		} else if (valueType->isEnum()) {
 			valueType = value.castToSubtype();
@@ -118,7 +123,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 	}
 
 	if (valueType->isPointer()) {
-		context.addError("can't cast pointer to numeric type", token);
+		castError(context, valueType, type, token);
 		return true;
 	}
 
@@ -326,11 +331,8 @@ RValue Inst::SizeOf(CodeContext& context, Token* token, SType* type)
 {
 	if (!type) {
 		return RValue();
-	} else if (type->isAuto()) {
-		context.addError("size of auto is invalid", token);
-		return RValue();
-	} else if (type->isVoid()) {
-		context.addError("size of void is invalid", token);
+	} else if (type->isAuto() || type->isVoid()) {
+		context.addError("size of " + type->str(&context) + " is invalid", token);
 		return RValue();
 	}
 	auto itype = SType::getInt(context, 64, true);

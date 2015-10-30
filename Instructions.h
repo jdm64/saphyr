@@ -26,6 +26,8 @@ typedef Instruction::CastOps CastOps;
 
 class Inst
 {
+	static inline void castError(CodeContext& context, SType* from, SType* to, Token* token);
+
 	static BinaryOps getOperator(int oper, Token* optToken, SType* type, CodeContext& context);
 
 	static Predicate getPredicate(int oper, Token* token, SType* type, CodeContext& context);

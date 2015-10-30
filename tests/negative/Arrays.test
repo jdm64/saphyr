@@ -20,7 +20,7 @@ void foo()
 
 ========
 
-negative/Arrays.syp:9: can not cast complex types
+negative/Arrays.syp:9: can not cast between S and int32 types
 negative/Arrays.syp:11: array index is not able to be cast to an int
 negative/Arrays.syp:11: variable w is not an array or vec
 negative/Arrays.syp:16: Array size must be positive

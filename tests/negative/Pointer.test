@@ -31,9 +31,9 @@ void func3()
 negative/Pointer.syp:6: variable a can not be dereferenced
 negative/Pointer.syp:8: variable q not declared
 negative/Pointer.syp:8: variable z not declared
-negative/Pointer.syp:13: can't cast value to pointer type
+negative/Pointer.syp:13: can not cast double to @int32
 negative/Pointer.syp:15: pointer arithmetic only valid using ++/-- operators
 negative/Pointer.syp:16: can't perform operation with two pointers
-negative/Pointer.syp:24: can not cast pointer to vec type
-negative/Pointer.syp:26: can't cast pointer to numeric type
+negative/Pointer.syp:24: can not cast @int32 to vec<3,int32>
+negative/Pointer.syp:26: can not cast @int32 to int32
 found 8 errors

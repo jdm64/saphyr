@@ -112,6 +112,9 @@ class CodeContext : public SymbolTable
 	friend class SType;
 	friend class SFunction;
 	friend class SUserType;
+	friend class SStructType;
+	friend class SUnionType;
+	friend class SEnumType;
 
 	vector<BasicBlock*> funcBlocks;
 	vector<BasicBlock*> continueBlocks;

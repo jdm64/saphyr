@@ -235,41 +235,42 @@ public:
 		return isSequence()? subtype->getScalar() : this;
 	}
 
-	virtual void print(raw_ostream &os) const
+	virtual string str(CodeContext* context = nullptr) const
 	{
+		string s;
+		raw_string_ostream os(s);
+
 		if (isArray()) {
-			os << "[" << size() << "]";
-			subtype->print(os);
+			os << "[" << size() << "]" << subtype->str(context);
 		} else if (isPointer()) {
-			os << "@";
-			subtype->print(os);
+			os << "@" << subtype->str(context);
 		} else if (isVec()) {
-			os << "vec<" << size() << ",";
-			subtype->print(os);
-			os << ">";
-		} else if (isDouble()) {
-			os << "double:";
-			ltype->print(os);
-		} else if (isFloating()) {
-			os << "float:";
-			ltype->print(os);
-		} else if (isBool()) {
-			os << "bool:";
-			ltype->print(os);
-		} else if (isVoid()) {
-			os << "void:";
-			ltype->print(os);
-		} else if (isInteger()) {
-			if (isUnsigned())
-				os << "u";
-			os << "int" << size() << ":";
-			ltype->print(os);
-		} else if (isAuto()) {
-			os << "auto";
+			os << "vec<" << size() << "," << subtype->str(context) << ">";
 		} else {
-			os << "err:" << tclass << ":";
-			ltype->print(os);
+			if (isDouble()) {
+				os << "double";
+			} else if (isFloating()) {
+				os << "float";
+			} else if (isBool()) {
+				os << "bool";
+			} else if (isVoid()) {
+				os << "void";
+			} else if (isInteger()) {
+				if (isUnsigned())
+					os << "u";
+				os << "int" << size();
+			} else if (isAuto()) {
+				os << "auto";
+			} else {
+				os << "err:" << tclass;
+				ltype->print(os);
+			}
+			if (!context) {
+				os << ":";
+				ltype->print(os);
+			}
 		}
+		return os.str();
 	}
 
 	void dump() const;
@@ -308,6 +309,11 @@ class SAliasType : public SUserType
 
 	explicit SAliasType(SType* type)
 	: SUserType(ALIAS, type->type(), 0, type) {}
+
+	string str(CodeContext* context = nullptr) const
+	{
+		return subtype->str(nullptr);
+	}
 };
 
 class SStructType : public SUserType
@@ -331,16 +337,7 @@ public:
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
-	void print(raw_ostream &os) const
-	{
-		os << "S:{|";
-		for (auto i : items) {
-			os << i.first << "=" << i.second.first << ":";
-			i.second.second->print(os);
-			os << "|";
-		}
-		os << "}";
-	}
+	string str(CodeContext* context = nullptr) const;
 };
 
 class SUnionType : public SUserType
@@ -363,16 +360,7 @@ public:
 		return iter != items.end()? iter->second : nullptr;
 	}
 
-	void print(raw_ostream &os) const
-	{
-		os << "U:{|";
-		for (auto i : items) {
-			os << i.first << "=";
-			i.second->print(os);
-			os << "|";
-		}
-		os << "}";
-	}
+	string str(CodeContext* context = nullptr) const;
 };
 
 class SEnumType : public SUserType
@@ -398,14 +386,7 @@ public:
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
-	void print(raw_ostream &os) const
-	{
-		os << "E:{|";
-		for (auto i : items) {
-			os << i.first << "=" << i.second << "|";
-		}
-		os << "}";
-	}
+	string str(CodeContext* context = nullptr) const;
 };
 
 class SFunctionType : public SType
@@ -445,15 +426,17 @@ public:
 		return params[index];
 	}
 
-	void print(raw_ostream &os) const
+	string str(CodeContext* context = nullptr) const
 	{
-		os << "(|";
+		string s;
+		raw_string_ostream os(s);
+
+		os << "(";
 		for (auto i : params) {
-			i->print(os);
-			os << "|";
+			os << i->str(context) << ",";
 		}
-		os << ")";
-		returnTy()->print(os);
+		os << ")" << returnTy()->str(context);
+		return os.str();
 	}
 };
 
@@ -533,6 +516,15 @@ public:
 	SUserType* lookupUserType(const string& name)
 	{
 		return usrMap[name].get();
+	}
+
+	string getUserTypeName(const SType* type) const
+	{
+		for (auto const &item : usrMap) {
+			if (type == item.second.get())
+				return item.first;
+		}
+		return "";
 	}
 
 	void createAlias(const string& name, SType* type);
