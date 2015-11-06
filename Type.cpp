@@ -189,9 +189,9 @@ void SUserType::createUnion(CodeContext& context, const string& name, const vect
 	context.typeManager.createUnion(name, structure);
 }
 
-void SUserType::createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure)
+void SUserType::createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure, SType* type)
 {
-	context.typeManager.createEnum(name, structure);
+	context.typeManager.createEnum(name, structure, type);
 }
 
 TypeManager::TypeManager(Module* module)
@@ -289,10 +289,10 @@ void TypeManager::createUnion(const string& name, vector<pair<string, SType*>> s
 	item = smart_unionTy(StructType::create(elements, name), structure, size);
 }
 
-void TypeManager::createEnum(const string& name, vector<pair<string, int64_t> > structure)
+void TypeManager::createEnum(const string& name, vector<pair<string, int64_t> > structure, SType* type)
 {
 	SUserPtr& item = usrMap[name];
 	if (item.get() || !structure.size())
 		return;
-	item = smart_enumTy(getInt(32), structure);
+	item = smart_enumTy(type, structure);
 }

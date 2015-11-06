@@ -841,16 +841,20 @@ public:
 class NEnumDeclaration : public NDeclaration
 {
 	NVariableDeclList* variables;
+	Token* lBrac;
+	NDataType* baseType;
 
 public:
-	NEnumDeclaration(Token* name, NVariableDeclList* variables)
-	: NDeclaration(name), variables(variables) {}
+	NEnumDeclaration(Token* name, NVariableDeclList* variables, Token* lBrac = nullptr, NDataType* baseType = nullptr)
+	: NDeclaration(name), variables(variables), lBrac(lBrac), baseType(baseType) {}
 
 	void genCode(CodeContext& context);
 
 	~NEnumDeclaration()
 	{
 		delete variables;
+		delete lBrac;
+		delete baseType;
 	}
 };
 

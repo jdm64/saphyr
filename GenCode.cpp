@@ -466,7 +466,14 @@ void NEnumDeclaration::genCode(CodeContext& context)
 		}
 		structure.push_back(make_pair(name, val++));
 	}
-	SUserType::createEnum(context, getName(), structure);
+
+	auto etype = baseType? baseType->getType(context) : SType::getInt(context, 32);
+	if (!etype || !etype->isInteger() || etype->isBool()) {
+		context.addError("enum base type must be an integer type", lBrac);
+		return;
+	}
+
+	SUserType::createEnum(context, getName(), structure, etype);
 }
 
 void NFunctionPrototype::genCode(CodeContext& context)

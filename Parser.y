@@ -139,6 +139,10 @@ enum_declaration
 	{
 		$$ = new NEnumDeclaration($2, $4);
 	}
+	| TT_ENUM TT_IDENTIFIER '<' data_type '>' '{' variable_list '}'
+	{
+		$$ = new NEnumDeclaration($2, $7, $3.t_tok, $4);
+	}
 	;
 function_declaration
 	: function_prototype function_body

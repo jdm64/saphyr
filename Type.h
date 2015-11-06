@@ -300,7 +300,7 @@ public:
 
 	static void createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
-	static void createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure);
+	static void createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure, SType* type);
 };
 
 class SAliasType : public SUserType
@@ -533,7 +533,7 @@ public:
 
 	void createUnion(const string& name, vector<pair<string, SType*>> structure);
 
-	void createEnum(const string& name, vector<pair<string,int64_t>> structure);
+	void createEnum(const string& name, vector<pair<string,int64_t>> structure, SType* type);
 };
 
 #endif

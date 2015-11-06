@@ -5,6 +5,8 @@ enum Dir {N, S, E, W}
 
 enum Broken { A = 3 + Dir.N, B = 3.4, A = 2 }
 
+enum BadBase<[3]int> { XX, YY }
+
 int main()
 {
 	auto a = Color.Red, b = Dir.S;
@@ -23,7 +25,8 @@ int main()
 negative/Enum.syp:6: enum initializer must be a constant
 negative/Enum.syp:6: enum initializer must be an int-like constant
 negative/Enum.syp:6: enum member name A already declared
-negative/Enum.syp:14: c is not a struct/union/enum
-negative/Enum.syp:16: can not cast Color to Dir
-negative/Enum.syp:18: Color doesn't have member NotFound
-found 6 errors
+negative/Enum.syp:8: enum base type must be an integer type
+negative/Enum.syp:16: c is not a struct/union/enum
+negative/Enum.syp:18: can not cast Color to Dir
+negative/Enum.syp:20: Color doesn't have member NotFound
+found 7 errors
