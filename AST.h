@@ -340,7 +340,7 @@ protected:
 	Token* name;
 
 public:
-	explicit NDeclaration(Token* name = nullptr)
+	explicit NDeclaration(Token* name)
 	: name(name) {}
 
 	Token* getNameToken() const
@@ -858,14 +858,15 @@ public:
 	}
 };
 
-class NFunctionPrototype : public NDeclaration
+class NFunctionDeclaration : public NDeclaration
 {
 	NDataType* rtype;
 	NParameterList* params;
+	NStatementList* body;
 
 public:
-	NFunctionPrototype(Token* name, NDataType* rtype, NParameterList* params)
-	: NDeclaration(name), rtype(rtype), params(params) {}
+	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
+	: NDeclaration(name), rtype(rtype), params(params), body(body) {}
 
 	void genCode(CodeContext& context) final;
 
@@ -882,32 +883,10 @@ public:
 		return NFuncPointerType::getType(context, token, rtype, &typeList);
 	}
 
-	~NFunctionPrototype()
+	~NFunctionDeclaration()
 	{
 		delete rtype;
 		delete params;
-	}
-};
-
-class NFunctionDeclaration : public NDeclaration
-{
-	NFunctionPrototype* prototype;
-	NStatementList* body;
-
-public:
-	NFunctionDeclaration(NFunctionPrototype* prototype, NStatementList* body)
-	: prototype(prototype), body(body) {}
-
-	void genCode(CodeContext& context);
-
-	const string& getName() const
-	{
-		return prototype->getName();
-	}
-
-	~NFunctionDeclaration()
-	{
-		delete prototype;
 		delete body;
 	}
 };

@@ -476,12 +476,36 @@ void NEnumDeclaration::genCode(CodeContext& context)
 	SUserType::createEnum(context, getName(), structure, etype);
 }
 
-void NFunctionPrototype::genCode(CodeContext& context)
+void NFunctionDeclaration::genCode(CodeContext& context)
 {
-	context.addError("Called NFunctionPrototype::genCode; use genFunction instead.", nullptr);
+	auto function = genFunction(context);
+	if (!function || !body) { // no body means only function prototype
+		return;
+	} else if (function.size()) {
+		context.addError("function " + getName() + " already declared", getNameToken());
+		return;
+	}
+
+	if (body->empty() || !body->back()->isTerminator()) {
+		auto returnType = function.returnTy();
+		if (returnType->isVoid())
+			body->addItem(new NReturnStatement);
+		else
+			context.addError("no return for a non-void function", getNameToken());
+	}
+
+	if (getFunctionType(context, getNameToken()) != function.stype()) {
+		context.addError("function type for " + getName() + " doesn't match definition", getNameToken());
+		return;
+	}
+
+	context.startFuncBlock(function);
+	genCodeParams(function, context);
+	body->genCode(context);
+	context.endFuncBlock();
 }
 
-SFunction NFunctionPrototype::genFunction(CodeContext& context)
+SFunction NFunctionDeclaration::genFunction(CodeContext& context)
 {
 	auto funcName = getName();
 	auto sym = context.loadSymbol(funcName);
@@ -496,7 +520,7 @@ SFunction NFunctionPrototype::genFunction(CodeContext& context)
 	return funcType? SFunction::create(context, funcName, funcType) : SFunction();
 }
 
-void NFunctionPrototype::genCodeParams(SFunction function, CodeContext& context) const
+void NFunctionDeclaration::genCodeParams(SFunction function, CodeContext& context) const
 {
 	int i = 0;
 	for (auto arg = function.arg_begin(); arg != function.arg_end(); arg++, i++) {
@@ -505,35 +529,6 @@ void NFunctionPrototype::genCodeParams(SFunction function, CodeContext& context)
 		param->setArgument(RValue(arg, function.getParam(i)));
 		param->genCode(context);
 	}
-}
-
-void NFunctionDeclaration::genCode(CodeContext& context)
-{
-	auto function = prototype->genFunction(context);
-	if (!function || !body) { // no body means only function prototype
-		return;
-	} else if (function.size()) {
-		context.addError("function " + prototype->getName() + " already declared", prototype->getNameToken());
-		return;
-	}
-
-	if (body->empty() || !body->back()->isTerminator()) {
-		auto returnType = function.returnTy();
-		if (returnType->isVoid())
-			body->addItem(new NReturnStatement);
-		else
-			context.addError("no return for a non-void function", prototype->getNameToken());
-	}
-
-	if (prototype->getFunctionType(context, prototype->getNameToken()) != function.stype()) {
-		context.addError("function type for " + prototype->getName() + " doesn't match definition", prototype->getNameToken());
-		return;
-	}
-
-	context.startFuncBlock(function);
-	prototype->genCodeParams(function, context);
-	body->genCode(context);
-	context.endFuncBlock();
 }
 
 void NReturnStatement::genCode(CodeContext& context)

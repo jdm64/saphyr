@@ -18,7 +18,6 @@
 	NStatement* t_stm;
 	NExpression* t_exp;
 	NSwitchCase* t_case;
-	NFunctionPrototype* t_func_pro;
 	NDataTypeList* t_typelist;
 	NStatementList* t_stmlist;
 	NExpressionList* t_explist;
@@ -71,8 +70,6 @@
 %type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
 %type <t_exp> sizeof_expression paren_expression new_expression
-// function prototype
-%type <t_func_pro> function_prototype
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
@@ -145,15 +142,9 @@ enum_declaration
 	}
 	;
 function_declaration
-	: function_prototype function_body
+	: data_type TT_IDENTIFIER '(' parameter_list ')' function_body
 	{
-		$$ = new NFunctionDeclaration($1, $2);
-	}
-	;
-function_prototype
-	: data_type TT_IDENTIFIER '(' parameter_list ')'
-	{
-		$$ = new NFunctionPrototype($2, $1, $4);
+		$$ = new NFunctionDeclaration($2, $1, $4, $6);
 	}
 	;
 function_body
