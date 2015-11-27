@@ -529,11 +529,11 @@ public:
 
 	void createAlias(const string& name, SType* type);
 
-	void createStruct(const string& name, vector<pair<string, SType*>> structure);
+	void createStruct(const string& name, const vector<pair<string, SType*>>& structure);
 
-	void createUnion(const string& name, vector<pair<string, SType*>> structure);
+	void createUnion(const string& name, const vector<pair<string, SType*>>& structure);
 
-	void createEnum(const string& name, vector<pair<string,int64_t>> structure, SType* type);
+	void createEnum(const string& name, const vector<pair<string,int64_t>>& structure, SType* type);
 };
 
 #endif

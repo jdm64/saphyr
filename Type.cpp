@@ -258,7 +258,7 @@ void TypeManager::createAlias(const string& name, SType* type)
 	item = smart_aliasTy(type);
 }
 
-void TypeManager::createStruct(const string& name, vector<pair<string, SType*>> structure)
+void TypeManager::createStruct(const string& name, const vector<pair<string, SType*>>& structure)
 {
 	SUserPtr& item = usrMap[name];
 	if (item.get())
@@ -270,7 +270,7 @@ void TypeManager::createStruct(const string& name, vector<pair<string, SType*>> 
 	item = smart_strucTy(type, structure);
 }
 
-void TypeManager::createUnion(const string& name, vector<pair<string, SType*>> structure)
+void TypeManager::createUnion(const string& name, const vector<pair<string, SType*>>& structure)
 {
 	SUserPtr& item = usrMap[name];
 	if (item.get() || !structure.size())
@@ -289,7 +289,7 @@ void TypeManager::createUnion(const string& name, vector<pair<string, SType*>> s
 	item = smart_unionTy(StructType::create(elements, name), structure, size);
 }
 
-void TypeManager::createEnum(const string& name, vector<pair<string, int64_t> > structure, SType* type)
+void TypeManager::createEnum(const string& name, const vector<pair<string, int64_t>>& structure, SType* type)
 {
 	SUserPtr& item = usrMap[name];
 	if (item.get() || !structure.size())
