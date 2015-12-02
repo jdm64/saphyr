@@ -432,8 +432,19 @@ void NStructDeclaration::genCode(CodeContext& context)
 	bool valid = true;
 	for (auto item : *list)
 		valid &= item->addMembers(structVars, memberNames, context);
-	if (valid)
-		createUserType(structVars, context);
+	if (valid) {
+		switch (ctype) {
+		case CreateType::STRUCT:
+			SUserType::createStruct(context, structName, structVars);
+			return;
+		case CreateType::UNION:
+			SUserType::createUnion(context, structName, structVars);
+			return;
+		case CreateType::CLASS:
+			SUserType::createClass(context, structName, structVars);
+			return;
+		}
+	}
 }
 
 void NEnumDeclaration::genCode(CodeContext& context)
@@ -528,6 +539,61 @@ void NFunctionDeclaration::genCodeParams(SFunction function, CodeContext& contex
 		arg->setName(param->getName());
 		param->setArgument(RValue(arg, function.getParam(i)));
 		param->genCode(context);
+	}
+}
+
+void NClassStructDecl::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NStructDeclaration)]);
+	auto stToken = theClass->getNameToken();
+	auto stType = NStructDeclaration::CreateType::CLASS;
+	auto st = new (buff.get()) NStructDeclaration(stToken, list, stType);
+	st->genCode(context);
+}
+
+void NClassFunctionDecl::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NFunctionDeclaration)]);
+
+	// add this parameter
+	auto thisToken = new Token(*theClass->getNameToken());
+	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("", "this", 0));
+	params->addItemFront(thisPtr);
+
+	auto fnToken = *name;
+	fnToken.str = theClass->getName() + "_" + name->str;
+	auto fn = new (buff.get()) NFunctionDeclaration(&fnToken, rtype, params, body);
+	fn->genCode(context);
+}
+
+void NClassDeclaration::genCode(CodeContext& context)
+{
+	int structIdx = -1;
+	for (int i = 0; i < list->size(); i++) {
+		if (!list->at(i)->isStruct())
+			continue;
+		else if (structIdx > -1)
+			context.addError("only one struct allowed in a class", list->at(i)->getNameToken());
+		else
+			structIdx = i;
+	}
+
+	if (structIdx < 0) {
+		auto group = new NVariableDeclGroupList;
+		auto varList = new NVariableDeclList;
+		auto structDecl = new NClassStructDecl(nullptr, group);
+		structDecl->setClass(this);
+		varList->addItem(new NVariableDecl(new Token("", "this", 0)));
+		group->addItem(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
+		list->addItem(structDecl);
+		structIdx = list->size() - 1;
+	}
+	list->at(structIdx)->genCode(context);
+
+	for (int i = 0; i < list->size(); i++) {
+		if (i == structIdx)
+			continue;
+		list->at(i)->genCode(context);
 	}
 }
 

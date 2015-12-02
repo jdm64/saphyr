@@ -67,6 +67,7 @@ double		{ SAVE_TOKEN return ParserBase::TT_DOUBLE; }
 alias		{ return ParserBase::TT_ALIAS; }
 break		{ SAVE_TOKEN return ParserBase::TT_BREAK; }
 case		{ SAVE_TOKEN return ParserBase::TT_CASE; }
+class		{ return ParserBase::TT_CLASS; }
 continue	{ SAVE_TOKEN return ParserBase::TT_CONTINUE; }
 default		{ SAVE_TOKEN return ParserBase::TT_DEFAULT; }
 delete		{ SAVE_TOKEN return ParserBase::TT_DELETE; }
@@ -83,6 +84,7 @@ return		{ SAVE_TOKEN return ParserBase::TT_RETURN; }
 sizeof		{ SAVE_TOKEN return ParserBase::TT_SIZEOF; }
 struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }
+this		{ SAVE_TOKEN return ParserBase::TT_THIS; }
 union		{ return ParserBase::TT_UNION; }
 until		{ return ParserBase::TT_UNTIL; }
 vec		{ SAVE_TOKEN return ParserBase::TT_VEC; }

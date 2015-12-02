@@ -18,8 +18,10 @@
 	NStatement* t_stm;
 	NExpression* t_exp;
 	NSwitchCase* t_case;
+	NClassMember* t_memb;
 	NDataTypeList* t_typelist;
 	NStatementList* t_stmlist;
+	NClassMemberList* t_clslist;
 	NExpressionList* t_explist;
 	NParameterList* t_parlist;
 	NVariableDeclList* t_varlist;
@@ -39,10 +41,10 @@
 %token <t_tok> TT_ASG_DQ
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC
+%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS
 %left TT_ELSE
 // constants and names
-%token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT
+%token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT TT_THIS
 
 // integer constant
 %type <t_const_int> integer_constant
@@ -62,7 +64,9 @@
 // statements
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
-%type <t_stm> struct_declaration union_declaration enum_declaration alias_declaration
+%type <t_stm> struct_declaration enum_declaration alias_declaration
+%type <t_stm> class_declaration
+%type <t_memb> class_member
 %type <t_case> switch_case
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
@@ -73,6 +77,7 @@
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
+%type <t_clslist> class_member_list
 %type <t_varlist> variable_list global_variable_list
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
@@ -103,8 +108,8 @@ declaration
 	: function_declaration
 	| global_variable_declaration
 	| alias_declaration
+	| class_declaration
 	| struct_declaration
-	| union_declaration
 	| enum_declaration
 	;
 global_variable_declaration
@@ -119,16 +124,41 @@ alias_declaration
 		$$ = new NAliasDeclaration($2, $4);
 	}
 	;
+class_declaration
+	: TT_CLASS TT_IDENTIFIER '{' class_member_list '}'
+	{
+		$$ = new NClassDeclaration($2, $4);
+	}
+	;
+class_member_list
+	: class_member
+	{
+		$$ = new NClassMemberList;
+		$$->addItem($1);
+	}
+	| class_member_list class_member
+	{
+		$1->addItem($2);
+	}
+	;
+class_member
+	: TT_STRUCT TT_THIS '{' variable_declarations_list '}'
+	{
+		$$ = new NClassStructDecl($2, $4);
+	}
+	| data_type TT_IDENTIFIER '(' parameter_list ')' function_body
+	{
+		$$ = new NClassFunctionDecl($2, $1, $4, $6);
+	}
+	;
 struct_declaration
 	: TT_STRUCT TT_IDENTIFIER '{' variable_declarations_list '}'
 	{
 		$$ = new NStructDeclaration($2, $4);
 	}
-	;
-union_declaration
-	: TT_UNION TT_IDENTIFIER '{' variable_declarations_list '}'
+	| TT_UNION TT_IDENTIFIER '{' variable_declarations_list '}'
 	{
-		$$ = new NUnionDeclaration($2, $4);
+		$$ = new NStructDeclaration($2, $4, NStructDeclaration::CreateType::UNION);
 	}
 	;
 enum_declaration

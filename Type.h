@@ -61,7 +61,8 @@ public:
 		FUNCTION = 1 << 10,
 		VOID     = 1 << 11,
 		AUTO     = 1 << 12,
-		ALIAS    = 1 << 13
+		ALIAS    = 1 << 13,
+		CLASS    = 1 << 14
 	};
 
 	static vector<Type*> convertArr(vector<SType*> arr)
@@ -201,6 +202,11 @@ public:
 		return tclass & STRUCT;
 	}
 
+	bool isClass() const
+	{
+		return tclass & CLASS;
+	}
+
 	/**
 	 * @return true if the type is not a simple type
 	 * @see http://llvm.org/docs/LangRef.html#single-value-types
@@ -298,6 +304,8 @@ public:
 
 	static void createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
+	static void createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
+
 	static void createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
 	static void createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure, SType* type);
@@ -319,11 +327,12 @@ class SAliasType : public SUserType
 class SStructType : public SUserType
 {
 	friend class TypeManager;
+	friend class SClassType;
 
 	map<string, pair<int, SType*>> items;
 
-	SStructType(StructType* type, const vector<pair<string, SType*> >& structure)
-	: SUserType(STRUCT, type, structure.size())
+	SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype = STRUCT)
+	: SUserType(ctype, type, structure.size())
 	{
 		int i = 0;
 		for (auto var : structure)
@@ -338,6 +347,16 @@ public:
 	}
 
 	string str(CodeContext* context = nullptr) const;
+};
+
+class SClassType : public SStructType
+{
+	friend class TypeManager;
+
+	SClassType(StructType* type, const vector<pair<string, SType*>>& structure)
+	: SStructType(type, structure, STRUCT | CLASS) {}
+
+public:
 };
 
 class SUnionType : public SUserType
@@ -530,6 +549,8 @@ public:
 	void createAlias(const string& name, SType* type);
 
 	void createStruct(const string& name, const vector<pair<string, SType*>>& structure);
+
+	void createClass(const string& name, const vector<pair<string, SType*>>& structure);
 
 	void createUnion(const string& name, const vector<pair<string, SType*>>& structure);
 
