@@ -15,6 +15,7 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 * [BisonC++](https://fbb-git.github.io/bisoncpp/)
 * [Boost](http://www.boost.org/) (for program_options)
 * [LLVM](http://llvm.org/) 3.4+
+* Make
 * C++11 compiler (either GCC or Clang)
 * Python 3 (for running tests)
 
@@ -41,11 +42,10 @@ The other dependencies can be installed using:
 
 ### Other Linux ###
 
-Install the LLVM development headers / runtime libraries and python3 for your Linux distribution.
-If your distribution doesn't have flexc++/bisonc++ then you can use the `jdm64/saphyr` docker image
-to build the frontend by running:
+Install: `make, clang, llvm, boost and python3` for your Linux distribution. If your distribution doesn't
+have `flexc++/bisonc++` then you can use the `jdm64/saphyr` docker image to build the frontend by running:
 
-`sudo docker run --rm -v "$PWD":/usr/src/saphyr -w /usr/src/saphyr jdm64/saphyr make frontend`
+`sudo make frontend-docker'
 
 NOTE: On Fedora you must disable SELinux (`sudo setenforce 0`) or you will get a permission error.
 
