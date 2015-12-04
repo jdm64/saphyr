@@ -45,7 +45,7 @@ The other dependencies can be installed using:
 Install: `make, clang, llvm, boost and python3` for your Linux distribution. If your distribution doesn't
 have `flexc++/bisonc++` then you can use the `jdm64/saphyr` docker image to build the frontend by running:
 
-`sudo make frontend-docker'
+`sudo make frontend-docker`
 
 NOTE: On Fedora you must disable SELinux (`sudo setenforce 0`) or you will get a permission error.
 
