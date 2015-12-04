@@ -11,21 +11,21 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 
 ## Build Dependencies ##
 
-* [FlexC++](http://flexcpp.sourceforge.net/)
-* [BisonC++](http://bisoncpp.sourceforge.net/)
+* [FlexC++](https://fbb-git.github.io/flexcpp/)
+* [BisonC++](https://fbb-git.github.io/bisoncpp/)
+* [Boost](http://www.boost.org/) (for program_options)
 * [LLVM](http://llvm.org/) 3.4+
 * C++11 compiler (either GCC or Clang)
 * Python 3 (for running tests)
 
-Note: Building FlexC++/BisonC++ from sources requires the [Icmake](http://icmake.sourceforge.net/) build
-system and the [Bobcat](http://bobcat.sourceforge.net/) library which requires a C++14 compiler.
+Note: Building FlexC++/BisonC++ from sources requires the [Icmake](https://fbb-git.github.io/icmake/) build
+system and the [Bobcat](https://fbb-git.github.io/bobcat/) library which requires a C++14 compiler.
 
 ### Debian/Ubuntu ###
 
 Debian 7 (Wheezy) and Ubuntu 14.04 (Trusty) or newer have all the required packages in their repositories.
 
-`sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev`
-`sudo apt-get install clang python3`
+`sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev clang python3`
 
 ### Gentoo ###
 
@@ -47,7 +47,7 @@ to build the frontend by running:
 
 `sudo docker run --rm -v "$PWD":/usr/src/saphyr -w /usr/src/saphyr jdm64/saphyr make frontend`
 
-NOTE: On Fedora you must disable SELinux (`sudo -c "setenforce 0"`) or you will get a permission error.
+NOTE: On Fedora you must disable SELinux (`sudo setenforce 0`) or you will get a permission error.
 
 ## Build Instructions ##
 
