@@ -737,6 +737,10 @@ variable_expresion
 	{
 		$$ = new NBaseVariable($1);
 	}
+	| TT_THIS
+	{
+		$$ = new NBaseVariable($1);
+	}
 	| function_call
 	| explicit_variable_expresion
 	;

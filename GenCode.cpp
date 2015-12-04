@@ -171,9 +171,30 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 RValue NBaseVariable::loadVar(CodeContext& context)
 {
 	auto varName = getName();
-	auto var = context.loadSymbol(varName);
+
+	// check current function
+	auto var = context.loadSymbolLocal(varName);
 	if (var)
 		return var;
+
+	// check class variables
+	auto currClass = context.getClass();
+	if (currClass) {
+		auto item = currClass->getItem(varName);
+		if (item) {
+			auto baseVar = new NBaseVariable(new Token("", "this", 0));
+			auto memName = new Token("", varName, 0);
+			unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName, nullptr));
+			return classVar->loadVar(context);
+		}
+	}
+
+	// check global variables
+	var = context.loadSymbolGlobal(varName);
+	if (var)
+		return var;
+
+	// check enums
 	auto userVar = SUserType::lookup(context, varName);
 	if (!userVar) {
 		context.addError("variable " + varName + " not declared", name);
@@ -589,12 +610,14 @@ void NClassDeclaration::genCode(CodeContext& context)
 		structIdx = list->size() - 1;
 	}
 	list->at(structIdx)->genCode(context);
+	context.setClass(static_cast<SClassType*>(SUserType::lookup(context, getName())));
 
 	for (int i = 0; i < list->size(); i++) {
 		if (i == structIdx)
 			continue;
 		list->at(i)->genCode(context);
 	}
+	context.setClass(nullptr);
 }
 
 void NReturnStatement::genCode(CodeContext& context)
