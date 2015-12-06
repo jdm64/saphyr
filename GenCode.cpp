@@ -523,9 +523,14 @@ SFunction NFunctionDeclaration::genFunction(CodeContext& context)
 void NFunctionDeclaration::genCodeParams(SFunction function, CodeContext& context) const
 {
 	int i = 0;
+	set<string> names;
 	for (auto arg = function.arg_begin(); arg != function.arg_end(); arg++, i++) {
 		auto param = params->at(i);
-		arg->setName(param->getName());
+		auto name = param->getName();
+		if (names.insert(name).second)
+			arg->setName(name);
+		else
+			context.addError("function parameter " + name + " already declared", param->getNameToken());
 		param->setArgument(RValue(arg, function.getParam(i)));
 		param->genCode(context);
 	}

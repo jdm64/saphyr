@@ -1,0 +1,10 @@
+
+int func(int a, int a)
+{
+	return 0;
+}
+
+========
+
+negative/Function.syp:2: function parameter a already declared
+found 1 errors
