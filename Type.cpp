@@ -175,6 +175,11 @@ SUserType* SUserType::lookup(CodeContext& context, const string& name)
 	return context.typeManager.lookupUserType(name);
 }
 
+string SUserType::lookup(CodeContext& context, SType* type)
+{
+	return context.typeManager.getUserTypeName(type);
+}
+
 void SUserType::createAlias(CodeContext& context, const string& name, SType* type)
 {
 	context.typeManager.createAlias(name, type);

@@ -300,6 +300,8 @@ class SUserType : public SType
 public:
 	static SUserType* lookup(CodeContext& context, const string& name);
 
+	static string lookup(CodeContext& context, SType* type);
+
 	static void createAlias(CodeContext& context, const string& name, SType* type);
 
 	static void createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);

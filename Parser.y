@@ -753,6 +753,10 @@ explicit_variable_expresion
 	{
 		$$ = new NMemberVariable($1, $3, $2.t_tok);
 	}
+	| variable_expresion '.' TT_IDENTIFIER '(' expression_list ')'
+	{
+		$$ = new NMemberFunctionCall($1, $2.t_tok, $3, $5);
+	}
 	| variable_expresion '@'
 	{
 		$$ = new NDereference($1, $2.t_tok);

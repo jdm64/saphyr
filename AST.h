@@ -1421,6 +1421,35 @@ public:
 	}
 };
 
+class NMemberFunctionCall : public NVariable
+{
+	NVariable* baseVar;
+	Token* dotToken;
+	Token* funcName;
+	NExpressionList* arguments;
+
+public:
+	NMemberFunctionCall(NVariable* baseVar, Token* dotToken, Token* funcName, NExpressionList* arguments)
+	: baseVar(baseVar), dotToken(dotToken), funcName(funcName), arguments(arguments) {}
+
+	RValue genValue(CodeContext& context);
+
+	RValue loadVar(CodeContext& context);
+
+	const string& getName() const
+	{
+		return funcName->str;
+	}
+
+	~NMemberFunctionCall()
+	{
+		delete baseVar;
+		delete dotToken;
+		delete funcName;
+		delete arguments;
+	}
+};
+
 class NIncrement : public NOperatorExpr
 {
 	NVariable* variable;

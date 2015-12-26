@@ -1159,6 +1159,70 @@ RValue NFunctionCall::loadVar(CodeContext& context)
 	return RValue(stackAlloc, value.stype());
 }
 
+RValue NMemberFunctionCall::genValue(CodeContext& context)
+{
+	auto value = baseVar->loadVar(context);
+	if (!value)
+		return RValue();
+
+	value = RValue(value, SType::getPointer(context, value.stype()));
+
+	auto type = value.stype();
+	if (type->isPointer()) {
+		while (true) {
+			auto sub = type->subType();
+			if (sub->isClass()) {
+				break;
+			} else if (sub->isPointer()) {
+				value = Inst::Deref(context, value);
+				type = value.stype();
+			} else {
+				context.addError("member function call requires class or class pointer", dotToken);
+				return RValue();
+			}
+		}
+	} else {
+		context.addError("member function call requires class or class pointer", dotToken);
+		return RValue();
+	}
+
+	auto className = SUserType::lookup(context, type->subType());
+	auto fname = className + "_" + funcName->str;
+	auto sym = context.loadSymbol(fname);
+	if (!sym || !sym.isFunction()) {
+		context.addError("function " + funcName->str + " not defined for class " + className, funcName);
+		return RValue();
+	}
+
+	auto func = static_cast<SFunction&>(sym);
+	auto argCount = arguments->size() + 1;
+	auto paramCount = func.numParams();
+	if (argCount != paramCount) {
+		context.addError("argument count for " + func.name().str() + " function invalid, "
+			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.", funcName);
+		return RValue();
+	}
+
+	vector<Value*> exp_list;
+	exp_list.push_back(value);
+	int i = 1;
+	for (auto arg : *arguments) {
+		auto argExp = arg->genValue(context);
+		Inst::CastTo(context, funcName, argExp, func.getParam(i++));
+		exp_list.push_back(argExp);
+	}
+	auto call = CallInst::Create(func, exp_list, "", context);
+	return RValue(call, func.returnTy());
+}
+
+RValue NMemberFunctionCall::loadVar(CodeContext& context)
+{
+	auto value = genValue(context);
+	auto stackAlloc = new AllocaInst(value.type(), "", context);
+	new StoreInst(value, stackAlloc, context);
+	return RValue(stackAlloc, value.stype());
+}
+
 RValue NIncrement::genValue(CodeContext& context)
 {
 	auto varPtr = variable->loadVar(context);
