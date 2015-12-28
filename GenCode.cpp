@@ -171,9 +171,30 @@ RValue NVariable::genValue(CodeContext& context, RValue var)
 RValue NBaseVariable::loadVar(CodeContext& context)
 {
 	auto varName = getName();
-	auto var = context.loadSymbol(varName);
+
+	// check current function
+	auto var = context.loadSymbolLocal(varName);
 	if (var)
 		return var;
+
+	// check class variables
+	auto currClass = context.getClass();
+	if (currClass) {
+		auto item = currClass->getItem(varName);
+		if (item) {
+			auto baseVar = new NBaseVariable(new Token("", "this", 0));
+			auto memName = new Token("", varName, 0);
+			unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName, nullptr));
+			return classVar->loadVar(context);
+		}
+	}
+
+	// check global variables
+	var = context.loadSymbolGlobal(varName);
+	if (var)
+		return var;
+
+	// check enums
 	auto userVar = SUserType::lookup(context, varName);
 	if (!userVar) {
 		context.addError("variable " + varName + " not declared", name);
@@ -432,8 +453,19 @@ void NStructDeclaration::genCode(CodeContext& context)
 	bool valid = true;
 	for (auto item : *list)
 		valid &= item->addMembers(structVars, memberNames, context);
-	if (valid)
-		createUserType(structVars, context);
+	if (valid) {
+		switch (ctype) {
+		case CreateType::STRUCT:
+			SUserType::createStruct(context, structName, structVars);
+			return;
+		case CreateType::UNION:
+			SUserType::createUnion(context, structName, structVars);
+			return;
+		case CreateType::CLASS:
+			SUserType::createClass(context, structName, structVars);
+			return;
+		}
+	}
 }
 
 void NEnumDeclaration::genCode(CodeContext& context)
@@ -534,6 +566,63 @@ void NFunctionDeclaration::genCodeParams(SFunction function, CodeContext& contex
 		param->setArgument(RValue(arg, function.getParam(i)));
 		param->genCode(context);
 	}
+}
+
+void NClassStructDecl::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NStructDeclaration)]);
+	auto stToken = theClass->getNameToken();
+	auto stType = NStructDeclaration::CreateType::CLASS;
+	auto st = new (buff.get()) NStructDeclaration(stToken, list, stType);
+	st->genCode(context);
+}
+
+void NClassFunctionDecl::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NFunctionDeclaration)]);
+
+	// add this parameter
+	auto thisToken = new Token(*theClass->getNameToken());
+	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("", "this", 0));
+	params->addItemFront(thisPtr);
+
+	auto fnToken = *name;
+	fnToken.str = theClass->getName() + "_" + name->str;
+	auto fn = new (buff.get()) NFunctionDeclaration(&fnToken, rtype, params, body);
+	fn->genCode(context);
+}
+
+void NClassDeclaration::genCode(CodeContext& context)
+{
+	int structIdx = -1;
+	for (int i = 0; i < list->size(); i++) {
+		if (!list->at(i)->isStruct())
+			continue;
+		else if (structIdx > -1)
+			context.addError("only one struct allowed in a class", list->at(i)->getNameToken());
+		else
+			structIdx = i;
+	}
+
+	if (structIdx < 0) {
+		auto group = new NVariableDeclGroupList;
+		auto varList = new NVariableDeclList;
+		auto structDecl = new NClassStructDecl(nullptr, group);
+		structDecl->setClass(this);
+		varList->addItem(new NVariableDecl(new Token("", "this", 0)));
+		group->addItem(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
+		list->addItem(structDecl);
+		structIdx = list->size() - 1;
+	}
+	list->at(structIdx)->genCode(context);
+	context.setClass(static_cast<SClassType*>(SUserType::lookup(context, getName())));
+
+	for (int i = 0; i < list->size(); i++) {
+		if (i == structIdx)
+			continue;
+		list->at(i)->genCode(context);
+	}
+	context.setClass(nullptr);
 }
 
 void NReturnStatement::genCode(CodeContext& context)
@@ -1068,6 +1157,70 @@ RValue NFunctionCall::genValue(CodeContext& context)
 }
 
 RValue NFunctionCall::loadVar(CodeContext& context)
+{
+	auto value = genValue(context);
+	auto stackAlloc = new AllocaInst(value.type(), "", context);
+	new StoreInst(value, stackAlloc, context);
+	return RValue(stackAlloc, value.stype());
+}
+
+RValue NMemberFunctionCall::genValue(CodeContext& context)
+{
+	auto value = baseVar->loadVar(context);
+	if (!value)
+		return RValue();
+
+	value = RValue(value, SType::getPointer(context, value.stype()));
+
+	auto type = value.stype();
+	if (type->isPointer()) {
+		while (true) {
+			auto sub = type->subType();
+			if (sub->isClass()) {
+				break;
+			} else if (sub->isPointer()) {
+				value = Inst::Deref(context, value);
+				type = value.stype();
+			} else {
+				context.addError("member function call requires class or class pointer", dotToken);
+				return RValue();
+			}
+		}
+	} else {
+		context.addError("member function call requires class or class pointer", dotToken);
+		return RValue();
+	}
+
+	auto className = SUserType::lookup(context, type->subType());
+	auto fname = className + "_" + funcName->str;
+	auto sym = context.loadSymbol(fname);
+	if (!sym || !sym.isFunction()) {
+		context.addError("function " + funcName->str + " not defined for class " + className, funcName);
+		return RValue();
+	}
+
+	auto func = static_cast<SFunction&>(sym);
+	auto argCount = arguments->size() + 1;
+	auto paramCount = func.numParams();
+	if (argCount != paramCount) {
+		context.addError("argument count for " + func.name().str() + " function invalid, "
+			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.", funcName);
+		return RValue();
+	}
+
+	vector<Value*> exp_list;
+	exp_list.push_back(value);
+	int i = 1;
+	for (auto arg : *arguments) {
+		auto argExp = arg->genValue(context);
+		Inst::CastTo(context, funcName, argExp, func.getParam(i++));
+		exp_list.push_back(argExp);
+	}
+	auto call = CallInst::Create(func, exp_list, "", context);
+	return RValue(call, func.returnTy());
+}
+
+RValue NMemberFunctionCall::loadVar(CodeContext& context)
 {
 	auto value = genValue(context);
 	auto stackAlloc = new AllocaInst(value.type(), "", context);

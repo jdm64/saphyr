@@ -91,14 +91,25 @@ public:
 		localTable.clear();
 	}
 
-	LValue loadSymbol(const string& name) const
+	LValue loadSymbolLocal(const string& name) const
 	{
 		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
 			auto var = it->loadSymbol(name);
 			if (var)
 				return var;
 		}
+		return LValue();
+	}
+
+	LValue loadSymbolGlobal(const string& name) const
+	{
 		return globalTable.loadSymbol(name);
+	}
+
+	LValue loadSymbol(const string& name) const
+	{
+		auto var = loadSymbolLocal(name);
+		return var? var : globalTable.loadSymbol(name);
 	}
 
 	LValue loadSymbolCurr(const string& name) const
@@ -127,6 +138,7 @@ class CodeContext : public SymbolTable
 	Module* module;
 	TypeManager typeManager;
 	SFunction currFunc;
+	SClassType* currClass;
 
 	void validateFunction()
 	{
@@ -144,7 +156,7 @@ class CodeContext : public SymbolTable
 
 public:
 	explicit CodeContext(Module* module)
-	: module(module), typeManager(module)
+	: module(module), typeManager(module), currClass(nullptr)
 	{
 	}
 
@@ -179,6 +191,16 @@ public:
 	BasicBlock* currBlock() const
 	{
 		return funcBlocks.back();
+	}
+
+	void setClass(SClassType* classType)
+	{
+		currClass = classType;
+	}
+
+	SClassType* getClass() const
+	{
+		return currClass;
 	}
 
 	void startFuncBlock(SFunction function)

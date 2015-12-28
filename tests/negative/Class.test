@@ -1,0 +1,46 @@
+
+class Test
+{
+	struct this {
+		int a;
+	}
+
+	void run()
+	{
+		a = 4;
+	}
+}
+
+class Bad
+{
+	struct this { int a; }
+	struct this { int b; }
+}
+
+void func()
+{
+	int a;
+
+	a.bad();
+
+	a$.bad();
+}
+
+void func2()
+{
+	Test a;
+
+	a.nothing();
+
+	a.run(4);
+}
+
+========
+
+negative/Class.syp:17: only one struct allowed in a class
+negative/Class.syp:14: Bad type already declared
+negative/Class.syp:24: member function call requires class or class pointer
+negative/Class.syp:26: member function call requires class or class pointer
+negative/Class.syp:33: function nothing not defined for class Test
+negative/Class.syp:35: argument count for Test_run function invalid, 2 arguments given, but 1 required.
+found 6 errors

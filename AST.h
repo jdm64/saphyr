@@ -85,6 +85,11 @@ public:
 		list.push_back(item);
 	}
 
+	void addItemFront(NType* item)
+	{
+		list.insert(list.begin(), item);
+	}
+
 	NType* at(int i)
 	{
 		return list.at(i);
@@ -805,17 +810,16 @@ public:
 
 class NStructDeclaration : public NDeclaration
 {
-	NVariableDeclGroupList* list;
+public:
+	enum class CreateType {STRUCT, UNION, CLASS};
 
-protected:
-	virtual void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
-	{
-		SUserType::createStruct(context, getName(), structVars);
-	}
+private:
+	NVariableDeclGroupList* list;
+	CreateType ctype;
 
 public:
-	NStructDeclaration(Token* name, NVariableDeclGroupList* list)
-	: NDeclaration(name), list(list) {}
+	NStructDeclaration(Token* name, NVariableDeclGroupList* list, CreateType ctype = CreateType::STRUCT)
+	: NDeclaration(name), list(list), ctype(ctype) {}
 
 	void genCode(CodeContext& context);
 
@@ -823,19 +827,6 @@ public:
 	{
 		delete list;
 	}
-};
-
-class NUnionDeclaration : public NStructDeclaration
-{
-protected:
-	void createUserType(vector<pair<string, SType*> > structVars, CodeContext& context)
-	{
-		SUserType::createUnion(context, getName(), structVars);
-	}
-
-public:
-	NUnionDeclaration(Token* name, NVariableDeclGroupList* list)
-	: NStructDeclaration(name, list) {}
 };
 
 class NEnumDeclaration : public NDeclaration
@@ -884,6 +875,93 @@ public:
 	}
 
 	~NFunctionDeclaration()
+	{
+		delete rtype;
+		delete params;
+		delete body;
+	}
+};
+
+// forward declaration
+class NClassDeclaration;
+
+class NClassMember : public NDeclaration
+{
+protected:
+	NClassDeclaration* theClass;
+
+public:
+	explicit NClassMember(Token* name)
+	: NDeclaration(name), theClass(nullptr) {}
+
+	void setClass(NClassDeclaration* cl)
+	{
+		theClass = cl;
+	}
+
+	virtual bool isStruct() const = 0;
+};
+typedef NodeList<NClassMember> NClassMemberList;
+
+class NClassDeclaration : public NDeclaration
+{
+	NClassMemberList* list;
+
+public:
+	NClassDeclaration(Token* name, NClassMemberList* list)
+	: NDeclaration(name), list(list)
+	{
+		for (auto i : *list)
+			i->setClass(this);
+	}
+
+	void genCode(CodeContext& context);
+
+	~NClassDeclaration()
+	{
+		delete list;
+	}
+};
+
+class NClassStructDecl : public NClassMember
+{
+	NVariableDeclGroupList* list;
+
+public:
+	NClassStructDecl(Token* name, NVariableDeclGroupList* list)
+	: NClassMember(name), list(list) {}
+
+	void genCode(CodeContext& context);
+
+	bool isStruct() const
+	{
+		return true;
+	}
+
+	~NClassStructDecl()
+	{
+		delete list;
+	}
+};
+
+class NClassFunctionDecl : public NClassMember
+{
+	NDataType* rtype;
+	NParameterList* params;
+	NStatementList* body;
+
+public:
+	NClassFunctionDecl(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
+	: NClassMember(name), rtype(rtype), params(params), body(body) {}
+
+	void genCode(CodeContext& context);
+
+	bool isStruct() const
+	{
+		return false;
+	}
+
+	~NClassFunctionDecl()
 	{
 		delete rtype;
 		delete params;
@@ -1339,6 +1417,35 @@ public:
 	~NFunctionCall()
 	{
 		delete name;
+		delete arguments;
+	}
+};
+
+class NMemberFunctionCall : public NVariable
+{
+	NVariable* baseVar;
+	Token* dotToken;
+	Token* funcName;
+	NExpressionList* arguments;
+
+public:
+	NMemberFunctionCall(NVariable* baseVar, Token* dotToken, Token* funcName, NExpressionList* arguments)
+	: baseVar(baseVar), dotToken(dotToken), funcName(funcName), arguments(arguments) {}
+
+	RValue genValue(CodeContext& context);
+
+	RValue loadVar(CodeContext& context);
+
+	const string& getName() const
+	{
+		return funcName->str;
+	}
+
+	~NMemberFunctionCall()
+	{
+		delete baseVar;
+		delete dotToken;
+		delete funcName;
 		delete arguments;
 	}
 };
