@@ -24,6 +24,9 @@ void Inst::castError(CodeContext& context, SType* from, SType* to, Token* token)
 
 bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast)
 {
+	if (!lhs || !rhs)
+		return true;
+
 	auto ltype = lhs.stype();
 	auto rtype = rhs.stype();
 
@@ -44,6 +47,9 @@ bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue&
 
 bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type, bool upcast)
 {
+	if (!value)
+		return true;
+
 	auto valueType = value.stype();
 
 	if (type == valueType) {
@@ -266,9 +272,6 @@ RValue Inst::PointerMath(int type, Token* optToken, RValue ptr, RValue val, Code
 
 RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context)
 {
-	if (!lhs || !rhs)
-		return RValue();
-
 	if (CastMatch(context, optToken, lhs, rhs, true))
 		return RValue();
 

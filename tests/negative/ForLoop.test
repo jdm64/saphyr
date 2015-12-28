@@ -1,0 +1,11 @@
+
+void func()
+{
+	for (; i < 10;)
+		;
+}
+
+========
+
+negative/ForLoop.syp:4: variable i not declared
+found 1 errors
