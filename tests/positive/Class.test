@@ -22,6 +22,14 @@ class Test
 	}
 }
 
+class Empty
+{
+	int run()
+	{
+		return 3;
+	}
+}
+
 void func()
 {
 	Test a;
@@ -38,6 +46,13 @@ void func2()
 	b.getThis().run(9);
 }
 
+int func3()
+{
+	Empty e;
+
+	return e.run();
+}
+
 int main()
 {
 	Test x;
@@ -52,6 +67,7 @@ int main()
 ========
 
 %Test = type { i32, i32 }
+%Empty = type { i8 }
 
 define i32 @Test_run(%Test* %this, i32 %c) {
   %1 = alloca %Test*
@@ -79,6 +95,12 @@ define %Test* @Test_getThis(%Test* %this) {
   store %Test* %this, %Test** %1
   %2 = load %Test** %1
   ret %Test* %2
+}
+
+define i32 @Empty_run(%Empty* %this) {
+  %1 = alloca %Empty*
+  store %Empty* %this, %Empty** %1
+  ret i32 3
 }
 
 define void @func() {
@@ -109,6 +131,12 @@ define void @func2() {
   %8 = load %Test** %7
   %9 = call i32 @Test_run(%Test* %8, i32 9)
   ret void
+}
+
+define i32 @func3() {
+  %e = alloca %Empty
+  %1 = call i32 @Empty_run(%Empty* %e)
+  ret i32 %1
 }
 
 define i32 @main() {

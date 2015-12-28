@@ -24,6 +24,8 @@ void func()
 	a.bad();
 
 	a$.bad();
+
+	x.fun();
 }
 
 void func2()
@@ -41,6 +43,7 @@ negative/Class.syp:17: only one struct allowed in a class
 negative/Class.syp:14: Bad type already declared
 negative/Class.syp:24: member function call requires class or class pointer
 negative/Class.syp:26: member function call requires class or class pointer
-negative/Class.syp:33: function nothing not defined for class Test
-negative/Class.syp:35: argument count for Test_run function invalid, 2 arguments given, but 1 required.
-found 6 errors
+negative/Class.syp:28: variable x not declared
+negative/Class.syp:35: function nothing not defined for class Test
+negative/Class.syp:37: argument count for Test_run function invalid, 2 arguments given, but 1 required.
+found 7 errors
