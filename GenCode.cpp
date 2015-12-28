@@ -1173,22 +1173,17 @@ RValue NMemberFunctionCall::genValue(CodeContext& context)
 	value = RValue(value, SType::getPointer(context, value.stype()));
 
 	auto type = value.stype();
-	if (type->isPointer()) {
-		while (true) {
-			auto sub = type->subType();
-			if (sub->isClass()) {
-				break;
-			} else if (sub->isPointer()) {
-				value = Inst::Deref(context, value);
-				type = value.stype();
-			} else {
-				context.addError("member function call requires class or class pointer", dotToken);
-				return RValue();
-			}
+	while (true) {
+		auto sub = type->subType();
+		if (sub->isClass()) {
+			break;
+		} else if (sub->isPointer()) {
+			value = Inst::Deref(context, value);
+			type = value.stype();
+		} else {
+			context.addError("member function call requires class or class pointer", dotToken);
+			return RValue();
 		}
-	} else {
-		context.addError("member function call requires class or class pointer", dotToken);
-		return RValue();
 	}
 
 	auto className = SUserType::lookup(context, type->subType());
