@@ -266,8 +266,7 @@ RValue Inst::PointerMath(int type, Token* optToken, RValue ptr, RValue val, Code
 		context.addError("pointer arithmetic only valid using ++/-- operators", optToken);
 		return ptr;
 	}
-	auto ptrVal = GetElementPtrInst::Create(ptr, val.value(), "", context);
-	return RValue(ptrVal, ptr.stype());
+	return GetElementPtr(context, ptr, val.value(), ptr.stype());
 }
 
 RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context)

@@ -229,8 +229,7 @@ RValue NArrayVariable::loadVar(CodeContext& context)
 	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
 	indexes.push_back(indexVal);
 
-	auto getEl = GetElementPtrInst::Create(var, indexes, "", context);
-	return RValue(getEl, var.stype()->subType());
+	return Inst::GetElementPtr(context, var, indexes, var.stype()->subType());
 }
 
 RValue NMemberVariable::loadVar(CodeContext& context)
@@ -266,8 +265,7 @@ RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStr
 	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
 	indexes.push_back(ConstantInt::get(*SType::getInt(context, 32), item->first));
 
-	auto getEl = GetElementPtrInst::Create(baseValue, indexes, "", context);
-	return RValue(getEl, item->second);
+	return Inst::GetElementPtr(context, baseValue, indexes, item->second);
 }
 
 RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType) const
@@ -1264,7 +1262,11 @@ RValue NStringLiteral::genValue(CodeContext& context)
 	std::vector<Constant*> idxs;
 	idxs.push_back(zero);
 
+#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
+	auto strPtr = ConstantExpr::getGetElementPtr(gVar->getType(), gVar, idxs);
+#else
 	auto strPtr = ConstantExpr::getGetElementPtr(gVar, idxs);
+#endif
 
 	return RValue(strPtr, arrTyPtr);
 }

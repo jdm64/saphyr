@@ -62,6 +62,16 @@ public:
 	static RValue SizeOf(CodeContext& context, Token* token, NExpression* type);
 
 	static RValue SizeOf(CodeContext& context, Token* token, const string& type);
+
+	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
+	{
+		#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
+			auto ptrVal = GetElementPtrInst::Create(nullptr, ptr, idxs, "", context);
+		#else
+			auto ptrVal = GetElementPtrInst::Create(ptr, idxs, "", context);
+		#endif
+		return RValue(ptrVal, type);
+	}
 };
 
 #endif

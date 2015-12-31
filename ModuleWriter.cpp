@@ -16,13 +16,12 @@
  */
 
 #include "ModuleWriter.h"
-#include "LLVM_Defines.h"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
-#include <llvm/PassManager.h>
+#include _LLVM_IR_PASS_MANAGER_H
 #include <llvm/ADT/Triple.h>
 #include _LLVM_IR_PRINTING_PASSES_H
 #include _LLVM_IR_VERIFIER_H
@@ -36,6 +35,10 @@
 #include <llvm/Target/TargetOptions.h>
 
 #include "Pass.h"
+
+#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
+	using namespace llvm::legacy;
+#endif
 
 bool ModuleWriter::validModule()
 {
@@ -137,7 +140,12 @@ void ModuleWriter::outputNative()
 
 	initTarget();
 	auto objFile = getOutFile(filename.substr(0, filename.rfind('.')) + ".o");
+
+#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
+	buffer_ostream objStream(objFile->os());
+#else
 	formatted_raw_ostream objStream(objFile->os());
+#endif
 	unique_ptr<TargetMachine> machine(getMachine());
 	machine->addPassesToEmitFile(pm, objStream, TargetMachine::CGFT_ObjectFile);
 
