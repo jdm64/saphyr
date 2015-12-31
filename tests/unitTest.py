@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, fnmatch, re
+import os, sys, fnmatch, re, codecs
 from subprocess import call, Popen, PIPE
 
 SAPHYR_BIN = "../saphyr"
@@ -76,19 +76,19 @@ class TestCase:
 		self.negFile = self.basename + NEG_EXT
 
 	def createFiles(self):
-		with open(self.tstFile) as testFile:
+		with codecs.open(self.tstFile, "r", "utf-8") as testFile:
 			data = testFile.read().split("========")
 			if len(data) != 2:
 				return True
-			with open(self.srcFile, "w") as sourceFile:
+			with codecs.open(self.srcFile, "w", "utf-8") as sourceFile:
 				sourceFile.write(data[0])
-			with open(self.expFile, "w") as asmFile:
+			with codecs.open(self.expFile, "w", "utf-8") as asmFile:
 				asmFile.write(data[1].lstrip())
 		return False
 
 	def update(self, isPos):
 		expected = self.llFile if isPos else self.negFile
-		with open(self.srcFile) as sourceF, open(expected) as expF, open(self.tstFile, "w") as tstF:
+		with codecs.open(self.srcFile, "r", "utf-8") as sourceF, codecs.open(expected, "r", "utf-8") as expF, open(self.tstFile, "w", "utf-8") as tstF:
 			tstF.write("\n" + sourceF.read().strip() + "\n\n")
 			tstF.write("========\n\n")
 			tstF.write(expF.read())
