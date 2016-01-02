@@ -1,3 +1,5 @@
+-include Configfile
+
 # only set CXX if it's not defined
 ifneq "$(origin CXX)" "environment"
 	CXX = clang++
