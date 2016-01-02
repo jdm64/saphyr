@@ -1,7 +1,7 @@
 -include Configfile
 
 # only set CXX if it's not defined
-ifneq "$(origin CXX)" "environment"
+ifeq "$(origin CXX)" "default"
 	CXX = clang++
 endif
 
