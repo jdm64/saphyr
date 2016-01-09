@@ -27,6 +27,7 @@ LL_EXT = ".ll"
 ERR_EXT = ".err"
 EXP_EXT = ".exp"
 NEG_EXT = ".neg"
+BC_EXT = ".bc"
 
 class Cmd:
 	def __init__(self, cmd):
@@ -46,9 +47,7 @@ def findAllTests():
 	return matches
 
 def getFiles(files):
-	if not isinstance(files, type([])):
-		files = [files]
-	elif not files:
+	if not files:
 		return findAllTests()
 
 	allTests = findAllTests()
@@ -64,10 +63,12 @@ def getFiles(files):
 	return fileList
 
 class TestCase:
-	def __init__(self, file, clean=True, update=False):
+	def __init__(self, file, clean=True, update=False, fromVer=None, toVer=None):
 		self.tstFile = file
 		self.doClean = clean
 		self.doUpdate = update
+		self.fromVer = fromVer
+		self.toVer = toVer
 		self.basename = file[0 : file.rfind(".")]
 		self.srcFile = self.basename + SYP_EXT
 		self.expFile = self.basename + EXP_EXT
@@ -94,7 +95,7 @@ class TestCase:
 			tstF.write(expF.read())
 
 	def clean(self):
-		ext_list = [SYP_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT]
+		ext_list = [SYP_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT, BC_EXT]
 		Cmd(["rm"] + [self.basename + ext for ext in ext_list])
 
 	def patchAsm(self, file):
@@ -103,6 +104,18 @@ class TestCase:
 		data = re.sub("; ModuleID =.*", "", data).strip() + "\n"
 		with open(file, "w") as asm:
 			asm.write(data)
+
+	def rewriteIR(self, fileName):
+		bcFile = self.basename + ".bc"
+		Cmd(["llvm-as-" + self.fromVer, "-o", bcFile, fileName])
+		Cmd(["llvm-dis-" + self.toVer, "-o", fileName, bcFile])
+
+	def fixIR(self):
+		if self.fromVer != None and self.toVer != None:
+			self.rewriteIR(self.expFile)
+			self.patchAsm(self.expFile)
+			self.rewriteIR(self.llFile)
+		self.patchAsm(self.llFile)
 
 	def writeLog(self, p):
 		with open(self.errFile, "w") as log:
@@ -116,7 +129,7 @@ class TestCase:
 			return True, "[crash]"
 		elif proc.ext == 0:
 			actual = self.llFile
-			self.patchAsm(actual)
+			self.fixIR()
 			isPos = True
 		else:
 			actual = self.negFile
@@ -152,6 +165,13 @@ def cleanTests(files):
 	return 0
 
 def runTests(files, clean=True, update=False):
+	fromVer = None
+	toVer = None
+	# if the first "file" starts with a '+' then we want to upgrade the
+	# expected llvmIR. Example: +3.6-3.7
+	if len(files) > 0 and files[0][0] == "+":
+		fromVer, toVer = files[0][1:].split("-")
+		files = files[1:]
 	files = getFiles(files)
 	if not files:
 		print("No tests found")
@@ -160,7 +180,7 @@ def runTests(files, clean=True, update=False):
 	failed = 0
 	total = len(files)
 	for file in files:
-		error, msg = TestCase(file, clean, update).run()
+		error, msg = TestCase(file, clean, update, fromVer, toVer).run()
 		print(file.ljust(padding) + " = " + msg)
 		failed += error
 	passed = total - failed
