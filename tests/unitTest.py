@@ -76,19 +76,19 @@ class TestCase:
 		self.negFile = self.basename + NEG_EXT
 
 	def createFiles(self):
-		with codecs.open(self.tstFile, "r", "utf-8") as testFile:
+		with codecs.open(self.tstFile, "r", ENCODING) as testFile:
 			data = testFile.read().split("========")
 			if len(data) != 2:
 				return True
-			with codecs.open(self.srcFile, "w", "utf-8") as sourceFile:
+			with codecs.open(self.srcFile, "w", ENCODING) as sourceFile:
 				sourceFile.write(data[0])
-			with codecs.open(self.expFile, "w", "utf-8") as asmFile:
+			with codecs.open(self.expFile, "w", ENCODING) as asmFile:
 				asmFile.write(data[1].lstrip())
 		return False
 
 	def update(self, isPos):
 		expected = self.llFile if isPos else self.negFile
-		with codecs.open(self.srcFile, "r", "utf-8") as sourceF, codecs.open(expected, "r", "utf-8") as expF, open(self.tstFile, "w", "utf-8") as tstF:
+		with codecs.open(self.srcFile, "r", ENCODING) as sourceF, codecs.open(expected, "r", ENCODING) as expF, open(self.tstFile, "w", ENCODING) as tstF:
 			tstF.write("\n" + sourceF.read().strip() + "\n\n")
 			tstF.write("========\n\n")
 			tstF.write(expF.read())
