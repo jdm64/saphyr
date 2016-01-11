@@ -89,7 +89,7 @@ class TestCase:
 
 	def update(self, isPos):
 		expected = self.llFile if isPos else self.negFile
-		with codecs.open(self.srcFile, "r", ENCODING) as sourceF, codecs.open(expected, "r", ENCODING) as expF, open(self.tstFile, "w", ENCODING) as tstF:
+		with codecs.open(self.srcFile, "r", ENCODING) as sourceF, codecs.open(expected, "r", ENCODING) as expF, codecs.open(self.tstFile, "w", ENCODING) as tstF:
 			tstF.write("\n" + sourceF.read().strip() + "\n\n")
 			tstF.write("========\n\n")
 			tstF.write(expF.read())
