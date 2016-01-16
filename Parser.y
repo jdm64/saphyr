@@ -150,6 +150,14 @@ class_member
 	{
 		$$ = new NClassFunctionDecl($2, $1, $4, $6);
 	}
+	| TT_THIS '(' parameter_list ')' function_body
+	{
+		$$ = new NClassConstructor($1, $3, $5);
+	}
+	| '~' TT_THIS '(' ')' function_body
+	{
+		$$ = new NClassDestructor($2, $5);
+	}
 	;
 struct_declaration
 	: TT_STRUCT TT_IDENTIFIER '{' variable_declarations_list '}'

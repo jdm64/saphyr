@@ -949,6 +949,40 @@ public:
 	}
 };
 
+class NClassConstructor : public NClassMember
+{
+	NParameterList* params;
+	NStatementList* body;
+
+public:
+	NClassConstructor(Token* name, NParameterList* params, NStatementList* body)
+	: NClassMember(name), params(params), body(body) {}
+
+	void genCode(CodeContext& context);
+
+	~NClassConstructor()
+	{
+		delete params;
+		delete body;
+	}
+};
+
+class NClassDestructor : public NClassMember
+{
+	NStatementList* body;
+
+public:
+	NClassDestructor(Token* name, NStatementList* body)
+	: NClassMember(name), body(body) {}
+
+	void genCode(CodeContext& context);
+
+	~NClassDestructor()
+	{
+		delete body;
+	}
+};
+
 class NConditionStmt : public NStatement
 {
 protected:

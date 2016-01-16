@@ -467,6 +467,30 @@ void NClassFunctionDecl::genCode(CodeContext& context)
 		clType->addFunction(name->str, func);
 }
 
+void NClassConstructor::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NClassFunctionDecl)]);
+
+	NBaseType voidType(nullptr, ParserBase::TT_VOID);
+	auto fn = new (buff.get()) NClassFunctionDecl(getNameToken(), &voidType, params, body);
+	fn->setClass(theClass);
+	fn->genCode(context);
+}
+
+void NClassDestructor::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NClassFunctionDecl)]);
+
+	NBaseType voidType(nullptr, ParserBase::TT_VOID);
+	NParameterList params;
+
+	auto nullTok = *getNameToken();
+	nullTok.str = "null";
+	auto fn = new (buff.get()) NClassFunctionDecl(&nullTok, &voidType, &params, body);
+	fn->setClass(theClass);
+	fn->genCode(context);
+}
+
 void NClassDeclaration::genCode(CodeContext& context)
 {
 	int structIdx = -1;
