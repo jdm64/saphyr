@@ -899,7 +899,10 @@ public:
 		theClass = cl;
 	}
 
-	virtual bool isStruct() const = 0;
+	virtual bool isStruct() const
+	{
+		return false;
+	}
 };
 typedef NodeList<NClassMember> NClassMemberList;
 
@@ -955,11 +958,6 @@ public:
 	: NClassMember(name), rtype(rtype), params(params), body(body) {}
 
 	void genCode(CodeContext& context);
-
-	bool isStruct() const
-	{
-		return false;
-	}
 
 	~NClassFunctionDecl()
 	{
