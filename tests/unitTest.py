@@ -68,7 +68,11 @@ class TestCase:
 		self.doClean = clean
 		self.doUpdate = update
 		self.fromVer = fromVer
+		if self.fromVer != None and len(self.fromVer) > 0:
+			self.fromVer = "-" + self.fromVer
 		self.toVer = toVer
+		if self.toVer != None and len(self.toVer) > 0:
+			self.toVer = "-" + self.toVer
 		self.basename = file[0 : file.rfind(".")]
 		self.srcFile = self.basename + SYP_EXT
 		self.expFile = self.basename + EXP_EXT
@@ -107,8 +111,8 @@ class TestCase:
 
 	def rewriteIR(self, fileName):
 		bcFile = self.basename + ".bc"
-		Cmd(["llvm-as-" + self.fromVer, "-o", bcFile, fileName])
-		Cmd(["llvm-dis-" + self.toVer, "-o", fileName, bcFile])
+		Cmd(["llvm-as" + self.fromVer, "-o", bcFile, fileName])
+		Cmd(["llvm-dis" + self.toVer, "-o", fileName, bcFile])
 
 	def fixIR(self):
 		if self.fromVer != None and self.toVer != None:
