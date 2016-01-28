@@ -320,6 +320,7 @@ class SAliasType : public SUserType
 	explicit SAliasType(SType* type)
 	: SUserType(ALIAS, type->type(), 0, type) {}
 
+public:
 	string str(CodeContext* context = nullptr) const
 	{
 		return subtype->str(nullptr);
