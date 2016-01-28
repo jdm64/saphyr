@@ -854,6 +854,7 @@ class NFunctionDeclaration : public NDeclaration
 	NDataType* rtype;
 	NParameterList* params;
 	NStatementList* body;
+	SFunction function;
 
 public:
 	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
@@ -864,6 +865,11 @@ public:
 	SFunction genFunction(CodeContext& context);
 
 	void genCodeParams(SFunction function, CodeContext& context) const;
+
+	SFunction getFunction()
+	{
+		return function;
+	}
 
 	SFunctionType* getFunctionType(CodeContext& context, Token* token)
 	{

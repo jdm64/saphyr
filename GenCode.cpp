@@ -265,7 +265,7 @@ RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStr
 	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
 	indexes.push_back(ConstantInt::get(*SType::getInt(context, 32), item->first));
 
-	return Inst::GetElementPtr(context, baseValue, indexes, item->second);
+	return Inst::GetElementPtr(context, baseValue, indexes, item->second.stype());
 }
 
 RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType) const
@@ -508,7 +508,7 @@ void NEnumDeclaration::genCode(CodeContext& context)
 
 void NFunctionDeclaration::genCode(CodeContext& context)
 {
-	auto function = genFunction(context);
+	function = genFunction(context);
 	if (!function || !body) { // no body means only function prototype
 		return;
 	} else if (function.size()) {
@@ -588,6 +588,12 @@ void NClassFunctionDecl::genCode(CodeContext& context)
 	fnToken.str = theClass->getName() + "_" + name->str;
 	auto fn = new (buff.get()) NFunctionDeclaration(&fnToken, rtype, params, body);
 	fn->genCode(context);
+
+	// add function to class type
+	auto clType = context.getClass();
+	auto func = fn->getFunction();
+	if (func)
+		clType->addFunction(name->str, func);
 }
 
 void NClassDeclaration::genCode(CodeContext& context)
@@ -1187,14 +1193,14 @@ RValue NMemberFunctionCall::genValue(CodeContext& context)
 	}
 
 	auto className = SUserType::lookup(context, type->subType());
-	auto fname = className + "_" + funcName->str;
-	auto sym = context.loadSymbol(fname);
-	if (!sym || !sym.isFunction()) {
+	auto clType = static_cast<SClassType*>(type->subType());
+	auto sym = clType->getItem(funcName->str);
+	if (!sym || !sym->second.isFunction()) {
 		context.addError("function " + funcName->str + " not defined for class " + className, funcName);
 		return RValue();
 	}
 
-	auto func = static_cast<SFunction&>(sym);
+	auto func = static_cast<SFunction&>(sym->second);
 	auto argCount = arguments->size() + 1;
 	auto paramCount = func.numParams();
 	if (argCount != paramCount) {

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "CodeContext.h"
+#include "Function.h"
 
 #define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
 #define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
@@ -124,6 +125,20 @@ bool SType::validate(CodeContext& context, Token* token, SType* type)
 	return validate(context, token, type->subType());
 }
 
+SStructType::SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype)
+: SUserType(ctype, type, structure.size())
+{
+	int i = 0;
+	for (auto var : structure)
+		items[var.first] = make_pair(i++, RValue(nullptr, var.second));
+}
+
+pair<int, RValue>* SStructType::getItem(const string& name)
+{
+	auto iter = items.find(name);
+	return iter != items.end()? &iter->second : nullptr;
+}
+
 string SStructType::str(CodeContext* context) const
 {
 	stringstream os;
@@ -133,11 +148,16 @@ string SStructType::str(CodeContext* context) const
 		os << "S:{|";
 		for (auto i : items) {
 			os << i.first << "=" << i.second.first << ":"
-				<< i.second.second->str(context) << "|";
+				<< i.second.second.stype()->str(context) << "|";
 		}
 		os << "}";
 	}
 	return os.str();
+}
+
+void SClassType::addFunction(const string& name, const SFunction& func)
+{
+	items[name] = make_pair(0, func);
 }
 
 string SUnionType::str(CodeContext* context) const

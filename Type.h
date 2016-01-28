@@ -28,6 +28,8 @@
 class CodeContext;
 class SFunctionType;
 class SStructType;
+class SFunction;
+class RValue;
 
 using namespace std;
 using namespace llvm;
@@ -332,22 +334,13 @@ class SStructType : public SUserType
 	friend class TypeManager;
 	friend class SClassType;
 
-	map<string, pair<int, SType*>> items;
+protected:
+	map<string, pair<int, RValue>> items;
 
-	SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype = STRUCT)
-	: SUserType(ctype, type, structure.size())
-	{
-		int i = 0;
-		for (auto var : structure)
-			items[var.first] = make_pair(i++, var.second);
-	}
+	SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype = STRUCT);
 
 public:
-	pair<int, SType*>* getItem(const string& name)
-	{
-		auto iter = items.find(name);
-		return iter != items.end()? &iter->second : nullptr;
-	}
+	pair<int, RValue>* getItem(const string& name);
 
 	string str(CodeContext* context = nullptr) const;
 };
@@ -360,6 +353,7 @@ class SClassType : public SStructType
 	: SStructType(type, structure, STRUCT | CLASS) {}
 
 public:
+	void addFunction(const string& name, const SFunction& func);
 };
 
 class SUnionType : public SUserType
