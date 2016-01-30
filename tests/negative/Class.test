@@ -35,6 +35,8 @@ void func2()
 	a.nothing();
 
 	a.run(4);
+
+	a.bad().again();
 }
 
 ========
@@ -46,4 +48,5 @@ negative/Class.syp:26: member function call requires class or class pointer
 negative/Class.syp:28: variable x not declared
 negative/Class.syp:35: function nothing not defined for class Test
 negative/Class.syp:37: argument count for Test_run function invalid, 2 arguments given, but 1 required.
-found 7 errors
+negative/Class.syp:39: function bad not defined for class Test
+found 8 errors

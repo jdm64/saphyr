@@ -1157,6 +1157,8 @@ RValue NFunctionCall::genValue(CodeContext& context)
 RValue NFunctionCall::loadVar(CodeContext& context)
 {
 	auto value = genValue(context);
+	if (!value)
+		return RValue();
 	auto stackAlloc = new AllocaInst(value.type(), "", context);
 	new StoreInst(value, stackAlloc, context);
 	return RValue(stackAlloc, value.stype());
@@ -1216,6 +1218,8 @@ RValue NMemberFunctionCall::genValue(CodeContext& context)
 RValue NMemberFunctionCall::loadVar(CodeContext& context)
 {
 	auto value = genValue(context);
+	if (!value)
+		return value;
 	auto stackAlloc = new AllocaInst(value.type(), "", context);
 	new StoreInst(value, stackAlloc, context);
 	return RValue(stackAlloc, value.stype());
