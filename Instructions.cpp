@@ -369,3 +369,22 @@ RValue Inst::SizeOf(CodeContext& context, Token* token, const string& name)
 	}
 	return SizeOf(context, token, stype);
 }
+
+RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList)
+{
+	auto argCount = args->size() + expList.size();
+	auto paramCount = func.numParams();
+	if (argCount != paramCount) {
+		context.addError("argument count for " + func.name().str() + " function invalid, "
+			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.", name);
+		return RValue();
+	}
+	int i = expList.size();
+	for (auto arg : *args) {
+		auto argExp = arg->genValue(context);
+		Inst::CastTo(context, name, argExp, func.getParam(i++));
+		expList.push_back(argExp);
+	}
+	auto call = CallInst::Create(func, expList, "", context);
+	return RValue(call, func.returnTy());
+}

@@ -61,7 +61,7 @@ public:
 		return funcStype()->returnTy();
 	}
 
-	int numParams() const
+	size_t numParams() const
 	{
 		return funcStype()->numParams();
 	}

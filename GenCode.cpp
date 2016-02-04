@@ -1142,22 +1142,8 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	}
 
 	auto func = static_cast<SFunction&>(deSym);
-	auto argCount = arguments->size();
-	auto paramCount = func.numParams();
-	if (argCount != paramCount) {
-		context.addError("argument count for " + func.name().str() + " function invalid, "
-			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.", name);
-		return RValue();
-	}
 	vector<Value*> exp_list;
-	int i = 0;
-	for (auto arg : *arguments) {
-		auto argExp = arg->genValue(context);
-		Inst::CastTo(context, name, argExp, func.getParam(i++));
-		exp_list.push_back(argExp);
-	}
-	auto call = CallInst::Create(func, exp_list, "", context);
-	return RValue(call, func.returnTy());
+	return Inst::CallFunction(context, func, name, arguments, exp_list);
 }
 
 RValue NFunctionCall::loadVar(CodeContext& context)
@@ -1201,24 +1187,9 @@ RValue NMemberFunctionCall::genValue(CodeContext& context)
 	}
 
 	auto func = static_cast<SFunction&>(sym->second);
-	auto argCount = arguments->size() + 1;
-	auto paramCount = func.numParams();
-	if (argCount != paramCount) {
-		context.addError("argument count for " + func.name().str() + " function invalid, "
-			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.", funcName);
-		return RValue();
-	}
-
 	vector<Value*> exp_list;
 	exp_list.push_back(value);
-	int i = 1;
-	for (auto arg : *arguments) {
-		auto argExp = arg->genValue(context);
-		Inst::CastTo(context, funcName, argExp, func.getParam(i++));
-		exp_list.push_back(argExp);
-	}
-	auto call = CallInst::Create(func, exp_list, "", context);
-	return RValue(call, func.returnTy());
+	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
 }
 
 RValue NMemberFunctionCall::loadVar(CodeContext& context)

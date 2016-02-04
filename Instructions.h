@@ -72,6 +72,8 @@ public:
 		#endif
 		return RValue(ptrVal, type);
 	}
+
+	static RValue CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList);
 };
 
 #endif
