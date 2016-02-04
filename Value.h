@@ -92,14 +92,4 @@ public:
 	}
 };
 
-class LValue : public RValue
-{
-public:
-	LValue()
-	: RValue() {}
-
-	LValue(Value* value, SType* type)
-	: RValue(value, type) {}
-};
-
 #endif

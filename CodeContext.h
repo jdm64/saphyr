@@ -45,18 +45,18 @@ typedef unique_ptr<LabelBlock> LabelBlockPtr;
 
 class ScopeTable
 {
-	map<string, LValue> table;
+	map<string, RValue> table;
 
 public:
-	void storeSymbol(LValue var, const string& name)
+	void storeSymbol(RValue var, const string& name)
 	{
 		table[name] = var;
 	}
 
-	LValue loadSymbol(const string& name) const
+	RValue loadSymbol(const string& name) const
 	{
 		auto varData = table.find(name);
-		return varData != table.end()? varData->second : LValue();
+		return varData != table.end()? varData->second : RValue();
 	}
 };
 
@@ -66,12 +66,12 @@ class SymbolTable
 	vector<ScopeTable> localTable;
 
 public:
-	void storeGlobalSymbol(LValue var, const string& name)
+	void storeGlobalSymbol(RValue var, const string& name)
 	{
 		globalTable.storeSymbol(var, name);
 	}
 
-	void storeLocalSymbol(LValue var, const string& name)
+	void storeLocalSymbol(RValue var, const string& name)
 	{
 		localTable.back().storeSymbol(var, name);
 	}
@@ -91,28 +91,28 @@ public:
 		localTable.clear();
 	}
 
-	LValue loadSymbolLocal(const string& name) const
+	RValue loadSymbolLocal(const string& name) const
 	{
 		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
 			auto var = it->loadSymbol(name);
 			if (var)
 				return var;
 		}
-		return LValue();
+		return {};
 	}
 
-	LValue loadSymbolGlobal(const string& name) const
+	RValue loadSymbolGlobal(const string& name) const
 	{
 		return globalTable.loadSymbol(name);
 	}
 
-	LValue loadSymbol(const string& name) const
+	RValue loadSymbol(const string& name) const
 	{
 		auto var = loadSymbolLocal(name);
 		return var? var : globalTable.loadSymbol(name);
 	}
 
-	LValue loadSymbolCurr(const string& name) const
+	RValue loadSymbolCurr(const string& name) const
 	{
 		return localTable.empty()? globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
 	}

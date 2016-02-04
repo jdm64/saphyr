@@ -20,7 +20,7 @@
 #include <llvm/IR/Function.h>
 #include "Value.h"
 
-class SFunction : public LValue
+class SFunction : public RValue
 {
 	Function* funcValue() const
 	{
@@ -33,13 +33,13 @@ class SFunction : public LValue
 	}
 
 	SFunction(Function* function, SFunctionType* type)
-	: LValue(function, type) {};
+	: RValue(function, type) {};
 
 public:
 	static SFunction create(CodeContext& context, const string& name, SFunctionType* type);
 
 	SFunction()
-	: LValue() {};
+	: RValue() {};
 
 	operator Function*() const
 	{

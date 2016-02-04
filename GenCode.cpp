@@ -316,7 +316,7 @@ void NParameter::genCode(CodeContext& context)
 	auto stype = type->getType(context);
 	auto stackAlloc = new AllocaInst(*stype, "", context);
 	new StoreInst(arg, stackAlloc, context);
-	context.storeLocalSymbol(LValue(stackAlloc, stype), getName());
+	context.storeLocalSymbol({stackAlloc, stype}, getName());
 }
 
 void NVariableDecl::genCode(CodeContext& context)
@@ -345,7 +345,7 @@ void NVariableDecl::genCode(CodeContext& context)
 		return;
 	}
 
-	auto var = LValue(new AllocaInst(*varType, name, context), varType);
+	auto var = RValue(new AllocaInst(*varType, name, context), varType);
 	context.storeLocalSymbol(var, name);
 
 	if (initValue) {
@@ -394,7 +394,7 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 	}
 
 	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), name);
-	context.storeGlobalSymbol(LValue(var, varType), name);
+	context.storeGlobalSymbol({var, varType}, name);
 }
 
 bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
