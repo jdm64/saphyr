@@ -1,0 +1,33 @@
+
+union U
+{
+	int f;
+}
+
+struct S
+{
+	int f;
+}
+
+class C
+{
+	struct this { int f; }
+}
+
+void func2()
+{
+	@S a;
+	@U b;
+	@C c;
+
+	a.f();
+	b.f();
+	c.f();
+}
+
+========
+
+negative/ClassFuncPtr.syp:23: function or function pointer expected
+negative/ClassFuncPtr.syp:24: function or function pointer expected
+negative/ClassFuncPtr.syp:25: function or function pointer expected
+found 3 errors

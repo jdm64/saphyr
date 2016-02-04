@@ -1,0 +1,62 @@
+
+union U
+{
+	@()void f;
+}
+
+struct S
+{
+	@()void f;
+}
+
+class C
+{
+	struct this { @()void f; }
+
+	void func() {}
+}
+
+void func2()
+{
+	@S a;
+	@U b;
+	@C c;
+
+	a.f();
+	b.f();
+	c.f();
+	c.func();
+}
+
+========
+
+%C = type { void ()* }
+%S = type { void ()* }
+%U = type { void ()* }
+
+define void @C_func(%C* %this) {
+  %1 = alloca %C*
+  store %C* %this, %C** %1
+  ret void
+}
+
+define void @func2() {
+  %a = alloca %S*
+  %b = alloca %U*
+  %c = alloca %C*
+  %1 = load %S** %a
+  %2 = getelementptr %S* %1, i32 0, i32 0
+  %3 = load void ()** %2
+  call void %3()
+  %4 = load %U** %b
+  %5 = bitcast %U* %4 to void ()**
+  %6 = load void ()** %5
+  call void %6()
+  %7 = load %C** %c
+  %8 = getelementptr %C* %7, i32 0, i32 0
+  %9 = load void ()** %8
+  call void %9()
+  %10 = load %C** %c
+  call void @C_func(%C* %10)
+  ret void
+}

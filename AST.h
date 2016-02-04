@@ -1438,6 +1438,10 @@ public:
 
 	RValue genValue(CodeContext& context);
 
+	RValue genValueClass(CodeContext& context, RValue& value);
+
+	RValue genValueNonClass(CodeContext& context, RValue& value, bool isStruct);
+
 	RValue loadVar(CodeContext& context);
 
 	const string& getName() const

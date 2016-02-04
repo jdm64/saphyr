@@ -46,7 +46,7 @@ negative/Class.syp:14: Bad type already declared
 negative/Class.syp:24: member function call requires class or class pointer
 negative/Class.syp:26: member function call requires class or class pointer
 negative/Class.syp:28: variable x not declared
-negative/Class.syp:35: function nothing not defined for class Test
+negative/Class.syp:35: class Test has no symbol nothing
 negative/Class.syp:37: argument count for Test_run function invalid, 2 arguments given, but 1 required.
-negative/Class.syp:39: function bad not defined for class Test
+negative/Class.syp:39: class Test has no symbol bad
 found 8 errors

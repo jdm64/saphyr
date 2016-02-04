@@ -1168,7 +1168,9 @@ RValue NMemberFunctionCall::genValue(CodeContext& context)
 	while (true) {
 		auto sub = type->subType();
 		if (sub->isClass()) {
-			break;
+			return genValueClass(context, value);
+		} else if (sub->isStruct() | sub->isUnion()) {
+			return genValueNonClass(context, value, sub->isStruct());
 		} else if (sub->isPointer()) {
 			value = Inst::Deref(context, value);
 			type = value.stype();
@@ -1177,18 +1179,42 @@ RValue NMemberFunctionCall::genValue(CodeContext& context)
 			return RValue();
 		}
 	}
+}
 
+RValue NMemberFunctionCall::genValueClass(CodeContext& context, RValue& value)
+{
+	auto type = value.stype();
 	auto className = SUserType::lookup(context, type->subType());
 	auto clType = static_cast<SClassType*>(type->subType());
 	auto sym = clType->getItem(funcName->str);
-	if (!sym || !sym->second.isFunction()) {
-		context.addError("function " + funcName->str + " not defined for class " + className, funcName);
+	if (!sym) {
+		context.addError("class " + className + " has no symbol " + funcName->str, funcName);
 		return RValue();
+	} else if (!sym->second.isFunction()) {
+		return genValueNonClass(context, value, true);
 	}
 
 	auto func = static_cast<SFunction&>(sym->second);
 	vector<Value*> exp_list;
 	exp_list.push_back(value);
+	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
+}
+
+RValue NMemberFunctionCall::genValueNonClass(CodeContext& context, RValue& value, bool isStruct)
+{
+	unique_ptr<char> buff(new char[sizeof(NMemberVariable)]);
+	auto memVar = new (buff.get()) NMemberVariable(nullptr, funcName, dotToken);
+	auto sym = isStruct?
+		memVar->loadStruct(context, value, static_cast<SStructType*>(value.stype()->subType())) :
+		memVar->loadUnion(context, value, static_cast<SUnionType*>(value.stype()->subType()));
+
+	sym = Inst::Deref(context, sym);
+	if (!sym || !sym.stype()->isFunction()) {
+		context.addError("function or function pointer expected", funcName);
+		return RValue();
+	}
+	auto func = static_cast<SFunction&>(sym);
+	vector<Value*> exp_list;
 	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
 }
 
