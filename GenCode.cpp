@@ -577,6 +577,13 @@ void NClassStructDecl::genCode(CodeContext& context)
 
 void NClassFunctionDecl::genCode(CodeContext& context)
 {
+	auto clType = context.getClass();
+	auto item = clType->getItem(name->str);
+	if (item) {
+		context.addError("class " + theClass->getName() + " already defines symbol " + name->str, name);
+		return;
+	}
+
 	unique_ptr<char> buff(new char[sizeof(NFunctionDeclaration)]);
 
 	// add this parameter
@@ -590,7 +597,6 @@ void NClassFunctionDecl::genCode(CodeContext& context)
 	fn->genCode(context);
 
 	// add function to class type
-	auto clType = context.getClass();
 	auto func = fn->getFunction();
 	if (func)
 		clType->addFunction(name->str, func);

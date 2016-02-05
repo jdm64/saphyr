@@ -15,6 +15,11 @@ class Bad
 {
 	struct this { int a; }
 	struct this { int b; }
+
+	int a(int one)
+	{
+		return 6;
+	}
 }
 
 void func()
@@ -43,10 +48,11 @@ void func2()
 
 negative/Class.syp:17: only one struct allowed in a class
 negative/Class.syp:14: Bad type already declared
-negative/Class.syp:24: member function call requires class or class pointer
-negative/Class.syp:26: member function call requires class or class pointer
-negative/Class.syp:28: variable x not declared
-negative/Class.syp:35: class Test has no symbol nothing
-negative/Class.syp:37: argument count for Test_run function invalid, 2 arguments given, but 1 required.
-negative/Class.syp:39: class Test has no symbol bad
-found 8 errors
+negative/Class.syp:19: class Bad already defines symbol a
+negative/Class.syp:29: member function call requires class or class pointer
+negative/Class.syp:31: member function call requires class or class pointer
+negative/Class.syp:33: variable x not declared
+negative/Class.syp:40: class Test has no symbol nothing
+negative/Class.syp:42: argument count for Test_run function invalid, 2 arguments given, but 1 required.
+negative/Class.syp:44: class Test has no symbol bad
+found 9 errors
