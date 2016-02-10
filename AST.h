@@ -499,12 +499,16 @@ class NVariableDecl : public NDeclaration
 {
 protected:
 	NExpression* initExp;
+	NExpressionList* initList;
 	NDataType* type;
 	Token* eqToken;
 
 public:
 	NVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
-	: NDeclaration(name), initExp(initExp), type(nullptr), eqToken(eqToken) {}
+	: NDeclaration(name), initExp(initExp), initList(nullptr), type(nullptr), eqToken(eqToken) {}
+
+	NVariableDecl(Token* name, NExpressionList* initList)
+	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr), eqToken(nullptr) {}
 
 	// NOTE: must be called before genCode()
 	void setDataType(NDataType* qtype)
@@ -533,6 +537,7 @@ public:
 	{
 		delete initExp;
 		delete eqToken;
+		delete initList;
 	}
 };
 

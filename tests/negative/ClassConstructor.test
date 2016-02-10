@@ -1,0 +1,25 @@
+
+class Test
+{
+	struct this { int a, b; }
+
+	this(int a, int b)
+	{
+		this.a = a;
+		this.b = b;
+	}
+
+}
+
+void foo()
+{
+	Test a{4, 0, 4};
+
+	Test b;
+}
+
+========
+
+negative/ClassConstructor.syp:16: argument count for Test_this function invalid, 4 arguments given, but 3 required.
+negative/ClassConstructor.syp:18: argument count for Test_this function invalid, 1 arguments given, but 3 required.
+found 2 errors

@@ -297,6 +297,31 @@ void NVariableDecl::genCode(CodeContext& context)
 	auto var = RValue(new AllocaInst(*varType, name, context), varType);
 	context.storeLocalSymbol(var, name);
 
+	if (varType->isClass()) {
+		auto clType = static_cast<SClassType*>(varType);
+		auto clItem = clType->getItem("this");
+		if (clItem) {
+			auto func = static_cast<SFunction&>(clItem->second);
+			vector<Value*> exp_list;
+			exp_list.push_back(var);
+			if (!initList)
+				initList = new NExpressionList;
+			Inst::CallFunction(context, func, getNameToken(), initList, exp_list);
+			return;
+		}
+	}
+	if (initList) {
+		if (initList->empty()) {
+			// no constructor and empty initializer; do zero initialization
+			new StoreInst(RValue::getZero(context, varType), var, context);
+			return;
+		} else if (initList->size() > 1) {
+			context.addError("invalid variable initializer", getNameToken());
+			return;
+		} else {
+			initValue = initList->at(0)->genValue(context);
+		}
+	}
 	if (initValue) {
 		Inst::CastTo(context, eqToken, initValue, varType);
 		new StoreInst(initValue, var, context);

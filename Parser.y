@@ -389,6 +389,10 @@ variable
 	{
 		$$ = new NVariableDecl($1, $2.t_tok, $3);
 	}
+	| TT_IDENTIFIER '{' expression_list '}'
+	{
+		$$ = new NVariableDecl($1, $3);
+	}
 	;
 global_variable
 	: TT_IDENTIFIER
