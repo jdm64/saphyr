@@ -635,12 +635,6 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
-	RValue loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType) const;
-
-	RValue loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType) const;
-
-	RValue loadEnum(CodeContext& context, SEnumType* enumType) const;
-
 	const string& getName() const
 	{
 		return baseVar->getName();

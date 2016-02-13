@@ -239,59 +239,7 @@ RValue NMemberVariable::loadVar(CodeContext& context)
 		return RValue();
 
 	var = Inst::Deref(context, var, true);
-	auto varType = var.stype();
-
-	if (varType->isStruct())
-		return loadStruct(context, var, static_cast<SStructType*>(varType));
-	else if (varType->isUnion())
-		return loadUnion(context, var, static_cast<SUnionType*>(varType));
-	else if (varType->isEnum())
-		return loadEnum(context, static_cast<SEnumType*>(varType));
-
-	context.addError(getName() + " is not a struct/union/enum", dotToken);
-	return RValue();
-}
-
-RValue NMemberVariable::loadStruct(CodeContext& context, RValue& baseValue, SStructType* structType) const
-{
-	auto member = getMemberName();
-	auto item = structType->getItem(member);
-	if (!item) {
-		context.addError(getName() +" doesn't have member " + member, memberName);
-		return RValue();
-	}
-
-	vector<Value*> indexes;
-	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
-	indexes.push_back(ConstantInt::get(*SType::getInt(context, 32), item->first));
-
-	return Inst::GetElementPtr(context, baseValue, indexes, item->second.stype());
-}
-
-RValue NMemberVariable::loadUnion(CodeContext& context, RValue& baseValue, SUnionType* unionType) const
-{
-	auto member = getMemberName();
-	auto item = unionType->getItem(member);
-	if (!item) {
-		context.addError(getName() +" doesn't have member " + member, memberName);
-		return RValue();
-	}
-
-	auto ptr = SType::getPointer(context, item);
-	auto castEl = new BitCastInst(baseValue, *ptr, "", context);
-	return RValue(castEl, item);
-}
-
-RValue NMemberVariable::loadEnum(CodeContext& context, SEnumType* enumType) const
-{
-	auto member = getMemberName();
-	auto item = enumType->getItem(member);
-	if (!item) {
-		context.addError(getName() +" doesn't have member " + member, memberName);
-		return RValue();
-	}
-	auto val = RValue::getValue(context, *item);
-	return RValue(val.value(), enumType);
+	return Inst::LoadMemberVar(context, getName(), var, dotToken, memberName);
 }
 
 RValue NDereference::loadVar(CodeContext& context)
@@ -1208,12 +1156,8 @@ RValue NMemberFunctionCall::genValueClass(CodeContext& context, RValue& value)
 
 RValue NMemberFunctionCall::genValueNonClass(CodeContext& context, RValue& value, bool isStruct)
 {
-	unique_ptr<char> buff(new char[sizeof(NMemberVariable)]);
-	auto memVar = new (buff.get()) NMemberVariable(nullptr, funcName, dotToken);
-	auto sym = isStruct?
-		memVar->loadStruct(context, value, static_cast<SStructType*>(value.stype()->subType())) :
-		memVar->loadUnion(context, value, static_cast<SUnionType*>(value.stype()->subType()));
-
+	value = {value.value(), value.stype()->subType()};
+	auto sym = Inst::LoadMemberVar(context, baseVar->getName(), value, dotToken, funcName);
 	sym = Inst::Deref(context, sym);
 	if (!sym || !sym.stype()->isFunction()) {
 		context.addError("function or function pointer expected", funcName);

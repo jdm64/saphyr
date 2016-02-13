@@ -388,3 +388,46 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 	auto call = CallInst::Create(func, expList, "", context);
 	return RValue(call, func.returnTy());
 }
+
+RValue Inst::LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName)
+{
+	auto varType = baseVar.stype();
+	auto member = memberName->str;
+	if (varType->isStruct()) {
+		auto structType = static_cast<SStructType*>(varType);
+		auto item = structType->getItem(member);
+		if (!item) {
+			context.addError(baseName + " doesn't have member " + member, memberName);
+			return RValue();
+		}
+
+		vector<Value*> indexes;
+		indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
+		indexes.push_back(ConstantInt::get(*SType::getInt(context, 32), item->first));
+
+		return Inst::GetElementPtr(context, baseVar, indexes, item->second.stype());
+	} else if (varType->isUnion()) {
+		auto unionType = static_cast<SUnionType*>(varType);
+		auto item = unionType->getItem(member);
+		if (!item) {
+			context.addError(baseName + " doesn't have member " + member, memberName);
+			return RValue();
+		}
+
+		auto ptr = SType::getPointer(context, item);
+		auto castEl = new BitCastInst(baseVar, *ptr, "", context);
+		return RValue(castEl, item);
+	} else if (varType->isEnum()) {
+		auto enumType = static_cast<SEnumType*>(varType);
+		auto item = enumType->getItem(member);
+		if (!item) {
+			context.addError(baseName + " doesn't have member " + member, memberName);
+			return RValue();
+		}
+		auto val = RValue::getValue(context, *item);
+		return RValue(val.value(), enumType);
+	}
+
+	context.addError(baseName + " is not a struct/union/enum", dotToken);
+	return RValue();
+}

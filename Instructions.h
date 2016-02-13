@@ -74,6 +74,8 @@ public:
 	}
 
 	static RValue CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList);
+
+	static RValue LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName);
 };
 
 #endif
