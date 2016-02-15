@@ -85,3 +85,31 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 	}
 	return NFuncPointerType::getType(context, name, rtype, &typeList);
 }
+
+void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list)
+{
+	auto structName = name->str;
+	auto utype = SUserType::lookup(context, structName);
+	if (utype) {
+		context.addError(structName + " type already declared", name);
+		return;
+	}
+	vector<pair<string, SType*> > structVars;
+	set<string> memberNames;
+	bool valid = true;
+	for (auto item : *list)
+		valid &= item->addMembers(structVars, memberNames, context);
+	if (valid) {
+		switch (ctype) {
+		case NStructDeclaration::CreateType::STRUCT:
+			SUserType::createStruct(context, structName, structVars);
+			return;
+		case NStructDeclaration::CreateType::UNION:
+			SUserType::createUnion(context, structName, structVars);
+			return;
+		case NStructDeclaration::CreateType::CLASS:
+			SUserType::createClass(context, structName, structVars);
+			return;
+		}
+	}
+}

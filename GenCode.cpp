@@ -389,30 +389,7 @@ void NAliasDeclaration::genCode(CodeContext& context)
 
 void NStructDeclaration::genCode(CodeContext& context)
 {
-	auto structName = getName();
-	auto utype = SUserType::lookup(context, structName);
-	if (utype) {
-		context.addError(structName + " type already declared", getNameToken());
-		return;
-	}
-	vector<pair<string, SType*> > structVars;
-	set<string> memberNames;
-	bool valid = true;
-	for (auto item : *list)
-		valid &= item->addMembers(structVars, memberNames, context);
-	if (valid) {
-		switch (ctype) {
-		case CreateType::STRUCT:
-			SUserType::createStruct(context, structName, structVars);
-			return;
-		case CreateType::UNION:
-			SUserType::createUnion(context, structName, structVars);
-			return;
-		case CreateType::CLASS:
-			SUserType::createClass(context, structName, structVars);
-			return;
-		}
-	}
+	Builder::CreateStruct(context, ctype, getNameToken(), list);
 }
 
 void NEnumDeclaration::genCode(CodeContext& context)
@@ -462,11 +439,9 @@ void NFunctionDeclaration::genCode(CodeContext& context)
 
 void NClassStructDecl::genCode(CodeContext& context)
 {
-	unique_ptr<char> buff(new char[sizeof(NStructDeclaration)]);
 	auto stToken = theClass->getNameToken();
 	auto stType = NStructDeclaration::CreateType::CLASS;
-	auto st = new (buff.get()) NStructDeclaration(stToken, list, stType);
-	st->genCode(context);
+	Builder::CreateStruct(context, stType, stToken, list);
 }
 
 void NClassFunctionDecl::genCode(CodeContext& context)
