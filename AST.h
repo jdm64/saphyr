@@ -856,24 +856,6 @@ public:
 
 	void genCode(CodeContext& context) final;
 
-	SFunction genFunction(CodeContext& context);
-
-	void genCodeParams(SFunction function, CodeContext& context) const;
-
-	SFunction getFunction()
-	{
-		return function;
-	}
-
-	SFunctionType* getFunctionType(CodeContext& context, Token* token)
-	{
-		NDataTypeList typeList(false);
-		for (auto item : *params) {
-			typeList.addItem(item->getTypeNode());
-		}
-		return NFuncPointerType::getType(context, token, rtype, &typeList);
-	}
-
 	~NFunctionDeclaration()
 	{
 		delete rtype;

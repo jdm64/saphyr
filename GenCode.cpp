@@ -19,6 +19,7 @@
 #include "parserbase.h"
 #include "AST.h"
 #include "Instructions.h"
+#include "Builder.h"
 
 NStatementList* programBlock;
 
@@ -456,62 +457,7 @@ void NEnumDeclaration::genCode(CodeContext& context)
 
 void NFunctionDeclaration::genCode(CodeContext& context)
 {
-	function = genFunction(context);
-	if (!function || !body) { // no body means only function prototype
-		return;
-	} else if (function.size()) {
-		context.addError("function " + getName() + " already declared", getNameToken());
-		return;
-	}
-
-	if (body->empty() || !body->back()->isTerminator()) {
-		auto returnType = function.returnTy();
-		if (returnType->isVoid())
-			body->addItem(new NReturnStatement);
-		else
-			context.addError("no return for a non-void function", getNameToken());
-	}
-
-	if (getFunctionType(context, getNameToken()) != function.stype()) {
-		context.addError("function type for " + getName() + " doesn't match definition", getNameToken());
-		return;
-	}
-
-	context.startFuncBlock(function);
-	genCodeParams(function, context);
-	body->genCode(context);
-	context.endFuncBlock();
-}
-
-SFunction NFunctionDeclaration::genFunction(CodeContext& context)
-{
-	auto funcName = getName();
-	auto sym = context.loadSymbol(funcName);
-	if (sym) {
-		if (sym.isFunction())
-			return static_cast<SFunction&>(sym);
-		context.addError("variable " + funcName + " already defined", getNameToken());
-		return SFunction();
-	}
-
-	auto funcType = getFunctionType(context, getNameToken());
-	return funcType? SFunction::create(context, funcName, funcType) : SFunction();
-}
-
-void NFunctionDeclaration::genCodeParams(SFunction function, CodeContext& context) const
-{
-	int i = 0;
-	set<string> names;
-	for (auto arg = function.arg_begin(); arg != function.arg_end(); arg++, i++) {
-		auto param = params->at(i);
-		auto name = param->getName();
-		if (names.insert(name).second)
-			arg->setName(name);
-		else
-			context.addError("function parameter " + name + " already declared", param->getNameToken());
-		param->setArgument(RValue(arg, function.getParam(i)));
-		param->genCode(context);
-	}
+	Builder::CreateFunction(context, getNameToken(), rtype, params, body);
 }
 
 void NClassStructDecl::genCode(CodeContext& context)
@@ -532,8 +478,6 @@ void NClassFunctionDecl::genCode(CodeContext& context)
 		return;
 	}
 
-	unique_ptr<char> buff(new char[sizeof(NFunctionDeclaration)]);
-
 	// add this parameter
 	auto thisToken = new Token(*theClass->getNameToken());
 	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("", "this", 0));
@@ -541,11 +485,9 @@ void NClassFunctionDecl::genCode(CodeContext& context)
 
 	auto fnToken = *name;
 	fnToken.str = theClass->getName() + "_" + name->str;
-	auto fn = new (buff.get()) NFunctionDeclaration(&fnToken, rtype, params, body);
-	fn->genCode(context);
 
 	// add function to class type
-	auto func = fn->getFunction();
+	auto func = Builder::CreateFunction(context, &fnToken, rtype, params, body);
 	if (func)
 		clType->addFunction(name->str, func);
 }
