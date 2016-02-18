@@ -508,7 +508,7 @@ void NClassDeclaration::genCode(CodeContext& context)
 		auto varList = new NVariableDeclList;
 		auto structDecl = new NClassStructDecl(nullptr, group);
 		structDecl->setClass(this);
-		varList->addItem(new NVariableDecl(new Token("", "this", 0)));
+		varList->addItem(new NVariableDecl(new Token));
 		group->addItem(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
 		list->addItem(structDecl);
 		structIdx = list->size() - 1;
