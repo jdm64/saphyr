@@ -1228,6 +1228,23 @@ public:
 	}
 };
 
+class NDestructorCall : public NStatement
+{
+	NVariable* baseVar;
+	Token* thisToken;
+
+public:
+	NDestructorCall(NVariable* baseVar, Token* thisToken)
+	: baseVar(baseVar), thisToken(thisToken) {}
+
+	void genCode(CodeContext& context);
+
+	~NDestructorCall()
+	{
+		delete baseVar;
+	}
+};
+
 class NOperatorExpr : public NExpression
 {
 protected:

@@ -1,4 +1,6 @@
 
+struct Str { int a, b; }
+
 class Test
 {
 	struct this { int a, b; }
@@ -16,10 +18,18 @@ void foo()
 	Test a{4, 0, 4};
 
 	Test b;
+
+	b.~this();
+
+	Str c;
+
+	c.~this();
 }
 
 ========
 
-negative/ClassConstructor.syp:16: argument count for Test_this function invalid, 4 arguments given, but 3 required.
-negative/ClassConstructor.syp:18: argument count for Test_this function invalid, 1 arguments given, but 3 required.
-found 2 errors
+negative/ClassConstructor.syp:18: argument count for Test_this function invalid, 4 arguments given, but 3 required.
+negative/ClassConstructor.syp:20: argument count for Test_this function invalid, 1 arguments given, but 3 required.
+negative/ClassConstructor.syp:22: class Test has no destructor
+negative/ClassConstructor.syp:26: calling destructor only valid for classes
+found 4 errors

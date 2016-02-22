@@ -265,6 +265,10 @@ statement
 	{
 		$$ = new NLoopStatement($2);
 	}
+	| variable_expresion '.' '~' TT_THIS '(' ')' ';'
+	{
+		$$ = new NDestructorCall($1, $4);
+	}
 	;
 while_loop
 	: TT_WHILE '(' expression_or_empty ')' single_statement

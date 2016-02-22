@@ -823,6 +823,43 @@ void NDeleteStatement::genCode(CodeContext& context)
 	CallInst::Create(static_cast<SFunction&>(func), exp_list, "", context);
 }
 
+void NDestructorCall::genCode(CodeContext& context)
+{
+	auto value = baseVar->loadVar(context);
+	if (!value)
+		return;
+
+	value = RValue(value, SType::getPointer(context, value.stype()));
+
+	auto type = value.stype();
+	while (true) {
+		auto sub = type->subType();
+		if (sub->isClass()) {
+			break;
+		} else if (sub->isPointer()) {
+			value = Inst::Deref(context, value);
+			type = value.stype();
+		} else {
+			context.addError("calling destructor only valid for classes", thisToken);
+			return;
+		}
+	}
+
+	auto className = SUserType::lookup(context, type->subType());
+	auto clType = static_cast<SClassType*>(type->subType());
+	auto sym = clType->getItem("null");
+	if (!sym) {
+		context.addError("class " + className + " has no destructor", thisToken);
+		return;
+	}
+
+	auto func = static_cast<SFunction&>(sym->second);
+	vector<Value*> exp_list;
+	exp_list.push_back(value);
+	NExpressionList argList;
+	Inst::CallFunction(context, func, thisToken, &argList, exp_list);
+}
+
 RValue NAssignment::genValue(CodeContext& context)
 {
 	auto lhsVar = lhs->loadVar(context);
