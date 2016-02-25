@@ -33,6 +33,13 @@ int main()
 	return 0;
 }
 
+void foo()
+{
+	@MyClass m = new MyClass;
+
+	delete m;
+}
+
 ========
 
 %Empty = type { i8 }
@@ -76,3 +83,19 @@ define i32 @main() {
   call void @MyClass_null(%MyClass* %b)
   ret i32 0
 }
+
+define void @foo() {
+  %1 = call i8* @malloc(i64 8)
+  %2 = bitcast i8* %1 to %MyClass*
+  %m = alloca %MyClass*
+  store %MyClass* %2, %MyClass** %m
+  %3 = load %MyClass** %m
+  call void @MyClass_null(%MyClass* %3)
+  %4 = bitcast %MyClass* %3 to i8*
+  call void @free(i8* %4)
+  ret void
+}
+
+declare i8* @malloc(i64)
+
+declare void @free(i8*)

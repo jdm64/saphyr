@@ -817,6 +817,9 @@ void NDeleteStatement::genCode(CodeContext& context)
 		return;
 	}
 
+	if (ptr.stype()->subType()->isClass())
+		Inst::CallDestructor(context, ptr, token);
+
 	vector<Value*> exp_list;
 	exp_list.push_back(new BitCastInst(ptr, *bytePtr, "", context));
 
