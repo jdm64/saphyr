@@ -389,6 +389,24 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 	return RValue(call, func.returnTy());
 }
 
+void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
+{
+	auto type = value.stype();
+	auto className = SUserType::lookup(context, type->subType());
+	auto clType = static_cast<SClassType*>(type->subType());
+	auto sym = clType->getItem("null");
+	if (!sym) {
+		context.addError("class " + className + " has no destructor", valueToken);
+		return;
+	}
+
+	auto func = static_cast<SFunction&>(sym->second);
+	vector<Value*> exp_list;
+	exp_list.push_back(value);
+	NExpressionList argList;
+	CallFunction(context, func, valueToken, &argList, exp_list);
+}
+
 RValue Inst::LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName)
 {
 	auto varType = baseVar.stype();

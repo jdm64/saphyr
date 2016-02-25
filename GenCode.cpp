@@ -845,19 +845,7 @@ void NDestructorCall::genCode(CodeContext& context)
 		}
 	}
 
-	auto className = SUserType::lookup(context, type->subType());
-	auto clType = static_cast<SClassType*>(type->subType());
-	auto sym = clType->getItem("null");
-	if (!sym) {
-		context.addError("class " + className + " has no destructor", thisToken);
-		return;
-	}
-
-	auto func = static_cast<SFunction&>(sym->second);
-	vector<Value*> exp_list;
-	exp_list.push_back(value);
-	NExpressionList argList;
-	Inst::CallFunction(context, func, thisToken, &argList, exp_list);
+	Inst::CallDestructor(context, value, thisToken);
 }
 
 RValue NAssignment::genValue(CodeContext& context)
