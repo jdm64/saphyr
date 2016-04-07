@@ -1,0 +1,25 @@
+
+int foo()
+{
+	int a{}, b{3};
+	@float c{};
+	@(int)void fptr{}, fptr2{null};
+
+	return 99;
+}
+
+========
+
+define i32 @foo() {
+  %a = alloca i32
+  store i32 0, i32* %a
+  %b = alloca i32
+  store i32 3, i32* %b
+  %c = alloca float*
+  store float* null, float** %c
+  %fptr = alloca void (i32)*
+  store void (i32)* null, void (i32)** %fptr
+  %fptr2 = alloca void (i32)*
+  store void (i32)* null, void (i32)** %fptr2
+  ret i32 99
+}

@@ -501,12 +501,16 @@ class NVariableDecl : public NDeclaration
 {
 protected:
 	NExpression* initExp;
+	NExpressionList* initList;
 	NDataType* type;
 	Token* eqToken;
 
 public:
 	NVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
-	: NDeclaration(name), initExp(initExp), type(nullptr), eqToken(eqToken) {}
+	: NDeclaration(name), initExp(initExp), initList(nullptr), type(nullptr), eqToken(eqToken) {}
+
+	NVariableDecl(Token* name, NExpressionList* initList)
+	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr), eqToken(nullptr) {}
 
 	// NOTE: must be called before genCode()
 	void setDataType(NDataType* qtype)
@@ -535,6 +539,7 @@ public:
 	{
 		delete initExp;
 		delete eqToken;
+		delete initList;
 	}
 };
 
@@ -951,6 +956,40 @@ public:
 	}
 };
 
+class NClassConstructor : public NClassMember
+{
+	NParameterList* params;
+	NStatementList* body;
+
+public:
+	NClassConstructor(Token* name, NParameterList* params, NStatementList* body)
+	: NClassMember(name), params(params), body(body) {}
+
+	void genCode(CodeContext& context);
+
+	~NClassConstructor()
+	{
+		delete params;
+		delete body;
+	}
+};
+
+class NClassDestructor : public NClassMember
+{
+	NStatementList* body;
+
+public:
+	NClassDestructor(Token* name, NStatementList* body)
+	: NClassMember(name), body(body) {}
+
+	void genCode(CodeContext& context);
+
+	~NClassDestructor()
+	{
+		delete body;
+	}
+};
+
 class NConditionStmt : public NStatement
 {
 protected:
@@ -1188,6 +1227,23 @@ public:
 	{
 		delete variable;
 		delete token;
+	}
+};
+
+class NDestructorCall : public NStatement
+{
+	NVariable* baseVar;
+	Token* thisToken;
+
+public:
+	NDestructorCall(NVariable* baseVar, Token* thisToken)
+	: baseVar(baseVar), thisToken(thisToken) {}
+
+	void genCode(CodeContext& context);
+
+	~NDestructorCall()
+	{
+		delete baseVar;
 	}
 };
 

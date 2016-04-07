@@ -1,0 +1,40 @@
+
+struct Str { int a, b; }
+
+class Test
+{
+	struct this { int a, b; }
+
+	this(int a, int b)
+	{
+		this.a = a;
+		this.b = b;
+	}
+
+}
+
+void foo()
+{
+	Test a{4, 0, 4};
+
+	Test b;
+
+	b.~this();
+
+	Str c;
+
+	c.~this();
+
+	@Test ptr = new Test;
+
+	delete ptr;
+}
+
+========
+
+negative/ClassConstructor.syp:18: argument count for Test_this function invalid, 4 arguments given, but 3 required.
+negative/ClassConstructor.syp:20: argument count for Test_this function invalid, 1 arguments given, but 3 required.
+negative/ClassConstructor.syp:22: class Test has no destructor
+negative/ClassConstructor.syp:26: calling destructor only valid for classes
+negative/ClassConstructor.syp:30: class Test has no destructor
+found 5 errors

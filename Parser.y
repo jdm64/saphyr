@@ -150,6 +150,14 @@ class_member
 	{
 		$$ = new NClassFunctionDecl($2, $1, $4, $6);
 	}
+	| TT_THIS '(' parameter_list ')' function_body
+	{
+		$$ = new NClassConstructor($1, $3, $5);
+	}
+	| '~' TT_THIS '(' ')' function_body
+	{
+		$$ = new NClassDestructor($2, $5);
+	}
 	;
 struct_declaration
 	: TT_STRUCT TT_IDENTIFIER '{' variable_declarations_list '}'
@@ -256,6 +264,10 @@ statement
 	| TT_LOOP single_statement
 	{
 		$$ = new NLoopStatement($2);
+	}
+	| variable_expresion '.' '~' TT_THIS '(' ')' ';'
+	{
+		$$ = new NDestructorCall($1, $4);
 	}
 	;
 while_loop
@@ -380,6 +392,10 @@ variable
 	| TT_IDENTIFIER '=' expression
 	{
 		$$ = new NVariableDecl($1, $2.t_tok, $3);
+	}
+	| TT_IDENTIFIER '{' expression_list '}'
+	{
+		$$ = new NVariableDecl($1, $3);
 	}
 	;
 global_variable

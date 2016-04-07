@@ -297,6 +297,31 @@ void NVariableDecl::genCode(CodeContext& context)
 	auto var = RValue(new AllocaInst(*varType, name, context), varType);
 	context.storeLocalSymbol(var, name);
 
+	if (varType->isClass()) {
+		auto clType = static_cast<SClassType*>(varType);
+		auto clItem = clType->getItem("this");
+		if (clItem) {
+			auto func = static_cast<SFunction&>(clItem->second);
+			vector<Value*> exp_list;
+			exp_list.push_back(var);
+			if (!initList)
+				initList = new NExpressionList;
+			Inst::CallFunction(context, func, getNameToken(), initList, exp_list);
+			return;
+		}
+	}
+	if (initList) {
+		if (initList->empty()) {
+			// no constructor and empty initializer; do zero initialization
+			new StoreInst(RValue::getZero(context, varType), var, context);
+			return;
+		} else if (initList->size() > 1) {
+			context.addError("invalid variable initializer", getNameToken());
+			return;
+		} else {
+			initValue = initList->at(0)->genValue(context);
+		}
+	}
 	if (initValue) {
 		Inst::CastTo(context, eqToken, initValue, varType);
 		new StoreInst(initValue, var, context);
@@ -467,6 +492,30 @@ void NClassFunctionDecl::genCode(CodeContext& context)
 		clType->addFunction(name->str, func);
 }
 
+void NClassConstructor::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NClassFunctionDecl)]);
+
+	NBaseType voidType(nullptr, ParserBase::TT_VOID);
+	auto fn = new (buff.get()) NClassFunctionDecl(getNameToken(), &voidType, params, body);
+	fn->setClass(theClass);
+	fn->genCode(context);
+}
+
+void NClassDestructor::genCode(CodeContext& context)
+{
+	unique_ptr<char> buff(new char[sizeof(NClassFunctionDecl)]);
+
+	NBaseType voidType(nullptr, ParserBase::TT_VOID);
+	NParameterList params;
+
+	auto nullTok = *getNameToken();
+	nullTok.str = "null";
+	auto fn = new (buff.get()) NClassFunctionDecl(&nullTok, &voidType, &params, body);
+	fn->setClass(theClass);
+	fn->genCode(context);
+}
+
 void NClassDeclaration::genCode(CodeContext& context)
 {
 	int structIdx = -1;
@@ -484,7 +533,7 @@ void NClassDeclaration::genCode(CodeContext& context)
 		auto varList = new NVariableDeclList;
 		auto structDecl = new NClassStructDecl(nullptr, group);
 		structDecl->setClass(this);
-		varList->addItem(new NVariableDecl(new Token("", "this", 0)));
+		varList->addItem(new NVariableDecl(new Token));
 		group->addItem(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
 		list->addItem(structDecl);
 		structIdx = list->size() - 1;
@@ -768,10 +817,38 @@ void NDeleteStatement::genCode(CodeContext& context)
 		return;
 	}
 
+	if (ptr.stype()->subType()->isClass())
+		Inst::CallDestructor(context, ptr, token);
+
 	vector<Value*> exp_list;
 	exp_list.push_back(new BitCastInst(ptr, *bytePtr, "", context));
 
 	CallInst::Create(static_cast<SFunction&>(func), exp_list, "", context);
+}
+
+void NDestructorCall::genCode(CodeContext& context)
+{
+	auto value = baseVar->loadVar(context);
+	if (!value)
+		return;
+
+	value = RValue(value, SType::getPointer(context, value.stype()));
+
+	auto type = value.stype();
+	while (true) {
+		auto sub = type->subType();
+		if (sub->isClass()) {
+			break;
+		} else if (sub->isPointer()) {
+			value = Inst::Deref(context, value);
+			type = value.stype();
+		} else {
+			context.addError("calling destructor only valid for classes", thisToken);
+			return;
+		}
+	}
+
+	Inst::CallDestructor(context, value, thisToken);
 }
 
 RValue NAssignment::genValue(CodeContext& context)
