@@ -25,7 +25,7 @@ before_install:
  - sudo apt-get install -qq -y --force-yes flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev python3
  - if [[ $COVERAGE == "true" ]]; then sudo pip install cpp-coveralls; fi
 
-script: cd src && make tests
+script: cd src && make frontend && make -j2 tests
 
 after_success:
  - if [[ $COVERAGE ]]; then coveralls --gcov-options '\-lp' -t $COV_TOKEN -e scanner.cpp -e scanner.h -e scannerbase.h -e parser.cpp -e parser.h -e parser.ih -e parserbase.h; fi
