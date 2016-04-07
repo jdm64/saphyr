@@ -24,7 +24,7 @@ endif
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
 CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__
 LDFLAGS = -lboost_program_options `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version` $(COV_LD)
-TARGET = saphyr
+TARGET = ../saphyr
 
 objs = parser.o scanner.o Type.o Value.o Function.o Builder.o Instructions.o ModuleWriter.o GenCode.o Pass.o main.o
 
@@ -71,4 +71,4 @@ analyze : clean
 	scan-build make compiler
 
 tests : compiler
-	cd tests; ./unitTest.py $(UNITTEST_ARG)
+	cd ../tests; ./unitTest.py $(UNITTEST_ARG)
