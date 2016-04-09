@@ -403,10 +403,8 @@ void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 	auto className = SUserType::lookup(context, type->subType());
 	auto clType = static_cast<SClassType*>(type->subType());
 	auto sym = clType->getItem("null");
-	if (!sym) {
-		context.addError("class " + className + " has no destructor", valueToken);
+	if (!sym)
 		return;
-	}
 
 	auto func = static_cast<SFunction&>(sym->second);
 	vector<Value*> exp_list;
