@@ -103,9 +103,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value = RValue(val, type);
 			return false;
 		} else {
-			auto op = getCastOp(valueType->subType(), type->subType());
-			auto val = CastInst::Create(op, value, *type, "", context);
-			value = RValue(val, type);
+			NumericCast(value, valueType->subType(), type->subType(), type, context);
 			return false;
 		}
 	} else if (type->isEnum()) {
@@ -137,33 +135,43 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 	if (valueType->isEnum())
 		valueType = value.castToSubtype();
 
-	auto op = getCastOp(valueType, type);
-	auto val = op != Instruction::AddrSpaceCast? CastInst::Create(op, value, *type, "", context) : value;
-	value = RValue(val, type);
+	NumericCast(value, valueType, type, type, context);
 	return false;
 }
 
-CastOps Inst::getCastOp(SType* from, SType* to)
+void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, CodeContext& context)
 {
+	CastOps op;
 	switch (from->isFloating() | to->isFloating() << 1) {
 	case 0:
 		// both int
-		if (to->size() > from->size())
-			return from->isUnsigned()? Instruction::ZExt : Instruction::SExt;
-		else if (from->size() > to->size())
-			return Instruction::Trunc;
+		if (to->size() > from->size()) {
+			op = from->isUnsigned()? Instruction::ZExt : Instruction::SExt;
+		} else if (to->size() < from->size()) {
+			op = Instruction::Trunc;
+		} else {
+			value = RValue(value, final);
+			return;
+		}
 		break;
 	case 1:
 		// from = float, to = int
-		return to->isUnsigned()? Instruction::FPToUI : Instruction::FPToSI;
+		op = to->isUnsigned()? Instruction::FPToUI : Instruction::FPToSI;
+		break;
 	case 2:
 		// from = int, to = float
-		return from->isUnsigned()? Instruction::UIToFP : Instruction::SIToFP;
+		op = from->isUnsigned()? Instruction::UIToFP : Instruction::SIToFP;
+		break;
 	case 3:
 		// both float
-		return to->isDouble()? Instruction::FPExt : Instruction::FPTrunc;
+		op = to->isDouble()? Instruction::FPExt : Instruction::FPTrunc;
+		break;
+	default:
+		context.addError("Compiler Error: invalid cast op", nullptr);
+		return;
 	}
-	return Instruction::AddrSpaceCast;
+	auto val = CastInst::Create(op, value, *final, "", context);
+	value = RValue(val, final);
 }
 
 BinaryOps Inst::getOperator(int oper, Token* optToken, SType* type, CodeContext& context)
