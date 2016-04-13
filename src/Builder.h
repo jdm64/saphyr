@@ -27,6 +27,8 @@ class Builder
 public:
 	static SFunction CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body);
 
+	static void CreateClassFunction(CodeContext& context, Token* name, NClassDeclaration* theClass, NDataType* rtype, NParameterList* params, NStatementList* body);
+
 	static void CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list);
 };
 

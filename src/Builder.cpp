@@ -63,6 +63,29 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	return function;
 }
 
+void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDeclaration* theClass, NDataType* rtype, NParameterList* params, NStatementList* body)
+{
+	auto clType = context.getClass();
+	auto item = clType->getItem(name->str);
+	if (item) {
+		context.addError("class " + theClass->getName() + " already defines symbol " + name->str, name);
+		return;
+	}
+
+	// add this parameter
+	auto thisToken = new Token(*theClass->getNameToken());
+	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("", "this", 0));
+	params->addItemFront(thisPtr);
+
+	auto fnToken = *name;
+	fnToken.str = theClass->getName() + "_" + name->str;
+
+	// add function to class type
+	auto func = Builder::CreateFunction(context, &fnToken, rtype, params, body);
+	if (func)
+		clType->addFunction(name->str, func);
+}
+
 SFunction Builder::lookupFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params)
 {
 	auto funcName = name->str;

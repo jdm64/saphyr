@@ -471,49 +471,24 @@ void NClassStructDecl::genCode(CodeContext& context)
 
 void NClassFunctionDecl::genCode(CodeContext& context)
 {
-	auto clType = context.getClass();
-	auto item = clType->getItem(name->str);
-	if (item) {
-		context.addError("class " + theClass->getName() + " already defines symbol " + name->str, name);
-		return;
-	}
-
-	// add this parameter
-	auto thisToken = new Token(*theClass->getNameToken());
-	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("", "this", 0));
-	params->addItemFront(thisPtr);
-
-	auto fnToken = *name;
-	fnToken.str = theClass->getName() + "_" + name->str;
-
-	// add function to class type
-	auto func = Builder::CreateFunction(context, &fnToken, rtype, params, body);
-	if (func)
-		clType->addFunction(name->str, func);
+	Builder::CreateClassFunction(context, name, theClass, rtype, params, body);
 }
 
 void NClassConstructor::genCode(CodeContext& context)
 {
-	unique_ptr<char> buff(new char[sizeof(NClassFunctionDecl)]);
-
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
-	auto fn = new (buff.get()) NClassFunctionDecl(getNameToken(), &voidType, params, body);
-	fn->setClass(theClass);
-	fn->genCode(context);
+	Builder::CreateClassFunction(context, getNameToken(), theClass, &voidType, params, body);
 }
 
 void NClassDestructor::genCode(CodeContext& context)
 {
-	unique_ptr<char> buff(new char[sizeof(NClassFunctionDecl)]);
-
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
 	NParameterList params;
 
 	auto nullTok = *getNameToken();
 	nullTok.str = "null";
-	auto fn = new (buff.get()) NClassFunctionDecl(&nullTok, &voidType, &params, body);
-	fn->setClass(theClass);
-	fn->genCode(context);
+
+	Builder::CreateClassFunction(context, &nullTok, theClass, &voidType, &params, body);
 }
 
 void NClassDeclaration::genCode(CodeContext& context)
