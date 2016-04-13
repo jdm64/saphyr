@@ -334,8 +334,11 @@ class SStructType : public SUserType
 	friend class TypeManager;
 	friend class SClassType;
 
+	typedef map<string, pair<int, RValue>> container;
+	typedef container::const_iterator const_iterator;
+
 protected:
-	map<string, pair<int, RValue>> items;
+	container items;
 
 	SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype = STRUCT);
 
@@ -343,6 +346,16 @@ public:
 	pair<int, RValue>* getItem(const string& name);
 
 	string str(CodeContext* context = nullptr) const;
+
+	const_iterator begin() const
+	{
+		return items.begin();
+	}
+
+	const_iterator end() const
+	{
+		return items.end();
+	}
 };
 
 class SClassType : public SStructType
