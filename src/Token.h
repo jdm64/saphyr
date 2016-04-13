@@ -28,11 +28,11 @@ public:
 	Token()
 	: line(0) {}
 
-	Token(string filename, string token, int lineNum)
-	: filename(std::move(filename)), str(std::move(token)), line(lineNum) {}
+	Token(string token, string filename = "", int lineNum = 0)
+	: str(std::move(token)), filename(std::move(filename)), line(lineNum) {}
 
-	string filename;
 	string str;
+	string filename;
 	int line;
 };
 

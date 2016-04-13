@@ -74,7 +74,7 @@ void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDecla
 
 	// add this parameter
 	auto thisToken = new Token(*theClass->getNameToken());
-	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("", "this", 0));
+	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
 	params->addItemFront(thisPtr);
 
 	auto fnToken = *name;
