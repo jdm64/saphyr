@@ -482,6 +482,17 @@ void NClassConstructor::genCode(CodeContext& context)
 
 void NClassDestructor::genCode(CodeContext& context)
 {
+	auto clType = context.getClass();
+	for (auto item : *clType) {
+		auto ty = item.second.second.stype();
+		if (!ty->isClass())
+			continue;
+		auto itemCl = static_cast<SClassType*>(ty);
+		if (!itemCl->getItem("null"))
+			continue;
+		body->addItem(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
+	}
+
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
 	NParameterList params;
 

@@ -1,0 +1,48 @@
+
+int x = 0;
+
+class A
+{
+	~this()
+	{
+		x++;
+	}
+}
+
+class B
+{
+	struct this { A a; }
+
+	~this()
+	{
+		x--;
+	}
+}
+
+========
+
+%A = type { i8 }
+%B = type { %A }
+
+@x = global i32 0
+
+define void @A_null(%A* %this) {
+  %1 = alloca %A*
+  store %A* %this, %A** %1
+  %2 = load i32* @x
+  %3 = add i32 %2, 1
+  store i32 %3, i32* @x
+  ret void
+}
+
+define void @B_null(%B* %this) {
+  %1 = alloca %B*
+  store %B* %this, %B** %1
+  %2 = load i32* @x
+  %3 = add i32 %2, -1
+  store i32 %3, i32* @x
+  %4 = load %B** %1
+  %5 = getelementptr %B* %4, i32 0, i32 0
+  call void @A_null(%A* %5)
+  ret void
+}
