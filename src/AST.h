@@ -880,6 +880,8 @@ protected:
 	NClassDeclaration* theClass;
 
 public:
+	enum class MemberType { CONSTRUCTOR, DESTRUCTOR, STRUCT, FUNCTION };
+
 	explicit NClassMember(Token* name)
 	: NDeclaration(name), theClass(nullptr) {}
 
@@ -888,10 +890,7 @@ public:
 		theClass = cl;
 	}
 
-	virtual bool isStruct() const
-	{
-		return false;
-	}
+	virtual MemberType memberType() const = 0;
 };
 typedef NodeList<NClassMember> NClassMemberList;
 
@@ -925,9 +924,9 @@ public:
 
 	void genCode(CodeContext& context);
 
-	bool isStruct() const
+	MemberType memberType() const
 	{
-		return true;
+		return MemberType::STRUCT;
 	}
 
 	~NClassStructDecl()
@@ -948,6 +947,11 @@ public:
 
 	void genCode(CodeContext& context);
 
+	MemberType memberType() const
+	{
+		return MemberType::FUNCTION;
+	}
+
 	~NClassFunctionDecl()
 	{
 		delete rtype;
@@ -967,6 +971,11 @@ public:
 
 	void genCode(CodeContext& context);
 
+	MemberType memberType() const
+	{
+		return MemberType::CONSTRUCTOR;
+	}
+
 	~NClassConstructor()
 	{
 		delete params;
@@ -983,6 +992,11 @@ public:
 	: NClassMember(name), body(body) {}
 
 	void genCode(CodeContext& context);
+
+	MemberType memberType() const
+	{
+		return MemberType::DESTRUCTOR;
+	}
 
 	~NClassDestructor()
 	{

@@ -506,7 +506,7 @@ void NClassDeclaration::genCode(CodeContext& context)
 {
 	int structIdx = -1;
 	for (int i = 0; i < list->size(); i++) {
-		if (!list->at(i)->isStruct())
+		if (list->at(i)->memberType() != NClassMember::MemberType::STRUCT)
 			continue;
 		else if (structIdx > -1)
 			context.addError("only one struct allowed in a class", list->at(i)->getNameToken());
