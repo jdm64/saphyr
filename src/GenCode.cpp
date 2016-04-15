@@ -493,6 +493,9 @@ void NClassDestructor::genCode(CodeContext& context)
 		body->addItem(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
 	}
 
+	if (body->empty())
+		return;
+
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
 	NParameterList params;
 
@@ -505,13 +508,24 @@ void NClassDestructor::genCode(CodeContext& context)
 void NClassDeclaration::genCode(CodeContext& context)
 {
 	int structIdx = -1;
+	int destrtIdx = -1;
 	for (int i = 0; i < list->size(); i++) {
-		if (list->at(i)->memberType() != NClassMember::MemberType::STRUCT)
-			continue;
-		else if (structIdx > -1)
-			context.addError("only one struct allowed in a class", list->at(i)->getNameToken());
-		else
-			structIdx = i;
+		switch (list->at(i)->memberType()) {
+		case NClassMember::MemberType::STRUCT:
+			if (structIdx > -1)
+				context.addError("only one struct allowed in a class", list->at(i)->getNameToken());
+			else
+				structIdx = i;
+			break;
+		case NClassMember::MemberType::DESTRUCTOR:
+			if (destrtIdx > -1)
+				context.addError("only one destructor allowed in a class", list->at(i)->getNameToken());
+			else
+				destrtIdx = i;
+			break;
+		default:
+			break;
+		}
 	}
 
 	if (structIdx < 0) {
@@ -524,6 +538,12 @@ void NClassDeclaration::genCode(CodeContext& context)
 		list->addItem(structDecl);
 		structIdx = list->size() - 1;
 	}
+	if (destrtIdx < 0) {
+		auto destr = new NClassDestructor(new Token, new NStatementList);
+		destr->setClass(this);
+		list->addItem(destr);
+	}
+
 	list->at(structIdx)->genCode(context);
 	context.setClass(static_cast<SClassType*>(SUserType::lookup(context, getName())));
 

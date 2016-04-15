@@ -9,6 +9,9 @@ class Test
 	{
 		a = 4;
 	}
+
+	~this() {}
+	~this() {}
 }
 
 class Bad
@@ -46,13 +49,14 @@ void func2()
 
 ========
 
-negative/Class.syp:17: only one struct allowed in a class
-negative/Class.syp:14: Bad type already declared
-negative/Class.syp:19: class Bad already defines symbol a
-negative/Class.syp:29: member function call requires class or class pointer
-negative/Class.syp:31: member function call requires class or class pointer
-negative/Class.syp:33: variable x not declared
-negative/Class.syp:40: class Test has no symbol nothing
-negative/Class.syp:42: argument count for Test_run function invalid, 2 arguments given, but 1 required.
-negative/Class.syp:44: class Test has no symbol bad
-found 9 errors
+negative/Class.syp:14: only one destructor allowed in a class
+negative/Class.syp:20: only one struct allowed in a class
+negative/Class.syp:17: Bad type already declared
+negative/Class.syp:22: class Bad already defines symbol a
+negative/Class.syp:32: member function call requires class or class pointer
+negative/Class.syp:34: member function call requires class or class pointer
+negative/Class.syp:36: variable x not declared
+negative/Class.syp:43: class Test has no symbol nothing
+negative/Class.syp:45: argument count for Test_run function invalid, 2 arguments given, but 1 required.
+negative/Class.syp:47: class Test has no symbol bad
+found 10 errors
