@@ -28,8 +28,13 @@ TARGET = ../saphyr
 
 objs = parser.o scanner.o Type.o Value.o Function.o Builder.o Instructions.o ModuleWriter.o GenCode.o Pass.o main.o
 
-compiler : frontend $(objs)
+compiler : LLVM_Defines.sh frontend $(objs)
 	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)
+
+LLVM_Defines.sh : LLVM_Defines.h
+
+LLVM_Defines.h :
+	./LLVM_Defines.sh > LLVM_Defines.h
 
 frontend : parser.cpp scanner.cpp
 
@@ -60,6 +65,7 @@ frontend-clean :
 	rm -f parser* scanner*
 
 fullclean : clean frontend-clean
+	rm -f LLVM_Defines.h
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

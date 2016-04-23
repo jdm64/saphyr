@@ -12,18 +12,13 @@ matrix:
       env: LLVM_VER="-3.6"
     - compiler: clang
       env: LLVM_VER="-3.7"
+    - compiler: clang
+      env: LLVM_VER="-3.8"
     - compiler: gcc
       env: COVERAGE=true
 
 before_install:
- - if [[ $CXX == "g++" ]]; then export CXX_PKG="g++"; fi
- - sudo cp /etc/apt/sources.list /etc/apt/sources.list.d/trusty.list
- - sudo sed -i "s/precise/trusty/g" /etc/apt/sources.list.d/trusty.list
- - if [[ $LLVM_VER == "-3.7" ]]; then echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.7 main" | sudo tee /etc/apt/sources.list.d/llvm37.list > /dev/null; fi
- - if [[ $LLVM_VER == "-3.7" ]]; then echo "UNITTEST_ARG = +-3.7" > src/Configfile; fi
- - sudo apt-get update -qq
- - sudo apt-get install -qq -y --force-yes flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev python3
- - if [[ $COVERAGE == "true" ]]; then sudo pip install cpp-coveralls; fi
+ - ./travisSetup.sh
 
 script: cd src && make frontend && make -j2 tests
 

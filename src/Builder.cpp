@@ -54,7 +54,7 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 			arg->setName(name);
 		else
 			context.addError("function parameter " + name + " already declared", param->getNameToken());
-		param->setArgument(RValue(arg, function.getParam(i)));
+		param->setArgument(RValue(&*arg, function.getParam(i)));
 		param->genCode(context);
 	}
 
