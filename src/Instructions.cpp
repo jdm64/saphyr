@@ -455,3 +455,37 @@ RValue Inst::LoadMemberVar(CodeContext& context, const string& baseName, RValue 
 	context.addError(baseName + " is not a struct/union/enum", dotToken);
 	return RValue();
 }
+
+void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpressionList* initList, RValue& initVal)
+{
+	auto varType = var.stype();
+	if (varType->isClass()) {
+		auto clType = static_cast<SClassType*>(varType);
+		auto clItem = clType->getItem("this");
+		if (clItem) {
+			auto func = static_cast<SFunction&>(clItem->second);
+			vector<Value*> exp_list;
+			exp_list.push_back(var);
+			if (!initList)
+				initList = new NExpressionList;
+			Inst::CallFunction(context, func, token, initList, exp_list);
+			return;
+		}
+	}
+
+	if (initList) {
+		if (initList->empty()) {
+			// no constructor and empty initializer; do zero initialization
+			new StoreInst(RValue::getZero(context, varType), var, context);
+		} else if (initList->size() > 1) {
+			context.addError("invalid variable initializer", token);
+		} else {
+			initVal = initList->at(0)->genValue(context);
+		}
+	}
+
+	if (initVal) {
+		Inst::CastTo(context, token, initVal, varType);
+		new StoreInst(initVal, var, context);
+	}
+}

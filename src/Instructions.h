@@ -74,6 +74,8 @@ public:
 	static void CallDestructor(CodeContext& context, RValue value, Token* valueToken);
 
 	static RValue LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName);
+
+	static void InitVariable(CodeContext& context, RValue var, Token* token, NExpressionList* initList, RValue& initVal);
 };
 
 #endif
