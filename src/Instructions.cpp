@@ -413,6 +413,14 @@ void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 	CallFunction(context, func, valueToken, &argList, exp_list);
 }
 
+RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
+{
+	auto baseVar = new NBaseVariable(new Token("this"));
+	auto memName = new Token(name);
+	unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName, nullptr));
+	return classVar->loadVar(context);
+}
+
 RValue Inst::LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName)
 {
 	auto varType = baseVar.stype();

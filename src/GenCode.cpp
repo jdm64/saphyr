@@ -183,10 +183,7 @@ RValue NBaseVariable::loadVar(CodeContext& context)
 	if (currClass) {
 		auto item = currClass->getItem(varName);
 		if (item) {
-			auto baseVar = new NBaseVariable(new Token("this"));
-			auto memName = new Token(varName);
-			unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName, nullptr));
-			return classVar->loadVar(context);
+			return Inst::LoadMemberVar(context, varName);
 		}
 	}
 
