@@ -62,6 +62,21 @@ public:
 		return other;
 	}
 
+	void setDelete(bool DoDelete)
+	{
+		doDelete = DoDelete;
+	}
+
+	void reserve(size_t size)
+	{
+		list.reserve(size);
+	}
+
+	void clear()
+	{
+		list.clear();
+	}
+
 	bool empty() const
 	{
 		return list.empty();
@@ -90,6 +105,11 @@ public:
 	void addFront(T* item)
 	{
 		list.insert(list.begin(), item);
+	}
+
+	void addAll(NodeList<T>& other)
+	{
+		list.insert(list.end(), other.begin(), other.end());
 	}
 
 	T* at(int i)
