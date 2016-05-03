@@ -459,7 +459,7 @@ void NClassDestructor::genCode(CodeContext& context)
 		auto itemCl = static_cast<SClassType*>(ty);
 		if (!itemCl->getItem("null"))
 			continue;
-		body->addItem(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
+		body->add(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
 	}
 
 	if (body->empty())
@@ -502,15 +502,15 @@ void NClassDeclaration::genCode(CodeContext& context)
 		auto varList = new NVariableDeclList;
 		auto structDecl = new NClassStructDecl(nullptr, group);
 		structDecl->setClass(this);
-		varList->addItem(new NVariableDecl(new Token));
-		group->addItem(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
-		list->addItem(structDecl);
+		varList->add(new NVariableDecl(new Token));
+		group->add(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
+		list->add(structDecl);
 		structIdx = list->size() - 1;
 	}
 	if (destrtIdx < 0) {
 		auto destr = new NClassDestructor(new Token, new NStatementList);
 		destr->setClass(this);
-		list->addItem(destr);
+		list->add(destr);
 	}
 
 	list->at(structIdx)->genCode(context);

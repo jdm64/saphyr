@@ -97,11 +97,11 @@ declaration_list
 	: declaration
 	{
 		$$ = new NStatementList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| declaration_list declaration
 	{
-		$1->addItem($2);
+		$1->add($2);
 	}
 	;
 declaration
@@ -134,11 +134,11 @@ class_member_list
 	: class_member
 	{
 		$$ = new NClassMemberList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| class_member_list class_member
 	{
-		$1->addItem($2);
+		$1->add($2);
 	}
 	;
 class_member
@@ -210,7 +210,7 @@ single_statement
 	| statement
 	{
 		$$ = new NStatementList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| ';'
 	{
@@ -221,11 +221,11 @@ statement_list
 	: statement
 	{
 		$$ = new NStatementList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| statement_list statement
 	{
-		$1->addItem($2);
+		$1->add($2);
 	}
 	;
 statement
@@ -292,11 +292,11 @@ switch_case_list
 	: switch_case
 	{
 		$$ = new NSwitchCaseList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| switch_case_list switch_case
 	{
-		$1->addItem($2);
+		$1->add($2);
 	}
 	;
 switch_case
@@ -344,11 +344,11 @@ variable_declarations_list
 	: variable_declarations ';'
 	{
 		$$ = new NVariableDeclGroupList;
-		$$->addItem(static_cast<NVariableDeclGroup*>($1));
+		$$->add(static_cast<NVariableDeclGroup*>($1));
 	}
 	| variable_declarations_list variable_declarations ';'
 	{
-		$1->addItem(static_cast<NVariableDeclGroup*>($2));
+		$1->add(static_cast<NVariableDeclGroup*>($2));
 	}
 	;
 variable_declarations
@@ -366,22 +366,22 @@ variable_list
 	: variable
 	{
 		$$ = new NVariableDeclList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| variable_list ',' variable
 	{
-		$1->addItem($3);
+		$1->add($3);
 	}
 	;
 global_variable_list
 	: global_variable
 	{
 		$$ = new NVariableDeclList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| global_variable_list ',' global_variable
 	{
-		$1->addItem($3);
+		$1->add($3);
 	}
 	;
 variable
@@ -416,11 +416,11 @@ parameter_list
 	| parameter
 	{
 		$$ = new NParameterList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| parameter_list ',' parameter
 	{
-		$1->addItem($3);
+		$1->add($3);
 	}
 	;
 parameter
@@ -467,11 +467,11 @@ data_type_list
 	| data_type
 	{
 		$$ = new NDataTypeList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| data_type_list ',' data_type
 	{
-		$1->addItem($3);
+		$1->add($3);
 	}
 	;
 base_type
@@ -499,11 +499,11 @@ expression_list
 	| expression
 	{
 		$$ = new NExpressionList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	| expression_list ',' expression
 	{
-		$1->addItem($3);
+		$1->add($3);
 	}
 	;
 expression_or_empty
@@ -521,7 +521,7 @@ declaration_or_expression_list
 	| variable_declarations
 	{
 		$$ = new NStatementList;
-		$$->addItem($1);
+		$$->add($1);
 	}
 	;
 expression

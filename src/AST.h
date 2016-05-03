@@ -54,7 +54,7 @@ public:
 	{
 		auto other = new L;
 		for (const auto item : *this)
-			other->addItem(item);
+			other->add(item);
 
 		doDelete = false;
 		delete this;
@@ -82,12 +82,12 @@ public:
 		return list.end();
 	}
 
-	void addItem(T* item)
+	void add(T* item)
 	{
 		list.push_back(item);
 	}
 
-	void addItemFront(T* item)
+	void addFront(T* item)
 	{
 		list.insert(list.begin(), item);
 	}

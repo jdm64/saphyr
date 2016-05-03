@@ -33,7 +33,7 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	if (body->empty() || !body->back()->isTerminator()) {
 		auto returnType = function.returnTy();
 		if (returnType->isVoid())
-			body->addItem(new NReturnStatement);
+			body->add(new NReturnStatement);
 		else
 			context.addError("no return for a non-void function", name);
 	}
@@ -75,7 +75,7 @@ void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDecla
 	// add this parameter
 	auto thisToken = new Token(*theClass->getNameToken());
 	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
-	params->addItemFront(thisPtr);
+	params->addFront(thisPtr);
 
 	auto fnToken = *name;
 	fnToken.str = theClass->getName() + "_" + name->str;
@@ -104,7 +104,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 {
 	NDataTypeList typeList(false);
 	for (auto item : *params) {
-		typeList.addItem(item->getTypeNode());
+		typeList.add(item->getTypeNode());
 	}
 	return NFuncPointerType::getType(context, name, rtype, &typeList);
 }
