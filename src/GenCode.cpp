@@ -457,6 +457,20 @@ void NClassConstructor::genCode(CodeContext& context)
 	}
 	initList->clear();
 
+	auto classTy = context.getClass();
+	for (auto item : *classTy) {
+		auto stype = item.second.second.stype();
+		if (!stype->isClass())
+			continue;
+		auto it = items.find(item.first);
+		if (it != items.end())
+			continue;
+		auto clTy = static_cast<SClassType*>(stype);
+		if (clTy->getItem("this")) {
+			items.insert({item.first, new NMemberInitializer(new Token(item.first), new NExpressionList)});
+		}
+	}
+
 	if (!items.empty()) {
 		auto newBody = new NStatementList;
 		newBody->reserve(items.size() + body->size());
@@ -467,6 +481,9 @@ void NClassConstructor::genCode(CodeContext& context)
 		delete body;
 		body = newBody;
 	}
+
+	if (body->empty())
+		return;
 
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
 	Builder::CreateClassFunction(context, getNameToken(), theClass, &voidType, params, body);
@@ -517,6 +534,7 @@ void NMemberInitializer::genCode(CodeContext& context)
 void NClassDeclaration::genCode(CodeContext& context)
 {
 	int structIdx = -1;
+	int constrIdx = -1;
 	int destrtIdx = -1;
 	for (int i = 0; i < list->size(); i++) {
 		switch (list->at(i)->memberType()) {
@@ -525,6 +543,12 @@ void NClassDeclaration::genCode(CodeContext& context)
 				context.addError("only one struct allowed in a class", list->at(i)->getNameToken());
 			else
 				structIdx = i;
+			break;
+		case NClassMember::MemberType::CONSTRUCTOR:
+			if (constrIdx > -1)
+				context.addError("only one constructor allowed in a class", list->at(i)->getNameToken());
+			else
+				constrIdx = i;
 			break;
 		case NClassMember::MemberType::DESTRUCTOR:
 			if (destrtIdx > -1)
@@ -546,6 +570,11 @@ void NClassDeclaration::genCode(CodeContext& context)
 		group->add(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
 		list->add(structDecl);
 		structIdx = list->size() - 1;
+	}
+	if (constrIdx < 0) {
+		auto constr = new NClassConstructor(new Token("this"), new NParameterList, new NInitializerList, new NStatementList);
+		constr->setClass(this);
+		list->add(constr);
 	}
 	if (destrtIdx < 0) {
 		auto destr = new NClassDestructor(new Token, new NStatementList);

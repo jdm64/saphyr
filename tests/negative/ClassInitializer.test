@@ -13,10 +13,18 @@ class K
 	this() a{err}, b{3} {}
 }
 
+class X
+{
+	this() {}
+
+	this(int a) {}
+}
+
 ========
 
 negative/ClassInitializer.syp:6: initializer for i already defined
 negative/ClassInitializer.syp:6: invalid initializer, class variable not defined: b
 negative/ClassInitializer.syp:13: variable err not declared
 negative/ClassInitializer.syp:13: argument count for T_this function invalid, 2 arguments given, but 1 required.
-found 4 errors
+negative/ClassInitializer.syp:20: only one constructor allowed in a class
+found 5 errors

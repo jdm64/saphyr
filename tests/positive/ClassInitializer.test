@@ -26,11 +26,17 @@ class Init
 	{ a = 3; }
 }
 
+class Default
+{
+	struct this { Base2 b; }
+}
+
 ========
 
 %Base = type { i32 }
 %Base2 = type { i32 }
 %Init = type { i32, %Base, %Base2 }
+%Default = type { %Base2 }
 
 define void @Base_this(%Base* %this, i32 %iVal) {
   %1 = alloca %Base*
@@ -71,5 +77,14 @@ define void @Init_this(%Init* %this) {
   %8 = load %Init** %1
   %9 = getelementptr %Init* %8, i32 0, i32 0
   store i32 3, i32* %9
+  ret void
+}
+
+define void @Default_this(%Default* %this) {
+  %1 = alloca %Default*
+  store %Default* %this, %Default** %1
+  %2 = load %Default** %1
+  %3 = getelementptr %Default* %2, i32 0, i32 0
+  call void @Base2_this(%Base2* %3)
   ret void
 }
