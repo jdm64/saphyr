@@ -445,6 +445,29 @@ void NClassFunctionDecl::genCode(CodeContext& context)
 
 void NClassConstructor::genCode(CodeContext& context)
 {
+	map<string,NMemberInitializer*> items;
+	for (auto item : *initList) {
+		auto token = item->getNameToken();
+		auto it = items.find(token->str);
+		if (it != items.end()) {
+			context.addError("initializer for " + token->str + " already defined", token);
+			continue;
+		}
+		items.insert({token->str, item});
+	}
+	initList->clear();
+
+	if (!items.empty()) {
+		auto newBody = new NStatementList;
+		newBody->reserve(items.size() + body->size());
+		for (auto item : items)
+			newBody->add(item.second);
+		newBody->addAll(*body);
+		body->setDelete(false);
+		delete body;
+		body = newBody;
+	}
+
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
 	Builder::CreateClassFunction(context, getNameToken(), theClass, &voidType, params, body);
 }
@@ -472,6 +495,23 @@ void NClassDestructor::genCode(CodeContext& context)
 	nullTok.str = "null";
 
 	Builder::CreateClassFunction(context, &nullTok, theClass, &voidType, &params, body);
+}
+
+void NMemberInitializer::genCode(CodeContext& context)
+{
+	auto currClass = context.getClass();
+	if (!currClass)
+		return;
+
+	auto item = currClass->getItem(name->str);
+	if (!item) {
+		context.addError("invalid initializer, class variable not defined: " + name->str, name);
+		return;
+	}
+
+	auto var = Inst::LoadMemberVar(context, name->str);
+	RValue empty;
+	Inst::InitVariable(context, var, name, expression, empty);
 }
 
 void NClassDeclaration::genCode(CodeContext& context)

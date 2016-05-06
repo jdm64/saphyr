@@ -19,6 +19,7 @@
 	NExpression* t_exp;
 	NSwitchCase* t_case;
 	NClassMember* t_memb;
+	NMemberInitializer* t_init;
 	NDataTypeList* t_typelist;
 	NStatementList* t_stmlist;
 	NClassMemberList* t_clslist;
@@ -27,6 +28,7 @@
 	NVariableDeclList* t_varlist;
 	NSwitchCaseList* t_caslist;
 	NVariableDeclGroupList* t_var_dec_list;
+	NInitializerList* t_initlist;
 }
 
 // predefined constants
@@ -68,6 +70,7 @@
 %type <t_stm> class_declaration
 %type <t_memb> class_member
 %type <t_case> switch_case
+%type <t_init> member_initializer
 // expressions
 %type <t_exp> expression assignment equals_expression greater_or_less_expression bit_or_expression bit_xor_expression
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
@@ -84,6 +87,7 @@
 %type <t_caslist> switch_case_list
 %type <t_typelist> data_type_list
 %type <t_var_dec_list> variable_declarations_list
+%type <t_initlist> class_initializer_list
 
 %%
 
@@ -150,13 +154,34 @@ class_member
 	{
 		$$ = new NClassFunctionDecl($2, $1, $4, $6);
 	}
-	| TT_THIS '(' parameter_list ')' function_body
+	| TT_THIS '(' parameter_list ')' class_initializer_list function_body
 	{
-		$$ = new NClassConstructor($1, $3, $5);
+		$$ = new NClassConstructor($1, $3, $5, $6);
 	}
 	| '~' TT_THIS '(' ')' function_body
 	{
 		$$ = new NClassDestructor($2, $5);
+	}
+	;
+class_initializer_list
+	:
+	{
+		$$ = new NInitializerList;
+	}
+	| member_initializer
+	{
+		$$ = new NInitializerList;
+		$$->add($1);
+	}
+	| class_initializer_list ',' member_initializer
+	{
+		$1->add($3);
+	}
+	;
+member_initializer
+	: TT_IDENTIFIER '{' expression_list '}'
+	{
+		$$ = new NMemberInitializer($1, $3);
 	}
 	;
 struct_declaration

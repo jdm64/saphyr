@@ -1,0 +1,22 @@
+
+class T
+{
+	struct this { int i; }
+
+	this() i{4}, i{}, b{} {}
+}
+
+class K
+{
+	struct this { int a; T b; }
+
+	this() a{err}, b{3} {}
+}
+
+========
+
+negative/ClassInitializer.syp:6: initializer for i already defined
+negative/ClassInitializer.syp:6: invalid initializer, class variable not defined: b
+negative/ClassInitializer.syp:13: variable err not declared
+negative/ClassInitializer.syp:13: argument count for T_this function invalid, 2 arguments given, but 1 required.
+found 4 errors

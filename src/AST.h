@@ -914,6 +914,24 @@ public:
 };
 typedef NodeList<NClassMember> NClassMemberList;
 
+class NMemberInitializer : public NStatement
+{
+	Token* name;
+	NExpressionList *expression;
+
+public:
+	NMemberInitializer(Token* name, NExpressionList* expression)
+	: name(name), expression(expression) {}
+
+	Token* getNameToken() const
+	{
+		return name;
+	}
+
+	void genCode(CodeContext& context);
+};
+typedef NodeList<NMemberInitializer> NInitializerList;
+
 class NClassDeclaration : public NDeclaration
 {
 	NClassMemberList* list;
@@ -983,11 +1001,12 @@ public:
 class NClassConstructor : public NClassMember
 {
 	NParameterList* params;
+	NInitializerList* initList;
 	NStatementList* body;
 
 public:
-	NClassConstructor(Token* name, NParameterList* params, NStatementList* body)
-	: NClassMember(name), params(params), body(body) {}
+	NClassConstructor(Token* name, NParameterList* params, NInitializerList* initList, NStatementList* body)
+	: NClassMember(name), params(params), initList(initList), body(body) {}
 
 	void genCode(CodeContext& context);
 
@@ -999,6 +1018,7 @@ public:
 	~NClassConstructor()
 	{
 		delete params;
+		delete initList;
 		delete body;
 	}
 };
