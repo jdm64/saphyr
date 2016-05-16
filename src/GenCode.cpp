@@ -123,33 +123,10 @@ SType* NPointerType::getType(CodeContext& context)
 	return SType::getPointer(context, btype);
 }
 
-SFunctionType* NFuncPointerType::getType(CodeContext& context, Token* atToken, NDataType* retType, NDataTypeList* params)
+SType* NFuncPointerType::getType(CodeContext& context)
 {
-	bool valid = true;
-	vector<SType*> args;
-	for (auto item : *params) {
-		auto param = item->getType(context);
-		if (!param) {
-			valid = false;
-		} else if (param->isAuto()) {
-			auto token = static_cast<NNamedType*>(item)->getToken();
-			context.addError("parameter can not be auto type", token);
-			valid = false;
-		} else if (SType::validate(context, atToken, param)) {
-			args.push_back(param);
-		}
-	}
-
-	auto returnType = retType->getType(context);
-	if (!returnType) {
-		return nullptr;
-	} else if (returnType->isAuto()) {
-		auto token = static_cast<NNamedType*>(retType)->getToken();
-		context.addError("function return type can not be auto", token);
-		return nullptr;
-	}
-
-	return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
+	auto ptr = Builder::getFuncType(context, atTok, returnType, params);
+	return ptr? SType::getPointer(context, ptr) : nullptr;
 }
 
 RValue NVariable::genValue(CodeContext& context, RValue var)

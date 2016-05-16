@@ -501,13 +501,7 @@ public:
 	NFuncPointerType(Token* atTok, NDataType* returnType, NDataTypeList* params)
 	: returnType(returnType), params(params), atTok(atTok) {}
 
-	SType* getType(CodeContext& context)
-	{
-		auto ptr = getType(context, atTok, returnType, params);
-		return ptr? SType::getPointer(context, ptr) : nullptr;
-	}
-
-	static SFunctionType* getType(CodeContext& context, Token* atToken, NDataType* retType, NDataTypeList* params);
+	SType* getType(CodeContext& context);
 
 	~NFuncPointerType()
 	{
