@@ -38,6 +38,10 @@ class Inst
 
 	static RValue PointerMath(int type, Token* optToken, RValue ptr, RValue val, CodeContext& context);
 
+	static RValue CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments);
+
+	static RValue CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments);
+
 public:
 	static bool CastTo(CodeContext& context, Token* token, RValue& value, SType* type, bool upcast = false);
 
@@ -70,6 +74,8 @@ public:
 	}
 
 	static RValue CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList);
+
+	static RValue CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments);
 
 	static void CallDestructor(CodeContext& context, RValue value, Token* valueToken);
 

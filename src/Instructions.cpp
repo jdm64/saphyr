@@ -397,6 +397,64 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 	return RValue(call, func.returnTy());
 }
 
+RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments)
+{
+	auto baseVal = baseVar->loadVar(context);
+	if (!baseVal)
+		return RValue();
+
+	baseVal = RValue(baseVal, SType::getPointer(context, baseVal.stype()));
+
+	auto type = baseVal.stype();
+	while (true) {
+		auto sub = type->subType();
+		if (sub->isClass()) {
+			return CallMemberFunctionClass(context, baseVar, baseVal, funcName, arguments);
+		} else if (sub->isStruct() | sub->isUnion()) {
+			return CallMemberFunctionNonClass(context, baseVar, baseVal, funcName, arguments);
+		} else if (sub->isPointer()) {
+			baseVal = Inst::Deref(context, baseVal);
+			type = baseVal.stype();
+		} else {
+			context.addError("member function call requires class or class pointer", funcName);
+			return RValue();
+		}
+	}
+}
+
+RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
+{
+	auto type = baseVal.stype();
+	auto className = SUserType::lookup(context, type->subType());
+	auto clType = static_cast<SClassType*>(type->subType());
+	auto sym = clType->getItem(funcName->str);
+	if (!sym) {
+		context.addError("class " + className + " has no symbol " + funcName->str, funcName);
+		return RValue();
+	} else if (!sym->second.isFunction()) {
+		return CallMemberFunctionNonClass(context, baseVar, baseVal, funcName, arguments);
+	}
+
+	auto func = static_cast<SFunction&>(sym->second);
+	vector<Value*> exp_list;
+	exp_list.push_back(baseVal);
+	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
+}
+
+RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
+{
+	baseVal = {baseVal.value(), baseVal.stype()->subType()};
+	auto sym = Inst::LoadMemberVar(context, baseVar->getName(), baseVal, funcName, funcName);
+	sym = Inst::Deref(context, sym);
+	if (!sym || !sym.stype()->isFunction()) {
+		context.addError("function or function pointer expected", funcName);
+		return RValue();
+	}
+	auto func = static_cast<SFunction&>(sym);
+	vector<Value*> exp_list;
+	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
+}
+
 void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 {
 	auto type = value.stype();

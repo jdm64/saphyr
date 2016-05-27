@@ -1127,60 +1127,7 @@ RValue NFunctionCall::loadVar(CodeContext& context)
 
 RValue NMemberFunctionCall::genValue(CodeContext& context)
 {
-	auto value = baseVar->loadVar(context);
-	if (!value)
-		return RValue();
-
-	value = RValue(value, SType::getPointer(context, value.stype()));
-
-	auto type = value.stype();
-	while (true) {
-		auto sub = type->subType();
-		if (sub->isClass()) {
-			return genValueClass(context, value);
-		} else if (sub->isStruct() | sub->isUnion()) {
-			return genValueNonClass(context, value, sub->isStruct());
-		} else if (sub->isPointer()) {
-			value = Inst::Deref(context, value);
-			type = value.stype();
-		} else {
-			context.addError("member function call requires class or class pointer", dotToken);
-			return RValue();
-		}
-	}
-}
-
-RValue NMemberFunctionCall::genValueClass(CodeContext& context, RValue& value)
-{
-	auto type = value.stype();
-	auto className = SUserType::lookup(context, type->subType());
-	auto clType = static_cast<SClassType*>(type->subType());
-	auto sym = clType->getItem(funcName->str);
-	if (!sym) {
-		context.addError("class " + className + " has no symbol " + funcName->str, funcName);
-		return RValue();
-	} else if (!sym->second.isFunction()) {
-		return genValueNonClass(context, value, true);
-	}
-
-	auto func = static_cast<SFunction&>(sym->second);
-	vector<Value*> exp_list;
-	exp_list.push_back(value);
-	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
-}
-
-RValue NMemberFunctionCall::genValueNonClass(CodeContext& context, RValue& value, bool isStruct)
-{
-	value = {value.value(), value.stype()->subType()};
-	auto sym = Inst::LoadMemberVar(context, baseVar->getName(), value, dotToken, funcName);
-	sym = Inst::Deref(context, sym);
-	if (!sym || !sym.stype()->isFunction()) {
-		context.addError("function or function pointer expected", funcName);
-		return RValue();
-	}
-	auto func = static_cast<SFunction&>(sym);
-	vector<Value*> exp_list;
-	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
+	return Inst::CallMemberFunction(context, baseVar, funcName, arguments);
 }
 
 RValue NMemberFunctionCall::loadVar(CodeContext& context)
