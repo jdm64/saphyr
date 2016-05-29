@@ -131,18 +131,6 @@ SType* NFuncPointerType::getType(CodeContext& context)
 
 RValue NVariable::genValue(CodeContext& context, RValue var)
 {
-	if (!var)
-		return var;
-
-	auto type = var.stype();
-	if (type->isFunction())
-		// don't require address-of operator for converting
-		// a function into a function pointer
-		return RValue(var.value(), SType::getPointer(context, var.stype()));
-	else if (type->isEnum() && var.isConst())
-		// an enum value, not a variable, don't load it
-		return var;
-
 	return Inst::Load(context, var);
 }
 
@@ -1143,8 +1131,8 @@ RValue NMemberFunctionCall::loadVar(CodeContext& context)
 RValue NIncrement::genValue(CodeContext& context)
 {
 	auto varPtr = variable->loadVar(context);
-	auto varVal = variable->genValue(context, varPtr);
-	if (!varPtr || !varVal)
+	auto varVal = Inst::Load(context, varPtr);
+	if (!varVal)
 		return RValue();
 	auto incType = varVal.stype()->isPointer()? SType::getInt(context, 32) : varVal.stype();
 
