@@ -1134,12 +1134,21 @@ RValue NIncrement::genValue(CodeContext& context)
 	auto varVal = Inst::Load(context, varPtr);
 	if (!varVal)
 		return RValue();
-	auto incType = varVal.stype()->isPointer()? SType::getInt(context, 32) : varVal.stype();
+
+	auto type = varVal.stype();
+	if (type->isPointer() && type->subType()->isFunction()) {
+		context.addError("Increment/Decrement invalid for function pointer", opTok);
+		return RValue();
+	} else if (type->isEnum()) {
+		context.addError("Increment/Decrement invalid for enum type", opTok);
+		return RValue();
+	}
+	auto incType = type->isPointer()? SType::getInt(context, 32) : type;
 
 	auto result = Inst::BinaryOp(oper, opTok, varVal, RValue::getNumVal(context, incType, oper == ParserBase::TT_INC? 1:-1), context);
 	new StoreInst(result, varPtr, context);
 
-	return isPostfix? varVal : RValue(result, varVal.stype());
+	return isPostfix? varVal : RValue(result, type);
 }
 
 APSInt NBoolConst::getIntVal(CodeContext& context)

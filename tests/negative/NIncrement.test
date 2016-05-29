@@ -1,0 +1,31 @@
+
+enum Colors { RED, BLUE }
+
+int foo()
+{
+	return 4;
+}
+
+int main()
+{
+	auto ptr = foo;
+	Colors c = Colors.RED;
+
+	ptr++;
+	foo++;
+
+	c++;
+	Colors.RED++;
+	Colors++;
+
+	return 0;
+}
+
+========
+
+negative/NIncrement.syp:14: Increment/Decrement invalid for function pointer
+negative/NIncrement.syp:15: Increment/Decrement invalid for function pointer
+negative/NIncrement.syp:17: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:18: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:19: Increment/Decrement invalid for enum type
+found 5 errors
