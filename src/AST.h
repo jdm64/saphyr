@@ -792,12 +792,20 @@ public:
 	NVariableDeclGroup(NDataType* type, NVariableDeclList* variables)
 	: type(type), variables(variables) {}
 
+	NDataType* getType() const
+	{
+		return type;
+	}
+
+	NVariableDeclList* getVars() const
+	{
+		return variables;
+	}
+
 	void genCode(CodeContext& context)
 	{
 		variables->genCode(type, context);
 	}
-
-	bool addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
 
 	~NVariableDeclGroup()
 	{

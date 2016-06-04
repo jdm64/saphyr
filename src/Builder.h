@@ -24,6 +24,8 @@ class Builder
 
 	static SFunctionType* getFuncType(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params);
 
+	static bool addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
+
 public:
 	static SFunctionType* getFuncType(CodeContext& context, Token* name, NDataType* retType, NDataTypeList* params);
 

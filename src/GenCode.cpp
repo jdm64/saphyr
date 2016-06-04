@@ -305,33 +305,6 @@ void NGlobalVariableDecl::genCode(CodeContext& context)
 	context.storeGlobalSymbol({var, varType}, name);
 }
 
-bool NVariableDeclGroup::addMembers(vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
-{
-	auto stype = type->getType(context);
-	if (!stype) {
-		return false;
-	} else if (stype->isAuto()) {
-		auto token = static_cast<NNamedType*>(type)->getToken();
-		context.addError("struct members must not have auto type", token);
-		return false;
-	}
-	bool valid = true;
-	for (auto var : *variables) {
-		if (var->hasInit())
-			context.addError("structs don't support variable initialization", var->getEqToken());
-		auto name = var->getName();
-		auto res = memberNames.insert(name);
-		if (!res.second) {
-			auto token = static_cast<NDeclaration*>(var)->getNameToken();
-			context.addError("member name " + name + " already declared", token);
-			valid = false;
-			continue;
-		}
-		structVector.push_back(make_pair(name, stype));
-	}
-	return valid;
-}
-
 void NAliasDeclaration::genCode(CodeContext& context)
 {
 	auto realType = type->getType(context);

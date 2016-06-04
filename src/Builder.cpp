@@ -138,6 +138,33 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 	return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
 }
 
+bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
+{
+	auto stype = group->getType()->getType(context);
+	if (!stype) {
+		return false;
+	} else if (stype->isAuto()) {
+		auto token = static_cast<NNamedType*>(group->getType())->getToken();
+		context.addError("struct members must not have auto type", token);
+		return false;
+	}
+	bool valid = true;
+	for (auto var : *group->getVars()) {
+		if (var->hasInit())
+			context.addError("structs don't support variable initialization", var->getEqToken());
+		auto name = var->getName();
+		auto res = memberNames.insert(name);
+		if (!res.second) {
+			auto token = static_cast<NDeclaration*>(var)->getNameToken();
+			context.addError("member name " + name + " already declared", token);
+			valid = false;
+			continue;
+		}
+		structVector.push_back(make_pair(name, stype));
+	}
+	return valid;
+}
+
 void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list)
 {
 	auto structName = name->str;
@@ -150,7 +177,7 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 	set<string> memberNames;
 	bool valid = true;
 	for (auto item : *list)
-		valid &= item->addMembers(structVars, memberNames, context);
+		valid &= addMembers(item, structVars, memberNames, context);
 	if (valid) {
 		switch (ctype) {
 		case NStructDeclaration::CreateType::STRUCT:
