@@ -21,8 +21,6 @@
 #include "Instructions.h"
 #include "Builder.h"
 
-NStatementList* programBlock;
-
 const string NExprVariable::STR_TMP_EXP = "temp expression";
 
 SType* NBaseType::getType(CodeContext& context)
