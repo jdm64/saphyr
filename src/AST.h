@@ -35,7 +35,7 @@ public:
 };
 
 template<typename T>
-class NodeList : public Node
+class NodeList
 {
 	typedef vector<T*> container;
 	typedef typename container::iterator iterator;
