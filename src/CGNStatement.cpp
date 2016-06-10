@@ -17,7 +17,7 @@
 #include "Value.h"
 #include "AST.h"
 #include "CGNStatement.h"
-#include "parser.h"
+#include "parserbase.h"
 #include "CodeContext.h"
 #include "Instructions.h"
 #include "Builder.h"
@@ -25,6 +25,7 @@
 #include "CGNVariable.h"
 #include "CGNInt.h"
 #include "CGNExpression.h"
+#include "CGNImportStm.h"
 
 #define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartStatement)] = reinterpret_cast<classPtr>(&CGNStatement::visit##ID)
 
@@ -46,6 +47,7 @@ CGNStatement::classPtr* CGNStatement::buildVTable()
 	TABLE_ADD(NGlobalVariableDecl);
 	TABLE_ADD(NGotoStatement);
 	TABLE_ADD(NIfStatement);
+	TABLE_ADD(NImportStm);
 	TABLE_ADD(NLabelStatement);
 	TABLE_ADD(NLoopBranch);
 	TABLE_ADD(NLoopStatement);
@@ -71,6 +73,15 @@ void CGNStatement::visit(NStatementList* list)
 {
 	for (auto item : *list)
 		visit(item);
+}
+
+void CGNStatement::visitNImportStm(NImportStm* stm)
+{
+	auto idx = context.getFilename().rfind('/');
+	string prefix = idx != string::npos? context.getFilename().substr(0, idx + 1) : "";
+	string filename = prefix + stm->getName()->str;
+
+	Builder::LoadImport(context, filename);
 }
 
 void CGNStatement::visitNExpressionStm(NExpressionStm* stm)
@@ -128,7 +139,7 @@ void CGNStatement::visitNVariableDeclGroup(NVariableDeclGroup* stm)
 
 void CGNStatement::visitNGlobalVariableDecl(NGlobalVariableDecl* stm)
 {
-	Builder::CreateGlobalVar(context, stm);
+	Builder::CreateGlobalVar(context, stm, false);
 }
 
 void CGNStatement::visitNAliasDeclaration(NAliasDeclaration* stm)
@@ -165,12 +176,12 @@ void CGNStatement::visitNClassFunctionDecl(NClassFunctionDecl* stm)
 
 void CGNStatement::visitNClassConstructor(NClassConstructor* stm)
 {
-	Builder::CreateClassConstructor(context, stm);
+	Builder::CreateClassConstructor(context, stm, false);
 }
 
 void CGNStatement::visitNClassDestructor(NClassDestructor* stm)
 {
-	Builder::CreateClassDestructor(context, stm);
+	Builder::CreateClassDestructor(context, stm, false);
 }
 
 void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
@@ -192,64 +203,17 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 {
-	int structIdx = -1;
-	int constrIdx = -1;
-	int destrtIdx = -1;
-	for (int i = 0; i < stm->getList()->size(); i++) {
-		switch (stm->getList()->at(i)->memberType()) {
-		case NClassMember::MemberType::STRUCT:
-			if (structIdx > -1)
-				context.addError("only one struct allowed in a class", stm->getList()->at(i)->getNameToken());
-			else
-				structIdx = i;
-			break;
-		case NClassMember::MemberType::CONSTRUCTOR:
-			if (constrIdx > -1)
-				context.addError("only one constructor allowed in a class", stm->getList()->at(i)->getNameToken());
-			else
-				constrIdx = i;
-			break;
-		case NClassMember::MemberType::DESTRUCTOR:
-			if (destrtIdx > -1)
-				context.addError("only one destructor allowed in a class", stm->getList()->at(i)->getNameToken());
-			else
-				destrtIdx = i;
-			break;
-		default:
-			break;
+	Builder::CreateClass(context, stm, [=](int structIdx){
+		visit(stm->getList()->at(structIdx));
+		context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName())));
+
+		for (int i = 0; i < stm->getList()->size(); i++) {
+			if (i == structIdx)
+				continue;
+			visit(stm->getList()->at(i));
 		}
-	}
-
-	if (structIdx < 0) {
-		auto group = new NVariableDeclGroupList;
-		auto varList = new NVariableDeclList;
-		auto structDecl = new NClassStructDecl(nullptr, group);
-		structDecl->setClass(stm);
-		varList->add(new NVariableDecl(new Token));
-		group->add(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
-		stm->getList()->add(structDecl);
-		structIdx = stm->getList()->size() - 1;
-	}
-	if (constrIdx < 0) {
-		auto constr = new NClassConstructor(new Token("this"), new NParameterList, new NInitializerList, new NStatementList);
-		constr->setClass(stm);
-		stm->getList()->add(constr);
-	}
-	if (destrtIdx < 0) {
-		auto destr = new NClassDestructor(new Token, new NStatementList);
-		destr->setClass(stm);
-		stm->getList()->add(destr);
-	}
-
-	visit(stm->getList()->at(structIdx));
-	context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName())));
-
-	for (int i = 0; i < stm->getList()->size(); i++) {
-		if (i == structIdx)
-			continue;
-		visit(stm->getList()->at(i));
-	}
-	context.setClass(nullptr);
+		context.setClass(nullptr);
+	});
 }
 
 void CGNStatement::visitNReturnStatement(NReturnStatement* stm)

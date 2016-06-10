@@ -33,9 +33,11 @@ public:
 
 	static void CreateClassFunction(CodeContext& context, Token* name, NClassDeclaration* theClass, NDataType* rtype, NParameterList* params, NStatementList* body);
 
-	static void CreateClassConstructor(CodeContext& context, NClassConstructor* stm);
+	static void CreateClassConstructor(CodeContext& context, NClassConstructor* stm, bool prototype);
 
-	static void CreateClassDestructor(CodeContext& context, NClassDestructor* stm);
+	static void CreateClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype);
+
+	static void CreateClass(CodeContext& context, NClassDeclaration* stm, function<void(int)> visitor);
 
 	static void CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list);
 
@@ -43,7 +45,9 @@ public:
 
 	static void CreateAlias(CodeContext& context, NAliasDeclaration* stm);
 
-	static void CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm);
+	static void CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration);
+
+	static void LoadImport(CodeContext& context, const string& filename);
 };
 
 #endif

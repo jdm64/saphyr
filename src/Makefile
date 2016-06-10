@@ -26,7 +26,7 @@ CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) 
 LDFLAGS = -lboost_program_options `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version` $(COV_LD)
 TARGET = ../saphyr
 
-objs = parser.o scanner.o Type.o Value.o Function.o Instructions.o Builder.o CGNInt.o CGNDataType.o CGNVariable.o CGNExpression.o CGNStatement.o Pass.o ModuleWriter.o main.o
+objs = parser.o scanner.o Type.o Value.o Function.o Instructions.o Builder.o CGNInt.o CGNDataType.o CGNVariable.o CGNExpression.o CGNStatement.o CGNImportStm.o Pass.o ModuleWriter.o main.o
 
 compiler : LLVM_Defines.sh frontend $(objs)
 	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)

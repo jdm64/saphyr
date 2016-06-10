@@ -77,6 +77,7 @@ enum		{ return ParserBase::TT_ENUM; }
 for		{ return ParserBase::TT_FOR; }
 goto		{ return ParserBase::TT_GOTO; }
 if		{ return ParserBase::TT_IF; }
+import		{ return ParserBase::TT_IMPORT; }
 loop		{ return ParserBase::TT_LOOP; }
 new		{ SAVE_TOKEN return ParserBase::TT_NEW; }
 redo		{ SAVE_TOKEN return ParserBase::TT_REDO; }

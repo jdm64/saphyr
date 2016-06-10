@@ -14,25 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __CGNSTATEMENT_H__
-#define __CGNSTATEMENT_H__
+#ifndef __CGNIMPORT_H__
+#define __CGNIMPORT_H__
 
-class CGNStatement
+class CGNImportStm
 {
-	typedef void (CGNStatement::*classPtr)(NStatement*);
+	typedef void (CGNImportStm::*classPtr)(NStatement*);
 
 	static classPtr *vtable;
 
 	CodeContext& context;
-	RValue storedValue;
+	string filepath;
+
+	explicit CGNImportStm(CodeContext& context)
+	: context(context) {}
 
 	void visitNImportStm(NImportStm* stm);
-
-	void visitNExpressionStm(NExpressionStm* stm);
-
-	void visitNParameter(NParameter* stm);
-
-	void visitNVariableDecl(NVariableDecl* stm);
 
 	void visitNVariableDeclGroup(NVariableDeclGroup* stm);
 
@@ -58,52 +55,18 @@ class CGNStatement
 
 	void visitNClassDeclaration(NClassDeclaration* stm);
 
-	void visitNReturnStatement(NReturnStatement* stm);
-
-	void visitNLoopStatement(NLoopStatement* stm);
-
-	void visitNWhileStatement(NWhileStatement* stm);
-
-	void visitNSwitchStatement(NSwitchStatement* stm);
-
-	void visitNForStatement(NForStatement* stm);
-
-	void visitNIfStatement(NIfStatement* stm);
-
-	void visitNLabelStatement(NLabelStatement* stm);
-
-	void visitNGotoStatement(NGotoStatement* stm);
-
-	void visitNLoopBranch(NLoopBranch* stm);
-
-	void visitNDeleteStatement(NDeleteStatement* stm);
-
-	void visitNDestructorCall(NDestructorCall* stm);
-
 	void visit(NStatementList* list);
+
+	void visit(NStatement* type);
 
 	static classPtr* buildVTable();
 
 public:
-	explicit CGNStatement(CodeContext& context)
-	: context(context) {}
 
-	void visit(NStatement* type);
-
-	void storeValue(RValue value)
+	static void run(CodeContext& context, NStatementList* list, string filepath)
 	{
-		storedValue = value;
-	}
-
-	static void run(CodeContext& context, NStatement* exp)
-	{
-		CGNStatement runner(context);
-		return runner.visit(exp);
-	}
-
-	static void run(CodeContext& context, NStatementList* list)
-	{
-		CGNStatement runner(context);
+		CGNImportStm runner(context);
+		runner.filepath = filepath;
 		return runner.visit(list);
 	}
 };

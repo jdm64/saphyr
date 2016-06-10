@@ -63,10 +63,10 @@ int main(int argc, char** argv)
 	}
 
 	unique_ptr<Module> module(new Module(file, getGlobalContext()));
-	CodeContext context(module.get());
+	CodeContext context(module.get(), file);
 
 	CGNStatement::run(context, parser.getRoot());
-	if (context.handleErrors(file))
+	if (context.handleErrors())
 		return 2;
 
 	ModuleWriter writer(*module.get(), file, vm);

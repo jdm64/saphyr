@@ -16,7 +16,7 @@
  */
 
 #include "AST.h"
-#include "parserbase.h"
+#include "parser.h"
 #include "Function.h"
 #include "Builder.h"
 #include "CodeContext.h"
@@ -25,6 +25,8 @@
 #include "CGNInt.h"
 #include "CGNExpression.h"
 #include "CGNStatement.h"
+#include "CGNImportStm.h"
+#include "Instructions.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
@@ -93,7 +95,7 @@ void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDecla
 		clType->addFunction(name->str, func);
 }
 
-void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* stm)
+void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* stm, bool prototype)
 {
 	map<string,NMemberInitializer*> items;
 	for (auto item : *stm->getInitList()) {
@@ -136,10 +138,10 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		return;
 
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
-	CreateClassFunction(context, stm->getNameToken(), stm->getClass(), &voidType, stm->getParams(), stm->getBody());
+	CreateClassFunction(context, stm->getNameToken(), stm->getClass(), &voidType, stm->getParams(), prototype? nullptr : stm->getBody());
 }
 
-void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm)
+void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype)
 {
 	auto clType = context.getClass();
 	for (auto item : *clType) {
@@ -161,7 +163,60 @@ void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm)
 	auto nullTok = *stm->getNameToken();
 	nullTok.str = "null";
 
-	CreateClassFunction(context, &nullTok, stm->getClass(), &voidType, &params, stm->getBody());
+	CreateClassFunction(context, &nullTok, stm->getClass(), &voidType, &params, prototype? nullptr : stm->getBody());
+}
+
+void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function<void(int)> visitor)
+{
+	int structIdx = -1;
+	int constrIdx = -1;
+	int destrtIdx = -1;
+	for (int i = 0; i < stm->getList()->size(); i++) {
+		switch (stm->getList()->at(i)->memberType()) {
+		case NClassMember::MemberType::STRUCT:
+			if (structIdx > -1)
+				context.addError("only one struct allowed in a class", stm->getList()->at(i)->getNameToken());
+			else
+				structIdx = i;
+			break;
+		case NClassMember::MemberType::CONSTRUCTOR:
+			if (constrIdx > -1)
+				context.addError("only one constructor allowed in a class", stm->getList()->at(i)->getNameToken());
+			else
+				constrIdx = i;
+			break;
+		case NClassMember::MemberType::DESTRUCTOR:
+			if (destrtIdx > -1)
+				context.addError("only one destructor allowed in a class", stm->getList()->at(i)->getNameToken());
+			else
+				destrtIdx = i;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (structIdx < 0) {
+		auto group = new NVariableDeclGroupList;
+		auto varList = new NVariableDeclList;
+		auto structDecl = new NClassStructDecl(nullptr, group);
+		structDecl->setClass(stm);
+		varList->add(new NVariableDecl(new Token));
+		group->add(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
+		stm->getList()->add(structDecl);
+		structIdx = stm->getList()->size() - 1;
+	}
+	if (constrIdx < 0) {
+		auto constr = new NClassConstructor(new Token("this"), new NParameterList, new NInitializerList, new NStatementList);
+		constr->setClass(stm);
+		stm->getList()->add(constr);
+	}
+	if (destrtIdx < 0) {
+		auto destr = new NClassDestructor(new Token, new NStatementList);
+		destr->setClass(stm);
+		stm->getList()->add(destr);
+	}
+	visitor(structIdx);
 }
 
 SFunction Builder::lookupFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params)
@@ -325,7 +380,7 @@ void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 	SAliasType::createAlias(context, stm->getName(), realType);
 }
 
-void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm)
+void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration)
 {
 	if (stm->getInitExp() && !stm->getInitExp()->isConstant()) {
 		context.addError("global variables only support constant value initializer", stm->getEqToken());
@@ -364,6 +419,15 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm)
 		return;
 	}
 
-	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), name);
+	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, declaration? nullptr : (Constant*) initValue.value(), name);
 	context.storeGlobalSymbol({var, varType}, name);
+}
+
+void Builder::LoadImport(CodeContext& context, const string& filename)
+{
+	Parser parser(filename);
+	if (parser.parse())
+		return;
+
+	CGNImportStm::run(context, parser.getRoot(), filename);
 }

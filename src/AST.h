@@ -261,6 +261,30 @@ public:
 	ADD_ID(NFloatConst)
 };
 
+class NImportStm : public NStatement
+{
+	Token* filename;
+
+public:
+	NImportStm(Token* filename)
+	: filename(filename)
+	{
+		filename->str = NConstant::unescape(filename->str.substr(1, filename->str.size() - 2));
+	}
+
+	Token* getName() const
+	{
+		return filename;
+	}
+
+	~NImportStm()
+	{
+		delete filename;
+	}
+
+	ADD_ID(NImportStm)
+};
+
 class NDeclaration : public NStatement
 {
 protected:

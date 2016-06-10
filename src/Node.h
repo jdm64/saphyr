@@ -79,6 +79,7 @@ enum class NodeId
 	NGlobalVariableDecl,
 	NGotoStatement,
 	NIfStatement,
+	NImportStm,
 	NLabelStatement,
 	NLoopBranch,
 	NLoopStatement,

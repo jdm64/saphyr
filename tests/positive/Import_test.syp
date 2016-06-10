@@ -1,0 +1,39 @@
+import "../files/Extern.syp";
+
+int MyGlobal;
+
+alias MyAlias = double;
+
+struct MyStruct
+{
+	int a;
+}
+
+enum MyEnum
+{
+	ONE, TWO
+}
+
+int myFunc()
+{
+	return 4;
+}
+
+class MyClass
+{
+	struct this { int a, b; }
+
+	this(int x) a{x}, b{0}
+	{}
+
+	void calc()
+	{
+		a++;
+		b++;
+	}
+
+	~this()
+	{
+		a = 2;
+	}
+}

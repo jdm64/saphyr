@@ -1,0 +1,73 @@
+
+import "Import_test.syp";
+
+void foo()
+{
+	MyGlobal = 4;
+
+	MyAlias a = 3;
+}
+
+void bar()
+{
+	MyStruct s;
+	s.a = 4;
+
+	MyEnum e = MyEnum.ONE;
+}
+
+void other()
+{
+	myFunc();
+
+	MyClass c{4};
+
+	c.calc();
+}
+
+========
+
+%Something = type { i32, i32 }
+%MyClass = type { i32, i32 }
+%MyStruct = type { i32 }
+
+@MyGlobal = external global i32
+
+declare void @Something_this(%Something*, i32, i32)
+
+declare void @Something_inc(%Something*)
+
+declare void @Something_null(%Something*)
+
+declare i32 @myFunc()
+
+declare void @MyClass_this(%MyClass*, i32)
+
+declare void @MyClass_calc(%MyClass*)
+
+declare void @MyClass_null(%MyClass*)
+
+define void @foo() {
+  store i32 4, i32* @MyGlobal
+  %a = alloca double
+  %1 = sitofp i32 3 to double
+  store double %1, double* %a
+  ret void
+}
+
+define void @bar() {
+  %s = alloca %MyStruct
+  %1 = getelementptr %MyStruct* %s, i32 0, i32 0
+  store i32 4, i32* %1
+  %e = alloca i32
+  store i32 0, i32* %e
+  ret void
+}
+
+define void @other() {
+  %1 = call i32 @myFunc()
+  %c = alloca %MyClass
+  call void @MyClass_this(%MyClass* %c, i32 4)
+  call void @MyClass_calc(%MyClass* %c)
+  ret void
+}

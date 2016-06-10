@@ -43,7 +43,7 @@
 %token <t_tok> TT_ASG_DQ
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF TT_GOTO TT_SWITCH TT_CASE
-%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS
+%token TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS TT_IMPORT
 %left TT_ELSE
 // constants and names
 %token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT TT_THIS
@@ -67,7 +67,7 @@
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
 %type <t_stm> struct_declaration enum_declaration alias_declaration
-%type <t_stm> class_declaration
+%type <t_stm> class_declaration import_declaration
 %type <t_memb> class_member
 %type <t_case> switch_case
 %type <t_init> member_initializer
@@ -115,6 +115,13 @@ declaration
 	| class_declaration
 	| struct_declaration
 	| enum_declaration
+	| import_declaration
+	;
+import_declaration
+	: TT_IMPORT TT_STR_LIT ';'
+	{
+		$$ = new NImportStm($2);
+	}
 	;
 global_variable_declaration
 	: data_type global_variable_list ';'

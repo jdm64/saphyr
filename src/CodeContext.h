@@ -142,6 +142,7 @@ class CodeContext : public SymbolTable
 	TypeManager typeManager;
 	SFunction currFunc;
 	SClassType* currClass;
+	string filepath;
 
 	void validateFunction()
 	{
@@ -158,8 +159,8 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	explicit CodeContext(Module* module)
-	: module(module), typeManager(module), currClass(nullptr)
+	explicit CodeContext(Module* module, string filepath)
+	: module(module), typeManager(module), currClass(nullptr), filepath(filepath)
 	{
 	}
 
@@ -176,6 +177,11 @@ public:
 	Module* getModule() const
 	{
 		return module;
+	}
+
+	string getFilename() const
+	{
+		return filepath;
 	}
 
 	SFunction currFunction() const
@@ -309,12 +315,12 @@ public:
 	/*
 	 * Returns true on errors
 	 */
-	bool handleErrors(string filename) const
+	bool handleErrors() const
 	{
 		if (errors.empty())
 			return false;
 
-		filename = filename.substr(filename.find_last_of('/') + 1);
+		auto filename = filepath.substr(filepath.find_last_of('/') + 1);
 		for (auto& error : errors) {
 			if (error.first.line) {
 				cout << error.first.filename << ":"
