@@ -33,7 +33,17 @@ public:
 
 	static void CreateClassFunction(CodeContext& context, Token* name, NClassDeclaration* theClass, NDataType* rtype, NParameterList* params, NStatementList* body);
 
+	static void CreateClassConstructor(CodeContext& context, NClassConstructor* stm);
+
+	static void CreateClassDestructor(CodeContext& context, NClassDestructor* stm);
+
 	static void CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list);
+
+	static void CreateEnum(CodeContext& context, NEnumDeclaration* stm);
+
+	static void CreateAlias(CodeContext& context, NAliasDeclaration* stm);
+
+	static void CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm);
 };
 
 #endif

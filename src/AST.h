@@ -1130,6 +1130,11 @@ public:
 		return body;
 	}
 
+	void setBody(NStatementList* other)
+	{
+		body = other;
+	}
+
 	~NClassConstructor()
 	{
 		delete params;

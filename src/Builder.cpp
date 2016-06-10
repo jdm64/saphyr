@@ -16,9 +16,11 @@
  */
 
 #include "AST.h"
+#include "parserbase.h"
 #include "Function.h"
 #include "Builder.h"
 #include "CodeContext.h"
+#include "Instructions.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
@@ -81,9 +83,80 @@ void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDecla
 	fnToken.str = theClass->getName() + "_" + name->str;
 
 	// add function to class type
-	auto func = Builder::CreateFunction(context, &fnToken, rtype, params, body);
+	auto func = CreateFunction(context, &fnToken, rtype, params, body);
 	if (func)
 		clType->addFunction(name->str, func);
+}
+
+void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* stm)
+{
+	map<string,NMemberInitializer*> items;
+	for (auto item : *stm->getInitList()) {
+		auto token = item->getNameToken();
+		auto it = items.find(token->str);
+		if (it != items.end()) {
+			context.addError("initializer for " + token->str + " already defined", token);
+			continue;
+		}
+		items.insert({token->str, item});
+	}
+	stm->getInitList()->clear();
+
+	auto classTy = context.getClass();
+	for (auto item : *classTy) {
+		auto stype = item.second.second.stype();
+		if (!stype->isClass())
+			continue;
+		auto it = items.find(item.first);
+		if (it != items.end())
+			continue;
+		auto clTy = static_cast<SClassType*>(stype);
+		if (clTy->getItem("this")) {
+			items.insert({item.first, new NMemberInitializer(new Token(item.first), new NExpressionList)});
+		}
+	}
+
+	if (!items.empty()) {
+		auto newBody = new NStatementList;
+		newBody->reserve(items.size() + stm->getBody()->size());
+		for (auto item : items)
+			newBody->add(item.second);
+		newBody->addAll(*stm->getBody());
+		stm->getBody()->setDelete(false);
+		delete stm->getBody();
+		stm->setBody(newBody);
+	}
+
+	if (stm->getBody()->empty())
+		return;
+
+	NBaseType voidType(nullptr, ParserBase::TT_VOID);
+	CreateClassFunction(context, stm->getNameToken(), stm->getClass(), &voidType, stm->getParams(), stm->getBody());
+}
+
+void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm)
+{
+	auto clType = context.getClass();
+	for (auto item : *clType) {
+		auto ty = item.second.second.stype();
+		if (!ty->isClass())
+			continue;
+		auto itemCl = static_cast<SClassType*>(ty);
+		if (!itemCl->getItem("null"))
+			continue;
+		stm->getBody()->add(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
+	}
+
+	if (stm->getBody()->empty())
+		return;
+
+	NBaseType voidType(nullptr, ParserBase::TT_VOID);
+	NParameterList params;
+
+	auto nullTok = *stm->getNameToken();
+	nullTok.str = "null";
+
+	CreateClassFunction(context, &nullTok, stm->getClass(), &voidType, &params, stm->getBody());
 }
 
 SFunction Builder::lookupFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params)
@@ -191,4 +264,101 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 			return;
 		}
 	}
+}
+
+void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
+{
+	int64_t val = 0;
+	set<string> names;
+	vector<pair<string,int64_t>> structure;
+
+	for (auto item : *stm->getVarList()) {
+		auto name = item->getName();
+		auto res = names.insert(name);
+		if (!res.second) {
+			auto token = static_cast<NDeclaration*>(item)->getNameToken();
+			context.addError("enum member name " + name + " already declared", token);
+			continue;
+		}
+		if (item->hasInit()) {
+			auto initExp = item->getInitExp();
+			if (!initExp->isConstant()) {
+				context.addError("enum initializer must be a constant", item->getEqToken());
+				continue;
+			}
+			auto constVal = static_cast<NConstant*>(initExp);
+			if (!constVal->isIntConst()) {
+				context.addError("enum initializer must be an int-like constant", constVal->getToken());
+				continue;
+			}
+			auto intVal = static_cast<NIntLikeConst*>(constVal);
+			val = intVal->getIntVal(context).getSExtValue();
+		}
+		structure.push_back(make_pair(name, val++));
+	}
+
+	auto etype = stm->getBaseType()? stm->getBaseType()->getType(context) : SType::getInt(context, 32);
+	if (!etype || !etype->isInteger() || etype->isBool()) {
+		context.addError("enum base type must be an integer type", stm->getLBrac());
+		return;
+	}
+
+	SUserType::createEnum(context, stm->getName(), structure, etype);
+}
+
+void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
+{
+	auto realType = stm->getType()->getType(context);
+	if (!realType) {
+		return;
+	} else if (realType->isAuto()) {
+		auto token = static_cast<NNamedType*>(stm->getType())->getToken();
+		context.addError("can not create alias to auto type", token);
+		return;
+	}
+
+	SAliasType::createAlias(context, stm->getName(), realType);
+}
+
+void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm)
+{
+	if (stm->getInitExp() && !stm->getInitExp()->isConstant()) {
+		context.addError("global variables only support constant value initializer", stm->getEqToken());
+		return;
+	}
+	auto initValue = stm->getInitExp()? stm->getInitExp()->genValue(context) : RValue();
+	auto varType = stm->getType()->getType(context);
+
+	if (!varType) {
+		return;
+	} else if (varType->isAuto()) {
+		if (!stm->getInitExp()) { // auto type requires initialization
+			auto token = static_cast<NNamedType*>(stm->getType())->getToken();
+			context.addError("auto variable type requires initialization", token);
+			return;
+		} else if (!initValue) {
+			return;
+		}
+		varType = initValue.stype();
+	} else if (!SType::validate(context, stm->getNameToken(), varType)) {
+		return;
+	}
+
+	if (initValue) {
+		if (initValue.isNullPtr()) {
+			Inst::CastTo(context, stm->getEqToken(), initValue, varType);
+		} else if (varType != initValue.stype()) {
+			context.addError("global variable initialization requires exact type matching", stm->getEqToken());
+			return;
+		}
+	}
+
+	auto name = stm->getName();
+	if (context.loadSymbolCurr(name)) {
+		context.addError("variable " + name + " already defined", stm->getNameToken());
+		return;
+	}
+
+	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, (Constant*) initValue.value(), name);
+	context.storeGlobalSymbol({var, varType}, name);
 }
