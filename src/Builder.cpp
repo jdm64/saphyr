@@ -104,7 +104,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 {
 	NDataTypeList typeList(false);
 	for (auto item : *params) {
-		typeList.add(item->getTypeNode());
+		typeList.add(item->getType());
 	}
 	return getFuncType(context, name, rtype, &typeList);
 }

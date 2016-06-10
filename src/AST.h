@@ -214,6 +214,11 @@ public:
 	: NIntLikeConst(token), bvalue(value) {}
 
 	APSInt getIntVal(CodeContext& context);
+
+	bool getValue() const
+	{
+		return bvalue;
+	}
 };
 
 class NCharConst : public NIntLikeConst
@@ -240,6 +245,11 @@ public:
 	}
 
 	APSInt getIntVal(CodeContext& context);
+
+	int getBase() const
+	{
+		return base;
+	}
 };
 
 class NFloatConst : public NConstant
@@ -320,6 +330,11 @@ public:
 	: NNamedType(token), type(type) {}
 
 	SType* getType(CodeContext& context);
+
+	int getType() const
+	{
+		return type;
+	}
 };
 
 class NArrayType : public NDataType
@@ -332,6 +347,16 @@ public:
 	: baseType(baseType), size(size) {}
 
 	SType* getType(CodeContext& context);
+
+	NDataType* getBaseType() const
+	{
+		return baseType;
+	}
+
+	NIntConst* getSize() const
+	{
+		return size;
+	}
 
 	~NArrayType()
 	{
@@ -351,6 +376,21 @@ public:
 	: baseType(baseType), size(size), vecToken(vecToken) {}
 
 	SType* getType(CodeContext& context);
+
+	NIntConst* getSize() const
+	{
+		return size;
+	}
+
+	NDataType* getBaseType() const
+	{
+		return baseType;
+	}
+
+	Token* getToken() const
+	{
+		return vecToken;
+	}
 
 	~NVecType()
 	{
@@ -378,6 +418,11 @@ public:
 
 	SType* getType(CodeContext& context);
 
+	NDataType* getBaseType() const
+	{
+		return baseType;
+	}
+
 	~NPointerType()
 	{
 		delete baseType;
@@ -395,6 +440,21 @@ public:
 	: returnType(returnType), params(params), atTok(atTok) {}
 
 	SType* getType(CodeContext& context);
+
+	Token* getToken() const
+	{
+		return atTok;
+	}
+
+	NDataType* getReturnType() const
+	{
+		return returnType;
+	}
+
+	NDataTypeList* getParams() const
+	{
+		return params;
+	}
 
 	~NFuncPointerType()
 	{
@@ -419,6 +479,11 @@ public:
 	NVariableDecl(Token* name, NExpressionList* initList)
 	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr), eqToken(nullptr) {}
 
+	NDataType* getType() const
+	{
+		return type;
+	}
+
 	// NOTE: must be called before genCode()
 	void setDataType(NDataType* qtype)
 	{
@@ -433,6 +498,11 @@ public:
 	NExpression* getInitExp() const
 	{
 		return initExp;
+	}
+
+	NExpressionList* getInitList() const
+	{
+		return initList;
 	}
 
 	Token* getEqToken() const
@@ -496,6 +566,11 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
+	Token* getToken() const
+	{
+		return name;
+	}
+
 	const string& getName() const
 	{
 		return name->str;
@@ -524,6 +599,21 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
+	NExpression* getIndex() const
+	{
+		return index;
+	}
+
+	Token* getLBrack() const
+	{
+		return brackTok;
+	}
+
+	NVariable* getArrayVar() const
+	{
+		return arrVar;
+	}
+
 	const string& getName() const
 	{
 		return arrVar->getName();
@@ -548,6 +638,21 @@ public:
 	: baseVar(baseVar), memberName(memberName), dotToken(dotToken) {}
 
 	RValue loadVar(CodeContext& context);
+
+	NVariable* getBaseVar() const
+	{
+		return baseVar;
+	}
+
+	Token* getDotToken() const
+	{
+		return dotToken;
+	}
+
+	Token* getMemberToken() const
+	{
+		return memberName;
+	}
 
 	const string& getName() const
 	{
@@ -604,6 +709,16 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
+	NVariable* getVar() const
+	{
+		return derefVar;
+	}
+
+	Token* getAtToken() const
+	{
+		return atTok;
+	}
+
 	const string& getName() const
 	{
 		return derefVar->getName();
@@ -631,6 +746,11 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
+	NVariable* getVar() const
+	{
+		return addVar;
+	}
+
 	const string& getName() const
 	{
 		return addVar->getName();
@@ -657,12 +777,17 @@ public:
 		arg = argument;
 	}
 
+	RValue getArg() const
+	{
+		return arg;
+	}
+
 	SType* getType(CodeContext& context)
 	{
 		return type->getType(context);
 	}
 
-	NDataType* getTypeNode() const
+	NDataType* getType() const
 	{
 		return type;
 	}
@@ -718,6 +843,11 @@ public:
 
 	void genCode(CodeContext& context);
 
+	NDataType* getType() const
+	{
+		return type;
+	}
+
 	~NAliasDeclaration()
 	{
 		delete type;
@@ -739,6 +869,16 @@ public:
 
 	void genCode(CodeContext& context);
 
+	CreateType getType() const
+	{
+		return ctype;
+	}
+
+	NVariableDeclGroupList* getVars() const
+	{
+		return list;
+	}
+
 	~NStructDeclaration()
 	{
 		delete list;
@@ -756,6 +896,21 @@ public:
 	: NDeclaration(name), variables(variables), lBrac(lBrac), baseType(baseType) {}
 
 	void genCode(CodeContext& context);
+
+	NVariableDeclList* getVarList() const
+	{
+		return variables;
+	}
+
+	NDataType* getBaseType() const
+	{
+		return baseType;
+	}
+
+	Token* getLBrac() const
+	{
+		return lBrac;
+	}
 
 	~NEnumDeclaration()
 	{
@@ -777,6 +932,21 @@ public:
 	: NDeclaration(name), rtype(rtype), params(params), body(body) {}
 
 	void genCode(CodeContext& context) final;
+
+	NDataType* getRType() const
+	{
+		return rtype;
+	}
+
+	NParameterList* getParams() const
+	{
+		return params;
+	}
+
+	NStatementList* getBody() const
+	{
+		return body;
+	}
 
 	~NFunctionDeclaration()
 	{
@@ -805,6 +975,11 @@ public:
 		theClass = cl;
 	}
 
+	NClassDeclaration* getClass() const
+	{
+		return theClass;
+	}
+
 	virtual MemberType memberType() const = 0;
 };
 typedef NodeList<NClassMember> NClassMemberList;
@@ -821,6 +996,11 @@ public:
 	Token* getNameToken() const
 	{
 		return name;
+	}
+
+	NExpressionList* getExp() const
+	{
+		return expression;
 	}
 
 	void genCode(CodeContext& context);
@@ -841,6 +1021,11 @@ public:
 
 	void genCode(CodeContext& context);
 
+	NClassMemberList* getList() const
+	{
+		return list;
+	}
+
 	~NClassDeclaration()
 	{
 		delete list;
@@ -860,6 +1045,11 @@ public:
 	MemberType memberType() const
 	{
 		return MemberType::STRUCT;
+	}
+
+	NVariableDeclGroupList* getVarList() const
+	{
+		return list;
 	}
 
 	~NClassStructDecl()
@@ -883,6 +1073,21 @@ public:
 	MemberType memberType() const
 	{
 		return MemberType::FUNCTION;
+	}
+
+	NParameterList* getParams() const
+	{
+		return params;
+	}
+
+	NDataType* getRType() const
+	{
+		return rtype;
+	}
+
+	NStatementList* getBody() const
+	{
+		return body;
 	}
 
 	~NClassFunctionDecl()
@@ -910,6 +1115,21 @@ public:
 		return MemberType::CONSTRUCTOR;
 	}
 
+	NParameterList* getParams() const
+	{
+		return params;
+	}
+
+	NInitializerList* getInitList() const
+	{
+		return initList;
+	}
+
+	NStatementList* getBody() const
+	{
+		return body;
+	}
+
 	~NClassConstructor()
 	{
 		delete params;
@@ -933,6 +1153,11 @@ public:
 		return MemberType::DESTRUCTOR;
 	}
 
+	NStatementList* getBody() const
+	{
+		return body;
+	}
+
 	~NClassDestructor()
 	{
 		delete body;
@@ -948,6 +1173,16 @@ protected:
 public:
 	NConditionStmt(NExpression* condition, NStatementList* body)
 	: condition(condition), body(body) {}
+
+	NExpression* getCond() const
+	{
+		return condition;
+	}
+
+	NStatementList* getBody() const
+	{
+		return body;
+	}
 
 	~NConditionStmt()
 	{
@@ -976,6 +1211,26 @@ public:
 	: NConditionStmt(condition, body), lparen(lparen), isDoWhile(isDoWhile), isUntil(isUntil) {}
 
 	void genCode(CodeContext& context);
+
+	Token* getLParen() const
+	{
+		return lparen;
+	}
+
+	bool doWhile() const
+	{
+		return isDoWhile;
+	}
+
+	bool until() const
+	{
+		return isUntil;
+	}
+
+	~NWhileStatement()
+	{
+		delete lparen;
+	}
 };
 
 class NSwitchCase : public NStatement
@@ -991,6 +1246,16 @@ public:
 	void genCode(CodeContext& context)
 	{
 		body->genCode(context);
+	}
+
+	NIntConst* getValue() const
+	{
+		return value;
+	}
+
+	NStatementList* getBody() const
+	{
+		return body;
 	}
 
 	Token* getToken() const
@@ -1034,6 +1299,21 @@ public:
 
 	void genCode(CodeContext& context);
 
+	Token* getLParen() const
+	{
+		return lparen;
+	}
+
+	NExpression* getValue() const
+	{
+		return value;
+	}
+
+	NSwitchCaseList* getCases() const
+	{
+		return cases;
+	}
+
 	~NSwitchStatement()
 	{
 		delete value;
@@ -1054,6 +1334,21 @@ public:
 
 	void genCode(CodeContext& context);
 
+	NStatementList* getPreStm() const
+	{
+		return preStm;
+	}
+
+	NExpressionList* getPostExp() const
+	{
+		return postExp;
+	}
+
+	Token* getSemiCol2() const
+	{
+		return semiCol2;
+	}
+
 	~NForStatement()
 	{
 		delete preStm;
@@ -1072,6 +1367,16 @@ public:
 	: NConditionStmt(condition, ifBody), elseBody(elseBody), lparen(lparen) {}
 
 	void genCode(CodeContext& context);
+
+	Token* getToken() const
+	{
+		return lparen;
+	}
+
+	NStatementList* getElseBody() const
+	{
+		return elseBody;
+	}
 
 	~NIfStatement()
 	{
@@ -1108,6 +1413,16 @@ public:
 	: value(value), retToken(retToken) {}
 
 	void genCode(CodeContext& context);
+
+	NExpression* getValue() const
+	{
+		return value;
+	}
+
+	Token* getToken() const
+	{
+		return retToken;
+	}
 
 	~NReturnStatement()
 	{
@@ -1154,6 +1469,21 @@ public:
 
 	void genCode(CodeContext& context);
 
+	Token* getToken() const
+	{
+		return token;
+	}
+
+	int getType() const
+	{
+		return type;
+	}
+
+	NIntConst* getLevel() const
+	{
+		return level;
+	}
+
 	~NLoopBranch()
 	{
 		delete token;
@@ -1171,6 +1501,16 @@ public:
 	: variable(variable), token(token) {}
 
 	void genCode(CodeContext& context);
+
+	NVariable* getVar() const
+	{
+		return variable;
+	}
+
+	Token* getToken() const
+	{
+		return token;
+	}
 
 	~NDeleteStatement()
 	{
@@ -1190,6 +1530,16 @@ public:
 
 	void genCode(CodeContext& context);
 
+	NVariable* getVar() const
+	{
+		return baseVar;
+	}
+
+	Token* getToken() const
+	{
+		return thisToken;
+	}
+
 	~NDestructorCall()
 	{
 		delete baseVar;
@@ -1205,6 +1555,16 @@ protected:
 public:
 	NOperatorExpr(int oper, Token* opTok)
 	: oper(oper), opTok(opTok) {}
+
+	int getOp() const
+	{
+		return oper;
+	}
+
+	Token* getToken() const
+	{
+		return opTok;
+	}
 
 	~NOperatorExpr()
 	{
@@ -1222,6 +1582,16 @@ public:
 	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
 
 	RValue genValue(CodeContext& context);
+
+	NVariable* getLhs() const
+	{
+		return lhs;
+	}
+
+	NExpression* getRhs() const
+	{
+		return rhs;
+	}
 
 	~NAssignment()
 	{
@@ -1243,6 +1613,26 @@ public:
 
 	RValue genValue(CodeContext& context);
 
+	NExpression* getCondition() const
+	{
+		return condition;
+	}
+
+	NExpression* getTrueVal() const
+	{
+		return trueVal;
+	}
+
+	NExpression* getFalseVal() const
+	{
+		return falseVal;
+	}
+
+	Token* getToken() const
+	{
+		return colTok;
+	}
+
 	~NTernaryOperator()
 	{
 		delete condition;
@@ -1263,6 +1653,16 @@ public:
 
 	RValue genValue(CodeContext& context);
 
+	NDataType* getType() const
+	{
+		return type;
+	}
+
+	Token* getToken() const
+	{
+		return token;
+	}
+
 	~NNewExpression()
 	{
 		delete type;
@@ -1279,6 +1679,16 @@ protected:
 public:
 	NBinaryOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
+
+	NExpression* getLhs() const
+	{
+		return lhs;
+	}
+
+	NExpression* getRhs() const
+	{
+		return rhs;
+	}
 
 	~NBinaryOperator()
 	{
@@ -1325,8 +1735,10 @@ public:
 
 class NSizeOfOperator : public NExpression
 {
+public:
 	enum OfType { DATA, EXP, NAME };
 
+private:
 	OfType type;
 	NDataType* dtype;
 	NExpression* exp;
@@ -1344,6 +1756,31 @@ public:
 	: type(NAME), dtype(nullptr), exp(nullptr), name(name), sizeTok(sizeTok) {}
 
 	RValue genValue(CodeContext& context);
+
+	OfType getType() const
+	{
+		return type;
+	}
+
+	NExpression* getExp() const
+	{
+		return exp;
+	}
+
+	NDataType* getDataType() const
+	{
+		return dtype;
+	}
+
+	Token* getName() const
+	{
+		return name;
+	}
+
+	Token* getToken() const
+	{
+		return sizeTok;
+	}
 
 	bool isConstant() const
 	{
@@ -1367,6 +1804,11 @@ protected:
 public:
 	NUnaryOperator(int oper, Token* opToken, NExpression* unary)
 	: NOperatorExpr(oper, opToken), unary(unary) {}
+
+	NExpression* getExp() const
+	{
+		return unary;
+	}
 
 	~NUnaryOperator()
 	{
@@ -1396,6 +1838,16 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
+	Token* getToken() const
+	{
+		return name;
+	}
+
+	NExpressionList* getArguments() const
+	{
+		return arguments;
+	}
+
 	const string& getName() const
 	{
 		return name->str;
@@ -1423,6 +1875,26 @@ public:
 
 	RValue loadVar(CodeContext& context);
 
+	NVariable* getBaseVar() const
+	{
+		return baseVar;
+	}
+
+	Token* getDotToken() const
+	{
+		return dotToken;
+	}
+
+	Token* getFuncName() const
+	{
+		return funcName;
+	}
+
+	NExpressionList* getArguments() const
+	{
+		return arguments;
+	}
+
 	const string& getName() const
 	{
 		return funcName->str;
@@ -1447,6 +1919,16 @@ public:
 	: NOperatorExpr(oper, opToken), variable(variable), isPostfix(isPostfix) {}
 
 	RValue genValue(CodeContext& context);
+
+	NVariable* getVar() const
+	{
+		return variable;
+	}
+
+	bool postfix() const
+	{
+		return isPostfix;
+	}
 
 	~NIncrement()
 	{
