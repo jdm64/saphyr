@@ -20,6 +20,7 @@
 #include "CodeContext.h"
 #include "parserbase.h"
 #include "Builder.h"
+#include "CGNInt.h"
 
 #define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartDataType)] = reinterpret_cast<classPtr>(&CGNDataType::visit##ID)
 
@@ -90,7 +91,7 @@ SType* CGNDataType::visitNArrayType(NArrayType* type)
 	}
 	auto size = type->getSize();
 	if (size) {
-		auto arrSize = size->getIntVal(context).getSExtValue();
+		auto arrSize = CGNInt::run(context, size).getSExtValue();
 		if (arrSize <= 0) {
 			context.addError("Array size must be positive", size->getToken());
 			return nullptr;
@@ -104,7 +105,7 @@ SType* CGNDataType::visitNArrayType(NArrayType* type)
 SType* CGNDataType::visitNVecType(NVecType* type)
 {
 	auto size = type->getSize();
-	auto arrSize = size->getIntVal(context).getSExtValue();
+	auto arrSize = CGNInt::run(context, size).getSExtValue();
 	if (arrSize <= 0) {
 		context.addError("vec size must be greater than 0", size->getToken());
 		return nullptr;

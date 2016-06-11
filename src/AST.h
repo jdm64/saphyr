@@ -233,8 +233,6 @@ public:
 
 	RValue genValue(CodeContext& context) final;
 
-	virtual APSInt getIntVal(CodeContext& context) = 0;
-
 	bool isIntConst() const
 	{
 		return true;
@@ -248,8 +246,6 @@ class NBoolConst : public NIntLikeConst
 public:
 	NBoolConst(Token* token, bool value)
 	: NIntLikeConst(token), bvalue(value) {}
-
-	APSInt getIntVal(CodeContext& context);
 
 	bool getValue() const
 	{
@@ -268,8 +264,6 @@ public:
 		value->str = value->str.substr(1, value->str.length() - 2);
 	}
 
-	APSInt getIntVal(CodeContext& context);
-
 	ADD_ID(NCharConst)
 };
 
@@ -283,8 +277,6 @@ public:
 	{
 		remove(value->str);
 	}
-
-	APSInt getIntVal(CodeContext& context);
 
 	int getBase() const
 	{

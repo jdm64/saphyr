@@ -21,6 +21,7 @@
 #include "Instructions.h"
 #include "Builder.h"
 #include "CGNDataType.h"
+#include "CGNInt.h"
 
 const string NExprVariable::STR_TMP_EXP = "temp expression";
 
@@ -349,7 +350,7 @@ void NWhileStatement::genCode(CodeContext& context)
 
 ConstantInt* NSwitchCase::getValue(CodeContext& context)
 {
-	return ConstantInt::get(context, value->getIntVal(context));
+	return ConstantInt::get(context, CGNInt::run(context, value));
 }
 
 void NSwitchStatement::genCode(CodeContext& context)
@@ -490,7 +491,7 @@ void NLoopBranch::genCode(CodeContext& context)
 {
 	BasicBlock* block;
 	string typeName;
-	auto brLevel = level? level->getIntVal(context).getSExtValue() : 1;
+	auto brLevel = level? CGNInt::run(context, level).getSExtValue() : 1;
 
 	switch (type) {
 	case ParserBase::TT_CONTINUE:
@@ -876,14 +877,9 @@ RValue NIncrement::genValue(CodeContext& context)
 	return isPostfix? varVal : RValue(result, type);
 }
 
-APSInt NBoolConst::getIntVal(CodeContext& context)
-{
-	return APSInt(APInt(1, bvalue));
-}
-
 RValue NIntLikeConst::genValue(CodeContext& context)
 {
-	return RValue::getValue(context, getIntVal(context));
+	return RValue::getValue(context, CGNInt::run(context, this));
 }
 
 RValue NNullPointer::genValue(CodeContext& context)
@@ -912,31 +908,6 @@ RValue NStringLiteral::genValue(CodeContext& context)
 	return RValue(strPtr, arrTyPtr);
 }
 
-APSInt NIntConst::getIntVal(CodeContext& context)
-{
-	static const map<string, SType*> suffix = {
-		{"i8", SType::getInt(context, 8)},
-		{"u8", SType::getInt(context, 8, true)},
-		{"i16", SType::getInt(context, 16)},
-		{"u16", SType::getInt(context, 16, true)},
-		{"i32", SType::getInt(context, 32)},
-		{"u32", SType::getInt(context, 32, true)},
-		{"i64", SType::getInt(context, 64)},
-		{"u64", SType::getInt(context, 64, true)} };
-	auto type = SType::getInt(context, 32); // default is int32
-
-	auto data = NConstant::getValueAndSuffix(getStrVal());
-	if (data.size() > 1) {
-		auto suf = suffix.find(data[1]);
-		if (suf == suffix.end())
-			context.addError("invalid integer suffix: " + data[1], value);
-		else
-			type = suf->second;
-	}
-	string intVal(data[0], base == 10? 0:2);
-	return APSInt(APInt(type->size(), intVal, base), type->isUnsigned());
-}
-
 RValue NFloatConst::genValue(CodeContext& context)
 {
 	static const map<string, SType*> suffix = {
@@ -954,25 +925,4 @@ RValue NFloatConst::genValue(CodeContext& context)
 	}
 	auto fp = ConstantFP::get(*type, data[0]);
 	return RValue(fp, type);
-}
-
-APSInt NCharConst::getIntVal(CodeContext& context)
-{
-	auto strVal = getStrVal();
-	char cVal = strVal.at(0);
-	if (cVal == '\\' && strVal.length() > 1) {
-		switch (strVal.at(1)) {
-		case '0': cVal = '\0'; break;
-		case 'a': cVal = '\a'; break;
-		case 'b': cVal = '\b'; break;
-		case 'e': cVal =   27; break;
-		case 'f': cVal = '\f'; break;
-		case 'n': cVal = '\n'; break;
-		case 'r': cVal = '\r'; break;
-		case 't': cVal = '\t'; break;
-		case 'v': cVal = '\v'; break;
-		default: cVal = strVal.at(1);
-		}
-	}
-	return APSInt(APInt(8, cVal, true));
 }

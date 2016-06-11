@@ -22,6 +22,7 @@
 #include "CodeContext.h"
 #include "Instructions.h"
 #include "CGNDataType.h"
+#include "CGNInt.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
@@ -293,7 +294,7 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 				continue;
 			}
 			auto intVal = static_cast<NIntLikeConst*>(constVal);
-			val = intVal->getIntVal(context).getSExtValue();
+			val = CGNInt::run(context, intVal).getSExtValue();
 		}
 		structure.push_back(make_pair(name, val++));
 	}
