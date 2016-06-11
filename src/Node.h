@@ -21,10 +21,88 @@
 
 using namespace std;
 
+enum class NodeId
+{
+	// datatypes
+	StartDataType,
+	NArrayType,
+	NBaseType,
+	NFuncPointerType,
+	NPointerType,
+	NUserType,
+	NVecType,
+	EndDataType,
+
+	// expressions
+	StartExpression,
+	NAddressOf,
+	NArrayVariable,
+	NAssignment,
+	NBaseVariable,
+	NBinaryMathOperator,
+	NBoolConst,
+	NCharConst,
+	NCompareOperator,
+	NDereference,
+	NExprVariable,
+	NFloatConst,
+	NFunctionCall,
+	NIncrement,
+	NIntConst,
+	NLogicalOperator,
+	NMemberFunctionCall,
+	NMemberVariable,
+	NNewExpression,
+	NNullCoalescing,
+	NNullPointer,
+	NSizeOfOperator,
+	NStringLiteral,
+	NTernaryOperator,
+	NUnaryMathOperator,
+	EndExpression,
+
+	// statements
+	StartStatement,
+	NAliasDeclaration,
+	NClassConstructor,
+	NClassDeclaration,
+	NClassDestructor,
+	NClassFunctionDecl,
+	NClassStructDecl,
+	NConditionStmt,
+	NDeleteStatement,
+	NDestructorCall,
+	NEnumDeclaration,
+	NExpressionStm,
+	NForStatement,
+	NFunctionDeclaration,
+	NGlobalVariableDecl,
+	NGotoStatement,
+	NIfStatement,
+	NLabelStatement,
+	NLoopBranch,
+	NLoopStatement,
+	NMemberInitializer,
+	NParameter,
+	NReturnStatement,
+	NStructDeclaration,
+	NSwitchCase,
+	NSwitchStatement,
+	NVariableDecl,
+	NVariableDeclGroup,
+	NWhileStatement,
+	EndStatement
+};
+
+#define NODEID_DIFF(LEFT, RIGHT) static_cast<int>(LEFT) - static_cast<int>(RIGHT)
+#define ADD_ID(CLASS) NodeId id() { return NodeId::CLASS; }
+
 class Node
 {
 public:
 	virtual ~Node() {};
+
+	virtual NodeId id() = 0;
 };
 
 template<typename T>

@@ -109,6 +109,8 @@ public:
 	{
 		delete exp;
 	}
+
+	ADD_ID(NExpressionStm)
 };
 
 class NConstant : public NExpression
@@ -205,6 +207,8 @@ public:
 	: NConstant(token) {}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NNullPointer)
 };
 
 class NStringLiteral : public NConstant
@@ -217,6 +221,8 @@ public:
 	}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NStringLiteral)
 };
 
 class NIntLikeConst : public NConstant
@@ -249,6 +255,8 @@ public:
 	{
 		return bvalue;
 	}
+
+	ADD_ID(NBoolConst)
 };
 
 class NCharConst : public NIntLikeConst
@@ -261,6 +269,8 @@ public:
 	}
 
 	APSInt getIntVal(CodeContext& context);
+
+	ADD_ID(NCharConst)
 };
 
 class NIntConst : public NIntLikeConst
@@ -280,6 +290,8 @@ public:
 	{
 		return base;
 	}
+
+	ADD_ID(NIntConst)
 };
 
 class NFloatConst : public NConstant
@@ -292,6 +304,8 @@ public:
 	}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NFloatConst)
 };
 
 class NDeclaration : public NStatement
@@ -365,6 +379,8 @@ public:
 	{
 		return type;
 	}
+
+	ADD_ID(NBaseType)
 };
 
 class NArrayType : public NDataType
@@ -393,6 +409,8 @@ public:
 		delete baseType;
 		delete size;
 	}
+
+	ADD_ID(NArrayType)
 };
 
 class NVecType : public NDataType
@@ -427,6 +445,8 @@ public:
 		delete baseType;
 		delete size;
 	}
+
+	ADD_ID(NVecType)
 };
 
 class NUserType : public NNamedType
@@ -436,6 +456,8 @@ public:
 	: NNamedType(name) {}
 
 	SType* getType(CodeContext& context);
+
+	ADD_ID(NUserType)
 };
 
 class NPointerType : public NDataType
@@ -457,6 +479,8 @@ public:
 	{
 		delete baseType;
 	}
+
+	ADD_ID(NPointerType)
 };
 
 class NFuncPointerType : public NDataType
@@ -492,6 +516,8 @@ public:
 		delete params;
 		delete atTok;
 	}
+
+	ADD_ID(NFuncPointerType)
 };
 
 class NVariableDecl : public NDeclaration
@@ -548,6 +574,8 @@ public:
 		delete eqToken;
 		delete initList;
 	}
+
+	ADD_ID(NVariableDecl)
 };
 
 class NVariableDeclList : public NodeList<NVariableDecl>
@@ -569,6 +597,8 @@ public:
 	: NVariableDecl(name, eqToken, initExp) {}
 
 	void genCode(CodeContext& context);
+
+	ADD_ID(NGlobalVariableDecl)
 };
 
 class NVariable : public NExpression
@@ -615,6 +645,8 @@ public:
 	{
 		delete name;
 	}
+
+	ADD_ID(NBaseVariable)
 };
 
 class NArrayVariable : public NVariable
@@ -655,6 +687,8 @@ public:
 		delete index;
 		delete brackTok;
 	}
+
+	ADD_ID(NArrayVariable)
 };
 
 class NMemberVariable : public NVariable
@@ -700,6 +734,8 @@ public:
 		delete memberName;
 		delete dotToken;
 	}
+
+	ADD_ID(NMemberVariable)
 };
 
 class NExprVariable : public NVariable
@@ -726,6 +762,8 @@ public:
 	{
 		delete expr;
 	}
+
+	ADD_ID(NExprVariable)
 };
 
 class NDereference : public NVariable
@@ -759,6 +797,8 @@ public:
 		delete derefVar;
 		delete atTok;
 	}
+
+	ADD_ID(NDereference)
 };
 
 class NAddressOf : public NVariable
@@ -790,6 +830,8 @@ public:
 	{
 		delete addVar;
 	}
+
+	ADD_ID(NAddressOf)
 };
 
 class NParameter : public NDeclaration
@@ -828,6 +870,8 @@ public:
 	{
 		delete type;
 	}
+
+	ADD_ID(NParameter)
 };
 typedef NodeList<NParameter> NParameterList;
 
@@ -860,6 +904,8 @@ public:
 		delete variables;
 		delete type;
 	}
+
+	ADD_ID(NVariableDeclGroup)
 };
 typedef NodeList<NVariableDeclGroup> NVariableDeclGroupList;
 
@@ -882,6 +928,8 @@ public:
 	{
 		delete type;
 	}
+
+	ADD_ID(NAliasDeclaration)
 };
 
 class NStructDeclaration : public NDeclaration
@@ -913,6 +961,8 @@ public:
 	{
 		delete list;
 	}
+
+	ADD_ID(NStructDeclaration)
 };
 
 class NEnumDeclaration : public NDeclaration
@@ -948,6 +998,8 @@ public:
 		delete lBrac;
 		delete baseType;
 	}
+
+	ADD_ID(NEnumDeclaration)
 };
 
 class NFunctionDeclaration : public NDeclaration
@@ -984,6 +1036,8 @@ public:
 		delete params;
 		delete body;
 	}
+
+	ADD_ID(NFunctionDeclaration)
 };
 
 // forward declaration
@@ -1034,6 +1088,8 @@ public:
 	}
 
 	void genCode(CodeContext& context);
+
+	ADD_ID(NMemberInitializer)
 };
 typedef NodeList<NMemberInitializer> NInitializerList;
 
@@ -1060,6 +1116,8 @@ public:
 	{
 		delete list;
 	}
+
+	ADD_ID(NClassDeclaration)
 };
 
 class NClassStructDecl : public NClassMember
@@ -1086,6 +1144,8 @@ public:
 	{
 		delete list;
 	}
+
+	ADD_ID(NClassStructDecl)
 };
 
 class NClassFunctionDecl : public NClassMember
@@ -1126,6 +1186,8 @@ public:
 		delete params;
 		delete body;
 	}
+
+	ADD_ID(NClassFunctionDecl)
 };
 
 class NClassConstructor : public NClassMember
@@ -1171,6 +1233,8 @@ public:
 		delete initList;
 		delete body;
 	}
+
+	ADD_ID(NClassConstructor)
 };
 
 class NClassDestructor : public NClassMember
@@ -1197,6 +1261,8 @@ public:
 	{
 		delete body;
 	}
+
+	ADD_ID(NClassDestructor)
 };
 
 class NConditionStmt : public NStatement
@@ -1224,6 +1290,8 @@ public:
 		delete condition;
 		delete body;
 	}
+
+	ADD_ID(NConditionStmt)
 };
 
 class NLoopStatement : public NConditionStmt
@@ -1233,6 +1301,8 @@ public:
 	: NConditionStmt(nullptr, body) {}
 
 	void genCode(CodeContext& context);
+
+	ADD_ID(NLoopStatement)
 };
 
 class NWhileStatement : public NConditionStmt
@@ -1266,6 +1336,8 @@ public:
 	{
 		delete lparen;
 	}
+
+	ADD_ID(NWhileStatement)
 };
 
 class NSwitchCase : public NStatement
@@ -1319,6 +1391,8 @@ public:
 		delete body;
 		delete token;
 	}
+
+	ADD_ID(NSwitchCase)
 };
 typedef NodeList<NSwitchCase> NSwitchCaseList;
 
@@ -1355,6 +1429,8 @@ public:
 		delete cases;
 		delete lparen;
 	}
+
+	ADD_ID(NSwitchStatement)
 };
 
 class NForStatement : public NConditionStmt
@@ -1390,6 +1466,8 @@ public:
 		delete postExp;
 		delete semiCol2;
 	}
+
+	ADD_ID(NForStatement)
 };
 
 class NIfStatement : public NConditionStmt
@@ -1418,6 +1496,8 @@ public:
 		delete elseBody;
 		delete lparen;
 	}
+
+	ADD_ID(NIfStatement)
 };
 
 class NLabelStatement : public NDeclaration
@@ -1427,6 +1507,8 @@ public:
 	: NDeclaration(name) {}
 
 	void genCode(CodeContext& context);
+
+	ADD_ID(NLabelStatement)
 };
 
 class NJumpStatement : public NStatement
@@ -1464,6 +1546,8 @@ public:
 		delete value;
 		delete retToken;
 	}
+
+	ADD_ID(NReturnStatement)
 };
 
 class NGotoStatement : public NJumpStatement
@@ -1490,6 +1574,8 @@ public:
 	{
 		delete name;
 	}
+
+	ADD_ID(NGotoStatement)
 };
 
 class NLoopBranch : public NJumpStatement
@@ -1524,6 +1610,8 @@ public:
 		delete token;
 		delete level;
 	}
+
+	ADD_ID(NLoopBranch)
 };
 
 class NDeleteStatement : public NStatement
@@ -1552,6 +1640,8 @@ public:
 		delete variable;
 		delete token;
 	}
+
+	ADD_ID(NDeleteStatement)
 };
 
 class NDestructorCall : public NStatement
@@ -1579,6 +1669,8 @@ public:
 	{
 		delete baseVar;
 	}
+
+	ADD_ID(NDestructorCall)
 };
 
 class NOperatorExpr : public NExpression
@@ -1633,6 +1725,8 @@ public:
 		delete lhs;
 		delete rhs;
 	}
+
+	ADD_ID(NAssignment)
 };
 
 class NTernaryOperator : public NExpression
@@ -1675,6 +1769,8 @@ public:
 		delete falseVal;
 		delete colTok;
 	}
+
+	ADD_ID(NTernaryOperator)
 };
 
 class NNewExpression : public NExpression
@@ -1703,6 +1799,8 @@ public:
 		delete type;
 		delete token;
 	}
+
+	ADD_ID(NNewExpression)
 };
 
 class NBinaryOperator : public NOperatorExpr
@@ -1739,6 +1837,8 @@ public:
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NLogicalOperator)
 };
 
 class NCompareOperator : public NBinaryOperator
@@ -1748,6 +1848,8 @@ public:
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NCompareOperator)
 };
 
 class NBinaryMathOperator : public NBinaryOperator
@@ -1757,6 +1859,8 @@ public:
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NBinaryMathOperator)
 };
 
 class NNullCoalescing : public NBinaryOperator
@@ -1766,6 +1870,8 @@ public:
 	: NBinaryOperator(0, opToken, lhs, rhs) {}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NNullCoalescing)
 };
 
 class NSizeOfOperator : public NExpression
@@ -1829,6 +1935,8 @@ public:
 		delete name;
 		delete sizeTok;
 	}
+
+	ADD_ID(NSizeOfOperator)
 };
 
 class NUnaryOperator : public NOperatorExpr
@@ -1858,6 +1966,8 @@ public:
 	: NUnaryOperator(oper, opToken, unaryExp) {}
 
 	RValue genValue(CodeContext& context);
+
+	ADD_ID(NUnaryMathOperator)
 };
 
 class NFunctionCall : public NVariable
@@ -1893,6 +2003,8 @@ public:
 		delete name;
 		delete arguments;
 	}
+
+	ADD_ID(NFunctionCall)
 };
 
 class NMemberFunctionCall : public NVariable
@@ -1942,6 +2054,8 @@ public:
 		delete funcName;
 		delete arguments;
 	}
+
+	ADD_ID(NMemberFunctionCall)
 };
 
 class NIncrement : public NOperatorExpr
@@ -1969,6 +2083,8 @@ public:
 	{
 		delete variable;
 	}
+
+	ADD_ID(NIncrement)
 };
 
 #endif
