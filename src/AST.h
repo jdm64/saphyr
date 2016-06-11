@@ -50,13 +50,9 @@ public:
 	}
 };
 
-class NExpression : public NStatement
+class NExpression : public Node
 {
 public:
-	void genCode(CodeContext& context) final
-	{
-		genValue(context);
-	};
 
 	virtual bool isConstant() const
 	{
@@ -78,6 +74,40 @@ public:
 	{
 		for (auto item : list)
 			item->genValue(context);
+	}
+};
+
+class NExpressionStm : public NStatement
+{
+	NExpression* exp;
+
+public:
+	NExpressionStm(NExpression* exp)
+	: exp(exp) {}
+
+	static NStatementList* convert(NExpressionList* other)
+	{
+		auto ret = new NStatementList;
+		for (auto item : *other)
+			ret->add(new NExpressionStm(item));
+		other->setDelete(false);
+		delete other;
+		return ret;
+	}
+
+	void genCode(CodeContext& context)
+	{
+		exp->genValue(context);
+	}
+
+	NExpression* getExp() const
+	{
+		return exp;
+	}
+
+	~NExpressionStm()
+	{
+		delete exp;
 	}
 };
 

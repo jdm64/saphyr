@@ -260,7 +260,7 @@ statement
 	| condition_statement
 	| expression ';'
 	{
-		$$ = $1;
+		$$ = new NExpressionStm($1);
 	}
 	| TT_SWITCH '(' expression ')' '{' switch_case_list '}'
 	{
@@ -541,7 +541,7 @@ expression_or_empty
 declaration_or_expression_list
 	: expression_list
 	{
-		$$ = $1->move<NStatementList>();
+		$$ = NExpressionStm::convert($1);
 	}
 	| variable_declarations
 	{
