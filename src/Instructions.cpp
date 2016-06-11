@@ -17,6 +17,7 @@
 #include "Instructions.h"
 #include "parserbase.h"
 #include "CGNDataType.h"
+#include "CGNVariable.h"
 
 void Inst::castError(CodeContext& context, SType* from, SType* to, Token* token)
 {
@@ -412,7 +413,7 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 
 RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments)
 {
-	auto baseVal = baseVar->loadVar(context);
+	auto baseVal = CGNVariable::run(context, baseVar);
 	if (!baseVal)
 		return RValue();
 
@@ -489,7 +490,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
 	auto baseVar = new NBaseVariable(new Token("this"));
 	auto memName = new Token(name);
 	unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName, nullptr));
-	return classVar->loadVar(context);
+	return CGNVariable::run(context, &*classVar);
 }
 
 RValue Inst::LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName)

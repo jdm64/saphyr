@@ -580,14 +580,9 @@ public:
 class NVariable : public NExpression
 {
 public:
-	RValue genValue(CodeContext& context)
-	{
-		return genValue(context, loadVar(context));
-	}
+	RValue genValue(CodeContext& context);
 
 	virtual RValue genValue(CodeContext& context, RValue var);
-
-	virtual RValue loadVar(CodeContext& context) = 0;
 
 	virtual const string& getName() const = 0;
 };
@@ -599,8 +594,6 @@ class NBaseVariable : public NVariable
 public:
 	explicit NBaseVariable(Token* name)
 	: name(name) {}
-
-	RValue loadVar(CodeContext& context);
 
 	Token* getToken() const
 	{
@@ -634,8 +627,6 @@ class NArrayVariable : public NVariable
 public:
 	NArrayVariable(NVariable* arrVar, Token* brackTok, NExpression* index)
 	: arrVar(arrVar), index(index), brackTok(brackTok) {}
-
-	RValue loadVar(CodeContext& context);
 
 	NExpression* getIndex() const
 	{
@@ -677,8 +668,6 @@ public:
 	NMemberVariable(NVariable* baseVar, Token* memberName, Token* dotToken)
 	: baseVar(baseVar), memberName(memberName), dotToken(dotToken) {}
 
-	RValue loadVar(CodeContext& context);
-
 	NVariable* getBaseVar() const
 	{
 		return baseVar;
@@ -716,22 +705,16 @@ public:
 
 class NExprVariable : public NVariable
 {
-	const static string STR_TMP_EXP;
-
 	NExpression* expr;
 
 public:
 	explicit NExprVariable(NExpression* expr)
 	: expr(expr) {}
 
-	RValue loadVar(CodeContext& context)
-	{
-		return expr->genValue(context);
-	}
-
 	const string& getName() const
 	{
-		return STR_TMP_EXP;
+		const static string name = "temp expression";
+		return name;
 	}
 
 	~NExprVariable()
@@ -750,8 +733,6 @@ class NDereference : public NVariable
 public:
 	NDereference(NVariable* derefVar, Token* atTok)
 	: derefVar(derefVar), atTok(atTok) {}
-
-	RValue loadVar(CodeContext& context);
 
 	NVariable* getVar() const
 	{
@@ -789,8 +770,6 @@ public:
 	{
 		return var? RValue(var, SType::getPointer(context, var.stype())) : var;
 	}
-
-	RValue loadVar(CodeContext& context);
 
 	NVariable* getVar() const
 	{
@@ -1952,8 +1931,6 @@ public:
 
 	RValue genValue(CodeContext& context);
 
-	RValue loadVar(CodeContext& context);
-
 	Token* getToken() const
 	{
 		return name;
@@ -1990,8 +1967,6 @@ public:
 	: baseVar(baseVar), dotToken(dotToken), funcName(funcName), arguments(arguments) {}
 
 	RValue genValue(CodeContext& context);
-
-	RValue loadVar(CodeContext& context);
 
 	NVariable* getBaseVar() const
 	{

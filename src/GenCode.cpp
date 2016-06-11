@@ -22,100 +22,16 @@
 #include "Builder.h"
 #include "CGNDataType.h"
 #include "CGNInt.h"
-
-const string NExprVariable::STR_TMP_EXP = "temp expression";
+#include "CGNVariable.h"
 
 RValue NVariable::genValue(CodeContext& context, RValue var)
 {
 	return Inst::Load(context, var);
 }
 
-RValue NBaseVariable::loadVar(CodeContext& context)
+RValue NVariable::genValue(CodeContext& context)
 {
-	auto varName = getName();
-
-	// check current function
-	auto var = context.loadSymbolLocal(varName);
-	if (var)
-		return var;
-
-	// check class variables
-	auto currClass = context.getClass();
-	if (currClass) {
-		auto item = currClass->getItem(varName);
-		if (item) {
-			return Inst::LoadMemberVar(context, varName);
-		}
-	}
-
-	// check global variables
-	var = context.loadSymbolGlobal(varName);
-	if (var)
-		return var;
-
-	// check enums
-	auto userVar = SUserType::lookup(context, varName);
-	if (!userVar) {
-		context.addError("variable " + varName + " not declared", name);
-		return var;
-	}
-	return RValue(ConstantInt::getFalse(context), userVar);
-}
-
-RValue NArrayVariable::loadVar(CodeContext& context)
-{
-	auto indexVal = index->genValue(context);
-
-	if (!indexVal) {
-		return indexVal;
-	} else if (!indexVal.stype()->isNumeric()) {
-		context.addError("array index is not able to be cast to an int", brackTok);
-		return RValue();
-	}
-
-	auto var = arrVar->loadVar(context);
-	if (!var)
-		return var;
-	var = Inst::Deref(context, var, true);
-
-	if (!var.stype()->isSequence()) {
-		context.addError("variable " + getName() + " is not an array or vec", brackTok);
-		return RValue();
-	}
-	Inst::CastTo(context, brackTok, indexVal, SType::getInt(context, 64));
-
-	vector<Value*> indexes;
-	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
-	indexes.push_back(indexVal);
-
-	return Inst::GetElementPtr(context, var, indexes, var.stype()->subType());
-}
-
-RValue NMemberVariable::loadVar(CodeContext& context)
-{
-	auto var = baseVar->loadVar(context);
-	if (!var)
-		return RValue();
-
-	var = Inst::Deref(context, var, true);
-	return Inst::LoadMemberVar(context, getName(), var, dotToken, memberName);
-}
-
-RValue NDereference::loadVar(CodeContext& context)
-{
-	auto var = derefVar->loadVar(context);
-	if (!var) {
-		return var;
-	} else if (!var.stype()->isPointer()) {
-		context.addError("variable " + getName() + " can not be dereferenced", atTok);
-		return RValue();
-	}
-	return Inst::Deref(context, var);
-}
-
-RValue NAddressOf::loadVar(CodeContext& context)
-{
-	return addVar->loadVar(context);
+	return  genValue(context, CGNVariable::run(context, this));
 }
 
 void NParameter::genCode(CodeContext& context)
@@ -563,7 +479,7 @@ void NDeleteStatement::genCode(CodeContext& context)
 
 void NDestructorCall::genCode(CodeContext& context)
 {
-	auto value = baseVar->loadVar(context);
+	auto value = CGNVariable::run(context, baseVar);
 	if (!value)
 		return;
 
@@ -588,7 +504,7 @@ void NDestructorCall::genCode(CodeContext& context)
 
 RValue NAssignment::genValue(CodeContext& context)
 {
-	auto lhsVar = lhs->loadVar(context);
+	auto lhsVar = CGNVariable::run(context, lhs);
 
 	if (!lhsVar)
 		return RValue();
@@ -829,34 +745,14 @@ RValue NFunctionCall::genValue(CodeContext& context)
 	return Inst::CallFunction(context, func, name, arguments, exp_list);
 }
 
-RValue NFunctionCall::loadVar(CodeContext& context)
-{
-	auto value = genValue(context);
-	if (!value)
-		return RValue();
-	auto stackAlloc = new AllocaInst(value.type(), "", context);
-	new StoreInst(value, stackAlloc, context);
-	return RValue(stackAlloc, value.stype());
-}
-
 RValue NMemberFunctionCall::genValue(CodeContext& context)
 {
 	return Inst::CallMemberFunction(context, baseVar, funcName, arguments);
 }
 
-RValue NMemberFunctionCall::loadVar(CodeContext& context)
-{
-	auto value = genValue(context);
-	if (!value)
-		return value;
-	auto stackAlloc = new AllocaInst(value.type(), "", context);
-	new StoreInst(value, stackAlloc, context);
-	return RValue(stackAlloc, value.stype());
-}
-
 RValue NIncrement::genValue(CodeContext& context)
 {
-	auto varPtr = variable->loadVar(context);
+	auto varPtr = CGNVariable::run(context, variable);
 	auto varVal = Inst::Load(context, varPtr);
 	if (!varVal)
 		return RValue();
