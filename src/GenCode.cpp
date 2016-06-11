@@ -20,112 +20,9 @@
 #include "AST.h"
 #include "Instructions.h"
 #include "Builder.h"
+#include "CGNDataType.h"
 
 const string NExprVariable::STR_TMP_EXP = "temp expression";
-
-SType* NBaseType::getType(CodeContext& context)
-{
-	switch (type) {
-	case ParserBase::TT_VOID:
-		return SType::getVoid(context);
-	case ParserBase::TT_BOOL:
-		return SType::getBool(context);
-	case ParserBase::TT_INT8:
-		return SType::getInt(context, 8);
-	case ParserBase::TT_INT16:
-		return SType::getInt(context, 16);
-	case ParserBase::TT_INT:
-	case ParserBase::TT_INT32:
-		return SType::getInt(context, 32);
-	case ParserBase::TT_INT64:
-		return SType::getInt(context, 64);
-	case ParserBase::TT_UINT8:
-		return SType::getInt(context, 8, true);
-	case ParserBase::TT_UINT16:
-		return SType::getInt(context, 16, true);
-	case ParserBase::TT_UINT:
-	case ParserBase::TT_UINT32:
-		return SType::getInt(context, 32, true);
-	case ParserBase::TT_UINT64:
-		return SType::getInt(context, 64, true);
-	case ParserBase::TT_FLOAT:
-		return SType::getFloat(context);
-	case ParserBase::TT_DOUBLE:
-		return SType::getFloat(context, true);
-	case ParserBase::TT_AUTO:
-	default:
-		return SType::getAuto(context);
-	}
-}
-
-SType* NArrayType::getType(CodeContext& context)
-{
-	auto btype = baseType->getType(context);
-	if (!btype) {
-		return nullptr;
-	} else if (btype->isAuto()) {
-		auto token = static_cast<NNamedType*>(baseType)->getToken();
-		context.addError("can't create array of auto types", token);
-		return nullptr;
-	}
-	if (size) {
-		auto arrSize = size->getIntVal(context).getSExtValue();
-		if (arrSize <= 0) {
-			context.addError("Array size must be positive", size->getToken());
-			return nullptr;
-		}
-		return SType::getArray(context, btype, arrSize);
-	} else {
-		return SType::getArray(context, btype, 0);
-	}
-}
-
-SType* NVecType::getType(CodeContext& context)
-{
-	auto arrSize = size->getIntVal(context).getSExtValue();
-	if (arrSize <= 0) {
-		context.addError("vec size must be greater than 0", size->getToken());
-		return nullptr;
-	}
-	auto btype = baseType->getType(context);
-	if (!btype) {
-		return nullptr;
-	} else if (!btype->isNumeric() && !btype->isPointer()) {
-		context.addError("vec type only supports numeric and pointer types", vecToken);
-		return nullptr;
-	}
-	return SType::getVec(context, btype, arrSize);
-}
-
-SType* NUserType::getType(CodeContext& context)
-{
-	auto typeName = getName();
-	auto type = SUserType::lookup(context, typeName);
-	if (!type) {
-		context.addError(typeName + " type not declared", token);
-		return nullptr;
-	}
-	return type->isAlias()? type->subType() : type;
-}
-
-SType* NPointerType::getType(CodeContext& context)
-{
-	auto btype = baseType->getType(context);
-	if (!btype) {
-		return nullptr;
-	} else if (btype->isAuto()) {
-		auto token = static_cast<NNamedType*>(baseType)->getToken();
-		context.addError("can't create pointer to auto type", token);
-		return nullptr;
-	}
-	return SType::getPointer(context, btype);
-}
-
-SType* NFuncPointerType::getType(CodeContext& context)
-{
-	auto ptr = Builder::getFuncType(context, atTok, returnType, params);
-	return ptr? SType::getPointer(context, ptr) : nullptr;
-}
 
 RValue NVariable::genValue(CodeContext& context, RValue var)
 {
@@ -222,7 +119,7 @@ RValue NAddressOf::loadVar(CodeContext& context)
 
 void NParameter::genCode(CodeContext& context)
 {
-	auto stype = type->getType(context);
+	auto stype = CGNDataType::run(context, type);
 	auto stackAlloc = new AllocaInst(*stype, "", context);
 	new StoreInst(arg, stackAlloc, context);
 	context.storeLocalSymbol({stackAlloc, stype}, getName());
@@ -231,7 +128,7 @@ void NParameter::genCode(CodeContext& context)
 void NVariableDecl::genCode(CodeContext& context)
 {
 	auto initValue = initExp? initExp->genValue(context) : RValue();
-	auto varType = type->getType(context);
+	auto varType = CGNDataType::run(context, type);
 
 	if (!varType) {
 		return;
@@ -782,7 +679,7 @@ RValue NNewExpression::genValue(CodeContext& context)
 		return RValue();
 	}
 
-	auto nType = type->getType(context);
+	auto nType = CGNDataType::run(context, type);
 	if (!nType) {
 		return RValue();
 	} else if (nType->isAuto()) {

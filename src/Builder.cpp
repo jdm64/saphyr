@@ -21,6 +21,7 @@
 #include "Builder.h"
 #include "CodeContext.h"
 #include "Instructions.h"
+#include "CGNDataType.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
@@ -187,7 +188,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 	bool valid = true;
 	vector<SType*> args;
 	for (auto item : *params) {
-		auto param = item->getType(context);
+		auto param = CGNDataType::run(context, item);
 		if (!param) {
 			valid = false;
 		} else if (param->isAuto()) {
@@ -199,7 +200,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 		}
 	}
 
-	auto returnType = retType->getType(context);
+	auto returnType = CGNDataType::run(context, retType);
 	if (!returnType) {
 		return nullptr;
 	} else if (returnType->isAuto()) {
@@ -213,7 +214,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 
 bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
 {
-	auto stype = group->getType()->getType(context);
+	auto stype = CGNDataType::run(context, group->getType());
 	if (!stype) {
 		return false;
 	} else if (stype->isAuto()) {
@@ -297,7 +298,7 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 		structure.push_back(make_pair(name, val++));
 	}
 
-	auto etype = stm->getBaseType()? stm->getBaseType()->getType(context) : SType::getInt(context, 32);
+	auto etype = stm->getBaseType()? CGNDataType::run(context, stm->getBaseType()) : SType::getInt(context, 32);
 	if (!etype || !etype->isInteger() || etype->isBool()) {
 		context.addError("enum base type must be an integer type", stm->getLBrac());
 		return;
@@ -308,7 +309,7 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 
 void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 {
-	auto realType = stm->getType()->getType(context);
+	auto realType = CGNDataType::run(context, stm->getType());
 	if (!realType) {
 		return;
 	} else if (realType->isAuto()) {
@@ -327,7 +328,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm)
 		return;
 	}
 	auto initValue = stm->getInitExp()? stm->getInitExp()->genValue(context) : RValue();
-	auto varType = stm->getType()->getType(context);
+	auto varType = CGNDataType::run(context, stm->getType());
 
 	if (!varType) {
 		return;

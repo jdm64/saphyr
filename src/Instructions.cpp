@@ -16,6 +16,7 @@
  */
 #include "Instructions.h"
 #include "parserbase.h"
+#include "CGNDataType.h"
 
 void Inst::castError(CodeContext& context, SType* from, SType* to, Token* token)
 {
@@ -364,7 +365,7 @@ RValue Inst::SizeOf(CodeContext& context, Token* token, SType* type)
 
 RValue Inst::SizeOf(CodeContext& context, Token* token, NDataType* type)
 {
-	return SizeOf(context, token, type->getType(context));
+	return SizeOf(context, token, CGNDataType::run(context, type));
 }
 
 RValue Inst::SizeOf(CodeContext& context, Token* token, NExpression* exp)

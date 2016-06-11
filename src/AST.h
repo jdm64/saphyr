@@ -333,11 +333,7 @@ public:
 	}
 };
 
-class NDataType : public Node
-{
-public:
-	virtual SType* getType(CodeContext& context) = 0;
-};
+class NDataType : public Node {};
 typedef NodeList<NDataType> NDataTypeList;
 
 class NNamedType : public NDataType
@@ -373,8 +369,6 @@ public:
 	NBaseType(Token* token, int type)
 	: NNamedType(token), type(type) {}
 
-	SType* getType(CodeContext& context);
-
 	int getType() const
 	{
 		return type;
@@ -391,8 +385,6 @@ class NArrayType : public NDataType
 public:
 	NArrayType(NDataType* baseType, NIntConst* size = nullptr)
 	: baseType(baseType), size(size) {}
-
-	SType* getType(CodeContext& context);
 
 	NDataType* getBaseType() const
 	{
@@ -422,8 +414,6 @@ class NVecType : public NDataType
 public:
 	NVecType(Token* vecToken, NIntConst* size, NDataType* baseType)
 	: baseType(baseType), size(size), vecToken(vecToken) {}
-
-	SType* getType(CodeContext& context);
 
 	NIntConst* getSize() const
 	{
@@ -455,8 +445,6 @@ public:
 	explicit NUserType(Token* name)
 	: NNamedType(name) {}
 
-	SType* getType(CodeContext& context);
-
 	ADD_ID(NUserType)
 };
 
@@ -467,8 +455,6 @@ class NPointerType : public NDataType
 public:
 	explicit NPointerType(NDataType* baseType)
 	: baseType(baseType) {}
-
-	SType* getType(CodeContext& context);
 
 	NDataType* getBaseType() const
 	{
@@ -492,8 +478,6 @@ class NFuncPointerType : public NDataType
 public:
 	NFuncPointerType(Token* atTok, NDataType* returnType, NDataTypeList* params)
 	: returnType(returnType), params(params), atTok(atTok) {}
-
-	SType* getType(CodeContext& context);
 
 	Token* getToken() const
 	{
@@ -852,11 +836,6 @@ public:
 	RValue getArg() const
 	{
 		return arg;
-	}
-
-	SType* getType(CodeContext& context)
-	{
-		return type->getType(context);
 	}
 
 	NDataType* getType() const
