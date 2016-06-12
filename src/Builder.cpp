@@ -24,6 +24,7 @@
 #include "CGNDataType.h"
 #include "CGNInt.h"
 #include "CGNExpression.h"
+#include "CGNStatement.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
@@ -60,10 +61,10 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 		else
 			context.addError("function parameter " + name + " already declared", param->getNameToken());
 		param->setArgument(RValue(&*arg, function.getParam(i)));
-		param->genCode(context);
+		CGNStatement::run(context, param);
 	}
 
-	body->genCode(context);
+	CGNStatement::run(context, body);
 	context.endFuncBlock();
 	return function;
 }

@@ -26,29 +26,16 @@
 #include "Function.h"
 #include "Node.h"
 
-// forward declaration
-class CodeContext;
-
 class NStatement : public Node
 {
 public:
-	virtual void genCode(CodeContext& context) = 0;
-
 	virtual bool isTerminator() const
 	{
 		return false;
 	}
 };
 
-class NStatementList : public NodeList<NStatement>
-{
-public:
-	void genCode(CodeContext& context) const
-	{
-		for (auto item : list)
-			item->genCode(context);
-	}
-};
+class NStatementList : public NodeList<NStatement> {};
 
 class NExpression : public Node
 {
@@ -84,8 +71,6 @@ public:
 		delete other;
 		return ret;
 	}
-
-	void genCode(CodeContext& context);
 
 	NExpression* getExp() const
 	{
@@ -521,8 +506,6 @@ public:
 		return eqToken;
 	}
 
-	void genCode(CodeContext& context);
-
 	~NVariableDecl()
 	{
 		delete initExp;
@@ -533,25 +516,13 @@ public:
 	ADD_ID(NVariableDecl)
 };
 
-class NVariableDeclList : public NodeList<NVariableDecl>
-{
-public:
-	void genCode(NDataType* type, CodeContext& context) const
-	{
-		for (auto variable : list) {
-			variable->setDataType(type);
-			variable->genCode(context);
-		}
-	}
-};
+class NVariableDeclList : public NodeList<NVariableDecl> {};
 
 class NGlobalVariableDecl : public NVariableDecl
 {
 public:
 	NGlobalVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
 	: NVariableDecl(name, eqToken, initExp) {}
-
-	void genCode(CodeContext& context);
 
 	ADD_ID(NGlobalVariableDecl)
 };
@@ -784,8 +755,6 @@ public:
 		return type;
 	}
 
-	void genCode(CodeContext& context);
-
 	~NParameter()
 	{
 		delete type;
@@ -814,11 +783,6 @@ public:
 		return variables;
 	}
 
-	void genCode(CodeContext& context)
-	{
-		variables->genCode(type, context);
-	}
-
 	~NVariableDeclGroup()
 	{
 		delete variables;
@@ -836,8 +800,6 @@ class NAliasDeclaration : public NDeclaration
 public:
 	NAliasDeclaration(Token* name, NDataType* type)
 	: NDeclaration(name), type(type) {}
-
-	void genCode(CodeContext& context);
 
 	NDataType* getType() const
 	{
@@ -864,8 +826,6 @@ private:
 public:
 	NStructDeclaration(Token* name, NVariableDeclGroupList* list, CreateType ctype = CreateType::STRUCT)
 	: NDeclaration(name), list(list), ctype(ctype) {}
-
-	void genCode(CodeContext& context);
 
 	CreateType getType() const
 	{
@@ -894,8 +854,6 @@ class NEnumDeclaration : public NDeclaration
 public:
 	NEnumDeclaration(Token* name, NVariableDeclList* variables, Token* lBrac = nullptr, NDataType* baseType = nullptr)
 	: NDeclaration(name), variables(variables), lBrac(lBrac), baseType(baseType) {}
-
-	void genCode(CodeContext& context);
 
 	NVariableDeclList* getVarList() const
 	{
@@ -932,8 +890,6 @@ class NFunctionDeclaration : public NDeclaration
 public:
 	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 	: NDeclaration(name), rtype(rtype), params(params), body(body) {}
-
-	void genCode(CodeContext& context) final;
 
 	NDataType* getRType() const
 	{
@@ -1007,8 +963,6 @@ public:
 		return expression;
 	}
 
-	void genCode(CodeContext& context);
-
 	ADD_ID(NMemberInitializer)
 };
 typedef NodeList<NMemberInitializer> NInitializerList;
@@ -1024,8 +978,6 @@ public:
 		for (auto i : *list)
 			i->setClass(this);
 	}
-
-	void genCode(CodeContext& context);
 
 	NClassMemberList* getList() const
 	{
@@ -1047,8 +999,6 @@ class NClassStructDecl : public NClassMember
 public:
 	NClassStructDecl(Token* name, NVariableDeclGroupList* list)
 	: NClassMember(name), list(list) {}
-
-	void genCode(CodeContext& context);
 
 	MemberType memberType() const
 	{
@@ -1077,8 +1027,6 @@ class NClassFunctionDecl : public NClassMember
 public:
 	NClassFunctionDecl(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 	: NClassMember(name), rtype(rtype), params(params), body(body) {}
-
-	void genCode(CodeContext& context);
 
 	MemberType memberType() const
 	{
@@ -1119,8 +1067,6 @@ class NClassConstructor : public NClassMember
 public:
 	NClassConstructor(Token* name, NParameterList* params, NInitializerList* initList, NStatementList* body)
 	: NClassMember(name), params(params), initList(initList), body(body) {}
-
-	void genCode(CodeContext& context);
 
 	MemberType memberType() const
 	{
@@ -1164,8 +1110,6 @@ class NClassDestructor : public NClassMember
 public:
 	NClassDestructor(Token* name, NStatementList* body)
 	: NClassMember(name), body(body) {}
-
-	void genCode(CodeContext& context);
 
 	MemberType memberType() const
 	{
@@ -1220,8 +1164,6 @@ public:
 	explicit NLoopStatement(NStatementList* body)
 	: NConditionStmt(nullptr, body) {}
 
-	void genCode(CodeContext& context);
-
 	ADD_ID(NLoopStatement)
 };
 
@@ -1234,8 +1176,6 @@ class NWhileStatement : public NConditionStmt
 public:
 	NWhileStatement(Token* lparen, NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
 	: NConditionStmt(condition, body), lparen(lparen), isDoWhile(isDoWhile), isUntil(isUntil) {}
-
-	void genCode(CodeContext& context);
 
 	Token* getLParen() const
 	{
@@ -1269,11 +1209,6 @@ class NSwitchCase : public NStatement
 public:
 	NSwitchCase(Token* token, NStatementList* body, NIntConst* value = nullptr)
 	: value(value), body(body), token(token) {}
-
-	void genCode(CodeContext& context)
-	{
-		body->genCode(context);
-	}
 
 	NIntConst* getValue() const
 	{
@@ -1324,8 +1259,6 @@ public:
 	NSwitchStatement(Token* lparen, NExpression* value, NSwitchCaseList* cases)
 	: value(value), cases(cases), lparen(lparen) {}
 
-	void genCode(CodeContext& context);
-
 	Token* getLParen() const
 	{
 		return lparen;
@@ -1361,8 +1294,6 @@ public:
 	NForStatement(NStatementList* preStm, NExpression* condition, Token* semiCol2, NExpressionList* postExp, NStatementList* body)
 	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp), semiCol2(semiCol2) {}
 
-	void genCode(CodeContext& context);
-
 	NStatementList* getPreStm() const
 	{
 		return preStm;
@@ -1397,8 +1328,6 @@ public:
 	NIfStatement(Token* lparen, NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
 	: NConditionStmt(condition, ifBody), elseBody(elseBody), lparen(lparen) {}
 
-	void genCode(CodeContext& context);
-
 	Token* getToken() const
 	{
 		return lparen;
@@ -1424,8 +1353,6 @@ public:
 	explicit NLabelStatement(Token* name)
 	: NDeclaration(name) {}
 
-	void genCode(CodeContext& context);
-
 	ADD_ID(NLabelStatement)
 };
 
@@ -1446,8 +1373,6 @@ class NReturnStatement : public NJumpStatement
 public:
 	NReturnStatement(Token* retToken = nullptr, NExpression* value = nullptr)
 	: value(value), retToken(retToken) {}
-
-	void genCode(CodeContext& context);
 
 	NExpression* getValue() const
 	{
@@ -1476,8 +1401,6 @@ public:
 	explicit NGotoStatement(Token* name)
 	: name(name) {}
 
-	void genCode(CodeContext& context);
-
 	Token* getNameToken() const
 	{
 		return name;
@@ -1505,8 +1428,6 @@ class NLoopBranch : public NJumpStatement
 public:
 	NLoopBranch(Token* token, int type, NIntConst* level = nullptr)
 	: token(token), type(type), level(level) {}
-
-	void genCode(CodeContext& context);
 
 	Token* getToken() const
 	{
@@ -1541,8 +1462,6 @@ public:
 	NDeleteStatement(Token* token, NVariable* variable)
 	: variable(variable), token(token) {}
 
-	void genCode(CodeContext& context);
-
 	NVariable* getVar() const
 	{
 		return variable;
@@ -1570,8 +1489,6 @@ class NDestructorCall : public NStatement
 public:
 	NDestructorCall(NVariable* baseVar, Token* thisToken)
 	: baseVar(baseVar), thisToken(thisToken) {}
-
-	void genCode(CodeContext& context);
 
 	NVariable* getVar() const
 	{

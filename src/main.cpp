@@ -18,6 +18,7 @@
 #include "parser.h"
 #include "AST.h"
 #include "CodeContext.h"
+#include "CGNStatement.h"
 #include "ModuleWriter.h"
 
 options_description progOpts;
@@ -64,7 +65,7 @@ int main(int argc, char** argv)
 	unique_ptr<Module> module(new Module(file, getGlobalContext()));
 	CodeContext context(module.get());
 
-	parser.getRoot()->genCode(context);
+	CGNStatement::run(context, parser.getRoot());
 	if (context.handleErrors(file))
 		return 2;
 
