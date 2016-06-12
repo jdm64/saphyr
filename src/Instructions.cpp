@@ -18,6 +18,7 @@
 #include "parserbase.h"
 #include "CGNDataType.h"
 #include "CGNVariable.h"
+#include "CGNExpression.h"
 
 void Inst::castError(CodeContext& context, SType* from, SType* to, Token* token)
 {
@@ -303,7 +304,7 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 
 RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, Token* token, CodeContext& context)
 {
-	auto condValue = condExp? condExp->genValue(context) : RValue::getNumVal(context, SType::getBool(context));
+	auto condValue = condExp? CGNExpression::run(context, condExp) : RValue::getNumVal(context, SType::getBool(context));
 	CastTo(context, token, condValue, SType::getBool(context));
 	BranchInst::Create(trueBlock, falseBlock, condValue, context);
 	return condValue;
@@ -371,7 +372,7 @@ RValue Inst::SizeOf(CodeContext& context, Token* token, NDataType* type)
 
 RValue Inst::SizeOf(CodeContext& context, Token* token, NExpression* exp)
 {
-	return SizeOf(context, token, exp->genValue(context).stype());
+	return SizeOf(context, token, CGNExpression::run(context, exp).stype());
 }
 
 RValue Inst::SizeOf(CodeContext& context, Token* token, const string& name)
@@ -403,7 +404,7 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 	}
 	int i = expList.size();
 	for (auto arg : *args) {
-		auto argExp = arg->genValue(context);
+		auto argExp = CGNExpression::run(context, arg);
 		Inst::CastTo(context, name, argExp, func.getParam(i++));
 		expList.push_back(argExp);
 	}
@@ -560,7 +561,7 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 		} else if (initList->size() > 1) {
 			context.addError("invalid variable initializer", token);
 		} else {
-			initVal = initList->at(0)->genValue(context);
+			initVal = CGNExpression::run(context, initList->at(0));
 		}
 	}
 

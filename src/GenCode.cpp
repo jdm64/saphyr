@@ -23,16 +23,7 @@
 #include "CGNDataType.h"
 #include "CGNInt.h"
 #include "CGNVariable.h"
-
-RValue NVariable::genValue(CodeContext& context, RValue var)
-{
-	return Inst::Load(context, var);
-}
-
-RValue NVariable::genValue(CodeContext& context)
-{
-	return  genValue(context, CGNVariable::run(context, this));
-}
+#include "CGNExpression.h"
 
 void NParameter::genCode(CodeContext& context)
 {
@@ -44,7 +35,7 @@ void NParameter::genCode(CodeContext& context)
 
 void NVariableDecl::genCode(CodeContext& context)
 {
-	auto initValue = initExp? initExp->genValue(context) : RValue();
+	auto initValue = CGNExpression::run(context, initExp);
 	auto varType = CGNDataType::run(context, type);
 
 	if (!varType) {
@@ -214,7 +205,7 @@ void NReturnStatement::genCode(CodeContext& context)
 		context.addError("function " + func.name().str() + " declared non-void, but void return found", retToken);
 		return;
 	}
-	auto returnVal = value? value->genValue(context) : RValue();
+	auto returnVal = CGNExpression::run(context, value);
 	if (returnVal)
 		Inst::CastTo(context, retToken, returnVal, funcReturn);
 	ReturnInst::Create(context, returnVal, context);
@@ -264,14 +255,9 @@ void NWhileStatement::genCode(CodeContext& context)
 	context.popLoopBranchBlocks();
 }
 
-ConstantInt* NSwitchCase::getValue(CodeContext& context)
-{
-	return ConstantInt::get(context, CGNInt::run(context, value));
-}
-
 void NSwitchStatement::genCode(CodeContext& context)
 {
-	auto switchValue = value->genValue(context);
+	auto switchValue = CGNExpression::run(context, value);
 	Inst::CastTo(context, lparen, switchValue, SType::getInt(context, 32));
 
 	auto caseBlock = context.createBlock();
@@ -284,7 +270,7 @@ void NSwitchStatement::genCode(CodeContext& context)
 	bool hasDefault = false;
 	for (auto caseItem : *cases) {
 		if (caseItem->isValueCase()) {
-			auto val = caseItem->getValue(context);
+			auto val = ConstantInt::get(context, CGNInt::run(context, caseItem->getValue()));
 			if (!unique.insert(val->getSExtValue()).second)
 				context.addError("switch case values are not unique", caseItem->getToken());
 			switchInst->addCase(val, caseBlock);
@@ -336,7 +322,7 @@ void NForStatement::genCode(CodeContext& context)
 	BranchInst::Create(postBlock, context);
 
 	context.pushBlock(postBlock);
-	postExp->genCode(context);
+	CGNExpression::run(context, postExp);
 	BranchInst::Create(condBlock, context);
 
 	context.pushBlock(endBlock);
@@ -460,7 +446,7 @@ void NDeleteStatement::genCode(CodeContext& context)
 		return;
 	}
 
-	auto ptr = variable->genValue(context);
+	auto ptr = CGNExpression::run(context, variable);
 	if (!ptr) {
 		return;
 	} else if (!ptr.stype()->isPointer()) {
@@ -502,323 +488,7 @@ void NDestructorCall::genCode(CodeContext& context)
 	Inst::CallDestructor(context, value, thisToken);
 }
 
-RValue NAssignment::genValue(CodeContext& context)
+void NExpressionStm::genCode(CodeContext& context)
 {
-	auto lhsVar = CGNVariable::run(context, lhs);
-
-	if (!lhsVar)
-		return RValue();
-
-	BasicBlock* endBlock = nullptr;
-
-	if (oper == ParserBase::TT_DQ_MARK) {
-		auto condExp = Inst::Load(context, lhsVar);
-		Inst::CastTo(context, opTok, condExp, SType::getBool(context));
-
-		auto trueBlock = context.createBlock();
-		endBlock = context.createBlock();
-
-		BranchInst::Create(endBlock, trueBlock, condExp, context);
-		context.pushBlock(trueBlock);
-	}
-
-	auto rhsExp = rhs->genValue(context);
-	if (!rhsExp)
-		return RValue();
-
-	if (oper != '=' && oper != ParserBase::TT_DQ_MARK) {
-		auto lhsLocal = Inst::Load(context, lhsVar);
-		rhsExp = Inst::BinaryOp(oper, opTok, lhsLocal, rhsExp, context);
-	}
-	Inst::CastTo(context, opTok, rhsExp, lhsVar.stype());
-	new StoreInst(rhsExp, lhsVar, context);
-
-	if (oper == ParserBase::TT_DQ_MARK) {
-		BranchInst::Create(endBlock, context);
-		context.pushBlock(endBlock);
-	}
-
-	return rhsExp;
-}
-
-RValue NTernaryOperator::genValue(CodeContext& context)
-{
-	auto condExp = condition->genValue(context);
-	Inst::CastTo(context, colTok, condExp, SType::getBool(context));
-
-	RValue trueExp, falseExp, retVal;
-	if (trueVal->isComplex() || falseVal->isComplex()) {
-		auto trueBlock = context.createBlock();
-		auto falseBlock = context.createBlock();
-		auto endBlock = context.createBlock();
-
-		BranchInst::Create(trueBlock, falseBlock, condExp, context);
-
-		context.pushBlock(trueBlock);
-		trueExp = trueVal->genValue(context);
-		BranchInst::Create(endBlock, context);
-
-		context.pushBlock(falseBlock);
-		falseExp = falseVal->genValue(context);
-		BranchInst::Create(endBlock, context);
-
-		context.pushBlock(endBlock);
-		auto result = PHINode::Create(trueExp.type(), 2, "", context);
-		result->addIncoming(trueExp, trueBlock);
-		result->addIncoming(falseExp, falseBlock);
-		retVal = RValue(result, trueExp.stype());
-	} else {
-		trueExp = trueVal->genValue(context);
-		falseExp = falseVal->genValue(context);
-		auto select = SelectInst::Create(condExp, trueExp, falseExp, "", context);
-		retVal = RValue(select, trueExp.stype());
-	}
-
-	if (trueExp.stype() != falseExp.stype())
-		context.addError("return types of ternary must match", colTok);
-	return retVal;
-}
-
-RValue NNewExpression::genValue(CodeContext& context)
-{
-	static string mallocName = "malloc";
-
-	auto funcVal = context.loadSymbol(mallocName);
-	if (!funcVal) {
-		vector<SType*> args;
-		args.push_back(SType::getInt(context, 64));
-		auto retType = SType::getPointer(context, SType::getInt(context, 8));
-		auto funcType = SType::getFunction(context, retType, args);
-
-		funcVal = SFunction::create(context, mallocName, funcType);
-	} else if (!funcVal.isFunction()) {
-		context.addError("Compiler Error: malloc not function", token);
-		return RValue();
-	}
-
-	auto nType = CGNDataType::run(context, type);
-	if (!nType) {
-		return RValue();
-	} else if (nType->isAuto()) {
-		context.addError("can't call new on auto type", token);
-		return RValue();
-	} else if (nType->isVoid()) {
-		context.addError("can't call new on void type", token);
-		return RValue();
-	}
-
-	vector<Value*> exp_list;
-	exp_list.push_back(Inst::SizeOf(context, token, nType));
-
-	auto func = static_cast<SFunction&>(funcVal);
-	auto call = CallInst::Create(func, exp_list, "", context);
-	auto ptr = RValue(call, func.returnTy());
-	auto ptrType = SType::getPointer(context, nType);
-
-	return RValue(new BitCastInst(ptr, *ptrType, "", context), ptrType);
-}
-
-RValue NLogicalOperator::genValue(CodeContext& context)
-{
-	auto saveBlock = context.currBlock();
-	auto firstBlock = context.createBlock();
-	auto secondBlock = context.createBlock();
-	auto trueBlock = (oper == ParserBase::TT_LOG_AND)? firstBlock : secondBlock;
-	auto falseBlock = (oper == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
-
-	auto lhsExp = Inst::Branch(trueBlock, falseBlock, lhs, opTok, context);
-
-	context.pushBlock(firstBlock);
-	auto rhsExp = rhs->genValue(context);
-	Inst::CastTo(context, opTok, rhsExp, SType::getBool(context));
-	BranchInst::Create(secondBlock, context);
-
-	context.pushBlock(secondBlock);
-	auto result = PHINode::Create(Type::getInt1Ty(context), 2, "", context);
-	result->addIncoming(lhsExp, saveBlock);
-	result->addIncoming(rhsExp, firstBlock);
-
-	return RValue(result, SType::getBool(context));
-}
-
-RValue NCompareOperator::genValue(CodeContext& context)
-{
-	auto lhsExp = lhs->genValue(context);
-	auto rhsExp = rhs->genValue(context);
-
-	return Inst::Cmp(oper, opTok, lhsExp, rhsExp, context);
-}
-
-RValue NBinaryMathOperator::genValue(CodeContext& context)
-{
-	auto lhsExp = lhs->genValue(context);
-	auto rhsExp = rhs->genValue(context);
-
-	return Inst::BinaryOp(oper, opTok, lhsExp, rhsExp, context);
-}
-
-RValue NNullCoalescing::genValue(CodeContext& context)
-{
-	RValue rhsExp, retVal;
-	auto lhsExp = lhs->genValue(context);
-	auto condition = lhsExp;
-
-	Inst::CastTo(context, opTok, condition, SType::getBool(context), false);
-	if (rhs->isComplex()) {
-		auto trueBlock = context.currBlock();
-		auto falseBlock = context.createBlock();
-		auto endBlock = context.createBlock();
-
-		BranchInst::Create(endBlock, falseBlock, condition, context);
-
-		context.pushBlock(falseBlock);
-		rhsExp = rhs->genValue(context);
-		BranchInst::Create(endBlock, context);
-
-		context.pushBlock(endBlock);
-		auto result = PHINode::Create(lhsExp.type(), 2, "", context);
-		result->addIncoming(lhsExp, trueBlock);
-		result->addIncoming(rhsExp, falseBlock);
-
-		retVal = RValue(result, lhsExp.stype());
-	} else {
-		rhsExp = rhs->genValue(context);
-		auto select = SelectInst::Create(condition, lhsExp, rhsExp, "", context);
-		retVal = RValue(select, lhsExp.stype());
-	}
-
-	if (lhsExp.stype() != rhsExp.stype())
-		context.addError("return types of null coalescing operator must match", opTok);
-	return retVal;
-}
-
-RValue NSizeOfOperator::genValue(CodeContext& context)
-{
-	switch (type) {
-	case DATA:
-		return Inst::SizeOf(context, sizeTok, dtype);
-	case EXP:
-		return Inst::SizeOf(context, sizeTok, exp);
-	case NAME:
-		return Inst::SizeOf(context, sizeTok, name->str);
-	default:
-		// shouldn't happen
-		return RValue();
-	}
-}
-
-RValue NUnaryMathOperator::genValue(CodeContext& context)
-{
-	auto unaryExp = unary->genValue(context);
-	auto type = unaryExp.stype();
-
-	switch (oper) {
-	case '+':
-	case '-':
-		return Inst::BinaryOp(oper, opTok, RValue::getZero(context, type), unaryExp, context);
-	case '!':
-		return Inst::Cmp(ParserBase::TT_EQ, opTok, RValue::getZero(context, type), unaryExp, context);
-	case '~':
-		return Inst::BinaryOp('^', opTok, RValue::getAllOne(context, type), unaryExp, context);
-	default:
-		context.addError("invalid unary operator " + to_string(oper), opTok);
-		return RValue();
-	}
-}
-
-RValue NFunctionCall::genValue(CodeContext& context)
-{
-	auto funcName = getName();
-	auto sym = context.loadSymbol(funcName);
-	if (!sym) {
-		context.addError("symbol " + funcName + " not defined", name);
-		return sym;
-	}
-	auto deSym = Inst::Deref(context, sym, true);
-	if (!deSym.isFunction()) {
-		context.addError("symbol " + funcName + " doesn't reference a function", name);
-		return RValue();
-	}
-
-	auto func = static_cast<SFunction&>(deSym);
-	vector<Value*> exp_list;
-	return Inst::CallFunction(context, func, name, arguments, exp_list);
-}
-
-RValue NMemberFunctionCall::genValue(CodeContext& context)
-{
-	return Inst::CallMemberFunction(context, baseVar, funcName, arguments);
-}
-
-RValue NIncrement::genValue(CodeContext& context)
-{
-	auto varPtr = CGNVariable::run(context, variable);
-	auto varVal = Inst::Load(context, varPtr);
-	if (!varVal)
-		return RValue();
-
-	auto type = varVal.stype();
-	if (type->isPointer() && type->subType()->isFunction()) {
-		context.addError("Increment/Decrement invalid for function pointer", opTok);
-		return RValue();
-	} else if (type->isEnum()) {
-		context.addError("Increment/Decrement invalid for enum type", opTok);
-		return RValue();
-	}
-	auto incType = type->isPointer()? SType::getInt(context, 32) : type;
-
-	auto result = Inst::BinaryOp(oper, opTok, varVal, RValue::getNumVal(context, incType, oper == ParserBase::TT_INC? 1:-1), context);
-	new StoreInst(result, varPtr, context);
-
-	return isPostfix? varVal : RValue(result, type);
-}
-
-RValue NIntLikeConst::genValue(CodeContext& context)
-{
-	return RValue::getValue(context, CGNInt::run(context, this));
-}
-
-RValue NNullPointer::genValue(CodeContext& context)
-{
-	return RValue::getNullPtr(context, SType::getInt(context, 8));
-}
-
-RValue NStringLiteral::genValue(CodeContext& context)
-{
-	auto strVal = getStrVal();
-	auto arrData = ConstantDataArray::getString(context, strVal, true);
-	auto arrTy = SType::getArray(context, SType::getInt(context, 8), strVal.size() + 1);
-	auto arrTyPtr = SType::getPointer(context, arrTy);
-	auto gVar = new GlobalVariable(*context.getModule(), *arrTy, true, GlobalValue::PrivateLinkage, arrData);
-	auto zero = ConstantInt::get(*SType::getInt(context, 32), 0);
-
-	std::vector<Constant*> idxs;
-	idxs.push_back(zero);
-
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
-	auto strPtr = ConstantExpr::getGetElementPtr(gVar->getType(), gVar, idxs);
-#else
-	auto strPtr = ConstantExpr::getGetElementPtr(gVar, idxs);
-#endif
-
-	return RValue(strPtr, arrTyPtr);
-}
-
-RValue NFloatConst::genValue(CodeContext& context)
-{
-	static const map<string, SType*> suffix = {
-		{"f", SType::getFloat(context)},
-		{"d", SType::getFloat(context, true)} };
-	auto type = SType::getFloat(context, true);
-
-	auto data = NConstant::getValueAndSuffix(getStrVal());
-	if (data.size() > 1) {
-		auto suf = suffix.find(data[1]);
-		if (suf == suffix.end())
-			context.addError("invalid float suffix: " + data[1], value);
-		else
-			type = suf->second;
-	}
-	auto fp = ConstantFP::get(*type, data[0]);
-	return RValue(fp, type);
+	CGNExpression::run(context, exp);
 }

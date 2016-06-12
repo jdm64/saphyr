@@ -18,6 +18,7 @@
 #include "AST.h"
 #include "CGNVariable.h"
 #include "Instructions.h"
+#include "CGNExpression.h"
 
 #define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartExpression)] = reinterpret_cast<classPtr>(&CGNVariable::visit##ID)
 
@@ -75,7 +76,7 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 
 RValue CGNVariable::visitNArrayVariable(NArrayVariable* nArrVar)
 {
-	auto indexVal = nArrVar->getIndex()->genValue(context);
+	auto indexVal = CGNExpression::run(context, nArrVar->getIndex());
 
 	if (!indexVal) {
 		return indexVal;
@@ -131,7 +132,7 @@ RValue CGNVariable::visitNAddressOf(NAddressOf* var)
 
 RValue CGNVariable::visitNFunctionCall(NFunctionCall* var)
 {
-	auto value = var->genValue(context);
+	auto value = CGNExpression::run(context, var);
 	if (!value)
 		return RValue();
 	auto stackAlloc = new AllocaInst(value.type(), "", context);
@@ -141,7 +142,7 @@ RValue CGNVariable::visitNFunctionCall(NFunctionCall* var)
 
 RValue CGNVariable::visitNMemberFunctionCall(NMemberFunctionCall* var)
 {
-	auto value = var->genValue(context);
+	auto value = CGNExpression::run(context, var);
 	if (!value)
 		return value;
 	auto stackAlloc = new AllocaInst(value.type(), "", context);

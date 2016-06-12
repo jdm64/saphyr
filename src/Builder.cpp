@@ -23,6 +23,7 @@
 #include "Instructions.h"
 #include "CGNDataType.h"
 #include "CGNInt.h"
+#include "CGNExpression.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
@@ -328,7 +329,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm)
 		context.addError("global variables only support constant value initializer", stm->getEqToken());
 		return;
 	}
-	auto initValue = stm->getInitExp()? stm->getInitExp()->genValue(context) : RValue();
+	auto initValue = CGNExpression::run(context, stm->getInitExp());
 	auto varType = CGNDataType::run(context, stm->getType());
 
 	if (!varType) {

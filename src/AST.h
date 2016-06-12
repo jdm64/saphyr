@@ -63,19 +63,9 @@ public:
 	{
 		return true;
 	}
-
-	virtual RValue genValue(CodeContext& context) = 0;
 };
 
-class NExpressionList : public NodeList<NExpression>
-{
-public:
-	void genCode(CodeContext& context) const
-	{
-		for (auto item : list)
-			item->genValue(context);
-	}
-};
+class NExpressionList : public NodeList<NExpression> {};
 
 class NExpressionStm : public NStatement
 {
@@ -95,10 +85,7 @@ public:
 		return ret;
 	}
 
-	void genCode(CodeContext& context)
-	{
-		exp->genValue(context);
-	}
+	void genCode(CodeContext& context);
 
 	NExpression* getExp() const
 	{
@@ -206,8 +193,6 @@ public:
 	explicit NNullPointer(Token* token)
 	: NConstant(token) {}
 
-	RValue genValue(CodeContext& context);
-
 	ADD_ID(NNullPointer)
 };
 
@@ -220,8 +205,6 @@ public:
 		value->str = unescape(value->str.substr(1, value->str.size() - 2));
 	}
 
-	RValue genValue(CodeContext& context);
-
 	ADD_ID(NStringLiteral)
 };
 
@@ -230,8 +213,6 @@ class NIntLikeConst : public NConstant
 public:
 	explicit NIntLikeConst(Token* token)
 	: NConstant(token) {}
-
-	RValue genValue(CodeContext& context) final;
 
 	bool isIntConst() const
 	{
@@ -294,8 +275,6 @@ public:
 	{
 		remove(value->str);
 	}
-
-	RValue genValue(CodeContext& context);
 
 	ADD_ID(NFloatConst)
 };
@@ -580,10 +559,6 @@ public:
 class NVariable : public NExpression
 {
 public:
-	RValue genValue(CodeContext& context);
-
-	virtual RValue genValue(CodeContext& context, RValue var);
-
 	virtual const string& getName() const = 0;
 };
 
@@ -765,11 +740,6 @@ class NAddressOf : public NVariable
 public:
 	explicit NAddressOf(NVariable* addVar)
 	: addVar(addVar) {}
-
-	RValue genValue(CodeContext& context, RValue var)
-	{
-		return var? RValue(var, SType::getPointer(context, var.stype())) : var;
-	}
 
 	NVariable* getVar() const
 	{
@@ -1320,8 +1290,6 @@ public:
 		return token;
 	}
 
-	ConstantInt* getValue(CodeContext& context);
-
 	bool isValueCase() const
 	{
 		return value != nullptr;
@@ -1658,8 +1626,6 @@ public:
 	NAssignment(int oper, Token* opToken, NVariable* lhs, NExpression* rhs)
 	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
 
-	RValue genValue(CodeContext& context);
-
 	NVariable* getLhs() const
 	{
 		return lhs;
@@ -1689,8 +1655,6 @@ class NTernaryOperator : public NExpression
 public:
 	NTernaryOperator(NExpression* condition, NExpression* trueVal, Token *colTok, NExpression* falseVal)
 	: condition(condition), trueVal(trueVal), falseVal(falseVal), colTok(colTok) {}
-
-	RValue genValue(CodeContext& context);
 
 	NExpression* getCondition() const
 	{
@@ -1731,8 +1695,6 @@ class NNewExpression : public NExpression
 public:
 	NNewExpression(Token* token, NDataType* type)
 	: type(type), token(token) {}
-
-	RValue genValue(CodeContext& context);
 
 	NDataType* getType() const
 	{
@@ -1786,8 +1748,6 @@ public:
 	NLogicalOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
-	RValue genValue(CodeContext& context);
-
 	ADD_ID(NLogicalOperator)
 };
 
@@ -1796,8 +1756,6 @@ class NCompareOperator : public NBinaryOperator
 public:
 	NCompareOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
-
-	RValue genValue(CodeContext& context);
 
 	ADD_ID(NCompareOperator)
 };
@@ -1808,8 +1766,6 @@ public:
 	NBinaryMathOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
-	RValue genValue(CodeContext& context);
-
 	ADD_ID(NBinaryMathOperator)
 };
 
@@ -1818,8 +1774,6 @@ class NNullCoalescing : public NBinaryOperator
 public:
 	NNullCoalescing(Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(0, opToken, lhs, rhs) {}
-
-	RValue genValue(CodeContext& context);
 
 	ADD_ID(NNullCoalescing)
 };
@@ -1845,8 +1799,6 @@ public:
 
 	NSizeOfOperator(Token* sizeTok, Token* name)
 	: type(NAME), dtype(nullptr), exp(nullptr), name(name), sizeTok(sizeTok) {}
-
-	RValue genValue(CodeContext& context);
 
 	OfType getType() const
 	{
@@ -1915,8 +1867,6 @@ public:
 	NUnaryMathOperator(int oper, Token* opToken, NExpression* unaryExp)
 	: NUnaryOperator(oper, opToken, unaryExp) {}
 
-	RValue genValue(CodeContext& context);
-
 	ADD_ID(NUnaryMathOperator)
 };
 
@@ -1928,8 +1878,6 @@ class NFunctionCall : public NVariable
 public:
 	NFunctionCall(Token* name, NExpressionList* arguments)
 	: name(name), arguments(arguments) {}
-
-	RValue genValue(CodeContext& context);
 
 	Token* getToken() const
 	{
@@ -1965,8 +1913,6 @@ class NMemberFunctionCall : public NVariable
 public:
 	NMemberFunctionCall(NVariable* baseVar, Token* dotToken, Token* funcName, NExpressionList* arguments)
 	: baseVar(baseVar), dotToken(dotToken), funcName(funcName), arguments(arguments) {}
-
-	RValue genValue(CodeContext& context);
 
 	NVariable* getBaseVar() const
 	{
@@ -2012,8 +1958,6 @@ class NIncrement : public NOperatorExpr
 public:
 	NIncrement(int oper, Token* opToken, NVariable* variable, bool isPostfix)
 	: NOperatorExpr(oper, opToken), variable(variable), isPostfix(isPostfix) {}
-
-	RValue genValue(CodeContext& context);
 
 	NVariable* getVar() const
 	{
