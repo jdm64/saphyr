@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "Value.h"
 #include "AST.h"
 #include "CGNStatement.h"
 #include "parser.h"
@@ -81,7 +82,7 @@ void CGNStatement::visitNParameter(NParameter* stm)
 {
 	auto stype = CGNDataType::run(context, stm->getType());
 	auto stackAlloc = new AllocaInst(*stype, "", context);
-	new StoreInst(stm->getArg(), stackAlloc, context);
+	new StoreInst(storedValue, stackAlloc, context);
 	context.storeLocalSymbol({stackAlloc, stype}, stm->getName());
 }
 

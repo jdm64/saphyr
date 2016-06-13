@@ -24,9 +24,7 @@ class CGNStatement
 	static classPtr *vtable;
 
 	CodeContext& context;
-
-	explicit CGNStatement(CodeContext& context)
-	: context(context) {}
+	RValue storedValue;
 
 	void visitNExpressionStm(NExpressionStm* stm);
 
@@ -82,11 +80,18 @@ class CGNStatement
 
 	void visit(NStatementList* list);
 
-	void visit(NStatement* type);
-
 	static classPtr* buildVTable();
 
 public:
+	explicit CGNStatement(CodeContext& context)
+	: context(context) {}
+
+	void visit(NStatement* type);
+
+	void storeValue(RValue value)
+	{
+		storedValue = value;
+	}
 
 	static void run(CodeContext& context, NStatement* exp)
 	{

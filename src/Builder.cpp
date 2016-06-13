@@ -60,8 +60,9 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 			arg->setName(name);
 		else
 			context.addError("function parameter " + name + " already declared", param->getNameToken());
-		param->setArgument(RValue(&*arg, function.getParam(i)));
-		CGNStatement::run(context, param);
+		CGNStatement visitor(context);
+		visitor.storeValue(RValue(&*arg, function.getParam(i)));
+		visitor.visit(param);
 	}
 
 	CGNStatement::run(context, body);

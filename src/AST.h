@@ -19,11 +19,8 @@
 
 #include <vector>
 #include <set>
-#include <llvm/ADT/APSInt.h>
-#include <llvm/IR/Instructions.h>
+#include <algorithm>
 #include "Token.h"
-#include "Value.h"
-#include "Function.h"
 #include "Node.h"
 
 class NStatement : public Node
@@ -733,22 +730,10 @@ public:
 class NParameter : public NDeclaration
 {
 	NDataType* type;
-	RValue arg; // NOTE: not owned by NParameter
 
 public:
 	NParameter(NDataType* type, Token* name)
 	: NDeclaration(name), type(type) {}
-
-	// NOTE: this must be called before genCode()
-	void setArgument(RValue argument)
-	{
-		arg = argument;
-	}
-
-	RValue getArg() const
-	{
-		return arg;
-	}
 
 	NDataType* getType() const
 	{
@@ -885,7 +870,6 @@ class NFunctionDeclaration : public NDeclaration
 	NDataType* rtype;
 	NParameterList* params;
 	NStatementList* body;
-	SFunction function;
 
 public:
 	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
