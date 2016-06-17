@@ -30,7 +30,7 @@ CGNInt::classPtr* CGNInt::buildVTable()
 	return table;
 }
 
-CGNInt::classPtr* CGNInt::vtable = buildVTable();
+CGNInt::classPtr* CGNInt::vtable = CGNInt::buildVTable();
 
 APSInt CGNInt::visit(NIntLikeConst* intConst)
 {

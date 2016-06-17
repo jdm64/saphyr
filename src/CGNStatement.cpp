@@ -62,7 +62,7 @@ CGNStatement::classPtr* CGNStatement::buildVTable()
 	return table;
 }
 
-CGNStatement::classPtr* CGNStatement::vtable = buildVTable();
+CGNStatement::classPtr* CGNStatement::vtable = CGNStatement::buildVTable();
 
 void CGNStatement::visit(NStatement* stm)
 {

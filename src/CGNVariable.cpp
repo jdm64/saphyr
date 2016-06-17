@@ -35,7 +35,7 @@ CGNVariable::classPtr* CGNVariable::buildVTable()
 	return table;
 }
 
-CGNVariable::classPtr* CGNVariable::vtable = buildVTable();
+CGNVariable::classPtr* CGNVariable::vtable = CGNVariable::buildVTable();
 
 RValue CGNVariable::visit(NVariable* type)
 {

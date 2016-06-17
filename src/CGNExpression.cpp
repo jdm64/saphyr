@@ -56,7 +56,7 @@ CGNExpression::classPtr* CGNExpression::buildVTable()
 	return table;
 }
 
-CGNExpression::classPtr* CGNExpression::vtable = buildVTable();
+CGNExpression::classPtr* CGNExpression::vtable = CGNExpression::buildVTable();
 
 RValue CGNExpression::visit(NExpression* exp)
 {

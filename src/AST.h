@@ -56,7 +56,7 @@ class NExpressionStm : public NStatement
 	NExpression* exp;
 
 public:
-	NExpressionStm(NExpression* exp)
+	explicit NExpressionStm(NExpression* exp)
 	: exp(exp) {}
 
 	static NStatementList* convert(NExpressionList* other)
@@ -266,7 +266,7 @@ class NImportStm : public NStatement
 	Token* filename;
 
 public:
-	NImportStm(Token* filename)
+	explicit NImportStm(Token* filename)
 	: filename(filename)
 	{
 		filename->str = NConstant::unescape(filename->str.substr(1, filename->str.size() - 2));

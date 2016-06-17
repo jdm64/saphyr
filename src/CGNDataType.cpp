@@ -36,7 +36,7 @@ CGNDataType::classPtr* CGNDataType::buildVTable()
 	return table;
 }
 
-CGNDataType::classPtr* CGNDataType::vtable = buildVTable();
+CGNDataType::classPtr* CGNDataType::vtable = CGNDataType::buildVTable();
 
 SType* CGNDataType::visit(NDataType* type)
 {
