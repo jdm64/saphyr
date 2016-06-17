@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef __PASS_H__
+#define __PASS_H__
+
 #include <llvm/Pass.h>
 
 using namespace llvm;
@@ -35,3 +38,5 @@ public:
 
 	bool runOnFunction(Function &func);
 };
+
+#endif
