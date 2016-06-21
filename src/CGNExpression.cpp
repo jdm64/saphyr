@@ -23,6 +23,7 @@
 #include "CGNInt.h"
 #include "CGNDataType.h"
 #include "CGNVariable.h"
+#include "Builder.h"
 
 #define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartExpression)] = reinterpret_cast<classPtr>(&CGNExpression::visit##ID)
 #define TABLE_ADD2(ID, FUNC) table[NODEID_DIFF(NodeId::ID, NodeId::StartExpression)] = reinterpret_cast<classPtr>(&CGNExpression::visit##FUNC)
@@ -171,7 +172,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 		auto retType = SType::getPointer(context, SType::getInt(context, 8));
 		auto funcType = SType::getFunction(context, retType, args);
 
-		funcVal = SFunction::create(context, mallocName, funcType);
+		funcVal = Builder::CreateFunction(context, mallocName, funcType);
 	} else if (!funcVal.isFunction()) {
 		context.addError("Compiler Error: malloc not function", exp->getToken());
 		return RValue();

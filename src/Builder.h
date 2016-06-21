@@ -29,6 +29,8 @@ class Builder
 public:
 	static SFunctionType* getFuncType(CodeContext& context, Token* name, NDataType* retType, NDataTypeList* params);
 
+	static SFunction CreateFunction(CodeContext& context, const string& name, SFunctionType* type);
+
 	static SFunction CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body);
 
 	static void CreateClassFunction(CodeContext& context, Token* name, NClassDeclaration* theClass, NDataType* rtype, NParameterList* params, NStatementList* body);

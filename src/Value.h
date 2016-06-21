@@ -18,6 +18,7 @@
 #define __VALUE_H__
 
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/Function.h>
 #include "Type.h"
 
 class RValue
@@ -89,6 +90,66 @@ public:
 		if (sub)
 			ty = sub;
 		return ty;
+	}
+};
+
+class SFunction : public RValue
+{
+	Function* funcValue() const
+	{
+		return static_cast<Function*>(value());
+	}
+
+	SFunctionType* funcStype() const
+	{
+		return static_cast<SFunctionType*>(stype());
+	}
+
+public:
+	SFunction(Function* function, SFunctionType* type)
+	: RValue(function, type) {}
+
+	SFunction()
+	: RValue() {};
+
+	operator Function*() const
+	{
+		return funcValue();
+	}
+
+	int size() const
+	{
+		return funcValue()->size();
+	}
+
+	StringRef name() const
+	{
+		return funcValue()->getName();
+	}
+
+	SType* returnTy() const
+	{
+		return funcStype()->returnTy();
+	}
+
+	size_t numParams() const
+	{
+		return funcStype()->numParams();
+	}
+
+	SType* getParam(int index) const
+	{
+		return funcStype()->getParam(index);
+	}
+
+	Function::arg_iterator arg_begin() const
+	{
+		return funcValue()->arg_begin();
+	}
+
+	Function::arg_iterator arg_end() const
+	{
+		return funcValue()->arg_end();
 	}
 };
 

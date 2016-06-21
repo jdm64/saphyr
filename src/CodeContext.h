@@ -26,7 +26,6 @@
 #include <llvm/IR/LLVMContext.h>
 #include "Token.h"
 #include "Value.h"
-#include "Function.h"
 
 using namespace boost::program_options;
 

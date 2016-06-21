@@ -17,7 +17,7 @@
 
 #include "AST.h"
 #include "parser.h"
-#include "Function.h"
+#include "Value.h"
 #include "Builder.h"
 #include "CodeContext.h"
 #include "Instructions.h"
@@ -27,6 +27,14 @@
 #include "CGNStatement.h"
 #include "CGNImportStm.h"
 #include "Instructions.h"
+
+SFunction Builder::CreateFunction(CodeContext& context, const string& name, SFunctionType* type)
+{
+	auto func = Function::Create(*type, GlobalValue::ExternalLinkage, name, context.getModule());
+	auto sfunc = SFunction(func, type);
+	context.storeGlobalSymbol(sfunc, name);
+	return sfunc;
+}
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
@@ -230,7 +238,7 @@ SFunction Builder::lookupFunction(CodeContext& context, Token* name, NDataType* 
 		return SFunction();
 	}
 	auto funcType = getFuncType(context, name, rtype, params);
-	return funcType? SFunction::create(context, funcName, funcType) : SFunction();
+	return funcType? CreateFunction(context, funcName, funcType) : SFunction();
 }
 
 SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params)
