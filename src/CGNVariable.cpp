@@ -29,6 +29,7 @@ CGNVariable::classPtr* CGNVariable::buildVTable()
 	TABLE_ADD(NArrayVariable);
 	TABLE_ADD(NBaseVariable);
 	TABLE_ADD(NDereference);
+	TABLE_ADD(NExprVariable);
 	TABLE_ADD(NFunctionCall);
 	TABLE_ADD(NMemberFunctionCall);
 	TABLE_ADD(NMemberVariable);
@@ -132,20 +133,15 @@ RValue CGNVariable::visitNAddressOf(NAddressOf* var)
 
 RValue CGNVariable::visitNFunctionCall(NFunctionCall* var)
 {
-	auto value = CGNExpression::run(context, var);
-	if (!value)
-		return RValue();
-	auto stackAlloc = new AllocaInst(value.type(), "", context);
-	new StoreInst(value, stackAlloc, context);
-	return RValue(stackAlloc, value.stype());
+	return Inst::StoreTemporary(context, var);
+}
+
+RValue CGNVariable::visitNExprVariable(NExprVariable* var)
+{
+	return Inst::StoreTemporary(context, var->getExp());
 }
 
 RValue CGNVariable::visitNMemberFunctionCall(NMemberFunctionCall* var)
 {
-	auto value = CGNExpression::run(context, var);
-	if (!value)
-		return value;
-	auto stackAlloc = new AllocaInst(value.type(), "", context);
-	new StoreInst(value, stackAlloc, context);
-	return RValue(stackAlloc, value.stype());
+	return Inst::StoreTemporary(context, var);
 }

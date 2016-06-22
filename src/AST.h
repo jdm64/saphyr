@@ -872,6 +872,11 @@ public:
 		return name;
 	}
 
+	NExpression* getExp() const
+	{
+		return expr;
+	}
+
 	~NExprVariable()
 	{
 		delete expr;

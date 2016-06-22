@@ -40,6 +40,8 @@ class CGNVariable
 
 	RValue visitNFunctionCall(NFunctionCall* var);
 
+	RValue visitNExprVariable(NExprVariable* var);
+
 	RValue visitNMemberFunctionCall(NMemberFunctionCall* var);
 
 	RValue visit(NVariable* type);
