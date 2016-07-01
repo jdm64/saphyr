@@ -35,6 +35,14 @@ int other()
 	return p;
 }
 
+void arrayPtr()
+{
+	@[5]int a;
+	@[]int b;
+
+	b = a;
+}
+
 int main()
 {
 	@void p = getPtr();
@@ -102,6 +110,15 @@ define i32* @getPtr() {
   store i32 %5, i32* %4
   %6 = load i32** %p
   ret i32* %6
+}
+
+define void @arrayPtr() {
+  %a = alloca [5 x i32]*
+  %b = alloca [0 x i32]*
+  %1 = load [5 x i32]** %a
+  %2 = bitcast [5 x i32]* %1 to [0 x i32]*
+  store [0 x i32]* %2, [0 x i32]** %b
+  ret void
 }
 
 define i32 @main() {

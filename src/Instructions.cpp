@@ -65,7 +65,20 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		castError(context, valueType, type, token);
 		return true;
 	} else if (type->isPointer()) {
-		if (value.isNullPtr()) {
+		if (!valueType->isPointer()) {
+			context.addError("Cannot cast non-pointer to pointer", token);
+			return true;
+		} else if (type->subType()->isArray() && valueType->subType()->isArray()) {
+			if (type->subType()->subType() != valueType->subType()->subType()) {
+				context.addError("Cannot cast array pointers of different types", token);
+				return true;
+			} else if (type->subType()->size() > valueType->subType()->size()) {
+				context.addError("Pointers to arrays only allowed to cast to smaller arrays", token);
+				return true;
+			}
+			value = RValue(new BitCastInst(value, *type, "", context), type);
+			return false;
+		} else if (value.isNullPtr()) {
 			// NOTE: discard current null value and create
 			// a new one using the right type
 			value = RValue::getNullPtr(context, type);
