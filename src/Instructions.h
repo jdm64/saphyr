@@ -47,7 +47,7 @@ public:
 
 	static RValue BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 
-	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, Token* token, CodeContext& context);
+	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context);
 
 	static RValue Cmp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 
@@ -55,13 +55,13 @@ public:
 
 	static RValue Deref(CodeContext& context, RValue value, bool recursive = false);
 
-	static RValue SizeOf(CodeContext& context, Token* token, SType* type);
+	static RValue SizeOf(CodeContext& context, SType* type, Token* token);
 
-	static RValue SizeOf(CodeContext& context, Token* token, NDataType* type);
+	static RValue SizeOf(CodeContext& context, NDataType* type);
 
-	static RValue SizeOf(CodeContext& context, Token* token, NExpression* type);
+	static RValue SizeOf(CodeContext& context, NExpression* exp);
 
-	static RValue SizeOf(CodeContext& context, Token* token, const string& type);
+	static RValue SizeOf(CodeContext& context, Token* name);
 
 	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
 	{
@@ -81,7 +81,7 @@ public:
 
 	static RValue LoadMemberVar(CodeContext& context, const string& name);
 
-	static RValue LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName);
+	static RValue LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToken, Token* memberName);
 
 	static void InitVariable(CodeContext& context, RValue var, Token* token, NExpressionList* initList, RValue& initVal);
 

@@ -208,7 +208,7 @@ enum_declaration
 	}
 	| TT_ENUM TT_IDENTIFIER '<' data_type '>' '{' variable_list '}'
 	{
-		$$ = new NEnumDeclaration($2, $7, $3.t_tok, $4);
+		$$ = new NEnumDeclaration($2, $7, $4);
 	}
 	;
 function_declaration
@@ -271,7 +271,7 @@ statement
 	}
 	| TT_SWITCH '(' expression ')' '{' switch_case_list '}'
 	{
-		$$ = new NSwitchStatement($2.t_tok, $3, $6);
+		$$ = new NSwitchStatement($3, $6);
 	}
 	| TT_IDENTIFIER ':'
 	{
@@ -287,11 +287,11 @@ statement
 	}
 	| TT_DELETE variable_expresion ';'
 	{
-		$$ = new NDeleteStatement($1.t_tok, $2);
+		$$ = new NDeleteStatement($2);
 	}
 	| TT_FOR '(' declaration_or_expression_list ';' expression_or_empty ';' expression_list ')' single_statement
 	{
-		$$ = new NForStatement($3, $5, $6.t_tok, $7, $9);
+		$$ = new NForStatement($3, $5, $7, $9);
 	}
 	| TT_LOOP single_statement
 	{
@@ -305,19 +305,19 @@ statement
 while_loop
 	: TT_WHILE '(' expression_or_empty ')' single_statement
 	{
-		$$ = new NWhileStatement($2.t_tok, $3, $5);
+		$$ = new NWhileStatement($3, $5);
 	}
 	| TT_DO single_statement TT_WHILE '(' expression_or_empty ')' ';'
 	{
-		$$ = new NWhileStatement($4.t_tok, $5, $2, true);
+		$$ = new NWhileStatement($5, $2, true);
 	}
 	| TT_UNTIL '(' expression_or_empty ')' single_statement
 	{
-		$$ = new NWhileStatement($2.t_tok, $3, $5, false, true);
+		$$ = new NWhileStatement($3, $5, false, true);
 	}
 	| TT_DO single_statement TT_UNTIL '(' expression_or_empty ')' ';'
 	{
-		$$ = new NWhileStatement($4.t_tok, $5, $2, true, true);
+		$$ = new NWhileStatement($5, $2, true, true);
 	}
 	;
 switch_case_list
@@ -359,7 +359,7 @@ branch_keyword
 condition_statement
 	: TT_IF '(' expression ')' single_statement else_statement
 	{
-		$$ = new NIfStatement($2.t_tok, $3, $5, $6);
+		$$ = new NIfStatement($3, $5, $6);
 	}
 	;
 else_statement
@@ -423,7 +423,7 @@ variable
 	}
 	| TT_IDENTIFIER '=' expression
 	{
-		$$ = new NVariableDecl($1, $2.t_tok, $3);
+		$$ = new NVariableDecl($1, $3);
 	}
 	| TT_IDENTIFIER '{' expression_list '}'
 	{
@@ -437,7 +437,7 @@ global_variable
 	}
 	| TT_IDENTIFIER '=' expression
 	{
-		$$ = new NGlobalVariableDecl($1, $2.t_tok, $3);
+		$$ = new NGlobalVariableDecl($1, $3);
 	}
 	;
 parameter_list
@@ -472,11 +472,11 @@ explicit_data_type
 	: base_type
 	| '[' integer_constant ']' data_type
 	{
-		$$ = new NArrayType($4, $2);
+		$$ = new NArrayType($1.t_tok, $4, $2);
 	}
 	| '[' ']' data_type
 	{
-		$$ = new NArrayType($3);
+		$$ = new NArrayType($1.t_tok, $3);
 	}
 	| TT_VEC '<' integer_constant ',' data_type '>'
 	{
@@ -484,7 +484,7 @@ explicit_data_type
 	}
 	| '@' data_type
 	{
-		$$ = new NPointerType($2);
+		$$ = new NPointerType($2, $1.t_tok);
 	}
 	| '@' '(' data_type_list ')' data_type
 	{
@@ -712,27 +712,27 @@ unary_operator
 sizeof_expression
 	: TT_SIZEOF explicit_variable_expresion
 	{
-		$$ = new NSizeOfOperator($1.t_tok, $2);
+		$$ = new NSizeOfOperator($2);
 	}
 	| TT_SIZEOF explicit_data_type
 	{
-		$$ = new NSizeOfOperator($1.t_tok, $2);
+		$$ = new NSizeOfOperator($2);
 	}
 	| TT_SIZEOF TT_IDENTIFIER
 	{
-		$$ = new NSizeOfOperator($1.t_tok, $2);
+		$$ = new NSizeOfOperator($2);
 	}
 	| TT_SIZEOF '(' explicit_variable_expresion ')'
 	{
-		$$ = new NSizeOfOperator($1.t_tok, $3);
+		$$ = new NSizeOfOperator($3);
 	}
 	| TT_SIZEOF '(' explicit_data_type ')'
 	{
-		$$ = new NSizeOfOperator($1.t_tok, $3);
+		$$ = new NSizeOfOperator($3);
 	}
 	| TT_SIZEOF '(' TT_IDENTIFIER ')'
 	{
-		$$ = new NSizeOfOperator($1.t_tok, $3);
+		$$ = new NSizeOfOperator($3);
 	}
 	;
 primary_expression
@@ -757,7 +757,7 @@ paren_expression
 	}
 	| paren_expression '.' TT_IDENTIFIER
 	{
-		$$ = new NMemberVariable(new NExprVariable($1), $3, $2.t_tok);
+		$$ = new NMemberVariable(new NExprVariable($1), $3);
 	}
 	;
 function_call
@@ -799,11 +799,11 @@ explicit_variable_expresion
 	}
 	| variable_expresion '.' TT_IDENTIFIER
 	{
-		$$ = new NMemberVariable($1, $3, $2.t_tok);
+		$$ = new NMemberVariable($1, $3);
 	}
 	| variable_expresion '.' TT_IDENTIFIER '(' expression_list ')'
 	{
-		$$ = new NMemberFunctionCall($1, $2.t_tok, $3, $5);
+		$$ = new NMemberFunctionCall($1, $3, $5);
 	}
 	| variable_expresion '@'
 	{
@@ -811,7 +811,7 @@ explicit_variable_expresion
 	}
 	| variable_expresion '$'
 	{
-		$$ = new NAddressOf($1);
+		$$ = new NAddressOf($1, $2.t_tok);
 	}
 	;
 value_expression

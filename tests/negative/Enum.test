@@ -26,7 +26,7 @@ negative/Enum.syp:6: enum initializer must be a constant
 negative/Enum.syp:6: enum initializer must be an int-like constant
 negative/Enum.syp:6: enum member name A already declared
 negative/Enum.syp:8: enum base type must be an integer type
-negative/Enum.syp:16: c is not a struct/union/enum
+negative/Enum.syp:16: int32 is not a struct/union/enum
 negative/Enum.syp:18: can not cast Color to Dir
 negative/Enum.syp:20: Color doesn't have member NotFound
 found 7 errors

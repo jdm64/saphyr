@@ -85,15 +85,14 @@ SType* CGNDataType::visitNArrayType(NArrayType* type)
 	if (!btype) {
 		return nullptr;
 	} else if (btype->isAuto()) {
-		auto token = static_cast<NNamedType*>(baseType)->getToken();
-		context.addError("can't create array of auto types", token);
+		context.addError("can't create array of auto types", *baseType);
 		return nullptr;
 	}
 	auto size = type->getSize();
 	if (size) {
 		auto arrSize = CGNInt::run(context, size).getSExtValue();
 		if (arrSize <= 0) {
-			context.addError("Array size must be positive", size->getToken());
+			context.addError("Array size must be positive", *size);
 			return nullptr;
 		}
 		return SType::getArray(context, btype, arrSize);
@@ -107,14 +106,14 @@ SType* CGNDataType::visitNVecType(NVecType* type)
 	auto size = type->getSize();
 	auto arrSize = CGNInt::run(context, size).getSExtValue();
 	if (arrSize <= 0) {
-		context.addError("vec size must be greater than 0", size->getToken());
+		context.addError("vec size must be greater than 0", *size);
 		return nullptr;
 	}
 	auto btype = visit(type->getBaseType());
 	if (!btype) {
 		return nullptr;
 	} else if (!btype->isNumeric() && !btype->isPointer()) {
-		context.addError("vec type only supports numeric and pointer types", type->getToken());
+		context.addError("vec type only supports numeric and pointer types", *type->getBaseType());
 		return nullptr;
 	}
 	return SType::getVec(context, btype, arrSize);
@@ -123,10 +122,10 @@ SType* CGNDataType::visitNVecType(NVecType* type)
 
 SType* CGNDataType::visitNUserType(NUserType* type)
 {
-	auto typeName = type->getName();
+	auto typeName = type->getName()->str;
 	auto ty = SUserType::lookup(context, typeName);
 	if (!ty) {
-		context.addError(typeName + " type not declared", type->getToken());
+		context.addError(typeName + " type not declared", *type);
 		return nullptr;
 	}
 	return ty->isAlias()? ty->subType() : ty;
@@ -139,8 +138,7 @@ SType* CGNDataType::visitNPointerType(NPointerType* type)
 	if (!btype) {
 		return nullptr;
 	} else if (btype->isAuto()) {
-		auto token = static_cast<NNamedType*>(baseType)->getToken();
-		context.addError("can't create pointer to auto type", token);
+		context.addError("can't create pointer to auto type", *baseType);
 		return nullptr;
 	}
 	return SType::getPointer(context, btype);
@@ -148,6 +146,6 @@ SType* CGNDataType::visitNPointerType(NPointerType* type)
 
 SType* CGNDataType::visitNFuncPointerType(NFuncPointerType* type)
 {
-	auto ptr = Builder::getFuncType(context, type->getToken(), type->getReturnType(), type->getParams());
+	auto ptr = Builder::getFuncType(context, type->getReturnType(), type->getParams());
 	return ptr? SType::getPointer(context, ptr) : nullptr;
 }

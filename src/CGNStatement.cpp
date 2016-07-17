@@ -94,7 +94,7 @@ void CGNStatement::visitNParameter(NParameter* stm)
 	auto stype = CGNDataType::run(context, stm->getType());
 	auto stackAlloc = new AllocaInst(*stype, "", context);
 	new StoreInst(storedValue, stackAlloc, context);
-	context.storeLocalSymbol({stackAlloc, stype}, stm->getName());
+	context.storeLocalSymbol({stackAlloc, stype}, stm->getName()->str);
 }
 
 void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
@@ -106,27 +106,26 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 		return;
 	} else if (varType->isAuto()) {
 		if (!stm->getInitExp()) { // auto type requires initialization
-			auto token = static_cast<NNamedType*>(stm->getType())->getToken();
-			context.addError("auto variable type requires initialization", token);
+			context.addError("auto variable type requires initialization", *stm->getType());
 			return;
 		} else if (!initValue) {
 			return;
 		}
 		varType = initValue.stype();
-	} else if (!SType::validate(context, stm->getNameToken(), varType)) {
+	} else if (!SType::validate(context, stm->getName(), varType)) {
 		return;
 	}
 
-	auto name = stm->getName();
+	auto name = stm->getName()->str;
 	if (context.loadSymbolCurr(name)) {
-		context.addError("variable " + name + " already defined", stm->getNameToken());
+		context.addError("variable " + name + " already defined", stm->getName());
 		return;
 	}
 
 	auto var = RValue(new AllocaInst(*varType, name, context), varType);
 	context.storeLocalSymbol(var, name);
 
-	Inst::InitVariable(context, var, stm->getNameToken(), stm->getInitList(), initValue);
+	Inst::InitVariable(context, var, stm->getName(), stm->getInitList(), initValue);
 }
 
 void CGNStatement::visitNVariableDeclGroup(NVariableDeclGroup* stm)
@@ -149,7 +148,7 @@ void CGNStatement::visitNAliasDeclaration(NAliasDeclaration* stm)
 
 void CGNStatement::visitNStructDeclaration(NStructDeclaration* stm)
 {
-	Builder::CreateStruct(context, stm->getType(), stm->getNameToken(), stm->getVars());
+	Builder::CreateStruct(context, stm->getType(), stm->getName(), stm->getVars());
 }
 
 void CGNStatement::visitNEnumDeclaration(NEnumDeclaration* stm)
@@ -159,19 +158,19 @@ void CGNStatement::visitNEnumDeclaration(NEnumDeclaration* stm)
 
 void CGNStatement::visitNFunctionDeclaration(NFunctionDeclaration* stm)
 {
-	Builder::CreateFunction(context, stm->getNameToken(), stm->getRType(), stm->getParams(), stm->getBody());
+	Builder::CreateFunction(context, stm->getName(), stm->getRType(), stm->getParams(), stm->getBody());
 }
 
 void CGNStatement::visitNClassStructDecl(NClassStructDecl* stm)
 {
-	auto stToken = stm->getClass()->getNameToken();
+	auto stToken = stm->getClass()->getName();
 	auto stType = NStructDeclaration::CreateType::CLASS;
 	Builder::CreateStruct(context, stType, stToken, stm->getVarList());
 }
 
 void CGNStatement::visitNClassFunctionDecl(NClassFunctionDecl* stm)
 {
-	Builder::CreateClassFunction(context, stm->getNameToken(), stm->getClass(), stm->getRType(), stm->getParams(), stm->getBody());
+	Builder::CreateClassFunction(context, stm->getName(), stm->getClass(), stm->getRType(), stm->getParams(), stm->getBody());
 }
 
 void CGNStatement::visitNClassConstructor(NClassConstructor* stm)
@@ -190,22 +189,22 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 	if (!currClass)
 		return;
 
-	auto item = currClass->getItem(stm->getNameToken()->str);
+	auto item = currClass->getItem(stm->getName()->str);
 	if (!item) {
-		context.addError("invalid initializer, class variable not defined: " + stm->getNameToken()->str, stm->getNameToken());
+		context.addError("invalid initializer, class variable not defined: " + stm->getName()->str, stm->getName());
 		return;
 	}
 
-	auto var = Inst::LoadMemberVar(context, stm->getNameToken()->str);
+	auto var = Inst::LoadMemberVar(context, stm->getName()->str);
 	RValue empty;
-	Inst::InitVariable(context, var, stm->getNameToken(), stm->getExp(), empty);
+	Inst::InitVariable(context, var, stm->getName(), stm->getExp(), empty);
 }
 
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 {
 	Builder::CreateClass(context, stm, [=](int structIdx){
 		visit(stm->getList()->at(structIdx));
-		context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName())));
+		context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName()->str)));
 
 		for (int i = 0; i < stm->getList()->size(); i++) {
 			if (i == structIdx)
@@ -223,16 +222,16 @@ void CGNStatement::visitNReturnStatement(NReturnStatement* stm)
 
 	if (funcReturn->isVoid()) {
 		if (stm->getValue()) {
-			context.addError("function " + func.name().str() + " declared void, but non-void return found", stm->getToken());
+			context.addError("function " + func.name().str() + " declared void, but non-void return found", *stm->getValue());
 			return;
 		}
 	} else if (!stm->getValue()) {
-		context.addError("function " + func.name().str() + " declared non-void, but void return found", stm->getToken());
+		context.addError("function " + func.name().str() + " declared non-void, but void return found", *stm);
 		return;
 	}
 	auto returnVal = CGNExpression::run(context, stm->getValue());
 	if (returnVal)
-		Inst::CastTo(context, stm->getToken(), returnVal, funcReturn);
+		Inst::CastTo(context, *stm->getValue(), returnVal, funcReturn);
 	ReturnInst::Create(context, returnVal, context);
 	context.pushBlock(context.createBlock());
 }
@@ -269,7 +268,7 @@ void CGNStatement::visitNWhileStatement(NWhileStatement* stm)
 	BranchInst::Create(startBlock, context);
 
 	context.pushBlock(condBlock);
-	Inst::Branch(trueBlock, falseBlock, stm->getCond(), stm->getLParen(), context);
+	Inst::Branch(trueBlock, falseBlock, stm->getCond(), context);
 
 	context.pushBlock(bodyBlock);
 	visit(stm->getBody());
@@ -283,7 +282,7 @@ void CGNStatement::visitNWhileStatement(NWhileStatement* stm)
 void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 {
 	auto switchValue = CGNExpression::run(context, stm->getValue());
-	Inst::CastTo(context, stm->getLParen(), switchValue, SType::getInt(context, 32));
+	Inst::CastTo(context, *stm->getValue(), switchValue, SType::getInt(context, 32));
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
@@ -297,11 +296,11 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 		if (caseItem->isValueCase()) {
 			auto val = ConstantInt::get(context, CGNInt::run(context, caseItem->getValue()));
 			if (!unique.insert(val->getSExtValue()).second)
-				context.addError("switch case values are not unique", caseItem->getToken());
+				context.addError("switch case values are not unique", *caseItem->getValue());
 			switchInst->addCase(val, caseBlock);
 		} else {
 			if (hasDefault)
-				context.addError("switch statement has more than one default", caseItem->getToken());
+				context.addError("switch statement has more than one default", *caseItem);
 			hasDefault = true;
 			defaultBlock = caseBlock;
 		}
@@ -340,7 +339,7 @@ void CGNStatement::visitNForStatement(NForStatement* stm)
 	BranchInst::Create(condBlock, context);
 
 	context.pushBlock(condBlock);
-	Inst::Branch(bodyBlock, endBlock, stm->getCond(), stm->getSemiCol2(), context);
+	Inst::Branch(bodyBlock, endBlock, stm->getCond(), context);
 
 	context.pushBlock(bodyBlock);
 	visit(stm->getBody());
@@ -363,7 +362,7 @@ void CGNStatement::visitNIfStatement(NIfStatement* stm)
 
 	context.pushLocalTable();
 
-	Inst::Branch(ifBlock, elseBlock, stm->getCond(), stm->getToken(), context);
+	Inst::Branch(ifBlock, elseBlock, stm->getCond(), context);
 
 	context.pushBlock(ifBlock);
 	visit(stm->getBody());
@@ -384,17 +383,17 @@ void CGNStatement::visitNIfStatement(NIfStatement* stm)
 void CGNStatement::visitNLabelStatement(NLabelStatement* stm)
 {
 	// check if label already declared
-	auto labelName = stm->getName();
+	auto labelName = stm->getName()->str;
 	auto label = context.getLabelBlock(labelName);
 	if (label) {
 		if (!label->isPlaceholder) {
-			context.addError("label " + labelName + " already defined", stm->getNameToken());
+			context.addError("label " + labelName + " already defined", stm->getName());
 			return;
 		}
 		// a used label is no longer a placeholder
 		label->isPlaceholder = false;
 	} else {
-		label = context.createLabelBlock(stm->getNameToken(), false);
+		label = context.createLabelBlock(stm->getName(), false);
 	}
 	BranchInst::Create(label->block, context);
 	context.pushBlock(label->block);
@@ -402,13 +401,12 @@ void CGNStatement::visitNLabelStatement(NLabelStatement* stm)
 
 void CGNStatement::visitNGotoStatement(NGotoStatement* stm)
 {
-	auto labelName = stm->getName();
 	auto skip = context.createBlock();
-	auto label = context.getLabelBlock(labelName);
+	auto label = context.getLabelBlock(stm->getName()->str);
 	if (!label) {
 		// trying to jump to a non-existant label. create place holder and
 		// later check if it's used at the end of the function.
-		label = context.createLabelBlock(stm->getNameToken(), true);
+		label = context.createLabelBlock(stm->getName(), true);
 	}
 	BranchInst::Create(label->block, context);
 	context.pushBlock(skip);
@@ -443,14 +441,14 @@ void CGNStatement::visitNLoopBranch(NLoopBranch* stm)
 		}
 		break;
 	default:
-		context.addError("undefined loop branch type: " + to_string(stm->getType()), stm->getToken());
+		context.addError("undefined loop branch type: " + to_string(stm->getType()), *stm);
 		return;
 	}
 	BranchInst::Create(block, context);
 	context.pushBlock(context.createBlock());
 	return;
 error:
-	context.addError(typeName + " invalid outside a loop/switch block", stm->getToken());
+	context.addError(typeName + " invalid outside a loop/switch block", *stm);
 }
 
 void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
@@ -467,7 +465,7 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 
 		func = Builder::CreateFunction(context, freeName, funcType);
 	} else if (!func.isFunction()) {
-		context.addError("Compiler Error: free not function", stm->getToken());
+		context.addError("Compiler Error: free not function", *stm->getVar());
 		return;
 	}
 
@@ -475,12 +473,12 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 	if (!ptr) {
 		return;
 	} else if (!ptr.stype()->isPointer()) {
-		context.addError("delete requires pointer type", stm->getToken());
+		context.addError("delete requires pointer type", *stm->getVar());
 		return;
 	}
 
 	if (ptr.stype()->subType()->isClass())
-		Inst::CallDestructor(context, ptr, stm->getToken());
+		Inst::CallDestructor(context, ptr, *stm->getVar());
 
 	vector<Value*> exp_list;
 	exp_list.push_back(new BitCastInst(ptr, *bytePtr, "", context));
@@ -505,10 +503,10 @@ void CGNStatement::visitNDestructorCall(NDestructorCall* stm)
 			value = Inst::Deref(context, value);
 			type = value.stype();
 		} else {
-			context.addError("calling destructor only valid for classes", stm->getToken());
+			context.addError("calling destructor only valid for classes", stm->getThisToken());
 			return;
 		}
 	}
 
-	Inst::CallDestructor(context, value, stm->getToken());
+	Inst::CallDestructor(context, value, stm->getThisToken());
 }

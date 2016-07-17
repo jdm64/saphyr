@@ -50,8 +50,8 @@ negative/Struct.syp:5: structs don't support variable initialization
 negative/Struct.syp:6: member name j already declared
 negative/Struct.syp:15: Good type already declared
 negative/Struct.syp:21: Nothing type not declared
-negative/Struct.syp:25: w is not a struct/union/enum
-negative/Struct.syp:25: k doesn't have member n
+negative/Struct.syp:25: int32 is not a struct/union/enum
+negative/Struct.syp:25: Good doesn't have member n
 negative/Struct.syp:33: can not perform operation on composite types
 negative/Struct.syp:34: can not cast between Good and More types
 negative/Struct.syp:35: variable k not declared

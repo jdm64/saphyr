@@ -22,12 +22,12 @@ class Builder
 {
 	static SFunction lookupFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params);
 
-	static SFunctionType* getFuncType(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params);
+	static SFunctionType* getFuncType(CodeContext& context, NDataType* rtype, NParameterList* params);
 
 	static bool addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
 
 public:
-	static SFunctionType* getFuncType(CodeContext& context, Token* name, NDataType* retType, NDataTypeList* params);
+	static SFunctionType* getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 
 	static SFunction CreateFunction(CodeContext& context, const string& name, SFunctionType* type);
 

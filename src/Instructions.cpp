@@ -315,9 +315,12 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 	}
 }
 
-RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, Token* token, CodeContext& context)
+RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
 {
 	auto condValue = condExp? CGNExpression::run(context, condExp) : RValue::getNumVal(context, SType::getBool(context));
+	Token* token = nullptr;
+	if (condExp)
+		token = *condExp;
 	CastTo(context, token, condValue, SType::getBool(context));
 	BranchInst::Create(trueBlock, falseBlock, condValue, context);
 	return condValue;
@@ -365,7 +368,7 @@ RValue Inst::Deref(CodeContext& context, RValue value, bool recursive)
 	return retVal;
 }
 
-RValue Inst::SizeOf(CodeContext& context, Token* token, SType* type)
+RValue Inst::SizeOf(CodeContext& context, SType* type, Token* token)
 {
 	if (!type) {
 		return RValue();
@@ -378,32 +381,33 @@ RValue Inst::SizeOf(CodeContext& context, Token* token, SType* type)
 	return RValue(size, itype);
 }
 
-RValue Inst::SizeOf(CodeContext& context, Token* token, NDataType* type)
+RValue Inst::SizeOf(CodeContext& context, NDataType* type)
 {
-	return SizeOf(context, token, CGNDataType::run(context, type));
+	return SizeOf(context, CGNDataType::run(context, type), *type);
 }
 
-RValue Inst::SizeOf(CodeContext& context, Token* token, NExpression* exp)
+RValue Inst::SizeOf(CodeContext& context, NExpression* exp)
 {
-	return SizeOf(context, token, CGNExpression::run(context, exp).stype());
+	return SizeOf(context, CGNExpression::run(context, exp).stype(), *exp);
 }
 
-RValue Inst::SizeOf(CodeContext& context, Token* token, const string& name)
+RValue Inst::SizeOf(CodeContext& context, Token* name)
 {
-	auto isType = SUserType::lookup(context, name);
-	auto isVar = context.loadSymbol(name);
+	auto nameStr = name->str;
+	auto isType = SUserType::lookup(context, nameStr);
+	auto isVar = context.loadSymbol(nameStr);
 	SType* stype = nullptr;
 
 	if (isType && isVar) {
-		context.addError(name + " is ambigious, both a type and a variable", token);
+		context.addError(nameStr + " is ambigious, both a type and a variable", name);
 	} else if (isType) {
 		stype = isType;
 	} else if (isVar) {
 		stype = isVar.stype();
 	} else {
-		context.addError("type " + name + " is not declared", token);
+		context.addError("type " + nameStr + " is not declared", name);
 	}
-	return SizeOf(context, token, stype);
+	return SizeOf(context, stype, name);
 }
 
 RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList)
@@ -472,7 +476,7 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
 {
 	baseVal = {baseVal.value(), baseVal.stype()->subType()};
-	auto sym = Inst::LoadMemberVar(context, baseVar->getName(), baseVal, funcName, funcName);
+	auto sym = Inst::LoadMemberVar(context, baseVal, *baseVar, funcName);
 	sym = Inst::Deref(context, sym);
 	if (!sym || !sym.stype()->isFunction()) {
 		context.addError("function or function pointer expected", funcName);
@@ -503,14 +507,15 @@ RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
 {
 	auto baseVar = new NBaseVariable(new Token("this"));
 	auto memName = new Token(name);
-	unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName, nullptr));
+	unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName));
 	return CGNVariable::run(context, &*classVar);
 }
 
-RValue Inst::LoadMemberVar(CodeContext& context, const string& baseName, RValue baseVar, Token* dotToken, Token* memberName)
+RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToken, Token* memberName)
 {
 	auto varType = baseVar.stype();
 	auto member = memberName->str;
+	auto baseName = SUserType::lookup(context, varType);
 	if (varType->isStruct()) {
 		auto structType = static_cast<SStructType*>(varType);
 		auto item = structType->getItem(member);
@@ -546,7 +551,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, const string& baseName, RValue 
 		return RValue(val.value(), enumType);
 	}
 
-	context.addError(baseName + " is not a struct/union/enum", dotToken);
+	context.addError(varType->str(&context) + " is not a struct/union/enum", baseToken);
 	return RValue();
 }
 

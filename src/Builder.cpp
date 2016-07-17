@@ -54,7 +54,7 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 			context.addError("no return for a non-void function", name);
 	}
 
-	if (getFuncType(context, name, rtype, params) != function.stype()) {
+	if (getFuncType(context, rtype, params) != function.stype()) {
 		context.addError("function type for " + name->str + " doesn't match definition", name);
 		return function;
 	}
@@ -65,11 +65,11 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	set<string> names;
 	for (auto arg = function.arg_begin(); arg != function.arg_end(); arg++, i++) {
 		auto param = params->at(i);
-		auto name = param->getName();
+		auto name = param->getName()->str;
 		if (names.insert(name).second)
 			arg->setName(name);
 		else
-			context.addError("function parameter " + name + " already declared", param->getNameToken());
+			context.addError("function parameter " + name + " already declared", param->getName());
 		CGNStatement visitor(context);
 		visitor.storeValue(RValue(&*arg, function.getParam(i)));
 		visitor.visit(param);
@@ -85,17 +85,17 @@ void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDecla
 	auto clType = context.getClass();
 	auto item = clType->getItem(name->str);
 	if (item) {
-		context.addError("class " + theClass->getName() + " already defines symbol " + name->str, name);
+		context.addError("class " + theClass->getName()->str + " already defines symbol " + name->str, name);
 		return;
 	}
 
 	// add this parameter
-	auto thisToken = new Token(*theClass->getNameToken());
+	auto thisToken = new Token(*theClass->getName());
 	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
 	params->addFront(thisPtr);
 
 	auto fnToken = *name;
-	fnToken.str = theClass->getName() + "_" + name->str;
+	fnToken.str = theClass->getName()->str + "_" + name->str;
 
 	// add function to class type
 	auto func = CreateFunction(context, &fnToken, rtype, params, body);
@@ -107,7 +107,7 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 {
 	map<string,NMemberInitializer*> items;
 	for (auto item : *stm->getInitList()) {
-		auto token = item->getNameToken();
+		auto token = item->getName();
 		auto it = items.find(token->str);
 		if (it != items.end()) {
 			context.addError("initializer for " + token->str + " already defined", token);
@@ -146,7 +146,7 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		return;
 
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
-	CreateClassFunction(context, stm->getNameToken(), stm->getClass(), &voidType, stm->getParams(), prototype? nullptr : stm->getBody());
+	CreateClassFunction(context, stm->getName(), stm->getClass(), &voidType, stm->getParams(), prototype? nullptr : stm->getBody());
 }
 
 void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype)
@@ -168,7 +168,7 @@ void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm,
 	NBaseType voidType(nullptr, ParserBase::TT_VOID);
 	NParameterList params;
 
-	auto nullTok = *stm->getNameToken();
+	auto nullTok = *stm->getName();
 	nullTok.str = "null";
 
 	CreateClassFunction(context, &nullTok, stm->getClass(), &voidType, &params, prototype? nullptr : stm->getBody());
@@ -183,19 +183,19 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 		switch (stm->getList()->at(i)->memberType()) {
 		case NClassMember::MemberType::STRUCT:
 			if (structIdx > -1)
-				context.addError("only one struct allowed in a class", stm->getList()->at(i)->getNameToken());
+				context.addError("only one struct allowed in a class", stm->getList()->at(i)->getName());
 			else
 				structIdx = i;
 			break;
 		case NClassMember::MemberType::CONSTRUCTOR:
 			if (constrIdx > -1)
-				context.addError("only one constructor allowed in a class", stm->getList()->at(i)->getNameToken());
+				context.addError("only one constructor allowed in a class", stm->getList()->at(i)->getName());
 			else
 				constrIdx = i;
 			break;
 		case NClassMember::MemberType::DESTRUCTOR:
 			if (destrtIdx > -1)
-				context.addError("only one destructor allowed in a class", stm->getList()->at(i)->getNameToken());
+				context.addError("only one destructor allowed in a class", stm->getList()->at(i)->getName());
 			else
 				destrtIdx = i;
 			break;
@@ -237,20 +237,20 @@ SFunction Builder::lookupFunction(CodeContext& context, Token* name, NDataType* 
 		context.addError("variable " + funcName + " already defined", name);
 		return SFunction();
 	}
-	auto funcType = getFuncType(context, name, rtype, params);
+	auto funcType = getFuncType(context, rtype, params);
 	return funcType? CreateFunction(context, funcName, funcType) : SFunction();
 }
 
-SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params)
+SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* rtype, NParameterList* params)
 {
 	NDataTypeList typeList(false);
 	for (auto item : *params) {
 		typeList.add(item->getType());
 	}
-	return getFuncType(context, name, rtype, &typeList);
+	return getFuncType(context, rtype, &typeList);
 }
 
-SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType* retType, NDataTypeList* params)
+SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params)
 {
 	bool valid = true;
 	vector<SType*> args;
@@ -259,10 +259,9 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 		if (!param) {
 			valid = false;
 		} else if (param->isAuto()) {
-			auto token = static_cast<NNamedType*>(item)->getToken();
-			context.addError("parameter can not be auto type", token);
+			context.addError("parameter can not be auto type", *item);
 			valid = false;
-		} else if (SType::validate(context, name, param)) {
+		} else if (SType::validate(context, *item, param)) {
 			args.push_back(param);
 		}
 	}
@@ -271,8 +270,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, Token* name, NDataType
 	if (!returnType) {
 		return nullptr;
 	} else if (returnType->isAuto()) {
-		auto token = static_cast<NNamedType*>(retType)->getToken();
-		context.addError("function return type can not be auto", token);
+		context.addError("function return type can not be auto", *retType);
 		return nullptr;
 	}
 
@@ -285,19 +283,17 @@ bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> 
 	if (!stype) {
 		return false;
 	} else if (stype->isAuto()) {
-		auto token = static_cast<NNamedType*>(group->getType())->getToken();
-		context.addError("struct members must not have auto type", token);
+		context.addError("struct members must not have auto type", *group->getType());
 		return false;
 	}
 	bool valid = true;
 	for (auto var : *group->getVars()) {
 		if (var->hasInit())
-			context.addError("structs don't support variable initialization", var->getEqToken());
-		auto name = var->getName();
+			context.addError("structs don't support variable initialization", *var->getInitExp());
+		auto name = var->getName()->str;
 		auto res = memberNames.insert(name);
 		if (!res.second) {
-			auto token = static_cast<NDeclaration*>(var)->getNameToken();
-			context.addError("member name " + name + " already declared", token);
+			context.addError("member name " + name + " already declared", var->getName());
 			valid = false;
 			continue;
 		}
@@ -341,22 +337,21 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 	vector<pair<string,int64_t>> structure;
 
 	for (auto item : *stm->getVarList()) {
-		auto name = item->getName();
+		auto name = item->getName()->str;
 		auto res = names.insert(name);
-		if (!res.second) {
-			auto token = static_cast<NDeclaration*>(item)->getNameToken();
-			context.addError("enum member name " + name + " already declared", token);
+		if (!res.second) {;
+			context.addError("enum member name " + name + " already declared", item->getName());
 			continue;
 		}
 		if (item->hasInit()) {
 			auto initExp = item->getInitExp();
 			if (!initExp->isConstant()) {
-				context.addError("enum initializer must be a constant", item->getEqToken());
+				context.addError("enum initializer must be a constant", *item->getInitExp());
 				continue;
 			}
 			auto constVal = static_cast<NConstant*>(initExp);
 			if (!constVal->isIntConst()) {
-				context.addError("enum initializer must be an int-like constant", constVal->getToken());
+				context.addError("enum initializer must be an int-like constant", *constVal);
 				continue;
 			}
 			auto intVal = static_cast<NIntLikeConst*>(constVal);
@@ -367,11 +362,11 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 
 	auto etype = stm->getBaseType()? CGNDataType::run(context, stm->getBaseType()) : SType::getInt(context, 32);
 	if (!etype || !etype->isInteger() || etype->isBool()) {
-		context.addError("enum base type must be an integer type", stm->getLBrac());
+		context.addError("enum base type must be an integer type", *stm->getBaseType());
 		return;
 	}
 
-	SUserType::createEnum(context, stm->getName(), structure, etype);
+	SUserType::createEnum(context, stm->getName()->str, structure, etype);
 }
 
 void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
@@ -380,18 +375,17 @@ void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 	if (!realType) {
 		return;
 	} else if (realType->isAuto()) {
-		auto token = static_cast<NNamedType*>(stm->getType())->getToken();
-		context.addError("can not create alias to auto type", token);
+		context.addError("can not create alias to auto type", *stm->getType());
 		return;
 	}
 
-	SAliasType::createAlias(context, stm->getName(), realType);
+	SAliasType::createAlias(context, stm->getName()->str, realType);
 }
 
 void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration)
 {
 	if (stm->getInitExp() && !stm->getInitExp()->isConstant()) {
-		context.addError("global variables only support constant value initializer", stm->getEqToken());
+		context.addError("global variables only support constant value initializer", stm->getName());
 		return;
 	}
 	auto initValue = CGNExpression::run(context, stm->getInitExp());
@@ -401,29 +395,28 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 		return;
 	} else if (varType->isAuto()) {
 		if (!stm->getInitExp()) { // auto type requires initialization
-			auto token = static_cast<NNamedType*>(stm->getType())->getToken();
-			context.addError("auto variable type requires initialization", token);
+			context.addError("auto variable type requires initialization", *stm->getType());
 			return;
 		} else if (!initValue) {
 			return;
 		}
 		varType = initValue.stype();
-	} else if (!SType::validate(context, stm->getNameToken(), varType)) {
+	} else if (!SType::validate(context, stm->getName(), varType)) {
 		return;
 	}
 
 	if (initValue) {
 		if (initValue.isNullPtr()) {
-			Inst::CastTo(context, stm->getEqToken(), initValue, varType);
+			Inst::CastTo(context, *stm->getInitExp(), initValue, varType);
 		} else if (varType != initValue.stype()) {
-			context.addError("global variable initialization requires exact type matching", stm->getEqToken());
+			context.addError("global variable initialization requires exact type matching", *stm->getInitExp());
 			return;
 		}
 	}
 
-	auto name = stm->getName();
+	auto name = stm->getName()->str;
 	if (context.loadSymbolCurr(name)) {
-		context.addError("variable " + name + " already defined", stm->getNameToken());
+		context.addError("variable " + name + " already defined", stm->getName());
 		return;
 	}
 

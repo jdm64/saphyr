@@ -41,7 +41,7 @@ void arrayPtr()
 
 ========
 
-negative/Pointer.syp:6: variable a can not be dereferenced
+negative/Pointer.syp:6: cannot dereference int32
 negative/Pointer.syp:8: variable q not declared
 negative/Pointer.syp:8: variable z not declared
 negative/Pointer.syp:13: Cannot cast non-pointer to pointer

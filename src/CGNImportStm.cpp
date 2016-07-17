@@ -81,7 +81,7 @@ void CGNImportStm::visitNAliasDeclaration(NAliasDeclaration* stm)
 
 void CGNImportStm::visitNStructDeclaration(NStructDeclaration* stm)
 {
-	Builder::CreateStruct(context, stm->getType(), stm->getNameToken(), stm->getVars());
+	Builder::CreateStruct(context, stm->getType(), stm->getName(), stm->getVars());
 }
 
 void CGNImportStm::visitNEnumDeclaration(NEnumDeclaration* stm)
@@ -91,19 +91,19 @@ void CGNImportStm::visitNEnumDeclaration(NEnumDeclaration* stm)
 
 void CGNImportStm::visitNFunctionDeclaration(NFunctionDeclaration* stm)
 {
-	Builder::CreateFunction(context, stm->getNameToken(), stm->getRType(), stm->getParams(), nullptr);
+	Builder::CreateFunction(context, stm->getName(), stm->getRType(), stm->getParams(), nullptr);
 }
 
 void CGNImportStm::visitNClassStructDecl(NClassStructDecl* stm)
 {
-	auto stToken = stm->getClass()->getNameToken();
+	auto stToken = stm->getClass()->getName();
 	auto stType = NStructDeclaration::CreateType::CLASS;
 	Builder::CreateStruct(context, stType, stToken, stm->getVarList());
 }
 
 void CGNImportStm::visitNClassFunctionDecl(NClassFunctionDecl* stm)
 {
-	Builder::CreateClassFunction(context, stm->getNameToken(), stm->getClass(), stm->getRType(), stm->getParams(), nullptr);
+	Builder::CreateClassFunction(context, stm->getName(), stm->getClass(), stm->getRType(), stm->getParams(), nullptr);
 }
 
 void CGNImportStm::visitNClassConstructor(NClassConstructor* stm)
@@ -120,7 +120,7 @@ void CGNImportStm::visitNClassDeclaration(NClassDeclaration* stm)
 {
 	Builder::CreateClass(context, stm, [=](int structIdx){
 		visit(stm->getList()->at(structIdx));
-		context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName())));
+		context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName()->str)));
 
 		for (int i = 0; i < stm->getList()->size(); i++) {
 			if (i == structIdx)

@@ -45,7 +45,7 @@ RValue CGNVariable::visit(NVariable* type)
 
 RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 {
-	auto varName = baseVar->getName();
+	auto varName = baseVar->getName()->str;
 
 	// check current function
 	auto var = context.loadSymbolLocal(varName);
@@ -69,7 +69,7 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 	// check enums
 	auto userVar = SUserType::lookup(context, varName);
 	if (!userVar) {
-		context.addError("variable " + varName + " not declared", baseVar->getToken());
+		context.addError("variable " + varName + " not declared", *baseVar);
 		return var;
 	}
 	return RValue(ConstantInt::getFalse(context), userVar);
@@ -82,7 +82,7 @@ RValue CGNVariable::visitNArrayVariable(NArrayVariable* nArrVar)
 	if (!indexVal) {
 		return indexVal;
 	} else if (!indexVal.stype()->isNumeric()) {
-		context.addError("array index is not able to be cast to an int", nArrVar->getLBrack());
+		context.addError("array index is not able to be cast to an int", *nArrVar->getIndex());
 		return RValue();
 	}
 
@@ -92,10 +92,10 @@ RValue CGNVariable::visitNArrayVariable(NArrayVariable* nArrVar)
 	var = Inst::Deref(context, var, true);
 
 	if (!var.stype()->isSequence()) {
-		context.addError("variable " + nArrVar->getName() + " is not an array or vec", nArrVar->getLBrack());
+		context.addError(var.stype()->str(&context) + " is not an array or vec", *nArrVar->getArrayVar());
 		return RValue();
 	}
-	Inst::CastTo(context, nArrVar->getLBrack(), indexVal, SType::getInt(context, 64));
+	Inst::CastTo(context, *nArrVar->getIndex(), indexVal, SType::getInt(context, 64));
 
 	vector<Value*> indexes;
 	indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
@@ -111,7 +111,7 @@ RValue CGNVariable::visitNMemberVariable(NMemberVariable* memVar)
 		return RValue();
 
 	var = Inst::Deref(context, var, true);
-	return Inst::LoadMemberVar(context, memVar->getName(), var, memVar->getDotToken(), memVar->getMemberToken());
+	return Inst::LoadMemberVar(context, var, *memVar->getBaseVar(), memVar->getMemberName());
 }
 
 RValue CGNVariable::visitNDereference(NDereference* nVar)
@@ -120,7 +120,7 @@ RValue CGNVariable::visitNDereference(NDereference* nVar)
 	if (!var) {
 		return var;
 	} else if (!var.stype()->isPointer()) {
-		context.addError("variable " + nVar->getName() + " can not be dereferenced", nVar->getAtToken());
+		context.addError("cannot dereference " + var.stype()->str(&context), *nVar);
 		return RValue();
 	}
 	return Inst::Deref(context, var);

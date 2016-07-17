@@ -59,7 +59,7 @@ APSInt CGNInt::visitNIntConst(NIntConst* incConst)
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
-			context.addError("invalid integer suffix: " + data[1], incConst->getToken());
+			context.addError("invalid integer suffix: " + data[1], *incConst);
 		else
 			type = suf->second;
 	}

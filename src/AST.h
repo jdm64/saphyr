@@ -225,6 +225,7 @@ class NStatementList : public NodeList<NStatement> {};
 class NExpression : public Node
 {
 public:
+	virtual operator Token*() const = 0;
 
 	virtual bool isConstant() const
 	{
@@ -279,7 +280,7 @@ public:
 	explicit NConstant(Token* token)
 	: value(token) {}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return value;
 	}
@@ -482,14 +483,9 @@ public:
 	explicit NDeclaration(Token* name)
 	: name(name) {}
 
-	Token* getNameToken() const
+	Token* getName() const
 	{
 		return name;
-	}
-
-	virtual const string& getName() const
-	{
-		return name->str;
 	}
 
 	~NDeclaration()
@@ -498,7 +494,11 @@ public:
 	}
 };
 
-class NDataType : public Node {};
+class NDataType : public Node
+{
+public:
+	virtual operator Token*() const = 0;
+};
 typedef NodeList<NDataType> NDataTypeList;
 
 class NNamedType : public NDataType
@@ -510,14 +510,14 @@ public:
 	explicit NNamedType(Token* token)
 	: token(token) {}
 
-	Token* getToken() const
+	operator Token*() const
 	{
-		return token;
+		return getName();
 	}
 
-	const string& getName() const
+	Token* getName() const
 	{
-		return token->str;
+		return token;
 	}
 
 	~NNamedType()
@@ -544,12 +544,18 @@ public:
 
 class NArrayType : public NDataType
 {
+	Token* lBrac;
 	NDataType* baseType;
 	NIntConst* size;
 
 public:
-	NArrayType(NDataType* baseType, NIntConst* size = nullptr)
-	: baseType(baseType), size(size) {}
+	NArrayType(Token* lBrac, NDataType* baseType, NIntConst* size = nullptr)
+	: lBrac(lBrac), baseType(baseType), size(size) {}
+
+	operator Token*() const
+	{
+		return lBrac;
+	}
 
 	NDataType* getBaseType() const
 	{
@@ -565,6 +571,7 @@ public:
 	{
 		delete baseType;
 		delete size;
+		delete lBrac;
 	}
 
 	ADD_ID(NArrayType)
@@ -590,7 +597,7 @@ public:
 		return baseType;
 	}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return vecToken;
 	}
@@ -616,10 +623,16 @@ public:
 class NPointerType : public NDataType
 {
 	NDataType* baseType;
+	Token* atTok;
 
 public:
-	explicit NPointerType(NDataType* baseType)
-	: baseType(baseType) {}
+	explicit NPointerType(NDataType* baseType, Token* atTok = nullptr)
+	: baseType(baseType), atTok(atTok) {}
+
+	operator Token*() const
+	{
+		return atTok;
+	}
 
 	NDataType* getBaseType() const
 	{
@@ -629,6 +642,7 @@ public:
 	~NPointerType()
 	{
 		delete baseType;
+		delete atTok;
 	}
 
 	ADD_ID(NPointerType)
@@ -644,7 +658,7 @@ public:
 	NFuncPointerType(Token* atTok, NDataType* returnType, NDataTypeList* params)
 	: returnType(returnType), params(params), atTok(atTok) {}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return atTok;
 	}
@@ -675,14 +689,13 @@ protected:
 	NExpression* initExp;
 	NExpressionList* initList;
 	NDataType* type;
-	Token* eqToken;
 
 public:
-	NVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
-	: NDeclaration(name), initExp(initExp), initList(nullptr), type(nullptr), eqToken(eqToken) {}
+	NVariableDecl(Token* name, NExpression* initExp = nullptr)
+	: NDeclaration(name), initExp(initExp), initList(nullptr), type(nullptr) {}
 
 	NVariableDecl(Token* name, NExpressionList* initList)
-	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr), eqToken(nullptr) {}
+	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr) {}
 
 	NDataType* getType() const
 	{
@@ -710,15 +723,9 @@ public:
 		return initList;
 	}
 
-	Token* getEqToken() const
-	{
-		return eqToken;
-	}
-
 	~NVariableDecl()
 	{
 		delete initExp;
-		delete eqToken;
 		delete initList;
 	}
 
@@ -730,17 +737,13 @@ class NVariableDeclList : public NodeList<NVariableDecl> {};
 class NGlobalVariableDecl : public NVariableDecl
 {
 public:
-	NGlobalVariableDecl(Token* name, Token* eqToken = nullptr, NExpression* initExp = nullptr)
-	: NVariableDecl(name, eqToken, initExp) {}
+	NGlobalVariableDecl(Token* name, NExpression* initExp = nullptr)
+	: NVariableDecl(name, initExp) {}
 
 	ADD_ID(NGlobalVariableDecl)
 };
 
-class NVariable : public NExpression
-{
-public:
-	virtual const string& getName() const = 0;
-};
+class NVariable : public NExpression {};
 
 class NBaseVariable : public NVariable
 {
@@ -750,14 +753,14 @@ public:
 	explicit NBaseVariable(Token* name)
 	: name(name) {}
 
-	Token* getToken() const
+	operator Token*() const
 	{
-		return name;
+		return getName();
 	}
 
-	const string& getName() const
+	Token* getName() const
 	{
-		return name->str;
+		return name;
 	}
 
 	bool isComplex() const
@@ -788,7 +791,7 @@ public:
 		return index;
 	}
 
-	Token* getLBrack() const
+	operator Token*() const
 	{
 		return brackTok;
 	}
@@ -796,11 +799,6 @@ public:
 	NVariable* getArrayVar() const
 	{
 		return arrVar;
-	}
-
-	const string& getName() const
-	{
-		return arrVar->getName();
 	}
 
 	~NArrayVariable()
@@ -817,42 +815,30 @@ class NMemberVariable : public NVariable
 {
 	NVariable* baseVar;
 	Token* memberName;
-	Token* dotToken;
 
 public:
-	NMemberVariable(NVariable* baseVar, Token* memberName, Token* dotToken)
-	: baseVar(baseVar), memberName(memberName), dotToken(dotToken) {}
+	NMemberVariable(NVariable* baseVar, Token* memberName)
+	: baseVar(baseVar), memberName(memberName) {}
 
 	NVariable* getBaseVar() const
 	{
 		return baseVar;
 	}
 
-	Token* getDotToken() const
+	operator Token*() const
 	{
-		return dotToken;
+		return getMemberName();
 	}
 
-	Token* getMemberToken() const
+	Token* getMemberName() const
 	{
 		return memberName;
-	}
-
-	const string& getName() const
-	{
-		return baseVar->getName();
-	}
-
-	const string& getMemberName() const
-	{
-		return memberName->str;
 	}
 
 	~NMemberVariable()
 	{
 		delete baseVar;
 		delete memberName;
-		delete dotToken;
 	}
 
 	ADD_ID(NMemberVariable)
@@ -866,10 +852,9 @@ public:
 	explicit NExprVariable(NExpression* expr)
 	: expr(expr) {}
 
-	const string& getName() const
+	operator Token*() const
 	{
-		const static string name = "temp expression";
-		return name;
+		return *expr;
 	}
 
 	NExpression* getExp() const
@@ -899,14 +884,9 @@ public:
 		return derefVar;
 	}
 
-	Token* getAtToken() const
+	operator Token*() const
 	{
 		return atTok;
-	}
-
-	const string& getName() const
-	{
-		return derefVar->getName();
 	}
 
 	~NDereference()
@@ -921,19 +901,20 @@ public:
 class NAddressOf : public NVariable
 {
 	NVariable* addVar;
+	Token* token;
 
 public:
-	explicit NAddressOf(NVariable* addVar)
-	: addVar(addVar) {}
+	explicit NAddressOf(NVariable* addVar, Token* token)
+	: addVar(addVar), token(token) {}
 
 	NVariable* getVar() const
 	{
 		return addVar;
 	}
 
-	const string& getName() const
+	operator Token*() const
 	{
-		return addVar->getName();
+		return token;
 	}
 
 	~NAddressOf()
@@ -1050,12 +1031,11 @@ public:
 class NEnumDeclaration : public NDeclaration
 {
 	NVariableDeclList* variables;
-	Token* lBrac;
 	NDataType* baseType;
 
 public:
-	NEnumDeclaration(Token* name, NVariableDeclList* variables, Token* lBrac = nullptr, NDataType* baseType = nullptr)
-	: NDeclaration(name), variables(variables), lBrac(lBrac), baseType(baseType) {}
+	NEnumDeclaration(Token* name, NVariableDeclList* variables, NDataType* baseType = nullptr)
+	: NDeclaration(name), variables(variables), baseType(baseType) {}
 
 	NVariableDeclList* getVarList() const
 	{
@@ -1067,15 +1047,9 @@ public:
 		return baseType;
 	}
 
-	Token* getLBrac() const
-	{
-		return lBrac;
-	}
-
 	~NEnumDeclaration()
 	{
 		delete variables;
-		delete lBrac;
 		delete baseType;
 	}
 
@@ -1154,7 +1128,7 @@ public:
 	NMemberInitializer(Token* name, NExpressionList* expression)
 	: name(name), expression(expression) {}
 
-	Token* getNameToken() const
+	Token* getName() const
 	{
 		return name;
 	}
@@ -1162,6 +1136,12 @@ public:
 	NExpressionList* getExp() const
 	{
 		return expression;
+	}
+
+	~NMemberInitializer()
+	{
+		delete name;
+		delete expression;
 	}
 
 	ADD_ID(NMemberInitializer)
@@ -1370,18 +1350,12 @@ public:
 
 class NWhileStatement : public NConditionStmt
 {
-	Token* lparen;
 	bool isDoWhile;
 	bool isUntil;
 
 public:
-	NWhileStatement(Token* lparen, NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
-	: NConditionStmt(condition, body), lparen(lparen), isDoWhile(isDoWhile), isUntil(isUntil) {}
-
-	Token* getLParen() const
-	{
-		return lparen;
-	}
+	NWhileStatement(NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
+	: NConditionStmt(condition, body), isDoWhile(isDoWhile), isUntil(isUntil) {}
 
 	bool doWhile() const
 	{
@@ -1391,11 +1365,6 @@ public:
 	bool until() const
 	{
 		return isUntil;
-	}
-
-	~NWhileStatement()
-	{
-		delete lparen;
 	}
 
 	ADD_ID(NWhileStatement)
@@ -1421,7 +1390,7 @@ public:
 		return body;
 	}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return token;
 	}
@@ -1454,16 +1423,10 @@ class NSwitchStatement : public NStatement
 {
 	NExpression* value;
 	NSwitchCaseList* cases;
-	Token* lparen;
 
 public:
-	NSwitchStatement(Token* lparen, NExpression* value, NSwitchCaseList* cases)
-	: value(value), cases(cases), lparen(lparen) {}
-
-	Token* getLParen() const
-	{
-		return lparen;
-	}
+	NSwitchStatement(NExpression* value, NSwitchCaseList* cases)
+	: value(value), cases(cases) {}
 
 	NExpression* getValue() const
 	{
@@ -1479,7 +1442,6 @@ public:
 	{
 		delete value;
 		delete cases;
-		delete lparen;
 	}
 
 	ADD_ID(NSwitchStatement)
@@ -1489,11 +1451,10 @@ class NForStatement : public NConditionStmt
 {
 	NStatementList* preStm;
 	NExpressionList* postExp;
-	Token* semiCol2;
 
 public:
-	NForStatement(NStatementList* preStm, NExpression* condition, Token* semiCol2, NExpressionList* postExp, NStatementList* body)
-	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp), semiCol2(semiCol2) {}
+	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
+	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp) {}
 
 	NStatementList* getPreStm() const
 	{
@@ -1505,16 +1466,10 @@ public:
 		return postExp;
 	}
 
-	Token* getSemiCol2() const
-	{
-		return semiCol2;
-	}
-
 	~NForStatement()
 	{
 		delete preStm;
 		delete postExp;
-		delete semiCol2;
 	}
 
 	ADD_ID(NForStatement)
@@ -1523,16 +1478,10 @@ public:
 class NIfStatement : public NConditionStmt
 {
 	NStatementList* elseBody;
-	Token* lparen;
 
 public:
-	NIfStatement(Token* lparen, NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
-	: NConditionStmt(condition, ifBody), elseBody(elseBody), lparen(lparen) {}
-
-	Token* getToken() const
-	{
-		return lparen;
-	}
+	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
+	: NConditionStmt(condition, ifBody), elseBody(elseBody) {}
 
 	NStatementList* getElseBody() const
 	{
@@ -1542,7 +1491,6 @@ public:
 	~NIfStatement()
 	{
 		delete elseBody;
-		delete lparen;
 	}
 
 	ADD_ID(NIfStatement)
@@ -1580,7 +1528,7 @@ public:
 		return value;
 	}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return retToken;
 	}
@@ -1602,14 +1550,9 @@ public:
 	explicit NGotoStatement(Token* name)
 	: name(name) {}
 
-	Token* getNameToken() const
+	Token* getName() const
 	{
 		return name;
-	}
-
-	const string& getName() const
-	{
-		return name->str;
 	}
 
 	~NGotoStatement()
@@ -1630,7 +1573,7 @@ public:
 	NLoopBranch(Token* token, int type, NIntConst* level = nullptr)
 	: token(token), type(type), level(level) {}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return token;
 	}
@@ -1657,26 +1600,19 @@ public:
 class NDeleteStatement : public NStatement
 {
 	NVariable *variable;
-	Token* token;
 
 public:
-	NDeleteStatement(Token* token, NVariable* variable)
-	: variable(variable), token(token) {}
+	NDeleteStatement(NVariable* variable)
+	: variable(variable) {}
 
 	NVariable* getVar() const
 	{
 		return variable;
 	}
 
-	Token* getToken() const
-	{
-		return token;
-	}
-
 	~NDeleteStatement()
 	{
 		delete variable;
-		delete token;
 	}
 
 	ADD_ID(NDeleteStatement)
@@ -1696,7 +1632,7 @@ public:
 		return baseVar;
 	}
 
-	Token* getToken() const
+	Token* getThisToken() const
 	{
 		return thisToken;
 	}
@@ -1704,6 +1640,7 @@ public:
 	~NDestructorCall()
 	{
 		delete baseVar;
+		delete thisToken;
 	}
 
 	ADD_ID(NDestructorCall)
@@ -1724,7 +1661,7 @@ public:
 		return oper;
 	}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return opTok;
 	}
@@ -1789,7 +1726,7 @@ public:
 		return falseVal;
 	}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return colTok;
 	}
@@ -1819,7 +1756,7 @@ public:
 		return type;
 	}
 
-	Token* getToken() const
+	operator Token*() const
 	{
 		return token;
 	}
@@ -1906,17 +1843,16 @@ private:
 	NDataType* dtype;
 	NExpression* exp;
 	Token* name;
-	Token* sizeTok;
 
 public:
-	NSizeOfOperator(Token* sizeTok, NDataType* dtype)
-	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr), sizeTok(sizeTok) {}
+	explicit NSizeOfOperator(NDataType* dtype)
+	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr) {}
 
-	NSizeOfOperator(Token* sizeTok, NExpression* exp)
-	: type(EXP), dtype(nullptr), exp(exp), name(nullptr), sizeTok(sizeTok) {}
+	explicit NSizeOfOperator(NExpression* exp)
+	: type(EXP), dtype(nullptr), exp(exp), name(nullptr) {}
 
-	NSizeOfOperator(Token* sizeTok, Token* name)
-	: type(NAME), dtype(nullptr), exp(nullptr), name(name), sizeTok(sizeTok) {}
+	explicit NSizeOfOperator(Token* name)
+	: type(NAME), dtype(nullptr), exp(nullptr), name(name){}
 
 	OfType getType() const
 	{
@@ -1938,9 +1874,14 @@ public:
 		return name;
 	}
 
-	Token* getToken() const
+	operator Token*() const
 	{
-		return sizeTok;
+		switch (type) {
+		default:
+		case DATA: return *dtype;
+		case EXP: return *exp;
+		case NAME: return name;
+		}
 	}
 
 	bool isConstant() const
@@ -1953,7 +1894,6 @@ public:
 		delete dtype;
 		delete exp;
 		delete name;
-		delete sizeTok;
 	}
 
 	ADD_ID(NSizeOfOperator)
@@ -1997,9 +1937,9 @@ public:
 	NFunctionCall(Token* name, NExpressionList* arguments)
 	: name(name), arguments(arguments) {}
 
-	Token* getToken() const
+	operator Token*() const
 	{
-		return name;
+		return getName();
 	}
 
 	NExpressionList* getArguments() const
@@ -2007,9 +1947,9 @@ public:
 		return arguments;
 	}
 
-	const string& getName() const
+	Token* getName() const
 	{
-		return name->str;
+		return name;
 	}
 
 	~NFunctionCall()
@@ -2024,25 +1964,24 @@ public:
 class NMemberFunctionCall : public NVariable
 {
 	NVariable* baseVar;
-	Token* dotToken;
 	Token* funcName;
 	NExpressionList* arguments;
 
 public:
-	NMemberFunctionCall(NVariable* baseVar, Token* dotToken, Token* funcName, NExpressionList* arguments)
-	: baseVar(baseVar), dotToken(dotToken), funcName(funcName), arguments(arguments) {}
+	NMemberFunctionCall(NVariable* baseVar, Token* funcName, NExpressionList* arguments)
+	: baseVar(baseVar), funcName(funcName), arguments(arguments) {}
 
 	NVariable* getBaseVar() const
 	{
 		return baseVar;
 	}
 
-	Token* getDotToken() const
+	operator Token*() const
 	{
-		return dotToken;
+		return getName();
 	}
 
-	Token* getFuncName() const
+	Token* getName() const
 	{
 		return funcName;
 	}
@@ -2052,15 +1991,9 @@ public:
 		return arguments;
 	}
 
-	const string& getName() const
-	{
-		return funcName->str;
-	}
-
 	~NMemberFunctionCall()
 	{
 		delete baseVar;
-		delete dotToken;
 		delete funcName;
 		delete arguments;
 	}

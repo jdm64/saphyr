@@ -95,7 +95,7 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 
 	if (exp->getOp() == ParserBase::TT_DQ_MARK) {
 		auto condExp = Inst::Load(context, lhsVar);
-		Inst::CastTo(context, exp->getToken(), condExp, SType::getBool(context));
+		Inst::CastTo(context, *exp, condExp, SType::getBool(context));
 
 		auto trueBlock = context.createBlock();
 		endBlock = context.createBlock();
@@ -110,9 +110,9 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 
 	if (exp->getOp() != '=' && exp->getOp() != ParserBase::TT_DQ_MARK) {
 		auto lhsLocal = Inst::Load(context, lhsVar);
-		rhsExp = Inst::BinaryOp(exp->getOp(), exp->getToken(), lhsLocal, rhsExp, context);
+		rhsExp = Inst::BinaryOp(exp->getOp(), *exp, lhsLocal, rhsExp, context);
 	}
-	Inst::CastTo(context, exp->getToken(), rhsExp, lhsVar.stype());
+	Inst::CastTo(context, *exp->getRhs(), rhsExp, lhsVar.stype());
 	new StoreInst(rhsExp, lhsVar, context);
 
 	if (exp->getOp() == ParserBase::TT_DQ_MARK) {
@@ -126,7 +126,7 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 {
 	auto condExp = visit(exp->getCondition());
-	Inst::CastTo(context, exp->getToken(), condExp, SType::getBool(context));
+	Inst::CastTo(context, *exp->getCondition(), condExp, SType::getBool(context));
 
 	RValue trueExp, falseExp, retVal;
 	if (exp->getTrueVal()->isComplex() || exp->getFalseVal()->isComplex()) {
@@ -157,7 +157,7 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 	}
 
 	if (trueExp.stype() != falseExp.stype())
-		context.addError("return types of ternary must match", exp->getToken());
+		context.addError("return types of ternary must match", *exp);
 	return retVal;
 }
 
@@ -174,7 +174,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 
 		funcVal = Builder::CreateFunction(context, mallocName, funcType);
 	} else if (!funcVal.isFunction()) {
-		context.addError("Compiler Error: malloc not function", exp->getToken());
+		context.addError("Compiler Error: malloc not function", *exp);
 		return RValue();
 	}
 
@@ -182,15 +182,15 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	if (!nType) {
 		return RValue();
 	} else if (nType->isAuto()) {
-		context.addError("can't call new on auto type", exp->getToken());
+		context.addError("can't call new on auto type", *exp->getType());
 		return RValue();
 	} else if (nType->isVoid()) {
-		context.addError("can't call new on void type", exp->getToken());
+		context.addError("can't call new on void type", *exp->getType());
 		return RValue();
 	}
 
 	vector<Value*> exp_list;
-	exp_list.push_back(Inst::SizeOf(context, exp->getToken(), nType));
+	exp_list.push_back(Inst::SizeOf(context, nType, *exp->getType()));
 
 	auto func = static_cast<SFunction&>(funcVal);
 	auto call = CallInst::Create(func, exp_list, "", context);
@@ -208,11 +208,11 @@ RValue CGNExpression::visitNLogicalOperator(NLogicalOperator* exp)
 	auto trueBlock = (exp->getOp() == ParserBase::TT_LOG_AND)? firstBlock : secondBlock;
 	auto falseBlock = (exp->getOp() == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
 
-	auto lhsExp = Inst::Branch(trueBlock, falseBlock, exp->getLhs(), exp->getToken(), context);
+	auto lhsExp = Inst::Branch(trueBlock, falseBlock, exp->getLhs(), context);
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = visit(exp->getRhs());
-	Inst::CastTo(context, exp->getToken(), rhsExp, SType::getBool(context));
+	Inst::CastTo(context, *exp->getRhs(), rhsExp, SType::getBool(context));
 	BranchInst::Create(secondBlock, context);
 
 	context.pushBlock(secondBlock);
@@ -228,7 +228,7 @@ RValue CGNExpression::visitNCompareOperator(NCompareOperator* exp)
 	auto lhsExp = visit(exp->getLhs());
 	auto rhsExp = visit(exp->getRhs());
 
-	return Inst::Cmp(exp->getOp(), exp->getToken(), lhsExp, rhsExp, context);
+	return Inst::Cmp(exp->getOp(), *exp, lhsExp, rhsExp, context);
 }
 
 RValue CGNExpression::visitNBinaryMathOperator(NBinaryMathOperator* exp)
@@ -236,7 +236,7 @@ RValue CGNExpression::visitNBinaryMathOperator(NBinaryMathOperator* exp)
 	auto lhsExp = visit(exp->getLhs());
 	auto rhsExp = visit(exp->getRhs());
 
-	return Inst::BinaryOp(exp->getOp(), exp->getToken(), lhsExp, rhsExp, context);
+	return Inst::BinaryOp(exp->getOp(), *exp, lhsExp, rhsExp, context);
 }
 
 RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
@@ -245,7 +245,7 @@ RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 	auto lhsExp = visit(exp->getLhs());
 	auto condition = lhsExp;
 
-	Inst::CastTo(context, exp->getToken(), condition, SType::getBool(context), false);
+	Inst::CastTo(context, *exp->getLhs(), condition, SType::getBool(context), false);
 	if (exp->getRhs()->isComplex()) {
 		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
@@ -270,7 +270,7 @@ RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 	}
 
 	if (lhsExp.stype() != rhsExp.stype())
-		context.addError("return types of null coalescing operator must match", exp->getToken());
+		context.addError("return types of null coalescing operator must match", *exp);
 	return retVal;
 }
 
@@ -278,11 +278,11 @@ RValue CGNExpression::visitNSizeOfOperator(NSizeOfOperator* exp)
 {
 	switch (exp->getType()) {
 	case NSizeOfOperator::DATA:
-		return Inst::SizeOf(context, exp->getToken(), exp->getDataType());
+		return Inst::SizeOf(context, exp->getDataType());
 	case NSizeOfOperator::EXP:
-		return Inst::SizeOf(context, exp->getToken(), exp->getExp());
+		return Inst::SizeOf(context, exp->getExp());
 	case NSizeOfOperator::NAME:
-		return Inst::SizeOf(context, exp->getToken(), exp->getName()->str);
+		return Inst::SizeOf(context, exp->getName());
 	default:
 		// shouldn't happen
 		return RValue();
@@ -297,39 +297,39 @@ RValue CGNExpression::visitNUnaryMathOperator(NUnaryMathOperator* exp)
 	switch (exp->getOp()) {
 	case '+':
 	case '-':
-		return Inst::BinaryOp(exp->getOp(), exp->getToken(), RValue::getZero(context, type), unaryExp, context);
+		return Inst::BinaryOp(exp->getOp(), *exp, RValue::getZero(context, type), unaryExp, context);
 	case '!':
-		return Inst::Cmp(ParserBase::TT_EQ, exp->getToken(), RValue::getZero(context, type), unaryExp, context);
+		return Inst::Cmp(ParserBase::TT_EQ, *exp, RValue::getZero(context, type), unaryExp, context);
 	case '~':
-		return Inst::BinaryOp('^', exp->getToken(), RValue::getAllOne(context, type), unaryExp, context);
+		return Inst::BinaryOp('^', *exp, RValue::getAllOne(context, type), unaryExp, context);
 	default:
-		context.addError("invalid unary operator " + to_string(exp->getOp()), exp->getToken());
+		context.addError("invalid unary operator " + to_string(exp->getOp()), *exp);
 		return RValue();
 	}
 }
 
 RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 {
-	auto funcName = exp->getName();
+	auto funcName = exp->getName()->str;
 	auto sym = context.loadSymbol(funcName);
 	if (!sym) {
-		context.addError("symbol " + funcName + " not defined", exp->getToken());
+		context.addError("symbol " + funcName + " not defined", *exp);
 		return sym;
 	}
 	auto deSym = Inst::Deref(context, sym, true);
 	if (!deSym.isFunction()) {
-		context.addError("symbol " + funcName + " doesn't reference a function", exp->getToken());
+		context.addError("symbol " + funcName + " doesn't reference a function", *exp);
 		return RValue();
 	}
 
 	auto func = static_cast<SFunction&>(deSym);
 	vector<Value*> exp_list;
-	return Inst::CallFunction(context, func, exp->getToken(), exp->getArguments(), exp_list);
+	return Inst::CallFunction(context, func, exp->getName(), exp->getArguments(), exp_list);
 }
 
 RValue CGNExpression::visitNMemberFunctionCall(NMemberFunctionCall* exp)
 {
-	return Inst::CallMemberFunction(context, exp->getBaseVar(), exp->getFuncName(), exp->getArguments());
+	return Inst::CallMemberFunction(context, exp->getBaseVar(), exp->getName(), exp->getArguments());
 }
 
 RValue CGNExpression::visitNIncrement(NIncrement* exp)
@@ -341,15 +341,15 @@ RValue CGNExpression::visitNIncrement(NIncrement* exp)
 
 	auto type = varVal.stype();
 	if (type->isPointer() && type->subType()->isFunction()) {
-		context.addError("Increment/Decrement invalid for function pointer", exp->getToken());
+		context.addError("Increment/Decrement invalid for function pointer", *exp);
 		return RValue();
 	} else if (type->isEnum()) {
-		context.addError("Increment/Decrement invalid for enum type", exp->getToken());
+		context.addError("Increment/Decrement invalid for enum type", *exp);
 		return RValue();
 	}
 	auto incType = type->isPointer()? SType::getInt(context, 32) : type;
 
-	auto result = Inst::BinaryOp(exp->getOp(), exp->getToken(), varVal, RValue::getNumVal(context, incType, exp->getOp() == ParserBase::TT_INC? 1:-1), context);
+	auto result = Inst::BinaryOp(exp->getOp(), *exp, varVal, RValue::getNumVal(context, incType, exp->getOp() == ParserBase::TT_INC? 1:-1), context);
 	new StoreInst(result, varPtr, context);
 
 	return exp->postfix()? varVal : RValue(result, type);
@@ -402,7 +402,7 @@ RValue CGNExpression::visitNFloatConst(NFloatConst* exp)
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
-			context.addError("invalid float suffix: " + data[1], exp->getToken());
+			context.addError("invalid float suffix: " + data[1], *exp);
 		else
 			type = suf->second;
 	}
