@@ -470,7 +470,7 @@ data_type
 	;
 explicit_data_type
 	: base_type
-	| '[' integer_constant ']' data_type
+	| '[' expression ']' data_type
 	{
 		$$ = new NArrayType($1.t_tok, $4, $2);
 	}

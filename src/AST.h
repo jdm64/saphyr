@@ -546,10 +546,10 @@ class NArrayType : public NDataType
 {
 	Token* lBrac;
 	NDataType* baseType;
-	NIntConst* size;
+	NExpression* size;
 
 public:
-	NArrayType(Token* lBrac, NDataType* baseType, NIntConst* size = nullptr)
+	NArrayType(Token* lBrac, NDataType* baseType, NExpression* size = nullptr)
 	: lBrac(lBrac), baseType(baseType), size(size) {}
 
 	operator Token*() const
@@ -562,7 +562,7 @@ public:
 		return baseType;
 	}
 
-	NIntConst* getSize() const
+	NExpression* getSize() const
 	{
 		return size;
 	}

@@ -18,6 +18,11 @@ void foo()
 	z[4] = 5;
 }
 
+void bar(int x)
+{
+	[x]int a;
+}
+
 ========
 
 negative/Arrays.syp:9: can not cast between S and int32 types
@@ -25,4 +30,5 @@ negative/Arrays.syp:11: array index is not able to be cast to an int
 negative/Arrays.syp:11: S is not an array or vec
 negative/Arrays.syp:16: Array size must be positive
 negative/Arrays.syp:18: variable z not declared
-found 5 errors
+negative/Arrays.syp:23: Array size must be a constant integer
+found 6 errors

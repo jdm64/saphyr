@@ -90,12 +90,16 @@ SType* CGNDataType::visitNArrayType(NArrayType* type)
 	}
 	auto size = type->getSize();
 	if (size) {
-		auto arrSize = CGNInt::run(context, size).getSExtValue();
-		if (arrSize <= 0) {
-			context.addError("Array size must be positive", *size);
-			return nullptr;
+		if (size->isConstant() && static_cast<NConstant*>(size)->isIntConst()) {
+			auto arrSize = CGNInt::run(context, static_cast<NIntLikeConst*>(size)).getSExtValue();
+			if (arrSize <= 0) {
+				context.addError("Array size must be positive", *size);
+				return nullptr;
+			}
+			return SType::getArray(context, btype, arrSize);
 		}
-		return SType::getArray(context, btype, arrSize);
+		context.addError("Array size must be a constant integer", *size);
+		return nullptr;
 	} else {
 		return SType::getArray(context, btype, 0);
 	}
