@@ -335,23 +335,27 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 	int64_t val = 0;
 	set<string> names;
 	vector<pair<string,int64_t>> structure;
+	bool valid = true;
 
 	for (auto item : *stm->getVarList()) {
 		auto name = item->getName()->str;
 		auto res = names.insert(name);
-		if (!res.second) {;
+		if (!res.second) {
 			context.addError("enum member name " + name + " already declared", item->getName());
+			valid = false;
 			continue;
 		}
 		if (item->hasInit()) {
 			auto initExp = item->getInitExp();
 			if (!initExp->isConstant()) {
 				context.addError("enum initializer must be a constant", *item->getInitExp());
+				valid = false;
 				continue;
 			}
 			auto constVal = static_cast<NConstant*>(initExp);
 			if (!constVal->isIntConst()) {
 				context.addError("enum initializer must be an int-like constant", *constVal);
+				valid = false;
 				continue;
 			}
 			auto intVal = static_cast<NIntLikeConst*>(constVal);
@@ -366,7 +370,8 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 		return;
 	}
 
-	SUserType::createEnum(context, stm->getName()->str, structure, etype);
+	if (valid)
+		SUserType::createEnum(context, stm->getName()->str, structure, etype);
 }
 
 void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
