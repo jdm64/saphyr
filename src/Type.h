@@ -159,7 +159,7 @@ public:
 		return tclass & UNSIGNED;
 	}
 
-	int size() const
+	uint64_t size() const
 	{
 		return tsize;
 	}
