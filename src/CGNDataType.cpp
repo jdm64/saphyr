@@ -21,6 +21,8 @@
 #include "parserbase.h"
 #include "Builder.h"
 #include "CGNInt.h"
+#include "Instructions.h"
+#include "CGNExpression.h"
 
 #define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartDataType)] = reinterpret_cast<classPtr>(&CGNDataType::visit##ID)
 
@@ -152,4 +154,114 @@ SType* CGNDataType::visitNFuncPointerType(NFuncPointerType* type)
 {
 	auto ptr = Builder::getFuncType(context, type->getReturnType(), type->getParams());
 	return ptr? SType::getPointer(context, ptr) : nullptr;
+}
+
+#define TABLE_ADD2(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartDataType)] = reinterpret_cast<classPtr>(&CGNDataTypeNew::visit##ID)
+
+CGNDataType::classPtr* CGNDataTypeNew::buildVTable()
+{
+	auto table = new CGNDataType::classPtr[NODEID_DIFF(NodeId::EndDataType, NodeId::StartDataType)];
+	TABLE_ADD2(NArrayType);
+	TABLE_ADD2(NBaseType);
+	TABLE_ADD2(NFuncPointerType);
+	TABLE_ADD2(NPointerType);
+	TABLE_ADD2(NUserType);
+	TABLE_ADD2(NVecType);
+	return table;
+}
+
+CGNDataType::classPtr* CGNDataTypeNew::vtable = CGNDataTypeNew::buildVTable();
+
+SType* CGNDataTypeNew::visit(NDataType* type)
+{
+	return (this->*vtable[NODEID_DIFF(type->id(), NodeId::StartDataType)])(type);
+}
+
+SType* CGNDataTypeNew::run(CodeContext& context, NDataType* type, RValue& size)
+{
+	CGNDataTypeNew runner(context);
+	auto ty = runner.visit(type);
+	size = runner.sizeVal;
+	return ty;
+}
+
+void CGNDataTypeNew::setSize(SType* type)
+{
+	sizeVal = RValue::getNumVal(context, SType::getInt(context, 64), SType::allocSize(context, type));
+}
+
+void CGNDataTypeNew::setSize(uint64_t size)
+{
+	setSize(RValue::getNumVal(context, SType::getInt(context, 64), size));
+}
+
+void CGNDataTypeNew::setSize(const RValue& size)
+{
+	sizeVal = Inst::BinaryOp('*', nullptr, sizeVal, size, context);
+}
+
+SType* CGNDataTypeNew::visitNBaseType(NBaseType* type)
+{
+	auto ty = CGNDataType::visitNBaseType(type);
+	if (ty)
+		setSize(ty);
+	return ty;
+}
+
+SType* CGNDataTypeNew::visitNArrayType(NArrayType* type)
+{
+	auto baseType = type->getBaseType();
+	auto btype = visit(baseType);
+	if (!btype) {
+		return nullptr;
+	} else if (btype->isAuto()) {
+		context.addError("can't create array of auto types", *baseType);
+		return nullptr;
+	}
+	auto size = type->getSize();
+	if (size) {
+		if (size->isConstant() && static_cast<NConstant*>(size)->isIntConst()) {
+			auto arrSize = CGNInt::run(context, static_cast<NIntLikeConst*>(size)).getSExtValue();
+			if (arrSize <= 0) {
+				context.addError("Array size must be positive", *size);
+				return nullptr;
+			}
+			setSize(arrSize);
+			return SType::getArray(context, btype, arrSize);
+		}
+		setSize(CGNExpression::run(context, size));
+	}
+	return SType::getArray(context, btype, 0);
+}
+
+SType* CGNDataTypeNew::visitNVecType(NVecType* type)
+{
+	auto ty = CGNDataType::visitNVecType(type);
+	if (ty)
+		setSize(ty);
+	return ty;
+}
+
+SType* CGNDataTypeNew::visitNUserType(NUserType* type)
+{
+	auto ty = CGNDataType::visitNUserType(type);
+	if (ty)
+		setSize(ty);
+	return ty;
+}
+
+SType* CGNDataTypeNew::visitNPointerType(NPointerType* type)
+{
+	auto ty = CGNDataType::visitNPointerType(type);
+	if (ty)
+		setSize(ty);
+	return ty;
+}
+
+SType* CGNDataTypeNew::visitNFuncPointerType(NFuncPointerType* type)
+{
+	auto ty = CGNDataType::visitNFuncPointerType(type);
+	if (ty)
+		setSize(ty);
+	return ty;
 }

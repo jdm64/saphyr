@@ -178,7 +178,8 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 		return RValue();
 	}
 
-	auto nType = CGNDataType::run(context, exp->getType());
+	RValue size;
+	auto nType = CGNDataTypeNew::run(context, exp->getType(), size);
 	if (!nType) {
 		return RValue();
 	} else if (nType->isAuto()) {
@@ -190,7 +191,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	}
 
 	vector<Value*> exp_list;
-	exp_list.push_back(Inst::SizeOf(context, nType, *exp->getType()));
+	exp_list.push_back(size);
 
 	auto func = static_cast<SFunction&>(funcVal);
 	auto call = CallInst::Create(func, exp_list, "", context);

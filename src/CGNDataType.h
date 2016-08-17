@@ -19,9 +19,8 @@
 
 class CGNDataType
 {
+protected:
 	typedef SType* (CGNDataType::*classPtr)(NDataType*);
-
-	static classPtr *vtable;
 
 	CodeContext& context;
 
@@ -40,9 +39,12 @@ class CGNDataType
 
 	SType* visitNFuncPointerType(NFuncPointerType* type);
 
-	SType* visit(NDataType* type);
+	virtual SType* visit(NDataType* type);
 
+private:
 	static classPtr* buildVTable();
+
+	static classPtr *vtable;
 
 public:
 
@@ -51,6 +53,42 @@ public:
 		CGNDataType runner(context);
 		return runner.visit(type);
 	}
+};
+
+class CGNDataTypeNew : public CGNDataType
+{
+	static classPtr *vtable;
+
+	RValue sizeVal;
+
+	explicit CGNDataTypeNew(CodeContext& context)
+	: CGNDataType(context) {}
+
+	SType* visitNBaseType(NBaseType* type);
+
+	SType* visitNArrayType(NArrayType* type);
+
+	SType* visitNVecType(NVecType* type);
+
+	SType* visitNUserType(NUserType* type);
+
+	SType* visitNPointerType(NPointerType* type);
+
+	SType* visitNFuncPointerType(NFuncPointerType* type);
+
+	SType* visit(NDataType* type);
+
+	static classPtr* buildVTable();
+
+	void setSize(SType* ty);
+
+	void setSize(uint64_t size);
+
+	void setSize(const RValue& size);
+
+public:
+
+	static SType* run(CodeContext& context, NDataType* type, RValue& size);
 };
 
 #endif
