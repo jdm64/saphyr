@@ -1602,7 +1602,7 @@ class NDeleteStatement : public NStatement
 	NVariable *variable;
 
 public:
-	NDeleteStatement(NVariable* variable)
+	explicit NDeleteStatement(NVariable* variable)
 	: variable(variable) {}
 
 	NVariable* getVar() const
