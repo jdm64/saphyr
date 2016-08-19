@@ -78,3 +78,6 @@ analyze : clean
 
 tests : compiler
 	cd ../tests; ./unitTest.py $(UNITTEST_ARG)
+
+docker-dev :
+	sudo docker run -it --rm -v $(PWD)/../:/usr/src/saphyr -w /usr/src/saphyr/src jdm64/saphyr bash
