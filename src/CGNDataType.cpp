@@ -187,7 +187,10 @@ SType* CGNDataTypeNew::run(CodeContext& context, NDataType* type, RValue& size)
 
 void CGNDataTypeNew::setSize(SType* type)
 {
-	sizeVal = RValue::getNumVal(context, SType::getInt(context, 64), SType::allocSize(context, type));
+	if (type->isAuto() || type->isVoid())
+		sizeVal = RValue();
+	else
+		sizeVal = RValue::getNumVal(context, SType::getInt(context, 64), SType::allocSize(context, type));
 }
 
 void CGNDataTypeNew::setSize(uint64_t size)
