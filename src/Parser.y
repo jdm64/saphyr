@@ -297,6 +297,10 @@ statement
 	{
 		$$ = new NLoopStatement($2);
 	}
+	| '~' TT_THIS '(' ')' ';'
+	{
+		$$ = new NDestructorCall(new NBaseVariable(new Token(*$2)), $2);
+	}
 	| variable_expresion '.' '~' TT_THIS '(' ')' ';'
 	{
 		$$ = new NDestructorCall($1, $4);
