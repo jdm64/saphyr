@@ -47,6 +47,19 @@ void func2()
 	a.bad().again();
 }
 
+class Good
+{
+	struct this {
+		int notFunc;
+	}
+
+	void badCall()
+	{
+		notFunc();
+		this.notFunc();
+	}
+}
+
 ========
 
 negative/Class.syp:14: only one destructor allowed in a class
@@ -59,4 +72,6 @@ negative/Class.syp:36: variable x not declared
 negative/Class.syp:43: class Test has no symbol nothing
 negative/Class.syp:45: argument count for Test_run function invalid, 2 arguments given, but 1 required.
 negative/Class.syp:47: class Test has no symbol bad
-found 10 errors
+negative/Class.syp:58: function or function pointer expected
+negative/Class.syp:59: function or function pointer expected
+found 12 errors

@@ -314,6 +314,17 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 	auto funcName = exp->getName()->str;
 	auto sym = context.loadSymbol(funcName);
 	if (!sym) {
+		auto cl = context.getClass();
+		if (cl) {
+			auto item = cl->getItem(funcName);
+			if (item) {
+				unique_ptr<NBaseVariable> thisVar(new NBaseVariable(new Token("this")));
+				return Inst::CallMemberFunction(context, thisVar.get(), exp->getName(), exp->getArguments());
+			}
+		}
+	}
+
+	if (!sym) {
 		context.addError("symbol " + funcName + " not defined", *exp);
 		return sym;
 	}
