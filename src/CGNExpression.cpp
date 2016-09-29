@@ -352,9 +352,15 @@ RValue CGNExpression::visitNIncrement(NIncrement* exp)
 		return RValue();
 
 	auto type = varVal.stype();
-	if (type->isPointer() && type->subType()->isFunction()) {
-		context.addError("Increment/Decrement invalid for function pointer", *exp);
-		return RValue();
+	if (type->isPointer()) {
+		auto subT = type->subType();
+		if (subT->isFunction()) {
+			context.addError("Increment/Decrement invalid for function pointer", *exp);
+			return RValue();
+		} else if (subT->isVoid()) {
+			context.addError("Increment/Decrement invalid for void pointer", *exp);
+			return RValue();
+		}
 	} else if (type->isEnum()) {
 		context.addError("Increment/Decrement invalid for enum type", *exp);
 		return RValue();
