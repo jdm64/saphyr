@@ -302,14 +302,22 @@ bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> 
 	return valid;
 }
 
+bool Builder::isDeclared(CodeContext& context, Token* name)
+{
+	auto utype = SUserType::lookup(context, name->str);
+	if (utype) {
+		context.addError("type with name " + name->str + " already declared", name);
+		return true;
+	}
+	return false;
+}
+
 void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list)
 {
-	auto structName = name->str;
-	auto utype = SUserType::lookup(context, structName);
-	if (utype) {
-		context.addError(structName + " type already declared", name);
+	if (isDeclared(context, name))
 		return;
-	}
+
+	auto structName = name->str;
 	vector<pair<string, SType*> > structVars;
 	set<string> memberNames;
 	bool valid = true;
@@ -332,6 +340,9 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 
 void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 {
+	if (isDeclared(context, stm->getName()))
+		return;
+
 	int64_t val = 0;
 	set<string> names;
 	vector<pair<string,int64_t>> structure;
@@ -376,6 +387,9 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 
 void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 {
+	if (isDeclared(context, stm->getName()))
+		return;
+
 	auto realType = CGNDataType::run(context, stm->getType());
 	if (!realType) {
 		return;

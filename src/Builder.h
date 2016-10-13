@@ -26,6 +26,8 @@ class Builder
 
 	static bool addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
 
+	static bool isDeclared(CodeContext& context, Token* name);
+
 public:
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 

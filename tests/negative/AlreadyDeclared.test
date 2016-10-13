@@ -1,0 +1,28 @@
+
+struct One
+{
+	int a;
+}
+
+alias One = float;
+
+enum Color
+{
+	RED, GREEN, BLUE
+}
+
+struct Color
+{
+	int value;
+}
+
+alias MyType = int;
+
+enum MyType { A, B }
+
+========
+
+negative/AlreadyDeclared.syp:7: type with name One already declared
+negative/AlreadyDeclared.syp:14: type with name Color already declared
+negative/AlreadyDeclared.syp:21: type with name MyType already declared
+found 3 errors

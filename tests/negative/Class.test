@@ -64,7 +64,7 @@ class Good
 
 negative/Class.syp:14: only one destructor allowed in a class
 negative/Class.syp:20: only one struct allowed in a class
-negative/Class.syp:17: Bad type already declared
+negative/Class.syp:17: type with name Bad already declared
 negative/Class.syp:22: class Bad already defines symbol a
 negative/Class.syp:32: member function call requires class or class pointer
 negative/Class.syp:34: member function call requires class or class pointer

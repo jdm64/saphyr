@@ -48,7 +48,7 @@ void func3()
 negative/Struct.syp:4: struct members must not have auto type
 negative/Struct.syp:5: structs don't support variable initialization
 negative/Struct.syp:6: member name j already declared
-negative/Struct.syp:15: Good type already declared
+negative/Struct.syp:15: type with name Good already declared
 negative/Struct.syp:21: Nothing type not declared
 negative/Struct.syp:25: int32 is not a struct/union/enum
 negative/Struct.syp:25: Good doesn't have member n
