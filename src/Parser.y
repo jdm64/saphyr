@@ -106,6 +106,7 @@ declaration_list
 	| declaration_list declaration
 	{
 		$1->add($2);
+		$$ = $1;
 	}
 	;
 declaration
@@ -150,6 +151,7 @@ class_member_list
 	| class_member_list class_member
 	{
 		$1->add($2);
+		$$ = $1;
 	}
 	;
 class_member
@@ -183,6 +185,7 @@ class_initializer_list
 	| class_initializer_list ',' member_initializer
 	{
 		$1->add($3);
+		$$ = $1;
 	}
 	;
 member_initializer
@@ -258,6 +261,7 @@ statement_list
 	| statement_list statement
 	{
 		$1->add($2);
+		$$ = $1;
 	}
 	;
 statement
@@ -333,6 +337,7 @@ switch_case_list
 	| switch_case_list switch_case
 	{
 		$1->add($2);
+		$$ = $1;
 	}
 	;
 switch_case
@@ -385,6 +390,7 @@ variable_declarations_list
 	| variable_declarations_list variable_declarations ';'
 	{
 		$1->add(static_cast<NVariableDeclGroup*>($2));
+		$$ = $1;
 	}
 	;
 variable_declarations
@@ -407,6 +413,7 @@ variable_list
 	| variable_list ',' variable
 	{
 		$1->add($3);
+		$$ = $1;
 	}
 	;
 global_variable_list
@@ -418,6 +425,7 @@ global_variable_list
 	| global_variable_list ',' global_variable
 	{
 		$1->add($3);
+		$$ = $1;
 	}
 	;
 variable
@@ -457,6 +465,7 @@ parameter_list
 	| parameter_list ',' parameter
 	{
 		$1->add($3);
+		$$ = $1;
 	}
 	;
 parameter
@@ -508,6 +517,7 @@ data_type_list
 	| data_type_list ',' data_type
 	{
 		$1->add($3);
+		$$ = $1;
 	}
 	;
 base_type
@@ -540,6 +550,7 @@ expression_list
 	| expression_list ',' expression
 	{
 		$1->add($3);
+		$$ = $1;
 	}
 	;
 expression_or_empty
