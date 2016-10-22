@@ -11,8 +11,6 @@ matrix:
     - compiler: clang
       env: LLVM_VER="-3.6"
     - compiler: clang
-      env: LLVM_VER="-3.7"
-    - compiler: clang
       env: LLVM_VER="-3.8"
     - compiler: gcc
       env: COVERAGE=true
