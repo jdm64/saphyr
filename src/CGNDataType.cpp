@@ -80,16 +80,24 @@ SType* CGNDataType::visitNBaseType(NBaseType* type)
 	}
 }
 
-SType* CGNDataType::visitNArrayType(NArrayType* type)
+SType* CGNDataType::getArrayType(NArrayType* type)
 {
 	auto baseType = type->getBaseType();
 	auto btype = visit(baseType);
 	if (!btype) {
 		return nullptr;
-	} else if (btype->isAuto()) {
-		context.addError("can't create array of auto types", *baseType);
+	} else if (btype->isAuto() || btype->isVoid()) {
+		context.addError("can't create array of " + btype->str(&context) + " types", *baseType);
 		return nullptr;
 	}
+	return btype;
+}
+
+SType* CGNDataType::visitNArrayType(NArrayType* type)
+{
+	auto btype = getArrayType(type);
+	if (!btype)
+		return nullptr;
 	auto size = type->getSize();
 	if (size) {
 		if (size->isConstant() && static_cast<NConstant*>(size)->isIntConst()) {
@@ -213,14 +221,9 @@ SType* CGNDataTypeNew::visitNBaseType(NBaseType* type)
 
 SType* CGNDataTypeNew::visitNArrayType(NArrayType* type)
 {
-	auto baseType = type->getBaseType();
-	auto btype = visit(baseType);
-	if (!btype) {
+	auto btype = getArrayType(type);
+	if (!btype)
 		return nullptr;
-	} else if (btype->isAuto()) {
-		context.addError("can't create array of auto types", *baseType);
-		return nullptr;
-	}
 	auto size = type->getSize();
 	if (size) {
 		if (size->isConstant() && static_cast<NConstant*>(size)->isIntConst()) {

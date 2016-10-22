@@ -5,6 +5,7 @@ int main()
 	auto b = new [0]int;
 	auto c = new [5]auto;
 	auto d = new [x + 3]int;
+	auto e = new [2]void;
 
 	return 0;
 }
@@ -15,4 +16,5 @@ negative/New.syp:4: can't call new on void type
 negative/New.syp:5: Array size must be positive
 negative/New.syp:6: can't create array of auto types
 negative/New.syp:7: variable x not declared
-found 4 errors
+negative/New.syp:8: can't create array of void types
+found 5 errors

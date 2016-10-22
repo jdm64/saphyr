@@ -41,6 +41,8 @@ protected:
 
 	virtual SType* visit(NDataType* type);
 
+	SType* getArrayType(NArrayType* type);
+
 private:
 	static classPtr* buildVTable();
 

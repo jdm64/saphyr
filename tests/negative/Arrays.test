@@ -21,6 +21,7 @@ void foo()
 void bar(int x)
 {
 	[x]int a;
+	[7]void b;
 }
 
 ========
@@ -31,4 +32,5 @@ negative/Arrays.syp:11: S is not an array or vec
 negative/Arrays.syp:16: Array size must be positive
 negative/Arrays.syp:18: variable z not declared
 negative/Arrays.syp:23: Array size must be a constant integer
-found 6 errors
+negative/Arrays.syp:24: can't create array of void types
+found 7 errors
