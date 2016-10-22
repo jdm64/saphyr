@@ -20,6 +20,7 @@ int func()
 void func2([3][]int arr)
 {
 	arr[0][0] = 1;
+	void v;
 }
 
 ========
@@ -35,4 +36,5 @@ negative/Variable.syp:15: variable h not declared
 negative/Variable.syp:20: can't create a non-pointer to a zero size array
 negative/Variable.syp:20: can't create a non-pointer to a zero size array
 negative/Variable.syp:22: variable arr not declared
-found 11 errors
+negative/Variable.syp:23: can't create variable for an unsized type: void
+found 12 errors

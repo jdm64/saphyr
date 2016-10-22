@@ -104,6 +104,9 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 
 	if (!varType) {
 		return;
+	} else if (varType->isVoid()) {
+		context.addError("can't create variable for an unsized type: " + varType->str(&context), *stm->getType());
+		return;
 	} else if (varType->isAuto()) {
 		if (!stm->getInitExp()) { // auto type requires initialization
 			context.addError("auto variable type requires initialization", *stm->getType());
