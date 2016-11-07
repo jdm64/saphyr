@@ -86,7 +86,7 @@ SType* CGNDataType::getArrayType(NArrayType* type)
 	auto btype = visit(baseType);
 	if (!btype) {
 		return nullptr;
-	} else if (btype->isAuto() || btype->isVoid()) {
+	} else if (btype->isUnsized()) {
 		context.addError("can't create array of " + btype->str(&context) + " types", *baseType);
 		return nullptr;
 	}
@@ -195,7 +195,7 @@ SType* CGNDataTypeNew::run(CodeContext& context, NDataType* type, RValue& size)
 
 void CGNDataTypeNew::setSize(SType* type)
 {
-	if (type->isAuto() || type->isVoid())
+	if (type->isUnsized())
 		sizeVal = RValue();
 	else
 		sizeVal = RValue::getNumVal(context, SType::getInt(context, 64), SType::allocSize(context, type));

@@ -144,6 +144,11 @@ public:
 		return tclass & VOID;
 	}
 
+	bool isUnsized() const
+	{
+		return tclass & (AUTO | VOID);
+	}
+
 	bool isBool() const
 	{
 		return isInteger() && tsize == 1;

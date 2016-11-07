@@ -372,7 +372,7 @@ RValue Inst::SizeOf(CodeContext& context, SType* type, Token* token)
 {
 	if (!type) {
 		return RValue();
-	} else if (type->isAuto() || type->isVoid()) {
+	} else if (type->isUnsized()) {
 		context.addError("size of " + type->str(&context) + " is invalid", token);
 		return RValue();
 	}

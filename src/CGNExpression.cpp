@@ -182,11 +182,8 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	auto nType = CGNDataTypeNew::run(context, exp->getType(), size);
 	if (!nType) {
 		return RValue();
-	} else if (nType->isAuto()) {
-		context.addError("can't call new on auto type", *exp->getType());
-		return RValue();
-	} else if (nType->isVoid()) {
-		context.addError("can't call new on void type", *exp->getType());
+	} else if (nType->isUnsized()) {
+		context.addError("can't call new on " + nType->str(&context) + " type", *exp->getType());
 		return RValue();
 	}
 
@@ -357,8 +354,8 @@ RValue CGNExpression::visitNIncrement(NIncrement* exp)
 		if (subT->isFunction()) {
 			context.addError("Increment/Decrement invalid for function pointer", *exp);
 			return RValue();
-		} else if (subT->isVoid()) {
-			context.addError("Increment/Decrement invalid for void pointer", *exp);
+		} else if (subT->isUnsized()) {
+			context.addError("Increment/Decrement invalid for " + subT->str(&context) + " pointer", *exp);
 			return RValue();
 		}
 	} else if (type->isEnum()) {

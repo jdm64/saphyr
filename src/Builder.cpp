@@ -258,8 +258,8 @@ SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, ND
 		auto param = CGNDataType::run(context, item);
 		if (!param) {
 			valid = false;
-		} else if (param->isAuto()) {
-			context.addError("parameter can not be auto type", *item);
+		} else if (param->isUnsized()) {
+			context.addError("parameter can not be " + param->str(&context) + " type", *item);
 			valid = false;
 		} else if (SType::validate(context, *item, param)) {
 			args.push_back(param);
@@ -282,8 +282,8 @@ bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> 
 	auto stype = CGNDataType::run(context, group->getType());
 	if (!stype) {
 		return false;
-	} else if (stype->isAuto()) {
-		context.addError("struct members must not have auto type", *group->getType());
+	} else if (stype->isUnsized()) {
+		context.addError("struct members must not have " + stype->str(&context) + " type", *group->getType());
 		return false;
 	}
 	bool valid = true;
@@ -420,6 +420,9 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 			return;
 		}
 		varType = initValue.stype();
+	} else if (varType->isUnsized()) {
+		context.addError("can't create variable for an unsized type: " + varType->str(&context), *stm->getType());
+		return;
 	} else if (!SType::validate(context, stm->getName(), varType)) {
 		return;
 	}

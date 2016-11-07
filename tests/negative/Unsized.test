@@ -1,0 +1,47 @@
+
+struct Fail
+{
+	auto a;
+	void b;
+}
+
+void gV;
+
+void badFunc(void a, auto z)
+{
+}
+
+void moreBad()
+{
+	[2]void a;
+	[2]auto b;
+
+	auto c = new void;
+	auto d = new auto;
+
+	void v;
+
+	@void p;
+	p++;
+
+
+	sizeof(void);
+	sizeof(auto);
+}
+
+========
+
+negative/Unsized.syp:4: struct members must not have auto type
+negative/Unsized.syp:5: struct members must not have void type
+negative/Unsized.syp:8: can't create variable for an unsized type: void
+negative/Unsized.syp:10: parameter can not be void type
+negative/Unsized.syp:10: parameter can not be auto type
+negative/Unsized.syp:16: can't create array of void types
+negative/Unsized.syp:17: can't create array of auto types
+negative/Unsized.syp:19: can't call new on void type
+negative/Unsized.syp:20: can't call new on auto type
+negative/Unsized.syp:22: can't create variable for an unsized type: void
+negative/Unsized.syp:25: Increment/Decrement invalid for void pointer
+negative/Unsized.syp:28: size of void is invalid
+negative/Unsized.syp:29: size of auto is invalid
+found 13 errors
