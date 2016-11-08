@@ -401,6 +401,14 @@ void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 	SAliasType::createAlias(context, stm->getName()->str, realType);
 }
 
+void Builder::CreateOpaque(CodeContext& context, NOpaqueDecl* stm)
+{
+	if (isDeclared(context, stm->getName()))
+		return;
+
+	SUserType::createOpaque(context, stm->getName()->str);
+}
+
 void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration)
 {
 	if (stm->getInitExp() && !stm->getInitExp()->isConstant()) {

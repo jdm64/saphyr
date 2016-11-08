@@ -87,6 +87,7 @@ enum class NodeId
 	NLoopBranch,
 	NLoopStatement,
 	NMemberInitializer,
+	NOpaqueDecl,
 	NParameter,
 	NReturnStatement,
 	NStructDeclaration,
@@ -995,6 +996,15 @@ public:
 	}
 
 	ADD_ID(NAliasDeclaration)
+};
+
+class NOpaqueDecl : public NDeclaration
+{
+public:
+	explicit NOpaqueDecl(Token* name)
+	: NDeclaration(name) {}
+
+	ADD_ID(NOpaqueDecl);
 };
 
 class NStructDeclaration : public NDeclaration

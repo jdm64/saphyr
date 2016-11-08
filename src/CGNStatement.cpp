@@ -52,6 +52,7 @@ CGNStatement::classPtr* CGNStatement::buildVTable()
 	TABLE_ADD(NLoopBranch);
 	TABLE_ADD(NLoopStatement);
 	TABLE_ADD(NMemberInitializer);
+	TABLE_ADD(NOpaqueDecl);
 	TABLE_ADD(NParameter);
 	TABLE_ADD(NReturnStatement);
 	TABLE_ADD(NStructDeclaration);
@@ -147,6 +148,11 @@ void CGNStatement::visitNGlobalVariableDecl(NGlobalVariableDecl* stm)
 void CGNStatement::visitNAliasDeclaration(NAliasDeclaration* stm)
 {
 	Builder::CreateAlias(context, stm);
+}
+
+void CGNStatement::visitNOpaqueDecl(NOpaqueDecl* stm)
+{
+	Builder::CreateOpaque(context, stm);
 }
 
 void CGNStatement::visitNStructDeclaration(NStructDeclaration* stm)

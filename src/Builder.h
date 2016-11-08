@@ -49,6 +49,8 @@ public:
 
 	static void CreateAlias(CodeContext& context, NAliasDeclaration* stm);
 
+	static void CreateOpaque(CodeContext& context, NOpaqueDecl* stm);
+
 	static void CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration);
 
 	static void LoadImport(CodeContext& context, const string& filename);

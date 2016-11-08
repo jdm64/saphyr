@@ -1,0 +1,23 @@
+
+opaque File;
+
+int main()
+{
+	@File a;
+	@void b;
+
+	b = a;
+
+	return 0;
+}
+
+========
+
+define i32 @main() {
+  %a = alloca i8*
+  %b = alloca i8*
+  %1 = load i8** %a
+  %2 = bitcast i8* %1 to i8*
+  store i8* %2, i8** %b
+  ret i32 0
+}

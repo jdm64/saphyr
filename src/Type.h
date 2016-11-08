@@ -64,7 +64,8 @@ public:
 		VOID     = 1 << 11,
 		AUTO     = 1 << 12,
 		ALIAS    = 1 << 13,
-		CLASS    = 1 << 14
+		CLASS    = 1 << 14,
+		OPAQUE   = 1 << 15
 	};
 
 	static vector<Type*> convertArr(vector<SType*> arr)
@@ -144,9 +145,14 @@ public:
 		return tclass & VOID;
 	}
 
+	bool isOpaque() const
+	{
+		return tclass & OPAQUE;
+	}
+
 	bool isUnsized() const
 	{
-		return tclass & (AUTO | VOID);
+		return tclass & (AUTO | VOID | OPAQUE);
 	}
 
 	bool isBool() const
@@ -300,6 +306,7 @@ class SUserType : public SType
 	friend class SUnionType;
 	friend class SEnumType;
 	friend class SAliasType;
+	friend class SOpaqueType;
 
 	SUserType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
 	: SType(typeClass, type, size, subtype) {}
@@ -308,6 +315,8 @@ public:
 	static SUserType* lookup(CodeContext& context, const string& name);
 
 	static string lookup(CodeContext& context, SType* type);
+
+	static void createOpaque(CodeContext& context, const string& name);
 
 	static void createAlias(CodeContext& context, const string& name, SType* type);
 
@@ -332,6 +341,17 @@ public:
 	{
 		return subtype->str(nullptr);
 	}
+};
+
+class SOpaqueType : public SUserType
+{
+	friend class TypeManager;
+
+	explicit SOpaqueType(SType* type)
+	: SUserType(OPAQUE, type->type()) {}
+
+public:
+	string str(CodeContext* context = nullptr) const;
 };
 
 class SStructType : public SUserType
@@ -560,6 +580,8 @@ public:
 		}
 		return "";
 	}
+
+	void createOpaque(const string& name);
 
 	void createAlias(const string& name, SType* type);
 

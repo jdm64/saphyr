@@ -125,6 +125,7 @@ class CodeContext : public SymbolTable
 	friend class SStructType;
 	friend class SUnionType;
 	friend class SEnumType;
+	friend class SOpaqueType;
 
 	typedef vector<llvm::BasicBlock*> BlockVector;
 	typedef BlockVector::iterator block_iterator;

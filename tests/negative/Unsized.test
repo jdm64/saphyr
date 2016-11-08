@@ -5,9 +5,13 @@ struct Fail
 	void b;
 }
 
+opaque File;
+
 void gV;
 
-void badFunc(void a, auto z)
+File file;
+
+void badFunc(void a, auto z, File f)
 {
 }
 
@@ -15,33 +19,55 @@ void moreBad()
 {
 	[2]void a;
 	[2]auto b;
+	[2]File f;
 
 	auto c = new void;
 	auto d = new auto;
+	auto h = new File;
 
 	void v;
+	File y;
 
 	@void p;
 	p++;
 
+	@File q;
+	q++;
 
 	sizeof(void);
 	sizeof(auto);
+	sizeof(File);
+}
+
+void badCast()
+{
+	@void a;
+	@File b;
+
+	b = a;
 }
 
 ========
 
 negative/Unsized.syp:4: struct members must not have auto type
 negative/Unsized.syp:5: struct members must not have void type
-negative/Unsized.syp:8: can't create variable for an unsized type: void
-negative/Unsized.syp:10: parameter can not be void type
-negative/Unsized.syp:10: parameter can not be auto type
-negative/Unsized.syp:16: can't create array of void types
-negative/Unsized.syp:17: can't create array of auto types
-negative/Unsized.syp:19: can't call new on void type
-negative/Unsized.syp:20: can't call new on auto type
-negative/Unsized.syp:22: can't create variable for an unsized type: void
-negative/Unsized.syp:25: Increment/Decrement invalid for void pointer
-negative/Unsized.syp:28: size of void is invalid
-negative/Unsized.syp:29: size of auto is invalid
-found 13 errors
+negative/Unsized.syp:10: can't create variable for an unsized type: void
+negative/Unsized.syp:12: can't create variable for an unsized type: File
+negative/Unsized.syp:14: parameter can not be void type
+negative/Unsized.syp:14: parameter can not be auto type
+negative/Unsized.syp:14: parameter can not be File type
+negative/Unsized.syp:20: can't create array of void types
+negative/Unsized.syp:21: can't create array of auto types
+negative/Unsized.syp:22: can't create array of File types
+negative/Unsized.syp:24: can't call new on void type
+negative/Unsized.syp:25: can't call new on auto type
+negative/Unsized.syp:26: can't call new on File type
+negative/Unsized.syp:28: can't create variable for an unsized type: void
+negative/Unsized.syp:29: can't create variable for an unsized type: File
+negative/Unsized.syp:32: Increment/Decrement invalid for void pointer
+negative/Unsized.syp:35: Increment/Decrement invalid for File pointer
+negative/Unsized.syp:37: size of void is invalid
+negative/Unsized.syp:38: size of auto is invalid
+negative/Unsized.syp:39: size of File is invalid
+negative/Unsized.syp:47: can not cast @void to @File
+found 21 errors

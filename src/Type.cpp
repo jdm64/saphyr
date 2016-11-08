@@ -23,6 +23,7 @@
 #define smart_classTy(type, structure) unique_ptr<SUserType>(new SClassType(type, structure))
 #define smart_unionTy(type, structure, size) unique_ptr<SUserType>(new SUnionType(type, structure, size))
 #define smart_enumTy(type, structure) unique_ptr<SUserType>(new SEnumType(type, structure))
+#define smart_opaqueTy(type) unique_ptr<SOpaqueType>(new SOpaqueType(type))
 
 void SType::dump() const
 {
@@ -138,6 +139,11 @@ pair<int, RValue>* SStructType::getItem(const string& name)
 	return iter != items.end()? &iter->second : nullptr;
 }
 
+string SOpaqueType::str(CodeContext* context) const
+{
+	return context? context->typeManager.getUserTypeName(this) : "opaque";
+}
+
 string SStructType::str(CodeContext* context) const
 {
 	stringstream os;
@@ -197,6 +203,11 @@ SUserType* SUserType::lookup(CodeContext& context, const string& name)
 string SUserType::lookup(CodeContext& context, SType* type)
 {
 	return context.typeManager.getUserTypeName(type);
+}
+
+void SUserType::createOpaque(CodeContext& context, const string& name)
+{
+	context.typeManager.createOpaque(name);
 }
 
 void SUserType::createAlias(CodeContext& context, const string& name, SType* type)
@@ -278,6 +289,14 @@ SFunctionType* TypeManager::getFunction(SType* returnTy, vector<SType*> args)
 		item = smart_sfuncTy(func, returnTy, args);
 	}
 	return item.get();
+}
+
+void TypeManager::createOpaque(const string& name)
+{
+	SUserPtr& item = usrMap[name];
+	if (item.get())
+		return;
+	item = smart_opaqueTy(new SOpaqueType(int8Ty.get()));
 }
 
 void TypeManager::createAlias(const string& name, SType* type)
