@@ -99,12 +99,12 @@ TargetMachine* ModuleWriter::getMachine()
 
 	triple.setTriple(sys::getDefaultTargetTriple());
 	auto target = TargetRegistry::lookupTarget(triple.getTriple(), err);
-	return target->createTargetMachine(triple.getTriple(), sys::getHostCPUName(), features, options);
+	return target->createTargetMachine(triple.getTriple(), sys::getHostCPUName(), features, options, Reloc::Model::Static, CodeModel::Default, CodeGenOpt::Default);
 }
 
 int ModuleWriter::run()
 {
-	PassManager clean;
+	llvm::legacy::PassManager clean;
 	clean.add(new SimpleBlockClean());
 	clean.run(module);
 
@@ -120,7 +120,7 @@ int ModuleWriter::run()
 
 void ModuleWriter::outputIR()
 {
-	PassManager pm;
+	llvm::legacy::PassManager pm;
 
 	fstream irFile(filename.substr(0, filename.rfind('.')) + ".ll", fstream::out);
 	raw_os_ostream irStream(irFile);
@@ -136,7 +136,7 @@ void ModuleWriter::outputIR()
 
 void ModuleWriter::outputNative()
 {
-	PassManager pm;
+	llvm::legacy::PassManager pm;
 
 	initTarget();
 	auto objFile = getOutFile(filename.substr(0, filename.rfind('.')) + ".o");

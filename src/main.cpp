@@ -62,7 +62,8 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	unique_ptr<Module> module(new Module(file, getGlobalContext()));
+	LLVMContext llvmContext;
+	unique_ptr<Module> module(new Module(file, llvmContext));
 	CodeContext context(module.get(), file);
 
 	CGNStatement::run(context, parser.getRoot());
