@@ -29,6 +29,8 @@ protected:
 
 	SType* visitNBaseType(NBaseType* type);
 
+	SType* visitNThisType(NThisType* type);
+
 	SType* visitNArrayType(NArrayType* type);
 
 	SType* visitNVecType(NVecType* type);
@@ -67,6 +69,8 @@ class CGNDataTypeNew : public CGNDataType
 	: CGNDataType(context) {}
 
 	SType* visitNBaseType(NBaseType* type);
+
+	SType* visitNThisType(NThisType* type);
 
 	SType* visitNArrayType(NArrayType* type);
 

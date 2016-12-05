@@ -16,7 +16,7 @@ class Test
 		return this@;
 	}
 
-	@Test getThis()
+	@this getThis()
 	{
 		return this;
 	}

@@ -17,6 +17,11 @@ class MyClass
 		b = 2;
 	}
 
+	@this makeNew()
+	{
+		return new this;
+	}
+
 	~this()
 	{
 		a = 3;
@@ -67,6 +72,16 @@ define void @MyClass_this(%MyClass* %this) {
   ret void
 }
 
+define %MyClass* @MyClass_makeNew(%MyClass* %this) {
+  %1 = alloca %MyClass*
+  store %MyClass* %this, %MyClass** %1
+  %2 = call i8* @malloc(i64 8)
+  %3 = bitcast i8* %2 to %MyClass*
+  ret %MyClass* %3
+}
+
+declare i8* @malloc(i64)
+
 define void @MyClass_null(%MyClass* %this) {
   %1 = alloca %MyClass*
   store %MyClass* %this, %MyClass** %1
@@ -96,7 +111,5 @@ define void @foo() {
   call void @free(i8* %4)
   ret void
 }
-
-declare i8* @malloc(i64)
 
 declare void @free(i8*)

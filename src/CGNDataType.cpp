@@ -33,6 +33,7 @@ CGNDataType::classPtr* CGNDataType::buildVTable()
 	TABLE_ADD(NBaseType);
 	TABLE_ADD(NFuncPointerType);
 	TABLE_ADD(NPointerType);
+	TABLE_ADD(NThisType);
 	TABLE_ADD(NUserType);
 	TABLE_ADD(NVecType);
 	return table;
@@ -78,6 +79,16 @@ SType* CGNDataType::visitNBaseType(NBaseType* type)
 	default:
 		return SType::getAuto(context);
 	}
+}
+
+SType* CGNDataType::visitNThisType(NThisType* type)
+{
+	auto cl = context.getClass();
+	if (!cl) {
+		context.addError("use of 'this' is only valid inside of a class", *type);
+		return nullptr;
+	}
+	return cl;
 }
 
 SType* CGNDataType::getArrayType(NArrayType* type)
@@ -173,6 +184,7 @@ CGNDataType::classPtr* CGNDataTypeNew::buildVTable()
 	TABLE_ADD2(NBaseType);
 	TABLE_ADD2(NFuncPointerType);
 	TABLE_ADD2(NPointerType);
+	TABLE_ADD2(NThisType);
 	TABLE_ADD2(NUserType);
 	TABLE_ADD2(NVecType);
 	return table;
@@ -214,6 +226,14 @@ void CGNDataTypeNew::setSize(const RValue& size)
 SType* CGNDataTypeNew::visitNBaseType(NBaseType* type)
 {
 	auto ty = CGNDataType::visitNBaseType(type);
+	if (ty)
+		setSize(ty);
+	return ty;
+}
+
+SType* CGNDataTypeNew::visitNThisType(NThisType* type)
+{
+	auto ty = CGNDataType::visitNThisType(type);
 	if (ty)
 		setSize(ty);
 	return ty;

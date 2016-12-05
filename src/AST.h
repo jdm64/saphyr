@@ -32,6 +32,7 @@ enum class NodeId
 	NBaseType,
 	NFuncPointerType,
 	NPointerType,
+	NThisType,
 	NUserType,
 	NVecType,
 	EndDataType,
@@ -541,6 +542,15 @@ public:
 	}
 
 	ADD_ID(NBaseType)
+};
+
+class NThisType : public NNamedType
+{
+public:
+	explicit NThisType(Token* token)
+	: NNamedType(token) {}
+
+	ADD_ID(NThisType);
 };
 
 class NArrayType : public NDataType

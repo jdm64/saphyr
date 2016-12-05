@@ -408,6 +408,11 @@ variable_declarations
 		auto type = new NUserType($1);
 		$$ = new NVariableDeclGroup(type, $2);
 	}
+	| TT_THIS variable_list
+	{
+		auto type = new NThisType($1);
+		$$ = new NVariableDeclGroup(type, $2);
+	}
 	;
 variable_list
 	: variable
@@ -484,6 +489,10 @@ data_type
 	| TT_IDENTIFIER
 	{
 		$$ = new NUserType($1);
+	}
+	| TT_THIS
+	{
+		$$ = new NThisType($1);
 	}
 	;
 explicit_data_type
@@ -742,6 +751,10 @@ sizeof_expression
 	{
 		$$ = new NSizeOfOperator($2);
 	}
+	| TT_SIZEOF TT_THIS
+	{
+		$$ = new NSizeOfOperator(new NThisType($2));
+	}
 	| TT_SIZEOF '(' explicit_variable_expresion ')'
 	{
 		$$ = new NSizeOfOperator($3);
@@ -753,6 +766,10 @@ sizeof_expression
 	| TT_SIZEOF '(' TT_IDENTIFIER ')'
 	{
 		$$ = new NSizeOfOperator($3);
+	}
+	| TT_SIZEOF '(' TT_THIS ')'
+	{
+		$$ = new NSizeOfOperator(new NThisType($3));
 	}
 	;
 primary_expression

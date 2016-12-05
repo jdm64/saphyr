@@ -39,6 +39,7 @@ void func()
 void func2()
 {
 	Test a;
+	this badType;
 
 	a.nothing();
 
@@ -69,9 +70,10 @@ negative/Class.syp:22: class Bad already defines symbol a
 negative/Class.syp:32: member function call requires class or class pointer
 negative/Class.syp:34: member function call requires class or class pointer
 negative/Class.syp:36: variable x not declared
-negative/Class.syp:43: class Test has no symbol nothing
-negative/Class.syp:45: argument count for Test_run function invalid, 2 arguments given, but 1 required.
-negative/Class.syp:47: class Test has no symbol bad
-negative/Class.syp:58: function or function pointer expected
+negative/Class.syp:42: use of 'this' is only valid inside of a class
+negative/Class.syp:44: class Test has no symbol nothing
+negative/Class.syp:46: argument count for Test_run function invalid, 2 arguments given, but 1 required.
+negative/Class.syp:48: class Test has no symbol bad
 negative/Class.syp:59: function or function pointer expected
-found 12 errors
+negative/Class.syp:60: function or function pointer expected
+found 13 errors
