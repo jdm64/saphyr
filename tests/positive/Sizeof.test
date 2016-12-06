@@ -6,6 +6,23 @@ struct S
 	[10]bool f;
 }
 
+class ZZ
+{
+	struct this {
+		[24]int8 a;
+	}
+
+	int s()
+	{
+		return sizeof this;
+	}
+
+	int t()
+	{
+		return sizeof(this);
+	}
+}
+
 uint64 si = sizeof int;
 
 void func()
@@ -34,9 +51,24 @@ int main()
 
 ========
 
+%ZZ = type { [24 x i8] }
 %S = type { i1, i64, [10 x i1] }
 
 @si = global i64 4
+
+define i32 @ZZ_s(%ZZ* %this) {
+  %1 = alloca %ZZ*
+  store %ZZ* %this, %ZZ** %1
+  %2 = trunc i64 24 to i32
+  ret i32 %2
+}
+
+define i32 @ZZ_t(%ZZ* %this) {
+  %1 = alloca %ZZ*
+  store %ZZ* %this, %ZZ** %1
+  %2 = trunc i64 24 to i32
+  ret i32 %2
+}
 
 define void @func() {
   %var = alloca %S
