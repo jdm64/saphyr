@@ -35,4 +35,5 @@ void foo()
 negative/ClassConstructor.syp:18: argument count for Test_this function invalid, 4 arguments given, but 3 required.
 negative/ClassConstructor.syp:20: argument count for Test_this function invalid, 1 arguments given, but 3 required.
 negative/ClassConstructor.syp:26: calling destructor only valid for classes
-found 3 errors
+negative/ClassConstructor.syp:28: argument count for Test_this function invalid, 1 arguments given, but 3 required.
+found 4 errors

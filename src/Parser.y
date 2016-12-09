@@ -622,6 +622,10 @@ new_expression
 	{
 		$$ = new NNewExpression($1.t_tok, $2);
 	}
+	| TT_NEW data_type '{' expression_list '}'
+	{
+		$$ = new NNewExpression($1.t_tok, $2, $4);
+	}
 	;
 logical_or_expression
 	: logical_and_expression

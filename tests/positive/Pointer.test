@@ -51,6 +51,11 @@ int main()
 	return 1;
 }
 
+void init()
+{
+	auto a = new int{7};
+}
+
 ========
 
 define void @test() {
@@ -136,3 +141,14 @@ define i32 @main() {
 ; <label>:6                                       ; preds = %0
   ret i32 1
 }
+
+define void @init() {
+  %1 = call i8* @malloc(i64 4)
+  %2 = bitcast i8* %1 to i32*
+  store i32 7, i32* %2
+  %a = alloca i32*
+  store i32* %2, i32** %a
+  ret void
+}
+
+declare i8* @malloc(i64)

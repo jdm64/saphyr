@@ -194,8 +194,13 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	auto call = CallInst::Create(func, exp_list, "", context);
 	auto ptr = RValue(call, func.returnTy());
 	auto ptrType = SType::getPointer(context, nType);
+	auto rPtr = RValue(new BitCastInst(ptr, *ptrType, "", context), ptrType);
 
-	return RValue(new BitCastInst(ptr, *ptrType, "", context), ptrType);
+	// setup type so the variable is initialized using the base type
+	RValue tmp, ptr2 = RValue(rPtr.value(), nType);
+	Inst::InitVariable(context, ptr2, *exp->getType(), exp->getArgs(), tmp);
+
+	return rPtr;
 }
 
 RValue CGNExpression::visitNLogicalOperator(NLogicalOperator* exp)

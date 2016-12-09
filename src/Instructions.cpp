@@ -485,6 +485,22 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
 }
 
+bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList)
+{
+	auto clType = static_cast<SClassType*>(var.stype());
+	auto clItem = clType->getItem("this");
+	if (!clItem)
+		return false;
+
+	auto func = static_cast<SFunction&>(clItem->second);
+	vector<Value*> exp_list;
+	exp_list.push_back(var);
+	if (!initList)
+		initList = new NExpressionList;
+	Inst::CallFunction(context, func, token, initList, exp_list);
+	return true;
+}
+
 void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 {
 	auto type = value.stype();
@@ -557,17 +573,8 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 {
 	auto varType = var.stype();
 	if (varType->isClass()) {
-		auto clType = static_cast<SClassType*>(varType);
-		auto clItem = clType->getItem("this");
-		if (clItem) {
-			auto func = static_cast<SFunction&>(clItem->second);
-			vector<Value*> exp_list;
-			exp_list.push_back(var);
-			if (!initList)
-				initList = new NExpressionList;
-			Inst::CallFunction(context, func, token, initList, exp_list);
+		if (CallConstructor(context, var, token, initList))
 			return;
-		}
 	}
 
 	if (initList) {

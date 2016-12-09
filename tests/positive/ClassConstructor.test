@@ -77,6 +77,7 @@ define %MyClass* @MyClass_makeNew(%MyClass* %this) {
   store %MyClass* %this, %MyClass** %1
   %2 = call i8* @malloc(i64 8)
   %3 = bitcast i8* %2 to %MyClass*
+  call void @MyClass_this(%MyClass* %3)
   ret %MyClass* %3
 }
 
@@ -103,6 +104,7 @@ define i32 @main() {
 define void @foo() {
   %1 = call i8* @malloc(i64 8)
   %2 = bitcast i8* %1 to %MyClass*
+  call void @MyClass_this(%MyClass* %2)
   %m = alloca %MyClass*
   store %MyClass* %2, %MyClass** %m
   %3 = load %MyClass** %m

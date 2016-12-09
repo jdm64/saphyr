@@ -77,6 +77,8 @@ public:
 
 	static RValue CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments);
 
+	static bool CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList);
+
 	static void CallDestructor(CodeContext& context, RValue value, Token* valueToken);
 
 	static RValue LoadMemberVar(CodeContext& context, const string& name);

@@ -45,6 +45,11 @@ void voidPointer()
 	p++;
 }
 
+void init()
+{
+	@int a = new int{3, 4};
+}
+
 ========
 
 negative/Pointer.syp:6: cannot dereference int32
@@ -58,4 +63,5 @@ negative/Pointer.syp:26: can not cast @int32 to int32
 negative/Pointer.syp:34: Pointers to arrays only allowed to cast to smaller arrays
 negative/Pointer.syp:39: Cannot cast array pointers of different types
 negative/Pointer.syp:45: Increment/Decrement invalid for void pointer
-found 11 errors
+negative/Pointer.syp:50: invalid variable initializer
+found 12 errors

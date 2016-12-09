@@ -1766,14 +1766,20 @@ class NNewExpression : public NExpression
 {
 	NDataType* type;
 	Token* token;
+	NExpressionList* args;
 
 public:
-	NNewExpression(Token* token, NDataType* type)
-	: type(type), token(token) {}
+	NNewExpression(Token* token, NDataType* type, NExpressionList* args = nullptr)
+	: type(type), token(token), args(args) {}
 
 	NDataType* getType() const
 	{
 		return type;
+	}
+
+	NExpressionList* getArgs() const
+	{
+		return args;
 	}
 
 	operator Token*() const
@@ -1785,6 +1791,7 @@ public:
 	{
 		delete type;
 		delete token;
+		delete args;
 	}
 
 	ADD_ID(NNewExpression)
