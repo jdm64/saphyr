@@ -19,6 +19,7 @@
 #include "AST.h"
 #include "CodeContext.h"
 #include "CGNStatement.h"
+#include "CGNImportList.h"
 #include "ModuleWriter.h"
 
 options_description progOpts;
@@ -28,7 +29,8 @@ void initOptions()
 	progOpts.add_options()
 		("help", "produce help message")
 		("input", "input file")
-		("llvmir", "output LLVM IR instead of object code");
+		("llvmir", "output LLVM IR instead of object code")
+		("imports", "output imports listed in the file");
 }
 
 void loadOptions(int argc, char** argv, variables_map &vm)
@@ -38,6 +40,21 @@ void loadOptions(int argc, char** argv, variables_map &vm)
 
 	store(command_line_parser(argc, argv).options(progOpts).positional(fileOpt).run(), vm);
 	notify(vm);
+}
+
+int compile(const string& file, NStatementList* statements, variables_map& vm)
+{
+	LLVMContext llvmContext;
+	unique_ptr<Module> module(new Module(file, llvmContext));
+	CodeContext context(module.get(), file);
+
+	CGNStatement::run(context, statements);
+	if (context.handleErrors())
+		return 2;
+
+	ModuleWriter writer(*module.get(), file, vm);
+
+	return writer.run();
 }
 
 int main(int argc, char** argv)
@@ -60,17 +77,9 @@ int main(int argc, char** argv)
 
 	if (parser.parse()) {
 		return 1;
+	} else if (vm.count("imports")) {
+		CGNImportList::run(parser.getRoot());
+		return 0;
 	}
-
-	LLVMContext llvmContext;
-	unique_ptr<Module> module(new Module(file, llvmContext));
-	CodeContext context(module.get(), file);
-
-	CGNStatement::run(context, parser.getRoot());
-	if (context.handleErrors())
-		return 2;
-
-	ModuleWriter writer(*module.get(), file, vm);
-
-	return writer.run();
+	return compile(file, parser.getRoot(), vm);
 }
