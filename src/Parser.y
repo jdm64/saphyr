@@ -15,12 +15,14 @@
 	NVariable* t_var;
 	NParameter* t_param;
 	NVariableDecl* t_var_decl;
+	NAttribute* t_attr;
 	NStatement* t_stm;
 	NExpression* t_exp;
 	NSwitchCase* t_case;
 	NClassMember* t_memb;
 	NMemberInitializer* t_init;
 	NDataTypeList* t_typelist;
+	NAttributeList* t_attrlist;
 	NStatementList* t_stmlist;
 	NClassMemberList* t_clslist;
 	NExpressionList* t_explist;
@@ -41,6 +43,8 @@
 %token <t_tok> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
 %token <t_tok> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 %token <t_tok> TT_ASG_DQ
+// other tokens
+%token <t_tok> TT_ATTR_OPEN
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
 %token TT_GOTO TT_SWITCH TT_CASE TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM
@@ -78,6 +82,8 @@
 %type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
 %type <t_exp> sizeof_expression paren_expression new_expression
+// other nodes
+%type <t_attr> attribute
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
@@ -89,6 +95,7 @@
 %type <t_typelist> data_type_list
 %type <t_var_dec_list> variable_declarations_list
 %type <t_initlist> class_initializer_list
+%type <t_attrlist> attribute_list attribute_declaration
 
 %%
 
@@ -164,9 +171,9 @@ class_member
 	{
 		$$ = new NClassStructDecl($2, $4);
 	}
-	| data_type TT_IDENTIFIER '(' parameter_list ')' function_body
+	| attribute_declaration data_type TT_IDENTIFIER '(' parameter_list ')' function_body
 	{
-		$$ = new NClassFunctionDecl($2, $1, $4, $6);
+		$$ = new NClassFunctionDecl($3, $2, $5, $7, $1);
 	}
 	| TT_THIS '(' parameter_list ')' class_initializer_list function_body
 	{
@@ -197,6 +204,34 @@ member_initializer
 	: TT_IDENTIFIER '{' expression_list '}'
 	{
 		$$ = new NMemberInitializer($1, $3);
+	}
+	;
+attribute_declaration
+	:
+	{
+		$$ = nullptr;
+	}
+	| TT_ATTR_OPEN attribute_list ']'
+	{
+		$$ = $2;
+	}
+	;
+attribute_list
+	: attribute
+	{
+		$$ = new NAttributeList;
+		$$->add($1);
+	}
+	| attribute_list ',' attribute
+	{
+		$1->add($3);
+		$$ = $1;
+	}
+	;
+attribute
+	: TT_IDENTIFIER
+	{
+		$$ = new NAttribute($1);
 	}
 	;
 struct_declaration

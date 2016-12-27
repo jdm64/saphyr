@@ -24,6 +24,8 @@ using namespace std;
 
 enum class NodeId
 {
+	NAttribute,
+
 	// datatypes
 	StartDataType,
 	NArrayType,
@@ -224,5 +226,33 @@ public:
 	string filename;
 	int line;
 };
+
+class NAttribute : public Node
+{
+	Token* name;
+
+public:
+	explicit NAttribute(Token* name)
+	: name(name) {}
+
+	operator Token*() const
+	{
+		return name;
+	}
+
+	Token* getName() const
+	{
+		return name;
+	}
+
+	~NAttribute()
+	{
+		delete name;
+	}
+
+	ADD_ID(NAttribute)
+};
+
+typedef NodeList<NAttribute> NAttributeList;
 
 #endif

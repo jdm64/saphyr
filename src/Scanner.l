@@ -43,6 +43,7 @@ SUFFIX		_{NAME}
 "--"	{ SAVE_TOKEN return ParserBase::TT_DEC; }
 "??"	{ SAVE_TOKEN return ParserBase::TT_DQ_MARK; }
 "??="	{ SAVE_TOKEN return ParserBase::TT_ASG_DQ; }
+"#["	{ return ParserBase::TT_ATTR_OPEN; }
 
 true		{ SAVE_TOKEN return ParserBase::TT_TRUE; }
 false		{ SAVE_TOKEN return ParserBase::TT_FALSE; }

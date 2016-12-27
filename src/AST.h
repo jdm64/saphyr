@@ -1035,10 +1035,11 @@ class NClassFunctionDecl : public NClassMember
 	NDataType* rtype;
 	NParameterList* params;
 	NStatementList* body;
+	NAttributeList* attrs;
 
 public:
-	NClassFunctionDecl(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
-	: NClassMember(name), rtype(rtype), params(params), body(body) {}
+	NClassFunctionDecl(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs = nullptr)
+	: NClassMember(name), rtype(rtype), params(params), body(body), attrs(attrs) {}
 
 	MemberType memberType() const
 	{
@@ -1060,11 +1061,17 @@ public:
 		return body;
 	}
 
+	NAttributeList* getAttrs() const
+	{
+		return attrs;
+	}
+
 	~NClassFunctionDecl()
 	{
 		delete rtype;
 		delete params;
 		delete body;
+		delete attrs;
 	}
 
 	ADD_ID(NClassFunctionDecl)
