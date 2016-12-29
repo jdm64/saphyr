@@ -33,7 +33,7 @@ public:
 	}
 };
 
-class NStatementList : public NodeList<NStatement> {};
+typedef NodeList<NStatement> NStatementList;
 
 class NExpression : public Node
 {
@@ -51,7 +51,7 @@ public:
 	}
 };
 
-class NExpressionList : public NodeList<NExpression> {};
+typedef NodeList<NExpression> NExpressionList;
 
 class NExpressionStm : public NStatement
 {
@@ -554,7 +554,7 @@ public:
 	ADD_ID(NVariableDecl)
 };
 
-class NVariableDeclList : public NodeList<NVariableDecl> {};
+typedef NodeList<NVariableDecl> NVariableDeclList;
 
 class NGlobalVariableDecl : public NVariableDecl
 {
