@@ -35,7 +35,7 @@ public:
 
 	static SFunction CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body);
 
-	static void CreateClassFunction(CodeContext& context, Token* name, NClassDeclaration* theClass, NDataType* rtype, NParameterList* params, NStatementList* body);
+	static void CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm, bool prototype);
 
 	static void CreateClassConstructor(CodeContext& context, NClassConstructor* stm, bool prototype);
 

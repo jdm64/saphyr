@@ -179,7 +179,7 @@ void CGNStatement::visitNClassStructDecl(NClassStructDecl* stm)
 
 void CGNStatement::visitNClassFunctionDecl(NClassFunctionDecl* stm)
 {
-	Builder::CreateClassFunction(context, stm->getName(), stm->getClass(), stm->getRType(), stm->getParams(), stm->getBody());
+	Builder::CreateClassFunction(context, stm, false);
 }
 
 void CGNStatement::visitNClassConstructor(NClassConstructor* stm)

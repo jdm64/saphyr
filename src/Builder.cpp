@@ -80,8 +80,10 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	return function;
 }
 
-void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDeclaration* theClass, NDataType* rtype, NParameterList* params, NStatementList* body)
+void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm, bool prototype)
 {
+	auto name = stm->getName();
+	auto theClass = stm->getClass();
 	auto clType = context.getClass();
 	auto item = clType->getItem(name->str);
 	if (item) {
@@ -92,13 +94,13 @@ void Builder::CreateClassFunction(CodeContext& context, Token* name, NClassDecla
 	// add this parameter
 	auto thisToken = new Token(*theClass->getName());
 	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
-	params->addFront(thisPtr);
+	stm->getParams()->addFront(thisPtr);
 
 	auto fnToken = *name;
 	fnToken.str = theClass->getName()->str + "_" + name->str;
 
 	// add function to class type
-	auto func = CreateFunction(context, &fnToken, rtype, params, body);
+	auto func = CreateFunction(context, &fnToken, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody());
 	if (func)
 		clType->addFunction(name->str, func);
 }
@@ -138,15 +140,14 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 			newBody->add(item.second);
 		newBody->addAll(*stm->getBody());
 		stm->getBody()->setDelete(false);
-		delete stm->getBody();
 		stm->setBody(newBody);
 	}
 
 	if (stm->getBody()->empty())
 		return;
 
-	NBaseType voidType(nullptr, ParserBase::TT_VOID);
-	CreateClassFunction(context, stm->getName(), stm->getClass(), &voidType, stm->getParams(), prototype? nullptr : stm->getBody());
+	stm->setRType(new NBaseType(nullptr, ParserBase::TT_VOID));
+	CreateClassFunction(context, stm, prototype);
 }
 
 void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype)
@@ -165,13 +166,10 @@ void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm,
 	if (stm->getBody()->empty())
 		return;
 
-	NBaseType voidType(nullptr, ParserBase::TT_VOID);
-	NParameterList params;
+	stm->setRType(new NBaseType(nullptr, ParserBase::TT_VOID));
+	stm->getName()->str = "null";
 
-	auto nullTok = *stm->getName();
-	nullTok.str = "null";
-
-	CreateClassFunction(context, &nullTok, stm->getClass(), &voidType, &params, prototype? nullptr : stm->getBody());
+	CreateClassFunction(context, stm, prototype);
 }
 
 void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function<void(int)> visitor)

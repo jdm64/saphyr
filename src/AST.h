@@ -1056,9 +1056,21 @@ public:
 		return rtype;
 	}
 
+	void setRType(NDataType* type)
+	{
+		delete rtype;
+		rtype = type;
+	}
+
 	NStatementList* getBody() const
 	{
 		return body;
+	}
+
+	void setBody(NStatementList* other)
+	{
+		delete body;
+		body = other;
 	}
 
 	NAttributeList* getAttrs() const
@@ -1077,24 +1089,17 @@ public:
 	ADD_ID(NClassFunctionDecl)
 };
 
-class NClassConstructor : public NClassMember
+class NClassConstructor : public NClassFunctionDecl
 {
-	NParameterList* params;
 	NInitializerList* initList;
-	NStatementList* body;
 
 public:
 	NClassConstructor(Token* name, NParameterList* params, NInitializerList* initList, NStatementList* body)
-	: NClassMember(name), params(params), initList(initList), body(body) {}
+	: NClassFunctionDecl(name, nullptr, params, body), initList(initList) {}
 
 	MemberType memberType() const
 	{
 		return MemberType::CONSTRUCTOR;
-	}
-
-	NParameterList* getParams() const
-	{
-		return params;
 	}
 
 	NInitializerList* getInitList() const
@@ -1102,47 +1107,23 @@ public:
 		return initList;
 	}
 
-	NStatementList* getBody() const
-	{
-		return body;
-	}
-
-	void setBody(NStatementList* other)
-	{
-		body = other;
-	}
-
 	~NClassConstructor()
 	{
-		delete params;
 		delete initList;
-		delete body;
 	}
 
 	ADD_ID(NClassConstructor)
 };
 
-class NClassDestructor : public NClassMember
+class NClassDestructor : public NClassFunctionDecl
 {
-	NStatementList* body;
-
 public:
 	NClassDestructor(Token* name, NStatementList* body)
-	: NClassMember(name), body(body) {}
+	: NClassFunctionDecl(name, nullptr, new NParameterList, body) {}
 
 	MemberType memberType() const
 	{
 		return MemberType::DESTRUCTOR;
-	}
-
-	NStatementList* getBody() const
-	{
-		return body;
-	}
-
-	~NClassDestructor()
-	{
-		delete body;
 	}
 
 	ADD_ID(NClassDestructor)

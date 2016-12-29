@@ -103,7 +103,7 @@ void CGNImportStm::visitNClassStructDecl(NClassStructDecl* stm)
 
 void CGNImportStm::visitNClassFunctionDecl(NClassFunctionDecl* stm)
 {
-	Builder::CreateClassFunction(context, stm->getName(), stm->getClass(), stm->getRType(), stm->getParams(), nullptr);
+	Builder::CreateClassFunction(context, stm, true);
 }
 
 void CGNImportStm::visitNClassConstructor(NClassConstructor* stm)
