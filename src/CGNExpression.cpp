@@ -163,16 +163,15 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 
 RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 {
-	static string mallocName = "malloc";
-
-	auto funcVal = context.loadSymbol(mallocName);
+	auto funcVal = context.loadSymbol("malloc");
 	if (!funcVal) {
 		vector<SType*> args;
 		args.push_back(SType::getInt(context, 64));
 		auto retType = SType::getPointer(context, SType::getInt(context, 8));
 		auto funcType = SType::getFunction(context, retType, args);
+		Token mallocName("malloc");
 
-		funcVal = Builder::CreateFunction(context, mallocName, funcType);
+		funcVal = Builder::getFuncPrototype(context, &mallocName, funcType);
 	} else if (!funcVal.isFunction()) {
 		context.addError("Compiler Error: malloc not function", *exp);
 		return RValue();

@@ -28,22 +28,18 @@
 #include "CGNImportStm.h"
 #include "Instructions.h"
 
-SFunction Builder::CreateFunction(CodeContext& context, const string& name, SFunctionType* type)
-{
-	auto func = Function::Create(*type, GlobalValue::ExternalLinkage, name, context.getModule());
-	auto sfunc = SFunction(func, type);
-	context.storeGlobalSymbol(sfunc, name);
-	return sfunc;
-}
-
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
 {
-	auto function = lookupFunction(context, name, rtype, params);
-	if (!function || !body) { // no body means only function prototype
+	auto funcType = getFuncType(context, rtype, params);
+	if (!funcType)
+		return SFunction();
+	auto function = getFuncPrototype(context, name, funcType);
+	if (!function || !body) {
+		// no body means only function prototype
 		return function;
 	} else if (function.size()) {
 		context.addError("function " + name->str + " already declared", name);
-		return function;
+		return SFunction();
 	}
 
 	if (body->empty() || !body->back()->isTerminator()) {
@@ -52,11 +48,6 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 			body->add(new NReturnStatement);
 		else
 			context.addError("no return for a non-void function", name);
-	}
-
-	if (getFuncType(context, rtype, params) != function.stype()) {
-		context.addError("function type for " + name->str + " doesn't match definition", name);
-		return function;
 	}
 
 	context.startFuncBlock(function);
@@ -225,18 +216,26 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 	visitor(structIdx);
 }
 
-SFunction Builder::lookupFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params)
+SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType)
 {
 	auto funcName = name->str;
 	auto sym = context.loadSymbolGlobal(funcName);
-	if (sym) {
-		if (sym.isFunction())
-			return static_cast<SFunction&>(sym);
+	if (!sym) {
+		auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, funcName, context.getModule());
+		auto function = SFunction(func, funcType);
+		context.storeGlobalSymbol(function, funcName);
+		return function;
+	} else if (!sym.isFunction()) {
 		context.addError("variable " + funcName + " already defined", name);
 		return SFunction();
 	}
-	auto funcType = getFuncType(context, rtype, params);
-	return funcType? CreateFunction(context, funcName, funcType) : SFunction();
+
+	auto function = static_cast<SFunction&>(sym);
+	if (funcType != function.stype()) {
+		context.addError("function type for " + funcName + " doesn't match definition", name);
+		return SFunction();
+	}
+	return function;
 }
 
 SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* rtype, NParameterList* params)

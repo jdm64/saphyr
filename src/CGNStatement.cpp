@@ -462,17 +462,16 @@ error:
 
 void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 {
-	static string freeName = "free";
-
 	auto bytePtr = SType::getPointer(context, SType::getInt(context, 8));
-	auto func = context.loadSymbol(freeName);
+	auto func = context.loadSymbol("free");
 	if (!func) {
 		vector<SType*> args;
 		args.push_back(bytePtr);
 		auto retType = SType::getVoid(context);
 		auto funcType = SType::getFunction(context, retType, args);
+		Token freeName("free");
 
-		func = Builder::CreateFunction(context, freeName, funcType);
+		func = Builder::getFuncPrototype(context, &freeName, funcType);
 	} else if (!func.isFunction()) {
 		context.addError("Compiler Error: free not function", *stm->getVar());
 		return;

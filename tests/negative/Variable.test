@@ -34,7 +34,6 @@ negative/Variable.syp:12: variable u already defined
 negative/Variable.syp:13: can't create a non-pointer to a zero size array
 negative/Variable.syp:15: variable h not declared
 negative/Variable.syp:20: can't create a non-pointer to a zero size array
-negative/Variable.syp:20: can't create a non-pointer to a zero size array
 negative/Variable.syp:22: variable arr not declared
 negative/Variable.syp:23: can't create variable for an unsized type: void
-found 12 errors
+found 11 errors
