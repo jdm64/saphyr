@@ -253,6 +253,19 @@ public:
 	ADD_ID(NAttribute)
 };
 
-typedef NodeList<NAttribute> NAttributeList;
+class NAttributeList : public NodeList<NAttribute>
+{
+public:
+	static NAttribute* find(NAttributeList* list, const string& name)
+	{
+		if (!list)
+			return nullptr;
+		for (auto attr : *list) {
+			if (name == attr->getName()->str)
+				return attr;
+		}
+		return nullptr;
+	}
+};
 
 #endif

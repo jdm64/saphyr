@@ -319,8 +319,13 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 		if (cl) {
 			auto item = cl->getItem(funcName);
 			if (item) {
-				unique_ptr<NBaseVariable> thisVar(new NBaseVariable(new Token("this")));
-				return Inst::CallMemberFunction(context, thisVar.get(), exp->getName(), exp->getArguments());
+				if (context.currFunction().isStatic()) {
+					RValue classVal(nullptr, SType::getPointer(context, cl));
+					return Inst::CallMemberFunctionClass(context, nullptr, classVal, exp->getName(), exp->getArguments());
+				} else {
+					unique_ptr<NBaseVariable> thisVar(new NBaseVariable(new Token("this")));
+					return Inst::CallMemberFunction(context, thisVar.get(), exp->getName(), exp->getArguments());
+				}
 			}
 		}
 	}

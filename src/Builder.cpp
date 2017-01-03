@@ -28,12 +28,12 @@
 #include "CGNImportStm.h"
 #include "Instructions.h"
 
-SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
+SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs)
 {
 	auto funcType = getFuncType(context, rtype, params);
 	if (!funcType)
 		return SFunction();
-	auto function = getFuncPrototype(context, name, funcType);
+	auto function = getFuncPrototype(context, name, funcType, attrs);
 	if (!function || !body) {
 		// no body means only function prototype
 		return function;
@@ -83,15 +83,17 @@ void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm,
 	}
 
 	// add this parameter
-	auto thisToken = new Token(*theClass->getName());
-	auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
-	stm->getParams()->addFront(thisPtr);
+	if (!NAttributeList::find(stm->getAttrs(), "static")) {
+		auto thisToken = new Token(*theClass->getName());
+		auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
+		stm->getParams()->addFront(thisPtr);
+	}
 
 	auto fnToken = *name;
 	fnToken.str = theClass->getName()->str + "_" + name->str;
 
 	// add function to class type
-	auto func = CreateFunction(context, &fnToken, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody());
+	auto func = CreateFunction(context, &fnToken, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody(), stm->getAttrs());
 	if (func)
 		clType->addFunction(name->str, func);
 }
@@ -216,13 +218,13 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 	visitor(structIdx);
 }
 
-SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType)
+SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs)
 {
 	auto funcName = name->str;
 	auto sym = context.loadSymbolGlobal(funcName);
 	if (!sym) {
 		auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, funcName, context.getModule());
-		auto function = SFunction(func, funcType);
+		auto function = SFunction(func, funcType, attrs);
 		context.storeGlobalSymbol(function, funcName);
 		return function;
 	} else if (!sym.isFunction()) {

@@ -19,19 +19,21 @@
 
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Function.h>
+#include "BaseNodes.h"
 #include "Type.h"
 
 class RValue
 {
 	Value* val;
 	SType* ty;
+	NAttributeList* atrs;
 
 public:
 	RValue()
 	: RValue(nullptr, nullptr) {}
 
-	RValue(Value* value, SType* type)
-	: val(value), ty(type) {}
+	RValue(Value* value, SType* type, NAttributeList* attrs = nullptr)
+	: val(value), ty(type), atrs(attrs) {}
 
 	static RValue getZero(CodeContext &context, SType* type);
 
@@ -91,6 +93,11 @@ public:
 			ty = sub;
 		return ty;
 	}
+
+	NAttributeList* attrs() const
+	{
+		return atrs;
+	}
 };
 
 class SFunction : public RValue
@@ -106,8 +113,8 @@ class SFunction : public RValue
 	}
 
 public:
-	SFunction(Function* function, SFunctionType* type)
-	: RValue(function, type) {}
+	SFunction(Function* function, SFunctionType* type, NAttributeList* attrs = nullptr)
+	: RValue(function, type, attrs) {}
 
 	SFunction()
 	: RValue() {};
@@ -115,6 +122,11 @@ public:
 	operator Function*() const
 	{
 		return funcValue();
+	}
+
+	bool isStatic() const
+	{
+		return NAttributeList::find(attrs(), "static");
 	}
 
 	int size() const

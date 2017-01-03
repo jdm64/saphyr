@@ -57,6 +57,10 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 	if (currClass) {
 		auto item = currClass->getItem(varName);
 		if (item) {
+			if (context.currFunction().isStatic()) {
+				context.addError("use of class member invalid in static function", *baseVar);
+				return RValue();
+			}
 			return Inst::LoadMemberVar(context, varName);
 		}
 	}
@@ -69,7 +73,11 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 	// check enums
 	auto userVar = SUserType::lookup(context, varName);
 	if (!userVar) {
-		context.addError("variable " + varName + " not declared", *baseVar);
+		if (context.currFunction().isStatic()) {
+			context.addError("use of class member invalid in static function", *baseVar);
+		} else {
+			context.addError("variable " + varName + " not declared", *baseVar);
+		}
 		return var;
 	}
 	return RValue(ConstantInt::getFalse(context), userVar);

@@ -467,7 +467,13 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 
 	auto func = static_cast<SFunction&>(sym->second);
 	vector<Value*> exp_list;
-	exp_list.push_back(baseVal);
+	if (!func.isStatic()) {
+		if (!baseVal) {
+			context.addError("unable to call non-static class function from a static function", funcName);
+			return RValue();
+		}
+		exp_list.push_back(baseVal);
+	}
 	return CallFunction(context, func, funcName, arguments, exp_list);
 }
 
