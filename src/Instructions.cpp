@@ -420,7 +420,7 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 	int i = expList.size();
 	for (auto arg : *args) {
 		auto argExp = CGNExpression::run(context, arg);
-		Inst::CastTo(context, name, argExp, func.getParam(i++));
+		CastTo(context, name, argExp, func.getParam(i++));
 		expList.push_back(argExp);
 	}
 	auto call = CallInst::Create(func, expList, "", context);
@@ -443,7 +443,7 @@ RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token*
 		} else if (sub->isStruct() | sub->isUnion()) {
 			return CallMemberFunctionNonClass(context, baseVar, baseVal, funcName, arguments);
 		} else if (sub->isPointer()) {
-			baseVal = Inst::Deref(context, baseVal);
+			baseVal = Deref(context, baseVal);
 			type = baseVal.stype();
 		} else {
 			context.addError("member function call requires class or class pointer", funcName);
@@ -468,21 +468,21 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 	auto func = static_cast<SFunction&>(sym->second);
 	vector<Value*> exp_list;
 	exp_list.push_back(baseVal);
-	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
+	return CallFunction(context, func, funcName, arguments, exp_list);
 }
 
 RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
 {
 	baseVal = {baseVal.value(), baseVal.stype()->subType()};
-	auto sym = Inst::LoadMemberVar(context, baseVal, *baseVar, funcName);
-	sym = Inst::Deref(context, sym);
+	auto sym = LoadMemberVar(context, baseVal, *baseVar, funcName);
+	sym = Deref(context, sym);
 	if (!sym || !sym.stype()->isFunction()) {
 		context.addError("function or function pointer expected", funcName);
 		return RValue();
 	}
 	auto func = static_cast<SFunction&>(sym);
 	vector<Value*> exp_list;
-	return Inst::CallFunction(context, func, funcName, arguments, exp_list);
+	return CallFunction(context, func, funcName, arguments, exp_list);
 }
 
 bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList)
@@ -497,7 +497,7 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpr
 	exp_list.push_back(var);
 	if (!initList)
 		initList = new NExpressionList;
-	Inst::CallFunction(context, func, token, initList, exp_list);
+	CallFunction(context, func, token, initList, exp_list);
 	return true;
 }
 
@@ -542,7 +542,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 		indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
 		indexes.push_back(RValue::getNumVal(context, SType::getInt(context, 32), item->first));
 
-		return Inst::GetElementPtr(context, baseVar, indexes, item->second.stype());
+		return GetElementPtr(context, baseVar, indexes, item->second.stype());
 	} else if (varType->isUnion()) {
 		auto unionType = static_cast<SUnionType*>(varType);
 		auto item = unionType->getItem(member);
@@ -589,7 +589,7 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 	}
 
 	if (initVal) {
-		Inst::CastTo(context, token, initVal, varType);
+		CastTo(context, token, initVal, varType);
 		new StoreInst(initVal, var, context);
 	}
 }
