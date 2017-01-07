@@ -24,7 +24,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
-#include "Token.h"
+#include "BaseNodes.h"
 #include "Value.h"
 
 using namespace boost::program_options;

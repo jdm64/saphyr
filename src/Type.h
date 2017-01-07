@@ -22,7 +22,7 @@
 #include <llvm/ADT/APSInt.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/Debug.h>
-#include "Token.h"
+#include "BaseNodes.h"
 
 // forward declaration
 class CodeContext;
