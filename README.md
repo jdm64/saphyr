@@ -3,7 +3,7 @@
 [![Scan Status](https://scan.coverity.com/projects/4591/badge.svg)](https://scan.coverity.com/projects/4591)
 [![Coverage Status](https://coveralls.io/repos/jdm64/saphyr/badge.svg?branch=master)](https://coveralls.io/r/jdm64/saphyr?branch=master)
 
-A C-Like compiler using LLVM as a backend.
+A C++ Like compiler using LLVM as a backend.
 
 ## License ##
 
@@ -51,4 +51,4 @@ NOTE: On Fedora you must disable SELinux (`sudo setenforce 0`) or you will get a
 
 ## Build Instructions ##
 
-Run `make` in the root directory and it will build the compiler binary `saphyr`.
+Run `make` in the src directory and it will build the compiler binary `saphyr`.
