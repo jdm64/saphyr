@@ -73,6 +73,8 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 
 void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm, bool prototype)
 {
+	validateAttrList(context, stm->getAttrs());
+
 	auto name = stm->getName();
 	auto theClass = stm->getClass();
 	auto clType = context.getClass();
@@ -309,6 +311,24 @@ bool Builder::isDeclared(CodeContext& context, Token* name)
 		return true;
 	}
 	return false;
+}
+
+void Builder::validateAttrList(CodeContext& context, NAttributeList* attrs)
+{
+	if (!attrs)
+		return;
+
+	map<string,NAttribute*> m;
+
+	for (auto attr : *attrs) {
+		auto name = attr->getName()->str;
+		auto it = m.find(name);
+		if (it != m.end()) {
+			context.addError("duplicate attribute name: " + name, *attr);
+		} else {
+			m[name] = attr;
+		}
+	}
 }
 
 void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list)

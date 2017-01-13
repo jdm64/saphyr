@@ -1,0 +1,11 @@
+
+class Test
+{
+	#[bla, bla]
+	void foo() {}
+}
+
+========
+
+negative/Attributes.syp:4: duplicate attribute name: bla
+found 1 errors

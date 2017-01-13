@@ -26,6 +26,8 @@ class Builder
 
 	static bool isDeclared(CodeContext& context, Token* name);
 
+	static void validateAttrList(CodeContext& context, NAttributeList* attrs);
+
 public:
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 
