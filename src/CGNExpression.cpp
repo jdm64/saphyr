@@ -320,7 +320,7 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 			auto item = cl->getItem(funcName);
 			if (item) {
 				if (context.currFunction().isStatic()) {
-					RValue classVal(nullptr, SType::getPointer(context, cl));
+					auto classVal = RValue::getUndef(SType::getPointer(context, cl));
 					return Inst::CallMemberFunctionClass(context, nullptr, classVal, exp->getName(), exp->getArguments());
 				} else {
 					unique_ptr<NBaseVariable> thisVar(new NBaseVariable(new Token("this")));

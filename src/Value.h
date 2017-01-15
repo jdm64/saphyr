@@ -45,6 +45,8 @@ public:
 
 	static RValue getValue(CodeContext &context, const APSInt& intVal);
 
+	static RValue getUndef(SType* type);
+
 	operator bool() const
 	{
 		return val;
@@ -84,6 +86,11 @@ public:
 	bool isConst() const
 	{
 		return val? isa<Constant>(val) : false;
+	}
+
+	bool isUndef() const
+	{
+		return val? isa<UndefValue>(val) : false;
 	}
 
 	SType* castToSubtype()

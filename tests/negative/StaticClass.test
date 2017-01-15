@@ -28,10 +28,19 @@ class Foo
 	}
 }
 
+void bla()
+{
+	Foo.test();
+	Foo.nonStatic();
+	Foo.a;
+}
+
 ========
 
 negative/StaticClass.syp:13: use of class member invalid in static function
 negative/StaticClass.syp:14: use of class member invalid in static function
 negative/StaticClass.syp:20: unable to call non-static class function from a static function
 negative/StaticClass.syp:21: use of class member invalid in static function
-found 4 errors
+negative/StaticClass.syp:34: unable to call non-static class function from a static function
+negative/StaticClass.syp:35: cannot access member variable from a static context
+found 6 errors

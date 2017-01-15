@@ -70,7 +70,7 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 	if (var)
 		return var;
 
-	// check enums
+	// check user types
 	auto userVar = SUserType::lookup(context, varName);
 	if (!userVar) {
 		if (context.currFunction().isStatic()) {
@@ -80,7 +80,7 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 		}
 		return var;
 	}
-	return RValue(ConstantInt::getFalse(context), userVar);
+	return RValue::getUndef(userVar);
 }
 
 RValue CGNVariable::visitNArrayVariable(NArrayVariable* nArrVar)

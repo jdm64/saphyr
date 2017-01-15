@@ -55,3 +55,8 @@ RValue RValue::getValue(CodeContext &context, const APSInt& intVal)
 	auto type = SType::getInt(context, intVal.getBitWidth(), intVal.isUnsigned());
 	return RValue(val, type);
 }
+
+RValue RValue::getUndef(SType* type)
+{
+	return RValue(UndefValue::get(*type), type);
+}

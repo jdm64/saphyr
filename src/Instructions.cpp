@@ -468,7 +468,7 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 	auto func = static_cast<SFunction&>(sym->second);
 	vector<Value*> exp_list;
 	if (!func.isStatic()) {
-		if (!baseVal) {
+		if (baseVal.isUndef()) {
 			context.addError("unable to call non-static class function from a static function", funcName);
 			return RValue();
 		}
@@ -541,6 +541,9 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 		auto item = structType->getItem(member);
 		if (!item) {
 			context.addError(baseName + " doesn't have member " + member, memberName);
+			return RValue();
+		} else if (baseVar.isUndef()) {
+			context.addError("cannot access member variable from a static context", memberName);
 			return RValue();
 		}
 
