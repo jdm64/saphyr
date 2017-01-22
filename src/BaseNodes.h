@@ -225,6 +225,46 @@ public:
 	string str;
 	string filename;
 	int line;
+
+	static void unescape(string &val)
+	{
+		string str;
+
+		val = val.substr(1, val.size() - 2);
+		str.reserve(val.size());
+
+		for (int i = 0;;) {
+			auto idx = val.find('\\', i);
+			if (idx == string::npos) {
+				str.append(val, i, string::npos);
+				break;
+			} else {
+				char c = val.at(++idx);
+				switch (c) {
+				case '0': c = '\0'; break;
+				case 'a': c = '\a'; break;
+				case 'b': c = '\b'; break;
+				case 'e': c =   27; break;
+				case 'f': c = '\f'; break;
+				case 'n': c = '\n'; break;
+				case 'r': c = '\r'; break;
+				case 't': c = '\t'; break;
+				case 'v': c = '\v'; break;
+				default:
+					break;
+				}
+				str.append(val, i, idx - i - 1);
+				str += c;
+				i = idx + 1;
+			}
+		}
+		val = str;
+	}
+
+	static void remove(string& val, char c = '\'')
+	{
+		val.erase(std::remove(val.begin(), val.end(), c), val.end());
+	}
 };
 
 class NAttribute : public Node

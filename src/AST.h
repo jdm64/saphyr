@@ -127,44 +127,6 @@ public:
 			return {value.substr(0, pos), value.substr(pos + 1)};
 	}
 
-	static string unescape(const string &val)
-	{
-		string str;
-		str.reserve(val.size());
-
-		for (int i = 0;;) {
-			auto idx = val.find('\\', i);
-			if (idx == string::npos) {
-				str.append(val, i, string::npos);
-				break;
-			} else {
-				char c = val.at(++idx);
-				switch (c) {
-				case '0': c = '\0'; break;
-				case 'a': c = '\a'; break;
-				case 'b': c = '\b'; break;
-				case 'e': c =   27; break;
-				case 'f': c = '\f'; break;
-				case 'n': c = '\n'; break;
-				case 'r': c = '\r'; break;
-				case 't': c = '\t'; break;
-				case 'v': c = '\v'; break;
-				default:
-					break;
-				}
-				str.append(val, i, idx - i - 1);
-				str += c;
-				i = idx + 1;
-			}
-		}
-		return str;
-	}
-
-	static void remove(string& val, char c = '\'')
-	{
-		val.erase(std::remove(val.begin(), val.end(), c), val.end());
-	}
-
 	~NConstant()
 	{
 		delete value;
@@ -186,7 +148,7 @@ public:
 	explicit NStringLiteral(Token* str)
 	: NConstant(str)
 	{
-		value->str = unescape(value->str.substr(1, value->str.size() - 2));
+		Token::unescape(str->str);
 	}
 
 	ADD_ID(NStringLiteral)
@@ -240,7 +202,7 @@ public:
 	NIntConst(Token* value, int base = 10)
 	: NIntLikeConst(value), base(base)
 	{
-		remove(value->str);
+		Token::remove(value->str);
 	}
 
 	int getBase() const
@@ -257,7 +219,7 @@ public:
 	explicit NFloatConst(Token* value)
 	: NConstant(value)
 	{
-		remove(value->str);
+		Token::remove(value->str);
 	}
 
 	ADD_ID(NFloatConst)
@@ -271,7 +233,7 @@ public:
 	explicit NImportStm(Token* filename)
 	: filename(filename)
 	{
-		filename->str = NConstant::unescape(filename->str.substr(1, filename->str.size() - 2));
+		Token::unescape(filename->str);
 	}
 
 	Token* getName() const
