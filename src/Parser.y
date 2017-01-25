@@ -95,7 +95,7 @@
 %type <t_typelist> data_type_list
 %type <t_var_dec_list> variable_declarations_list
 %type <t_initlist> class_initializer_list
-%type <t_attrlist> attribute_list attribute_declaration
+%type <t_attrlist> attribute_list attribute_declaration optional_attribute_declaration
 
 %%
 
@@ -171,7 +171,7 @@ class_member
 	{
 		$$ = new NClassStructDecl($2, $4);
 	}
-	| attribute_declaration data_type TT_IDENTIFIER '(' parameter_list ')' function_body
+	| optional_attribute_declaration data_type TT_IDENTIFIER '(' parameter_list ')' function_body
 	{
 		$$ = new NClassFunctionDecl($3, $2, $5, $7, $1);
 	}
@@ -206,12 +206,15 @@ member_initializer
 		$$ = new NMemberInitializer($1, $3);
 	}
 	;
-attribute_declaration
+optional_attribute_declaration
 	:
 	{
 		$$ = nullptr;
 	}
-	| TT_ATTR_OPEN attribute_list ']'
+	| attribute_declaration
+	;
+attribute_declaration
+	: TT_ATTR_OPEN attribute_list ']'
 	{
 		$$ = $2;
 	}
