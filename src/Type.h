@@ -316,8 +316,6 @@ public:
 
 	static string lookup(CodeContext& context, SType* type);
 
-	static void createOpaque(CodeContext& context, const string& name);
-
 	static void createAlias(CodeContext& context, const string& name, SType* type);
 
 	static void createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
@@ -341,17 +339,6 @@ public:
 	{
 		return subtype->str(nullptr);
 	}
-};
-
-class SOpaqueType : public SUserType
-{
-	friend class TypeManager;
-
-	explicit SOpaqueType(SType* type)
-	: SUserType(OPAQUE, type->type()) {}
-
-public:
-	string str(CodeContext* context = nullptr) const;
 };
 
 class SStructType : public SUserType
@@ -401,7 +388,7 @@ class SUnionType : public SUserType
 	map<string, SType*> items;
 
 	SUnionType(StructType* type, const vector<pair<string, SType*> >& structure, uint64_t size)
-	: SUserType(UNION, type, size)
+	: SUserType(UNION | (structure.size()? 0 : OPAQUE), type, size)
 	{
 		for (auto var : structure)
 			items[var.first] = var.second;
@@ -519,6 +506,8 @@ class TypeManager
 	// function types
 	map<pair<SType*, vector<SType*> >, SFuncPtr> funcMap;
 
+	StructType* buildStruct(const string& name, const vector<pair<string, SType*>>& structure);
+
 public:
 	explicit TypeManager(Module* module);
 
@@ -580,8 +569,6 @@ public:
 		}
 		return "";
 	}
-
-	void createOpaque(const string& name);
 
 	void createAlias(const string& name, SType* type);
 

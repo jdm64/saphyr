@@ -52,7 +52,6 @@ CGNStatement::classPtr* CGNStatement::buildVTable()
 	TABLE_ADD(NLoopBranch);
 	TABLE_ADD(NLoopStatement);
 	TABLE_ADD(NMemberInitializer);
-	TABLE_ADD(NOpaqueDecl);
 	TABLE_ADD(NParameter);
 	TABLE_ADD(NReturnStatement);
 	TABLE_ADD(NStructDeclaration);
@@ -150,11 +149,6 @@ void CGNStatement::visitNAliasDeclaration(NAliasDeclaration* stm)
 	Builder::CreateAlias(context, stm);
 }
 
-void CGNStatement::visitNOpaqueDecl(NOpaqueDecl* stm)
-{
-	Builder::CreateOpaque(context, stm);
-}
-
 void CGNStatement::visitNStructDeclaration(NStructDeclaration* stm)
 {
 	Builder::CreateStruct(context, stm->getType(), stm->getName(), stm->getVars());
@@ -172,7 +166,8 @@ void CGNStatement::visitNFunctionDeclaration(NFunctionDeclaration* stm)
 
 void CGNStatement::visitNClassStructDecl(NClassStructDecl* stm)
 {
-	auto stToken = stm->getClass()->getName();
+	auto cl = stm->getClass();
+	auto stToken = cl->getName();
 	auto stType = NStructDeclaration::CreateType::CLASS;
 	Builder::CreateStruct(context, stType, stToken, stm->getVarList());
 }

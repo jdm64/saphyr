@@ -5,7 +5,7 @@ struct Fail
 	void b;
 }
 
-opaque File;
+#[opaque] struct File {}
 
 void gV;
 

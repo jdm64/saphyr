@@ -781,15 +781,6 @@ public:
 	ADD_ID(NAliasDeclaration)
 };
 
-class NOpaqueDecl : public NDeclaration
-{
-public:
-	explicit NOpaqueDecl(Token* name)
-	: NDeclaration(name) {}
-
-	ADD_ID(NOpaqueDecl);
-};
-
 class NStructDeclaration : public NDeclaration
 {
 public:
@@ -797,11 +788,12 @@ public:
 
 private:
 	NVariableDeclGroupList* list;
+	NAttributeList* attrs;
 	CreateType ctype;
 
 public:
-	NStructDeclaration(Token* name, NVariableDeclGroupList* list, CreateType ctype = CreateType::STRUCT)
-	: NDeclaration(name), list(list), ctype(ctype) {}
+	NStructDeclaration(Token* name, NVariableDeclGroupList* list, NAttributeList* attrs, CreateType ctype)
+	: NDeclaration(name), list(list), attrs(attrs), ctype(ctype) {}
 
 	CreateType getType() const
 	{
@@ -813,9 +805,15 @@ public:
 		return list;
 	}
 
+	NAttributeList* getAttrs() const
+	{
+		return attrs;
+	}
+
 	~NStructDeclaration()
 	{
 		delete list;
+		delete attrs;
 	}
 
 	ADD_ID(NStructDeclaration)
@@ -944,10 +942,11 @@ typedef NodeList<NMemberInitializer> NInitializerList;
 class NClassDeclaration : public NDeclaration
 {
 	NClassMemberList* list;
+	NAttributeList* attrs;
 
 public:
-	NClassDeclaration(Token* name, NClassMemberList* list)
-	: NDeclaration(name), list(list)
+	NClassDeclaration(Token* name, NClassMemberList* list, NAttributeList* attrs)
+	: NDeclaration(name), list(list), attrs(attrs)
 	{
 		for (auto i : *list)
 			i->setClass(this);
@@ -958,9 +957,15 @@ public:
 		return list;
 	}
 
+	NAttributeList* getAttrs() const
+	{
+		return attrs;
+	}
+
 	~NClassDeclaration()
 	{
 		delete list;
+		delete attrs;
 	}
 
 	ADD_ID(NClassDeclaration)

@@ -48,7 +48,7 @@
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
 %token TT_GOTO TT_SWITCH TT_CASE TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM
-%token TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS TT_IMPORT TT_OPAQUE
+%token TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS TT_IMPORT
 %left TT_ELSE
 // constants and names
 %token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT TT_THIS
@@ -93,7 +93,7 @@
 %type <t_parlist> parameter_list
 %type <t_caslist> switch_case_list
 %type <t_typelist> data_type_list
-%type <t_var_dec_list> variable_declarations_list
+%type <t_var_dec_list> variable_declarations_list variable_declarations_list_or_empty
 %type <t_initlist> class_initializer_list
 %type <t_attrlist> attribute_list attribute_declaration optional_attribute_declaration
 
@@ -125,10 +125,6 @@ declaration
 	| struct_declaration
 	| enum_declaration
 	| import_declaration
-	| TT_OPAQUE TT_IDENTIFIER ';'
-	{
-		$$ = new NOpaqueDecl($2);
-	}
 	;
 import_declaration
 	: TT_IMPORT TT_STR_LIT ';'
@@ -149,9 +145,9 @@ alias_declaration
 	}
 	;
 class_declaration
-	: TT_CLASS TT_IDENTIFIER '{' class_member_list '}'
+	: optional_attribute_declaration TT_CLASS TT_IDENTIFIER '{' class_member_list '}'
 	{
-		$$ = new NClassDeclaration($2, $4);
+		$$ = new NClassDeclaration($3, $5, $1);
 	}
 	;
 class_member_list
@@ -238,13 +234,13 @@ attribute
 	}
 	;
 struct_declaration
-	: TT_STRUCT TT_IDENTIFIER '{' variable_declarations_list '}'
+	: optional_attribute_declaration TT_STRUCT TT_IDENTIFIER '{' variable_declarations_list_or_empty '}'
 	{
-		$$ = new NStructDeclaration($2, $4);
+		$$ = new NStructDeclaration($3, $5, $1, NStructDeclaration::CreateType::STRUCT);
 	}
-	| TT_UNION TT_IDENTIFIER '{' variable_declarations_list '}'
+	| optional_attribute_declaration TT_UNION TT_IDENTIFIER '{' variable_declarations_list_or_empty '}'
 	{
-		$$ = new NStructDeclaration($2, $4, NStructDeclaration::CreateType::UNION);
+		$$ = new NStructDeclaration($3, $5, $1, NStructDeclaration::CreateType::UNION);
 	}
 	;
 enum_declaration
@@ -423,6 +419,13 @@ else_statement
 	{
 		$$ = $2;
 	}
+	;
+variable_declarations_list_or_empty
+	:
+	{
+		$$ = new NVariableDeclGroupList;
+	}
+	| variable_declarations_list
 	;
 variable_declarations_list
 	: variable_declarations ';'

@@ -126,7 +126,7 @@ bool SType::validate(CodeContext& context, Token* token, SType* type)
 }
 
 SStructType::SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype)
-: SUserType(ctype, type, structure.size())
+: SUserType(ctype | (structure.size()? 0 : OPAQUE), type, structure.size())
 {
 	int i = 0;
 	for (auto var : structure)
@@ -137,11 +137,6 @@ pair<int, RValue>* SStructType::getItem(const string& name)
 {
 	auto iter = items.find(name);
 	return iter != items.end()? &iter->second : nullptr;
-}
-
-string SOpaqueType::str(CodeContext* context) const
-{
-	return context? context->typeManager.getUserTypeName(this) : "opaque";
 }
 
 string SStructType::str(CodeContext* context) const
@@ -203,11 +198,6 @@ SUserType* SUserType::lookup(CodeContext& context, const string& name)
 string SUserType::lookup(CodeContext& context, SType* type)
 {
 	return context.typeManager.getUserTypeName(type);
-}
-
-void SUserType::createOpaque(CodeContext& context, const string& name)
-{
-	context.typeManager.createOpaque(name);
 }
 
 void SUserType::createAlias(CodeContext& context, const string& name, SType* type)
@@ -291,14 +281,6 @@ SFunctionType* TypeManager::getFunction(SType* returnTy, vector<SType*> args)
 	return item.get();
 }
 
-void TypeManager::createOpaque(const string& name)
-{
-	SUserPtr& item = usrMap[name];
-	if (item.get())
-		return;
-	item = smart_opaqueTy(new SOpaqueType(int8Ty.get()));
-}
-
 void TypeManager::createAlias(const string& name, SType* type)
 {
 	SUserPtr& item = usrMap[name];
@@ -307,9 +289,11 @@ void TypeManager::createAlias(const string& name, SType* type)
 	item = smart_aliasTy(type);
 }
 
-StructType* buildStruct(const string& name, const vector<pair<string, SType*>>& structure)
+StructType* TypeManager::buildStruct(const string& name, const vector<pair<string, SType*>>& structure)
 {
 	vector<Type*> elements;
+	if (structure.empty())
+		elements.push_back(*int8Ty.get());
 	for (auto item : structure)
 		elements.push_back(*item.second);
 	return StructType::create(elements, name);
@@ -334,9 +318,9 @@ void TypeManager::createClass(const string& name, const vector<pair<string, STyp
 void TypeManager::createUnion(const string& name, const vector<pair<string, SType*>>& structure)
 {
 	SUserPtr& item = usrMap[name];
-	if (item.get() || !structure.size())
+	if (item.get())
 		return;
-	auto type = structure[0].second;
+	auto type = structure.size()? structure[0].second : int8Ty.get();
 	auto size = allocSize(type);
 	for (auto item : structure) {
 		auto tsize = allocSize(item.second);

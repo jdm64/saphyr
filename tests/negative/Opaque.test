@@ -1,0 +1,25 @@
+import "../files/Opaque.syp";
+
+void byStack()
+{
+	MyClass a;
+	MyStruct b;
+	MyUnion c;
+}
+
+void byNew()
+{
+	auto a = new MyClass;
+	auto b = new MyStruct;
+	auto c = new MyUnion;
+}
+
+========
+
+negative/Opaque.syp:5: can't create variable for an unsized type: MyClass
+negative/Opaque.syp:6: can't create variable for an unsized type: MyStruct
+negative/Opaque.syp:7: can't create variable for an unsized type: MyUnion
+negative/Opaque.syp:12: can't call new on MyClass type
+negative/Opaque.syp:13: can't call new on MyStruct type
+negative/Opaque.syp:14: can't call new on MyUnion type
+found 6 errors

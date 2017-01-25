@@ -88,7 +88,6 @@ enum class NodeId
 	NLoopBranch,
 	NLoopStatement,
 	NMemberInitializer,
-	NOpaqueDecl,
 	NParameter,
 	NReturnStatement,
 	NStructDeclaration,

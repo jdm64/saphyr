@@ -40,8 +40,6 @@ class CGNStatement
 
 	void visitNAliasDeclaration(NAliasDeclaration* stm);
 
-	void visitNOpaqueDecl(NOpaqueDecl* stm);
-
 	void visitNStructDeclaration(NStructDeclaration* stm);
 
 	void visitNEnumDeclaration(NEnumDeclaration* stm);

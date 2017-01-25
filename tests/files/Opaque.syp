@@ -1,0 +1,27 @@
+
+#[opaque]
+class MyClass
+{
+	struct this {
+		int a, b;
+	}
+
+	#[static]
+	@this create()
+	{
+		return new this;
+	}
+}
+
+#[opaque]
+struct MyStruct
+{
+	int a, b;
+}
+
+#[opaque]
+union MyUnion
+{
+	[4]int8 a;
+	int b;
+}

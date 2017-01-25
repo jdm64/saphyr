@@ -81,7 +81,10 @@ void CGNImportStm::visitNAliasDeclaration(NAliasDeclaration* stm)
 
 void CGNImportStm::visitNStructDeclaration(NStructDeclaration* stm)
 {
-	Builder::CreateStruct(context, stm->getType(), stm->getName(), stm->getVars());
+	NVariableDeclGroupList empty;
+	auto vars = NAttributeList::find(stm->getAttrs(), "opaque")? &empty : stm->getVars();
+
+	Builder::CreateStruct(context, stm->getType(), stm->getName(), vars);
 }
 
 void CGNImportStm::visitNEnumDeclaration(NEnumDeclaration* stm)
@@ -96,9 +99,13 @@ void CGNImportStm::visitNFunctionDeclaration(NFunctionDeclaration* stm)
 
 void CGNImportStm::visitNClassStructDecl(NClassStructDecl* stm)
 {
-	auto stToken = stm->getClass()->getName();
+	auto cl = stm->getClass();
+	auto stToken = cl->getName();
 	auto stType = NStructDeclaration::CreateType::CLASS;
-	Builder::CreateStruct(context, stType, stToken, stm->getVarList());
+	NVariableDeclGroupList empty;
+	auto vars = NAttributeList::find(cl->getAttrs(), "opaque")? &empty : stm->getVarList();
+
+	Builder::CreateStruct(context, stType, stToken, vars);
 }
 
 void CGNImportStm::visitNClassFunctionDecl(NClassFunctionDecl* stm)

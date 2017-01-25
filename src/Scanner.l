@@ -81,7 +81,6 @@ if		{ return ParserBase::TT_IF; }
 import		{ return ParserBase::TT_IMPORT; }
 loop		{ return ParserBase::TT_LOOP; }
 new		{ SAVE_TOKEN return ParserBase::TT_NEW; }
-opaque		{ return ParserBase::TT_OPAQUE; }
 redo		{ SAVE_TOKEN return ParserBase::TT_REDO; }
 return		{ SAVE_TOKEN return ParserBase::TT_RETURN; }
 sizeof		{ SAVE_TOKEN return ParserBase::TT_SIZEOF; }

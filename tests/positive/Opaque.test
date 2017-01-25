@@ -1,5 +1,13 @@
 
-opaque File;
+import "../files/Opaque.syp";
+
+#[opaque]
+struct File {}
+
+#[opaque]
+struct Fake {
+	int a, b;
+}
 
 int main()
 {
@@ -11,13 +19,56 @@ int main()
 	return 0;
 }
 
+void foo()
+{
+	@Fake a = new Fake;
+	a.a = 2;
+}
+
+void bar()
+{
+	auto c = MyClass.create();
+	@MyStruct s;
+	@MyUnion u;
+}
+
 ========
 
+%MyClass = type { i8 }
+%File = type { i8 }
+%Fake = type { i32, i32 }
+%MyStruct = type { i8 }
+%MyUnion = type { i8 }
+
+declare %MyClass* @MyClass_create()
+
 define i32 @main() {
-  %a = alloca i8*
+  %a = alloca %File*
   %b = alloca i8*
-  %1 = load i8** %a
-  %2 = bitcast i8* %1 to i8*
+  %1 = load %File** %a
+  %2 = bitcast %File* %1 to i8*
   store i8* %2, i8** %b
   ret i32 0
+}
+
+define void @foo() {
+  %1 = call i8* @malloc(i64 8)
+  %2 = bitcast i8* %1 to %Fake*
+  %a = alloca %Fake*
+  store %Fake* %2, %Fake** %a
+  %3 = load %Fake** %a
+  %4 = getelementptr %Fake* %3, i32 0, i32 0
+  store i32 2, i32* %4
+  ret void
+}
+
+declare i8* @malloc(i64)
+
+define void @bar() {
+  %1 = call %MyClass* @MyClass_create()
+  %c = alloca %MyClass*
+  store %MyClass* %1, %MyClass** %c
+  %s = alloca %MyStruct*
+  %u = alloca %MyUnion*
+  ret void
 }
