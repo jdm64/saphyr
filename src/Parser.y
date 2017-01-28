@@ -5,6 +5,7 @@
 
 %union {
 	int t_int;
+	NStructDeclaration::CreateType t_ctype;
 	Token* t_tok;
 	struct {
 		Token* tok;
@@ -53,6 +54,8 @@
 // constants and names
 %token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT TT_THIS
 
+// NStructDeclaration::CreateType
+%type <t_ctype> struct_union_keyword
 // integer constant
 %type <t_const_int> integer_constant
 // data types
@@ -234,13 +237,19 @@ attribute
 	}
 	;
 struct_declaration
-	: optional_attribute_declaration TT_STRUCT TT_IDENTIFIER '{' variable_declarations_list_or_empty '}'
+	: optional_attribute_declaration struct_union_keyword TT_IDENTIFIER '{' variable_declarations_list_or_empty '}'
 	{
-		$$ = new NStructDeclaration($3, $5, $1, NStructDeclaration::CreateType::STRUCT);
+		$$ = new NStructDeclaration($3, $5, $1, $2);
 	}
-	| optional_attribute_declaration TT_UNION TT_IDENTIFIER '{' variable_declarations_list_or_empty '}'
+	;
+struct_union_keyword
+	: TT_STRUCT
 	{
-		$$ = new NStructDeclaration($3, $5, $1, NStructDeclaration::CreateType::UNION);
+		$$ = NStructDeclaration::CreateType::STRUCT;
+	}
+	| TT_UNION
+	{
+		$$ = NStructDeclaration::CreateType::UNION;
 	}
 	;
 enum_declaration
