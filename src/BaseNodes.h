@@ -127,14 +127,14 @@ public:
 	: doDelete(doDelete) {}
 
 	template<typename L>
-	L* move()
+	L* move(bool deleteThis = true)
 	{
 		auto other = new L;
-		for (const auto item : *this)
-			other->add(item);
+		other->addAll(*this);
 
 		doDelete = false;
-		delete this;
+		if (deleteThis)
+			delete this;
 
 		return other;
 	}
