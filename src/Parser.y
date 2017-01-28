@@ -17,6 +17,7 @@
 	NParameter* t_param;
 	NVariableDecl* t_var_decl;
 	NAttribute* t_attr;
+	NAttrValueList* t_attr_vals;
 	NStatement* t_stm;
 	NExpression* t_exp;
 	NSwitchCase* t_case;
@@ -87,6 +88,7 @@
 %type <t_exp> sizeof_expression paren_expression new_expression
 // other nodes
 %type <t_attr> attribute
+%type <t_attr_vals> attribute_value_list
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
@@ -234,6 +236,22 @@ attribute
 	: TT_IDENTIFIER
 	{
 		$$ = new NAttribute($1);
+	}
+	| TT_IDENTIFIER '(' attribute_value_list ')'
+	{
+		$$ = new NAttribute($1, $3);
+	}
+	;
+attribute_value_list
+	: TT_STR_LIT
+	{
+		$$ = new NAttrValueList;
+		$$->add(new NAttrValue($1));
+	}
+	| attribute_value_list ',' TT_STR_LIT
+	{
+		$1->add(new NAttrValue($3));
+		$$ = $1;
 	}
 	;
 struct_declaration

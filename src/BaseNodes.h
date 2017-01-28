@@ -25,6 +25,7 @@ using namespace std;
 enum class NodeId
 {
 	NAttribute,
+	NAttrValue,
 
 	// datatypes
 	StartDataType,
@@ -266,13 +267,54 @@ public:
 	}
 };
 
+class NAttrValue : public Node
+{
+	Token* val;
+
+public:
+	NAttrValue(Token* value)
+	: val(value)
+	{
+		Token::unescape(value->str);
+	}
+
+	operator Token*() const
+	{
+		return val;
+	}
+
+	string str() const
+	{
+		return val->str;
+	}
+
+	~NAttrValue()
+	{
+		delete val;
+	}
+
+	ADD_ID(NAttrValue)
+};
+
+class NAttrValueList : public NodeList<NAttrValue>
+{
+public:
+	static NAttrValue* find(NAttrValueList* list, int index)
+	{
+		if (!list)
+			return nullptr;
+		return index < list->size()? list->at(index) : nullptr;
+	}
+};
+
 class NAttribute : public Node
 {
 	Token* name;
+	NAttrValueList* values;
 
 public:
-	explicit NAttribute(Token* name)
-	: name(name) {}
+	explicit NAttribute(Token* name, NAttrValueList* values = nullptr)
+	: name(name), values(values) {}
 
 	operator Token*() const
 	{
@@ -282,6 +324,11 @@ public:
 	Token* getName() const
 	{
 		return name;
+	}
+
+	NAttrValueList* getValues() const
+	{
+		return values;
 	}
 
 	~NAttribute()
