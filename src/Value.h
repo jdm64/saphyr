@@ -28,12 +28,16 @@ class RValue
 	SType* ty;
 	NAttributeList* atrs;
 
+protected:
+	RValue(Value* value, SType* type, NAttributeList* attrs)
+	: val(value), ty(type), atrs(attrs) {}
+
 public:
 	RValue()
-	: RValue(nullptr, nullptr) {}
+	: RValue(nullptr, nullptr, nullptr) {}
 
-	RValue(Value* value, SType* type, NAttributeList* attrs = nullptr)
-	: val(value), ty(type), atrs(attrs) {}
+	RValue(Value* value, SType* type)
+	: RValue(value, type, nullptr) {}
 
 	static RValue getZero(CodeContext &context, SType* type);
 
@@ -119,9 +123,11 @@ class SFunction : public RValue
 		return static_cast<SFunctionType*>(stype());
 	}
 
-public:
-	SFunction(Function* function, SFunctionType* type, NAttributeList* attrs = nullptr)
+	SFunction(Function* function, SFunctionType* type, NAttributeList* attrs)
 	: RValue(function, type, attrs) {}
+
+public:
+	static SFunction create(CodeContext &context, Function* function, SFunctionType* type, NAttributeList* attrs);
 
 	SFunction()
 	: RValue() {};

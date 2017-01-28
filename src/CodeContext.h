@@ -18,6 +18,7 @@
 #define __CODE_CONTEXT_H__
 
 #include <stack>
+#include <list>
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <llvm/IR/Instructions.h>
@@ -137,6 +138,7 @@ class CodeContext : public SymbolTable
 	map<string, LabelBlockPtr> labelBlocks;
 
 	vector<pair<Token,string>> errors;
+	list<unique_ptr<NAttributeList>> attrs;
 
 	Module* module;
 	TypeManager typeManager;
@@ -187,6 +189,15 @@ public:
 	SFunction currFunction() const
 	{
 		return currFunc;
+	}
+
+	NAttributeList* storeAttr(NAttributeList* list)
+	{
+		if (list) {
+			list = list->move<NAttributeList>(false);
+			attrs.push_back(unique_ptr<NAttributeList>(list));
+		}
+		return list;
 	}
 
 	void addError(string error, Token* token)

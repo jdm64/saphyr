@@ -226,7 +226,7 @@ SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunction
 	auto sym = context.loadSymbolGlobal(funcName);
 	if (!sym) {
 		auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, funcName, context.getModule());
-		auto function = SFunction(func, funcType, attrs);
+		auto function = SFunction::create(context, func, funcType, attrs);
 		context.storeGlobalSymbol(function, funcName);
 		return function;
 	} else if (!sym.isFunction()) {

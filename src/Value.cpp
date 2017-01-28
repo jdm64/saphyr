@@ -60,3 +60,8 @@ RValue RValue::getUndef(SType* type)
 {
 	return RValue(UndefValue::get(*type), type);
 }
+
+SFunction SFunction::create(CodeContext& context, Function* function, SFunctionType* type, NAttributeList* attrs)
+{
+	return SFunction(function, type, context.storeAttr(attrs));
+}
