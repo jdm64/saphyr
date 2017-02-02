@@ -1,0 +1,50 @@
+
+#[mangle("bar")]
+void foo()
+{
+}
+
+void test()
+{
+	foo();
+}
+
+class MyClass
+{
+	#[mangle("super_mangle")]
+	void foo()
+	{
+	}
+}
+
+void bla()
+{
+	MyClass a;
+
+	a.foo();
+}
+
+========
+
+%MyClass = type { i8 }
+
+define void @bar() {
+  ret void
+}
+
+define void @test() {
+  call void @bar()
+  ret void
+}
+
+define void @super_mangle(%MyClass* %this) {
+  %1 = alloca %MyClass*
+  store %MyClass* %this, %MyClass** %1
+  ret void
+}
+
+define void @bla() {
+  %a = alloca %MyClass
+  call void @super_mangle(%MyClass* %a)
+  ret void
+}

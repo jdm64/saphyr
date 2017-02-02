@@ -161,7 +161,7 @@ void CGNStatement::visitNEnumDeclaration(NEnumDeclaration* stm)
 
 void CGNStatement::visitNFunctionDeclaration(NFunctionDeclaration* stm)
 {
-	Builder::CreateFunction(context, stm->getName(), stm->getRType(), stm->getParams(), stm->getBody());
+	Builder::CreateFunction(context, stm->getName(), stm->getRType(), stm->getParams(), stm->getBody(), stm->getAttrs());
 }
 
 void CGNStatement::visitNClassStructDecl(NClassStructDecl* stm)

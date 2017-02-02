@@ -225,9 +225,28 @@ SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunction
 	auto funcName = name->str;
 	auto sym = context.loadSymbolGlobal(funcName);
 	if (!sym) {
-		auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, funcName, context.getModule());
+		string mangleName;
+		auto mangle = NAttributeList::find(attrs, "mangle");
+		if (mangle) {
+			auto mangleVal = NAttrValueList::find(mangle->getValues(), 0);
+			if (mangleVal) {
+				mangleName = mangleVal->str();
+				sym = context.loadSymbolGlobal(mangleName);
+				if (sym) {
+					context.addError("cannot mangle function to existing symbol", *mangleVal);
+					mangleName = "";
+				}
+			} else {
+				context.addError("mangle attribute requires value", *mangle);
+			}
+		}
+
+		auto realName = mangleName.size()? mangleName : funcName;
+		auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, realName, context.getModule());
 		auto function = SFunction::create(context, func, funcType, attrs);
 		context.storeGlobalSymbol(function, funcName);
+		if (mangleName.size())
+			context.storeGlobalSymbol(function, mangleName);
 		return function;
 	} else if (!sym.isFunction()) {
 		context.addError("variable " + funcName + " already defined", name);

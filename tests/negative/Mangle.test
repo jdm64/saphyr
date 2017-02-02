@@ -1,0 +1,16 @@
+
+#[mangle]
+void noname()
+{
+}
+
+#[mangle("noname")]
+void foo()
+{
+}
+
+========
+
+negative/Mangle.syp:2: mangle attribute requires value
+negative/Mangle.syp:7: cannot mangle function to existing symbol
+found 2 errors

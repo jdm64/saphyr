@@ -94,7 +94,7 @@ void CGNImportStm::visitNEnumDeclaration(NEnumDeclaration* stm)
 
 void CGNImportStm::visitNFunctionDeclaration(NFunctionDeclaration* stm)
 {
-	Builder::CreateFunction(context, stm->getName(), stm->getRType(), stm->getParams(), nullptr);
+	Builder::CreateFunction(context, stm->getName(), stm->getRType(), stm->getParams(), nullptr, stm->getAttrs());
 }
 
 void CGNImportStm::visitNClassStructDecl(NClassStructDecl* stm)
