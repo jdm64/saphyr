@@ -852,10 +852,11 @@ class NFunctionDeclaration : public NDeclaration
 	NDataType* rtype;
 	NParameterList* params;
 	NStatementList* body;
+	NAttributeList* attrs;
 
 public:
-	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body)
-	: NDeclaration(name), rtype(rtype), params(params), body(body) {}
+	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs)
+	: NDeclaration(name), rtype(rtype), params(params), body(body), attrs(attrs) {}
 
 	NDataType* getRType() const
 	{
@@ -872,11 +873,17 @@ public:
 		return body;
 	}
 
+	NAttributeList* getAttrs() const
+	{
+		return attrs;
+	}
+
 	~NFunctionDeclaration()
 	{
 		delete rtype;
 		delete params;
 		delete body;
+		delete attrs;
 	}
 
 	ADD_ID(NFunctionDeclaration)

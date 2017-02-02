@@ -283,7 +283,11 @@ enum_declaration
 function_declaration
 	: data_type TT_IDENTIFIER '(' parameter_list ')' function_body
 	{
-		$$ = new NFunctionDeclaration($2, $1, $4, $6);
+		$$ = new NFunctionDeclaration($2, $1, $4, $6, nullptr);
+	}
+	| attribute_declaration data_type TT_IDENTIFIER '(' parameter_list ')' function_body
+	{
+		$$ = new NFunctionDeclaration($3, $2, $5, $7, $1);
 	}
 	;
 function_body
