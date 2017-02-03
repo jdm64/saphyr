@@ -3,6 +3,9 @@ class Test
 {
 	#[bla, bla]
 	void foo() {}
+
+	#[bla("one", "two")]
+	void bar() {}
 }
 
 ========
