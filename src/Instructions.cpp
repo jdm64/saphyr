@@ -410,7 +410,8 @@ RValue Inst::SizeOf(CodeContext& context, Token* name)
 
 RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList)
 {
-	auto argCount = args->size() + expList.size();
+	// NOTE args can be null
+	auto argCount = (args? args->size() : 0) + expList.size();
 	auto paramCount = func.numParams();
 	if (argCount != paramCount) {
 		context.addError("argument count for " + func.name().str() + " function invalid, "
@@ -418,10 +419,12 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 		return RValue();
 	}
 	int i = expList.size();
-	for (auto arg : *args) {
-		auto argExp = CGNExpression::run(context, arg);
-		CastTo(context, name, argExp, func.getParam(i++));
-		expList.push_back(argExp);
+	if (args) {
+		for (auto arg : *args) {
+			auto argExp = CGNExpression::run(context, arg);
+			CastTo(context, name, argExp, func.getParam(i++));
+			expList.push_back(argExp);
+		}
 	}
 	auto call = CallInst::Create(func, expList, "", context);
 	return RValue(call, func.returnTy());
@@ -501,8 +504,6 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpr
 	auto func = static_cast<SFunction&>(clItem->second);
 	vector<Value*> exp_list;
 	exp_list.push_back(var);
-	if (!initList)
-		initList = new NExpressionList;
 	CallFunction(context, func, token, initList, exp_list);
 	return true;
 }
