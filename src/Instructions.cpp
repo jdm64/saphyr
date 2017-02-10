@@ -307,6 +307,7 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 	}
 	case 1: // lhs != ptr, rhs == ptr
 		swap(lhs, rhs);
+		/* no break */
 	case 2: // lhs == ptr, rhs != ptr
 		return PointerMath(type, optToken, lhs, rhs, context);
 	case 3: // both ptr

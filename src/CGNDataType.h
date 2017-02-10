@@ -27,6 +27,8 @@ protected:
 	explicit CGNDataType(CodeContext& context)
 	: context(context) {}
 
+	virtual ~CGNDataType() {}
+
 	SType* visitNBaseType(NBaseType* type);
 
 	SType* visitNThisType(NThisType* type);
