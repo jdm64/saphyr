@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
+<!-- copy to ~/.local/share/katepart5/syntax/saphyr.xml -->
 <language
     name="Saphyr"
-    version="1.0"
+    version="1.2"
     kateversion="2.4"
     section="Sources"
     indenter="cstyle"
@@ -10,16 +11,17 @@
     author="Justin Madru (justin.jdm64@gmail.com)"
     license="GPL">
   <highlighting>
+    <list name="import">
+      <item>import</item>
+    </list>
     <list name="keywords">
       <item>alias</item>
       <item>class</item>
       <item>delete</item>
       <item>enum</item>
-      <item>import</item>
       <item>new</item>
       <item>sizeof</item>
       <item>struct</item>
-      <item>this</item>
       <item>union</item>
     </list>
     <list name="flow">
@@ -49,6 +51,7 @@
       <item>int16</item>
       <item>int32</item>
       <item>int64</item>
+      <item>this</item>
       <item>uint</item>
       <item>uint8</item>
       <item>uint16</item>
@@ -65,24 +68,38 @@
     <contexts>
       <context name="Normal" attribute="Normal" lineEndContext="#stay">
         <DetectSpaces/>
+        <keyword          attribute="Keyword"      context="Import"              String="import" />
         <keyword          attribute="Keyword"      context="#stay"               String="keywords" />
         <keyword          attribute="Data Type"    context="#stay"               String="types" />
         <keyword          attribute="Control Flow" context="#stay"               String="flow" />
         <keyword          attribute="Constant"     context="#stay"               String="constants" />
-        <DetectChar       attribute="Symbol"       context="#stay"               char="{" beginRegion="Brace" />
-        <DetectChar       attribute="Symbol"       context="#stay"               char="}" endRegion="Brace" />
+        <DetectChar       attribute="Normal"       context="#stay"               char="{" beginRegion="Brace" />
+        <DetectChar       attribute="Normal"       context="#stay"               char="}" endRegion="Brace" />
         <DetectChar       attribute="String"       context="Double Quote String" char="&quot;" />
         <DetectChar       attribute="String"       context="Backtick String"     char="`" />
         <Detect2Chars     attribute="Attribute"    context="Attribute"           char="#" char1="[" beginRegion="Attribute" />
         <Detect2Chars     attribute="Comment"      context="Line Comment"        char="/" char1="/" />
         <Detect2Chars     attribute="Comment"      context="Block Comment"       char="/" char1="*" beginRegion="Comment" />
-        <RegExpr          attribute="Base-N"       context="#stay"               String="0b[0-1]+" />
-        <RegExpr          attribute="Base-N"       context="#stay"               String="0o[0-7]+" />
-        <HlCHex           attribute="Base-N"       context="#stay" />
-        <Float            attribute="Float"        context="#stay" />
-        <Int              attribute="Decimal"      context="#stay" />
+        <RegExpr          attribute="Function"     context="#stay"               String="[_\w][_\w\d]*(?=\()" />
+        <RegExpr          attribute="Base-N"       context="Number Suffix"       String="0b[0-1]+" />
+        <RegExpr          attribute="Base-N"       context="Number Suffix"       String="0o[0-7]+" />
+        <HlCHex           attribute="Base-N"       context="Number Suffix" />
+        <Float            attribute="Float"        context="Number Suffix" />
+        <Int              attribute="Decimal"      context="Number Suffix" />
         <HlCChar          attribute="Character"    context="#stay" />
-        <DetectIdentifier/>
+        <DetectIdentifier attribute="Variable" />
+      </context>
+      <context name="Number Suffix" attribute="Normal" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
+        <RegExpr attribute="Data Type" context="#pop" String="_[a-zA-Z0-9_]+" />
+      </context>
+      <context name="Import" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Import" context="Import String" char="&quot;" />
+        <DetectChar attribute="Normal" context="#pop" char=";" />
+      </context>
+      <context name="Import String" attribute="Import" lineEndContext="#stay">
+        <LineContinue  attribute="Import" context="#stay" />
+        <HlCStringChar attribute="String" context="#stay" />
+        <DetectChar    attribute="Import" context="#pop" char="&quot;" />
       </context>
       <context name="Double Quote String" attribute="String" lineEndContext="#stay">
         <LineContinue  attribute="String"    context="#stay" />
@@ -111,16 +128,18 @@
     <itemDatas>
       <itemData name="Normal"       defStyleNum="dsNormal"      spellChecking="false" />
       <itemData name="Keyword"      defStyleNum="dsKeyword"     spellChecking="false" />
+      <itemData name="Function"     defStyleNum="dsFunction"    spellChecking="false" />
+      <itemData name="Variable"     defStyleNum="dsNormal"      spellChecking="false" />
       <itemData name="Control Flow" defStyleNum="dsControlFlow" spellChecking="false" />
       <itemData name="Attribute"    defStyleNum="dsAttribute" />
-      <itemData name="Data Type"    defStyleNum="dsDataType"    spellChecking="false" />
+      <itemData name="Data Type"    defStyleNum="dsDataType"    spellChecking="false" bold="true" />
       <itemData name="Decimal"      defStyleNum="dsDecVal"      spellChecking="false" />
       <itemData name="Float"        defStyleNum="dsFloat"       spellChecking="false" />
       <itemData name="Base-N"       defStyleNum="dsBaseN"       spellChecking="false" />
-      <itemData name="Constant"     defStyleNum="dsConstant"    spellChecking="false" />
+      <itemData name="Constant"     defStyleNum="dsConstant"    spellChecking="false" bold="true" />
       <itemData name="Character"    defStyleNum="dsChar"        spellChecking="false" />
       <itemData name="String"       defStyleNum="dsString" />
-      <itemData name="Symbol"       defStyleNum="dsOperator"    spellChecking="false" />
+      <itemData name="Import"       defStyleNum="dsImport"      spellChecking="false" />
       <itemData name="Comment"      defStyleNum="dsComment" />
     </itemDatas>
   </highlighting>
@@ -129,6 +148,7 @@
       <comment name="singleLine" start="//" />
       <comment name="multiLine" start="/*" end="*/" region="Comment"/>
     </comments>
-    <keywords casesensitive="true" />
+    <keywords casesensitive="true" additionalDeliminator="@$" />
   </general>
 </language>
+<!-- kate: space-indent on; indent-width 2; -->
