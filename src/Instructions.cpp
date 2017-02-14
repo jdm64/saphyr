@@ -544,6 +544,8 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 		if (!item) {
 			context.addError(baseName + " doesn't have member " + member, memberName);
 			return RValue();
+		} else if (item->second.isFunction()) {
+			return item->second;
 		} else if (baseVar.isUndef()) {
 			context.addError("cannot access member variable from a static context", memberName);
 			return RValue();

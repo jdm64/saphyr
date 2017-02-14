@@ -1,4 +1,17 @@
 
+class Test
+{
+	#[static]
+	int calc()
+	{
+		return 3;
+	}
+
+	void run()
+	{
+	}
+}
+
 int func(int a)
 {
 	return a + 1;
@@ -33,7 +46,25 @@ int main()
 	return 0;
 }
 
+void classPtr()
+{
+	auto a = Test.calc;
+	auto b = Test.run;
+}
+
 ========
+
+%Test = type { i8 }
+
+define i32 @Test_calc() {
+  ret i32 3
+}
+
+define void @Test_run(%Test* %this) {
+  %1 = alloca %Test*
+  store %Test* %this, %Test** %1
+  ret void
+}
 
 define i32 @func(i32 %a) {
   %1 = alloca i32
@@ -84,4 +115,12 @@ define i32 @main() {
   %3 = load i32 (i32)** %ptr2
   %4 = call i32 %3(i32 4)
   ret i32 0
+}
+
+define void @classPtr() {
+  %a = alloca i32 ()*
+  store i32 ()* @Test_calc, i32 ()** %a
+  %b = alloca void (%Test*)*
+  store void (%Test*)* @Test_run, void (%Test*)** %b
+  ret void
 }
