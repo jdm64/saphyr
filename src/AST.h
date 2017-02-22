@@ -1636,23 +1636,19 @@ public:
 class NSizeOfOperator : public NExpression
 {
 public:
-	enum OfType { DATA, EXP, NAME };
+	enum OfType { DATA, EXP };
 
 private:
 	OfType type;
 	NDataType* dtype;
 	NExpression* exp;
-	Token* name;
 
 public:
 	explicit NSizeOfOperator(NDataType* dtype)
-	: type(DATA), dtype(dtype), exp(nullptr), name(nullptr) {}
+	: type(DATA), dtype(dtype), exp(nullptr) {}
 
 	explicit NSizeOfOperator(NExpression* exp)
-	: type(EXP), dtype(nullptr), exp(exp), name(nullptr) {}
-
-	explicit NSizeOfOperator(Token* name)
-	: type(NAME), dtype(nullptr), exp(nullptr), name(name){}
+	: type(EXP), dtype(nullptr), exp(exp) {}
 
 	OfType getType() const
 	{
@@ -1669,18 +1665,12 @@ public:
 		return dtype;
 	}
 
-	Token* getName() const
-	{
-		return name;
-	}
-
 	operator Token*() const
 	{
 		switch (type) {
 		default:
 		case DATA: return *dtype;
 		case EXP: return *exp;
-		case NAME: return name;
 		}
 	}
 
@@ -1693,7 +1683,6 @@ public:
 	{
 		delete dtype;
 		delete exp;
-		delete name;
 	}
 
 	ADD_ID(NSizeOfOperator)

@@ -283,8 +283,6 @@ RValue CGNExpression::visitNSizeOfOperator(NSizeOfOperator* exp)
 		return Inst::SizeOf(context, exp->getDataType());
 	case NSizeOfOperator::EXP:
 		return Inst::SizeOf(context, exp->getExp());
-	case NSizeOfOperator::NAME:
-		return Inst::SizeOf(context, exp->getName());
 	default:
 		// shouldn't happen
 		return RValue();

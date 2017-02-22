@@ -64,7 +64,7 @@
 // parameter
 %type <t_param> parameter
 // variable
-%type <t_var> variable_expression explicit_variable_expression function_call
+%type <t_var> variable_expression base_variable_expression function_call
 // variable declaration
 %type <t_var_decl> variable global_variable
 // operators
@@ -815,7 +815,7 @@ unary_operator
 	| '~' { $$ = {$1.t_tok, '~'}; }
 	;
 sizeof_expression
-	: TT_SIZEOF explicit_variable_expression
+	: TT_SIZEOF variable_expression
 	{
 		$$ = new NSizeOfOperator($2);
 	}
@@ -823,29 +823,13 @@ sizeof_expression
 	{
 		$$ = new NSizeOfOperator($2);
 	}
-	| TT_SIZEOF TT_IDENTIFIER
-	{
-		$$ = new NSizeOfOperator($2);
-	}
-	| TT_SIZEOF TT_THIS
-	{
-		$$ = new NSizeOfOperator(new NThisType($2));
-	}
-	| TT_SIZEOF '(' explicit_variable_expression ')'
+	| TT_SIZEOF '(' expression ')'
 	{
 		$$ = new NSizeOfOperator($3);
 	}
 	| TT_SIZEOF '(' explicit_data_type ')'
 	{
 		$$ = new NSizeOfOperator($3);
-	}
-	| TT_SIZEOF '(' TT_IDENTIFIER ')'
-	{
-		$$ = new NSizeOfOperator($3);
-	}
-	| TT_SIZEOF '(' TT_THIS ')'
-	{
-		$$ = new NSizeOfOperator(new NThisType($3));
 	}
 	;
 primary_expression
@@ -887,7 +871,7 @@ increment_decrement_operator
 	: TT_INC { $$ = {$1, TT_INC}; }
 	| TT_DEC { $$ = {$1, TT_DEC}; }
 	;
-variable_expression
+base_variable_expression
 	: TT_IDENTIFIER
 	{
 		$$ = new NBaseVariable($1);
@@ -897,10 +881,10 @@ variable_expression
 		$$ = new NBaseVariable($1);
 	}
 	| function_call
-	| explicit_variable_expression
 	;
-explicit_variable_expression
-	: variable_expression '[' expression ']'
+variable_expression
+	: base_variable_expression
+	| variable_expression '[' expression ']'
 	{
 		$$ = new NArrayVariable($1, $2.t_tok, $3);
 	}
