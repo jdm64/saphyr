@@ -345,15 +345,14 @@ RValue Inst::Load(CodeContext& context, RValue value)
 {
 	if (!value)
 		return value;
-
-	auto type = value.stype();
-	if (type->isFunction())
+	else if (value.isConst() && !value.isGlobalVal())
+		// don't load constant values
+		// global variables and functions are constants that must be excluded
+		return value;
+	else if (value.isFunction())
 		// don't require address-of operator for converting
 		// a function into a function pointer
 		return RValue(value.value(), SType::getPointer(context, value.stype()));
-	else if (type->isEnum() && value.isConst())
-		// an enum value, not a variable, don't load it
-		return value;
 
 	return RValue(new LoadInst(value, "", context), value.stype());
 }

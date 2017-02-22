@@ -92,6 +92,11 @@ public:
 		return val? isa<Constant>(val) : false;
 	}
 
+	bool isGlobalVal() const
+	{
+		return val? isa<GlobalValue>(val) : false;
+	}
+
 	bool isUndef() const
 	{
 		return val? isa<UndefValue>(val) : false;
