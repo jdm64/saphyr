@@ -64,7 +64,7 @@
 // parameter
 %type <t_param> parameter
 // variable
-%type <t_var> variable_expresion explicit_variable_expresion function_call
+%type <t_var> variable_expression explicit_variable_expression function_call
 // variable declaration
 %type <t_var_decl> variable global_variable
 // operators
@@ -359,7 +359,7 @@ statement
 	{
 		$$ = new NReturnStatement($1.t_tok, $2);
 	}
-	| TT_DELETE variable_expresion ';'
+	| TT_DELETE variable_expression ';'
 	{
 		$$ = new NDeleteStatement($2);
 	}
@@ -375,7 +375,7 @@ statement
 	{
 		$$ = new NDestructorCall(new NBaseVariable(new Token(*$2)), $2);
 	}
-	| variable_expresion '.' '~' TT_THIS '(' ')' ';'
+	| variable_expression '.' '~' TT_THIS '(' ')' ';'
 	{
 		$$ = new NDestructorCall($1, $4);
 	}
@@ -662,7 +662,7 @@ expression
 	;
 assignment
 	: ternary_expression
-	| variable_expresion assignment_operator expression
+	| variable_expression assignment_operator expression
 	{
 		$$ = new NAssignment(($2).op, ($2).tok, $1, $3);
 	}
@@ -815,7 +815,7 @@ unary_operator
 	| '~' { $$ = {$1.t_tok, '~'}; }
 	;
 sizeof_expression
-	: TT_SIZEOF explicit_variable_expresion
+	: TT_SIZEOF explicit_variable_expression
 	{
 		$$ = new NSizeOfOperator($2);
 	}
@@ -831,7 +831,7 @@ sizeof_expression
 	{
 		$$ = new NSizeOfOperator(new NThisType($2));
 	}
-	| TT_SIZEOF '(' explicit_variable_expresion ')'
+	| TT_SIZEOF '(' explicit_variable_expression ')'
 	{
 		$$ = new NSizeOfOperator($3);
 	}
@@ -850,7 +850,7 @@ sizeof_expression
 	;
 primary_expression
 	: value_expression
-	| variable_expresion
+	| variable_expression
 	| paren_expression
 	;
 paren_expression
@@ -874,11 +874,11 @@ function_call
 	}
 	;
 increment_decrement_expression
-	: increment_decrement_operator variable_expresion
+	: increment_decrement_operator variable_expression
 	{
 		$$ = new NIncrement(($1).op, ($1).tok, $2, false);
 	}
-	| variable_expresion increment_decrement_operator
+	| variable_expression increment_decrement_operator
 	{
 		$$ = new NIncrement(($2).op, ($2).tok, $1, true);
 	}
@@ -887,7 +887,7 @@ increment_decrement_operator
 	: TT_INC { $$ = {$1, TT_INC}; }
 	| TT_DEC { $$ = {$1, TT_DEC}; }
 	;
-variable_expresion
+variable_expression
 	: TT_IDENTIFIER
 	{
 		$$ = new NBaseVariable($1);
@@ -897,26 +897,26 @@ variable_expresion
 		$$ = new NBaseVariable($1);
 	}
 	| function_call
-	| explicit_variable_expresion
+	| explicit_variable_expression
 	;
-explicit_variable_expresion
-	: variable_expresion '[' expression ']'
+explicit_variable_expression
+	: variable_expression '[' expression ']'
 	{
 		$$ = new NArrayVariable($1, $2.t_tok, $3);
 	}
-	| variable_expresion '.' TT_IDENTIFIER
+	| variable_expression '.' TT_IDENTIFIER
 	{
 		$$ = new NMemberVariable($1, $3);
 	}
-	| variable_expresion '.' TT_IDENTIFIER '(' expression_list ')'
+	| variable_expression '.' TT_IDENTIFIER '(' expression_list ')'
 	{
 		$$ = new NMemberFunctionCall($1, $3, $5);
 	}
-	| variable_expresion '@'
+	| variable_expression '@'
 	{
 		$$ = new NDereference($1, $2.t_tok);
 	}
-	| variable_expresion '$'
+	| variable_expression '$'
 	{
 		$$ = new NAddressOf($1, $2.t_tok);
 	}
