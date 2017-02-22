@@ -851,13 +851,7 @@ sizeof_expression
 primary_expression
 	: value_expression
 	| variable_expresion
-	{
-		$$ = $1;
-	}
 	| paren_expression
-	{
-		$$ = $1;
-	}
 	;
 paren_expression
 	: '(' expression ')'
@@ -929,9 +923,6 @@ explicit_variable_expresion
 	;
 value_expression
 	: integer_constant
-	{
-		$$ = $1;
-	}
 	| TT_CHAR_LIT
 	{
 		$$ = new NCharConst($1);
