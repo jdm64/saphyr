@@ -34,9 +34,9 @@ void moreBad()
 	@File q;
 	q++;
 
-	sizeof(void);
-	sizeof(auto);
-	sizeof(File);
+	void->size;
+	auto->size;
+	File->size;
 }
 
 void badCast()

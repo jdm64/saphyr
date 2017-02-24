@@ -402,6 +402,22 @@ RValue Inst::SizeOf(CodeContext& context, Token* name)
 	return SizeOf(context, stype, name);
 }
 
+RValue Inst::SizeOf(CodeContext& context, NArrowOperator* exp)
+{
+	switch (exp->getType()) {
+	case NArrowOperator::DATA:
+		return SizeOf(context, CGNDataType::run(context, exp->getDataType()), *exp);
+	case NArrowOperator::EXP:
+		if (exp->getExp()->id() == NodeId::NBaseVariable) {
+			return SizeOf(context, *exp);
+		}
+		return SizeOf(context, CGNExpression::run(context, exp->getExp()).stype(), *exp);
+	default:
+		// shouldn't happen
+		return RValue();
+	}
+}
+
 RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList)
 {
 	// NOTE args can be null

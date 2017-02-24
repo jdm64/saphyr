@@ -44,6 +44,7 @@ SUFFIX		_{NAME}
 "??"	{ SAVE_TOKEN return ParserBase::TT_DQ_MARK; }
 "??="	{ SAVE_TOKEN return ParserBase::TT_ASG_DQ; }
 "#["	{ return ParserBase::TT_ATTR_OPEN; }
+"->"	{ return ParserBase::TT_ARROW; }
 
 true		{ SAVE_TOKEN return ParserBase::TT_TRUE; }
 false		{ SAVE_TOKEN return ParserBase::TT_FALSE; }
@@ -83,7 +84,6 @@ loop		{ return ParserBase::TT_LOOP; }
 new		{ SAVE_TOKEN return ParserBase::TT_NEW; }
 redo		{ SAVE_TOKEN return ParserBase::TT_REDO; }
 return		{ SAVE_TOKEN return ParserBase::TT_RETURN; }
-sizeof		{ SAVE_TOKEN return ParserBase::TT_SIZEOF; }
 struct		{ return ParserBase::TT_STRUCT; }
 switch		{ return ParserBase::TT_SWITCH; }
 this		{ SAVE_TOKEN return ParserBase::TT_THIS; }

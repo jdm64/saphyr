@@ -36,6 +36,7 @@ CGNExpression::classPtr* CGNExpression::buildVTable()
 	TABLE_ADD2(NDereference, NVariable);
 	TABLE_ADD2(NMemberVariable, NVariable);
 	TABLE_ADD(NAddressOf);
+	TABLE_ADD(NArrowOperator);
 	TABLE_ADD(NAssignment);
 	TABLE_ADD(NBinaryMathOperator);
 	TABLE_ADD(NBoolConst);
@@ -50,7 +51,6 @@ CGNExpression::classPtr* CGNExpression::buildVTable()
 	TABLE_ADD(NNewExpression);
 	TABLE_ADD(NNullCoalescing);
 	TABLE_ADD(NNullPointer);
-	TABLE_ADD(NSizeOfOperator);
 	TABLE_ADD(NStringLiteral);
 	TABLE_ADD(NTernaryOperator);
 	TABLE_ADD(NUnaryMathOperator);
@@ -276,20 +276,14 @@ RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 	return retVal;
 }
 
-RValue CGNExpression::visitNSizeOfOperator(NSizeOfOperator* exp)
+RValue CGNExpression::visitNArrowOperator(NArrowOperator* exp)
 {
-	switch (exp->getType()) {
-	case NSizeOfOperator::DATA:
-		return Inst::SizeOf(context, CGNDataType::run(context, exp->getDataType()), *exp);
-	case NSizeOfOperator::EXP:
-		if (exp->getExp()->id() == NodeId::NBaseVariable) {
-			return Inst::SizeOf(context, *exp);
-		}
-		return Inst::SizeOf(context, CGNExpression::run(context, exp->getExp()).stype(), *exp);
-	default:
-		// shouldn't happen
-		return RValue();
+	auto name = exp->getName()->str;
+	if (name == "size") {
+		return Inst::SizeOf(context, exp);
 	}
+	context.addError("invalid arrow op name: " + name, *exp);
+	return RValue();
 }
 
 RValue CGNExpression::visitNUnaryMathOperator(NUnaryMathOperator* exp)

@@ -57,6 +57,8 @@ public:
 
 	static RValue SizeOf(CodeContext& context, Token* name);
 
+	static RValue SizeOf(CodeContext& context, NArrowOperator* exp);
+
 	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
 	{
 		#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7

@@ -16,7 +16,7 @@ int main()
 	@()auto d;
 	@(auto)int e;
 
-	int s = sizeof auto;
+	int s = auto->size;
 
 	int n = new auto;
 

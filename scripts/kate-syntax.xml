@@ -20,7 +20,6 @@
       <item>delete</item>
       <item>enum</item>
       <item>new</item>
-      <item>sizeof</item>
       <item>struct</item>
       <item>union</item>
     </list>
@@ -77,6 +76,7 @@
         <DetectChar       attribute="Normal"       context="#stay"               char="}" endRegion="Brace" />
         <DetectChar       attribute="String"       context="Double Quote String" char="&quot;" />
         <DetectChar       attribute="String"       context="Backtick String"     char="`" />
+        <Detect2Chars     attribute="Normal"       context="Arrow Op"            char="-" char1=">" />
         <Detect2Chars     attribute="Attribute"    context="Attribute"           char="#" char1="[" beginRegion="Attribute" />
         <Detect2Chars     attribute="Comment"      context="Line Comment"        char="/" char1="/" />
         <Detect2Chars     attribute="Comment"      context="Block Comment"       char="/" char1="*" beginRegion="Comment" />
@@ -111,6 +111,10 @@
         <HlCStringChar attribute="Character" context="#stay" />
         <DetectChar    attribute="String"    context="#pop" char="`" />
       </context>
+      <context name="Arrow Op" attribute="Normal" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
+        <DetectSpaces/>
+        <DetectIdentifier attribute="Arrow Op" context="#pop" />
+      </context>
       <context name="Attribute" attribute="Attribute" lineEndContext="#stay">
         <DetectChar char="]" attribute="Attribute" context="#pop" endRegion="Attribute" />
       </context>
@@ -131,6 +135,7 @@
       <itemData name="Function"     defStyleNum="dsFunction"    spellChecking="false" />
       <itemData name="Variable"     defStyleNum="dsNormal"      spellChecking="false" />
       <itemData name="Control Flow" defStyleNum="dsControlFlow" spellChecking="false" />
+      <itemData name="Arrow Op"     defStyleNum="dsBuiltIn"     spellChecking="false" />
       <itemData name="Attribute"    defStyleNum="dsAttribute" />
       <itemData name="Data Type"    defStyleNum="dsDataType"    spellChecking="false" bold="true" />
       <itemData name="Decimal"      defStyleNum="dsDecVal"      spellChecking="false" />

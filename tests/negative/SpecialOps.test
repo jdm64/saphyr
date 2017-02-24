@@ -11,7 +11,7 @@ void func()
 
 	auto y = a ?? b;
 
-	a = sizeof void + sizeof STR + sizeof notdefined;
+	a = void->size + STR->size + notdefined->size;
 }
 
 ========

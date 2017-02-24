@@ -1633,7 +1633,7 @@ public:
 	ADD_ID(NNullCoalescing)
 };
 
-class NSizeOfOperator : public NExpression
+class NArrowOperator : public NExpression
 {
 public:
 	enum OfType { DATA, EXP };
@@ -1642,13 +1642,14 @@ private:
 	OfType type;
 	NDataType* dtype;
 	NExpression* exp;
+	Token* name;
 
 public:
-	explicit NSizeOfOperator(NDataType* dtype)
-	: type(DATA), dtype(dtype), exp(nullptr) {}
+	NArrowOperator(NDataType* dtype, Token* name)
+	: type(DATA), dtype(dtype), exp(nullptr), name(name) {}
 
-	explicit NSizeOfOperator(NExpression* exp)
-	: type(EXP), dtype(nullptr), exp(exp) {}
+	NArrowOperator(NExpression* exp, Token* name)
+	: type(EXP), dtype(nullptr), exp(exp), name(name) {}
 
 	OfType getType() const
 	{
@@ -1665,6 +1666,11 @@ public:
 		return dtype;
 	}
 
+	Token* getName() const
+	{
+		return name;
+	}
+
 	operator Token*() const
 	{
 		switch (type) {
@@ -1679,13 +1685,14 @@ public:
 		return type == EXP? exp->isConstant() : true;
 	}
 
-	~NSizeOfOperator()
+	~NArrowOperator()
 	{
 		delete dtype;
 		delete exp;
+		delete name;
 	}
 
-	ADD_ID(NSizeOfOperator)
+	ADD_ID(NArrowOperator)
 };
 
 class NUnaryOperator : public NOperatorExpr

@@ -46,10 +46,10 @@
 %token <t_tok> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 %token <t_tok> TT_ASG_DQ
 // other tokens
-%token <t_tok> TT_ATTR_OPEN
+%token <t_tok> TT_ATTR_OPEN TT_ARROW
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
-%token TT_GOTO TT_SWITCH TT_CASE TT_DEFAULT TT_SIZEOF TT_STRUCT TT_UNION TT_ENUM
+%token TT_GOTO TT_SWITCH TT_CASE TT_DEFAULT TT_STRUCT TT_UNION TT_ENUM
 %token TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS TT_IMPORT
 %left TT_ELSE
 // constants and names
@@ -85,7 +85,7 @@
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
-%type <t_exp> sizeof_expression paren_expression new_expression
+%type <t_exp> arrow_expression paren_expression new_expression
 // other nodes
 %type <t_attr> attribute
 %type <t_attr_vals> attribute_value_list
@@ -802,7 +802,7 @@ null_coalescing_expression
 unary_expression
 	: primary_expression
 	| increment_decrement_expression
-	| sizeof_expression
+	| arrow_expression
 	| unary_operator primary_expression
 	{
 		$$ = new NUnaryMathOperator(($1).op, ($1).tok, $2);
@@ -814,22 +814,18 @@ unary_operator
 	| '!' { $$ = {$1.t_tok, '!'}; }
 	| '~' { $$ = {$1.t_tok, '~'}; }
 	;
-sizeof_expression
-	: TT_SIZEOF variable_expression
+arrow_expression
+	: primary_expression TT_ARROW TT_IDENTIFIER
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NArrowOperator($1, $3);
 	}
-	| TT_SIZEOF explicit_data_type
+	| explicit_data_type TT_ARROW TT_IDENTIFIER
 	{
-		$$ = new NSizeOfOperator($2);
+		$$ = new NArrowOperator($1, $3);
 	}
-	| TT_SIZEOF '(' expression ')'
+	| '(' explicit_data_type ')' TT_ARROW TT_IDENTIFIER
 	{
-		$$ = new NSizeOfOperator($3);
-	}
-	| TT_SIZEOF '(' explicit_data_type ')'
-	{
-		$$ = new NSizeOfOperator($3);
+		$$ = new NArrowOperator($2, $5);
 	}
 	;
 primary_expression

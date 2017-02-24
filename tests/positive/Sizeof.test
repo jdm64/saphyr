@@ -14,28 +14,28 @@ class ZZ
 
 	int s()
 	{
-		return sizeof this;
+		return this->size;
 	}
 
 	int t()
 	{
-		return sizeof(this);
+		return (this)->size;
 	}
 }
 
-uint64 si = sizeof int;
+uint64 si = int->size;
 
 void func()
 {
 	S var;
 
-	int a = sizeof (var) + sizeof (S) + sizeof var.s + sizeof var.f[3];
+	int a = (var)->size + (S)->size + var.s->size + var.f[3]->size;
 }
 
 int func2()
 {
 	@S v;
-	return sizeof(v@);
+	return v@->size;
 }
 
 int main()
@@ -43,8 +43,8 @@ int main()
 	int64 a;
 	[4]int64 b;
 
-	int s = sizeof a + sizeof b;
-	int z = sizeof int64 + sizeof ([4]int64);
+	int s = a->size + b->size;
+	int z = int64->size + [4]int64->size;
 
 	return 0;
 }
