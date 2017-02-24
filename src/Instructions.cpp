@@ -379,25 +379,12 @@ RValue Inst::SizeOf(CodeContext& context, SType* type, Token* token)
 	return RValue::getNumVal(context, SType::getInt(context, 64, true), SType::allocSize(context, type));
 }
 
-RValue Inst::SizeOf(CodeContext& context, NDataType* type)
-{
-	return SizeOf(context, CGNDataType::run(context, type), *type);
-}
-
-RValue Inst::SizeOf(CodeContext& context, NExpression* exp)
-{
-	if (exp->id() == NodeId::NBaseVariable) {
-		return SizeOf(context, *exp);
-	}
-	return SizeOf(context, CGNExpression::run(context, exp).stype(), *exp);
-}
-
 RValue Inst::SizeOf(CodeContext& context, Token* name)
 {
 	auto nameStr = name->str;
 	if (nameStr == "this") {
 		unique_ptr<NThisType> thisType(new NThisType(new Token(*name)));
-		return SizeOf(context, thisType.get());
+		return SizeOf(context, CGNDataType::run(context, thisType.get()), name);
 	}
 	auto isType = SUserType::lookup(context, nameStr);
 	auto isVar = context.loadSymbol(nameStr);

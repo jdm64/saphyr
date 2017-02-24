@@ -55,10 +55,6 @@ public:
 
 	static RValue SizeOf(CodeContext& context, SType* type, Token* token);
 
-	static RValue SizeOf(CodeContext& context, NDataType* type);
-
-	static RValue SizeOf(CodeContext& context, NExpression* exp);
-
 	static RValue SizeOf(CodeContext& context, Token* name);
 
 	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)

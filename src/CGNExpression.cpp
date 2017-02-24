@@ -280,9 +280,12 @@ RValue CGNExpression::visitNSizeOfOperator(NSizeOfOperator* exp)
 {
 	switch (exp->getType()) {
 	case NSizeOfOperator::DATA:
-		return Inst::SizeOf(context, exp->getDataType());
+		return Inst::SizeOf(context, CGNDataType::run(context, exp->getDataType()), *exp);
 	case NSizeOfOperator::EXP:
-		return Inst::SizeOf(context, exp->getExp());
+		if (exp->getExp()->id() == NodeId::NBaseVariable) {
+			return Inst::SizeOf(context, *exp);
+		}
+		return Inst::SizeOf(context, CGNExpression::run(context, exp->getExp()).stype(), *exp);
 	default:
 		// shouldn't happen
 		return RValue();
