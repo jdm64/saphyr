@@ -92,13 +92,13 @@
 // lists
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
-%type <t_clslist> class_member_list
+%type <t_clslist> class_member_list class_body
 %type <t_varlist> variable_list global_variable_list
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
 %type <t_caslist> switch_case_list
 %type <t_typelist> data_type_list
-%type <t_var_dec_list> variable_declarations_list variable_declarations_list_or_empty
+%type <t_var_dec_list> variable_declarations_list variable_declarations_list_or_empty struct_body
 %type <t_initlist> class_initializer_list
 %type <t_attrlist> attribute_list attribute_declaration optional_attribute_declaration
 
@@ -150,9 +150,23 @@ alias_declaration
 	}
 	;
 class_declaration
-	: optional_attribute_declaration TT_CLASS TT_IDENTIFIER '{' class_member_list '}'
+	: optional_attribute_declaration TT_CLASS TT_IDENTIFIER class_body
 	{
-		$$ = new NClassDeclaration($3, $5, $1);
+		$$ = new NClassDeclaration($3, $4, $1);
+	}
+	;
+class_body
+	: ';'
+	{
+		$$ = new NClassMemberList;
+	}
+	| '{' '}'
+	{
+		$$ = new NClassMemberList;
+	}
+	| '{' class_member_list '}'
+	{
+		$$ = $2;
 	}
 	;
 class_member_list
@@ -168,9 +182,9 @@ class_member_list
 	}
 	;
 class_member
-	: TT_STRUCT TT_THIS '{' variable_declarations_list '}'
+	: TT_STRUCT TT_THIS struct_body
 	{
-		$$ = new NClassStructDecl($2, $4);
+		$$ = new NClassStructDecl($2, $3);
 	}
 	| optional_attribute_declaration data_type TT_IDENTIFIER '(' parameter_list ')' function_body
 	{
@@ -255,9 +269,19 @@ attribute_value_list
 	}
 	;
 struct_declaration
-	: optional_attribute_declaration struct_union_keyword TT_IDENTIFIER '{' variable_declarations_list_or_empty '}'
+	: optional_attribute_declaration struct_union_keyword TT_IDENTIFIER struct_body
 	{
-		$$ = new NStructDeclaration($3, $5, $1, $2);
+		$$ = new NStructDeclaration($3, $4, $1, $2);
+	}
+	;
+struct_body
+	: ';'
+	{
+		$$ = new NVariableDeclGroupList;
+	}
+	| '{' variable_declarations_list_or_empty '}'
+	{
+		$$ = $2;
 	}
 	;
 struct_union_keyword
