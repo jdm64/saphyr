@@ -43,6 +43,8 @@ class Inst
 public:
 	static bool CastTo(CodeContext& context, Token* token, RValue& value, SType* type, bool upcast = false);
 
+	static RValue CastAs(CodeContext& context, NArrowOperator* exp);
+
 	static RValue BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context);
 
 	static RValue Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context);

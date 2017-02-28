@@ -60,7 +60,7 @@
 // integer constant
 %type <t_const_int> integer_constant
 // data types
-%type <t_dtype> data_type base_type explicit_data_type
+%type <t_dtype> data_type base_type explicit_data_type arrow_argument
 // parameter
 %type <t_param> parameter
 // variable
@@ -839,17 +839,27 @@ unary_operator
 	| '~' { $$ = {$1.t_tok, '~'}; }
 	;
 arrow_expression
-	: primary_expression TT_ARROW TT_IDENTIFIER
+	: primary_expression TT_ARROW TT_IDENTIFIER arrow_argument
 	{
-		$$ = new NArrowOperator($1, $3);
+		$$ = new NArrowOperator($1, $3, $4);
 	}
-	| explicit_data_type TT_ARROW TT_IDENTIFIER
+	| explicit_data_type TT_ARROW TT_IDENTIFIER arrow_argument
 	{
-		$$ = new NArrowOperator($1, $3);
+		$$ = new NArrowOperator($1, $3, $4);
 	}
-	| '(' explicit_data_type ')' TT_ARROW TT_IDENTIFIER
+	| '(' explicit_data_type ')' TT_ARROW TT_IDENTIFIER arrow_argument
 	{
-		$$ = new NArrowOperator($2, $5);
+		$$ = new NArrowOperator($2, $5, $6);
+	}
+	;
+arrow_argument
+	:
+	{
+		$$ = nullptr;
+	}
+	| '(' data_type ')'
+	{
+		$$ = $2;
 	}
 	;
 primary_expression

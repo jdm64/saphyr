@@ -12,6 +12,8 @@ void func()
 	auto y = a ?? b;
 
 	a = void->size + STR->size + notdefined->size;
+
+	a->size(@void);
 }
 
 ========
@@ -21,4 +23,5 @@ negative/SpecialOps.syp:12: return types of null coalescing operator must match
 negative/SpecialOps.syp:14: size of void is invalid
 negative/SpecialOps.syp:14: STR is ambigious, both a type and a variable
 negative/SpecialOps.syp:14: type notdefined is not declared
-found 5 errors
+negative/SpecialOps.syp:16: size operator takes no arguments
+found 6 errors

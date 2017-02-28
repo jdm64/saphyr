@@ -1,0 +1,12 @@
+
+void foo()
+{
+	null->as;
+	@void->as(int);
+}
+
+========
+
+negative/Cast.syp:4: as operator requires type argument
+negative/Cast.syp:5: as operator only operates on expression
+found 2 errors

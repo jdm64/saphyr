@@ -155,6 +155,33 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 	return false;
 }
 
+RValue Inst::CastAs(CodeContext& context, NArrowOperator* exp)
+{
+	auto toType = exp->getArg();
+	if (!toType) {
+		context.addError("as operator requires type argument", *exp);
+		return RValue();
+	} else if (exp->getType() == NArrowOperator::DATA) {
+		context.addError("as operator only operates on expression", *exp);
+		return RValue();
+	}
+	auto to = CGNDataType::run(context, toType);
+	if (!to)
+		return RValue();
+	auto expr = CGNExpression::run(context, exp->getExp());
+	if (!expr)
+		return RValue();
+
+	// casting @void to real pointer
+	auto stype = expr.stype();
+	if (stype->isPointer() && stype->subType()->isVoid() && to->isPointer()) {
+		return RValue(new BitCastInst(expr, *to, "", context), to);
+	}
+
+	CastTo(context, *exp, expr, to);
+	return expr;
+}
+
 void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, CodeContext& context)
 {
 	CastOps op;
@@ -404,6 +431,11 @@ RValue Inst::SizeOf(CodeContext& context, Token* name)
 
 RValue Inst::SizeOf(CodeContext& context, NArrowOperator* exp)
 {
+	if (exp->getArg()) {
+		context.addError("size operator takes no arguments", *exp);
+		return RValue();
+	}
+
 	switch (exp->getType()) {
 	case NArrowOperator::DATA:
 		return SizeOf(context, CGNDataType::run(context, exp->getDataType()), *exp);

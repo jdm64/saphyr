@@ -281,6 +281,8 @@ RValue CGNExpression::visitNArrowOperator(NArrowOperator* exp)
 	auto name = exp->getName()->str;
 	if (name == "size") {
 		return Inst::SizeOf(context, exp);
+	} else if (name == "as") {
+		return Inst::CastAs(context, exp);
 	}
 	context.addError("invalid arrow op name: " + name, *exp);
 	return RValue();
