@@ -161,7 +161,7 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	explicit CodeContext(Module* module, string filepath)
+	explicit CodeContext(Module* module, const string& filepath)
 	: module(module), typeManager(module), currClass(nullptr), filepath(filepath)
 	{
 	}

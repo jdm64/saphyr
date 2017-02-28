@@ -311,7 +311,7 @@ Predicate Inst::getPredicate(int oper, Token* token, SType* type, CodeContext& c
 	return predArr[offset];
 }
 
-RValue Inst::PointerMath(int type, Token* optToken, RValue ptr, RValue val, CodeContext& context)
+RValue Inst::PointerMath(int type, Token* optToken, RValue ptr, const RValue& val, CodeContext& context)
 {
 	if (type != ParserBase::TT_INC && type != ParserBase::TT_DEC) {
 		context.addError("pointer arithmetic only valid using ++/-- operators", optToken);
@@ -384,7 +384,7 @@ RValue Inst::Load(CodeContext& context, RValue value)
 	return RValue(new LoadInst(value, "", context), value.stype());
 }
 
-RValue Inst::Deref(CodeContext& context, RValue value, bool recursive)
+RValue Inst::Deref(CodeContext& context, const RValue& value, bool recursive)
 {
 	auto retVal = RValue(value.value(), value.stype());
 	while (retVal.stype()->isPointer()) {

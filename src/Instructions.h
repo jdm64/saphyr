@@ -36,7 +36,7 @@ class Inst
 
 	static bool CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast = false);
 
-	static RValue PointerMath(int type, Token* optToken, RValue ptr, RValue val, CodeContext& context);
+	static RValue PointerMath(int type, Token* optToken, RValue ptr, const RValue& val, CodeContext& context);
 
 	static RValue CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments);
 
@@ -53,7 +53,7 @@ public:
 
 	static RValue Load(CodeContext& context, RValue value);
 
-	static RValue Deref(CodeContext& context, RValue value, bool recursive = false);
+	static RValue Deref(CodeContext& context, const RValue& value, bool recursive = false);
 
 	static RValue SizeOf(CodeContext& context, SType* type, Token* token);
 

@@ -219,8 +219,8 @@ public:
 	Token()
 	: line(0) {}
 
-	Token(string token, string filename = "", int lineNum = 0)
-	: str(std::move(token)), filename(std::move(filename)), line(lineNum) {}
+	Token(const string& token, const string& filename = "", int lineNum = 0)
+	: str(token), filename(filename), line(lineNum) {}
 
 	string str;
 	string filename;
@@ -272,7 +272,7 @@ class NAttrValue : public Node
 	Token* val;
 
 public:
-	NAttrValue(Token* value)
+	explicit NAttrValue(Token* value)
 	: val(value)
 	{
 		Token::unescape(value->str);

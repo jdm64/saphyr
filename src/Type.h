@@ -436,8 +436,8 @@ class SFunctionType : public SType
 
 	vector<SType*> params;
 
-	SFunctionType(FunctionType* type, SType* returnTy, vector<SType*> params)
-	: SType(FUNCTION, type, 0, returnTy), params(std::move(params)) {}
+	SFunctionType(FunctionType* type, SType* returnTy, const vector<SType*>& params)
+	: SType(FUNCTION, type, 0, returnTy), params(params) {}
 
 public:
 	using ParamIter = vector<SType*>::iterator;
