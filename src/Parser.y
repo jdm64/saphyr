@@ -854,8 +854,11 @@ arrow_expression
 	;
 primary_expression
 	: value_expression
-	| variable_expression
 	| paren_expression
+	| variable_expression
+	{
+		$$ = $1; // silence warning
+	}
 	;
 paren_expression
 	: '(' expression ')'
@@ -927,6 +930,9 @@ variable_expression
 	;
 value_expression
 	: integer_constant
+	{
+		$$ = $1; // silence warning
+	}
 	| TT_CHAR_LIT
 	{
 		$$ = new NCharConst($1);
