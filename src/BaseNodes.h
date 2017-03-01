@@ -334,6 +334,7 @@ public:
 	~NAttribute()
 	{
 		delete name;
+		delete values;
 	}
 
 	ADD_ID(NAttribute)

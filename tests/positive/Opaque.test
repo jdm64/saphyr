@@ -2,12 +2,19 @@
 import "../files/Opaque.syp";
 
 #[opaque]
+struct Simple;
+
+#[opaque]
 struct File {}
 
 #[opaque]
 struct Fake {
 	int a, b;
 }
+
+class Empty;
+
+class Empty2 {}
 
 int main()
 {
@@ -30,6 +37,9 @@ void bar()
 	auto c = MyClass.create();
 	@MyStruct s;
 	@MyUnion u;
+	@Simple a;
+	@Empty b;
+	@Empty2 d;
 }
 
 ========
@@ -39,6 +49,9 @@ void bar()
 %Fake = type { i32, i32 }
 %MyStruct = type { i8 }
 %MyUnion = type { i8 }
+%Simple = type { i8 }
+%Empty = type { i8 }
+%Empty2 = type { i8 }
 
 declare %MyClass* @MyClass_create()
 
@@ -70,5 +83,8 @@ define void @bar() {
   store %MyClass* %1, %MyClass** %c
   %s = alloca %MyStruct*
   %u = alloca %MyUnion*
+  %a = alloca %Simple*
+  %b = alloca %Empty*
+  %d = alloca %Empty2*
   ret void
 }
