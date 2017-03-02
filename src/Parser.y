@@ -85,7 +85,7 @@
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
-%type <t_exp> arrow_expression paren_expression new_expression
+%type <t_exp> arrow_expression new_expression
 // other nodes
 %type <t_attr> attribute
 %type <t_attr_vals> attribute_value_list
@@ -864,24 +864,9 @@ arrow_argument
 	;
 primary_expression
 	: value_expression
-	| paren_expression
 	| variable_expression
 	{
 		$$ = $1; // silence warning
-	}
-	;
-paren_expression
-	: '(' expression ')'
-	{
-		$$ = $2;
-	}
-	| paren_expression '[' expression ']'
-	{
-		$$ = new NArrayVariable(new NExprVariable($1), $2.t_tok, $3);
-	}
-	| paren_expression '.' TT_IDENTIFIER
-	{
-		$$ = new NMemberVariable(new NExprVariable($1), $3);
 	}
 	;
 function_call
@@ -912,6 +897,10 @@ base_variable_expression
 	| TT_THIS
 	{
 		$$ = new NBaseVariable($1);
+	}
+	| '(' expression ')'
+	{
+		$$ = new NExprVariable($2);
 	}
 	| function_call
 	;

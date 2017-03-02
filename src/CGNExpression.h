@@ -40,6 +40,8 @@ class CGNExpression
 
 	RValue visitNNewExpression(NNewExpression*);
 
+	RValue visitNExprVariable(NExprVariable*);
+
 	RValue visitNLogicalOperator(NLogicalOperator*);
 
 	RValue visitNCompareOperator(NCompareOperator*);

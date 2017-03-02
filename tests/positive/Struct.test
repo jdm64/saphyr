@@ -54,12 +54,9 @@ define i32 @expr(%Outer %x) {
   %4 = alloca %Outer
   store %Outer %3, %Outer* %4
   %5 = getelementptr %Outer* %4, i32 0, i32 0
-  %6 = load %Inner* %5
-  %7 = alloca %Inner
-  store %Inner %6, %Inner* %7
-  %8 = getelementptr %Inner* %7, i32 0, i32 0
-  %9 = load i32* %8
-  ret i32 %9
+  %6 = getelementptr %Inner* %5, i32 0, i32 0
+  %7 = load i32* %6
+  ret i32 %7
 }
 
 define i32 @main() {

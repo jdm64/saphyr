@@ -440,7 +440,10 @@ RValue Inst::SizeOf(CodeContext& context, NArrowOperator* exp)
 	case NArrowOperator::DATA:
 		return SizeOf(context, CGNDataType::run(context, exp->getDataType()), *exp);
 	case NArrowOperator::EXP:
-		if (exp->getExp()->id() == NodeId::NBaseVariable) {
+		// TODO generalize this logic
+		if (exp->getExp()->id() == NodeId::NExprVariable) {
+			return SizeOf(context, *exp->getExp());
+		} else if (exp->getExp()->id() == NodeId::NBaseVariable) {
 			return SizeOf(context, *exp);
 		}
 		return SizeOf(context, CGNExpression::run(context, exp->getExp()).stype(), *exp);

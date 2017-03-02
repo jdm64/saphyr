@@ -42,6 +42,7 @@ CGNExpression::classPtr* CGNExpression::buildVTable()
 	TABLE_ADD(NBoolConst);
 	TABLE_ADD(NCharConst);
 	TABLE_ADD(NCompareOperator);
+	TABLE_ADD(NExprVariable);
 	TABLE_ADD(NFloatConst);
 	TABLE_ADD(NFunctionCall);
 	TABLE_ADD(NIncrement);
@@ -82,6 +83,11 @@ RValue CGNExpression::visitNAddressOf(NAddressOf* nVar)
 {
 	auto var = CGNVariable::run(context, nVar);
 	return var? RValue(var, SType::getPointer(context, var.stype())) : var;
+}
+
+RValue CGNExpression::visitNExprVariable(NExprVariable* exp)
+{
+	return visit(exp->getExp());
 }
 
 RValue CGNExpression::visitNAssignment(NAssignment* exp)
