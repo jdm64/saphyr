@@ -372,14 +372,12 @@ RValue Inst::Load(CodeContext& context, RValue value)
 {
 	if (!value)
 		return value;
-	else if (value.isConst() && !value.isGlobalVal())
-		// don't load constant values
-		// global variables and functions are constants that must be excluded
-		return value;
 	else if (value.isFunction())
 		// don't require address-of operator for converting
 		// a function into a function pointer
 		return RValue(value.value(), SType::getPointer(context, value.stype()));
+	else if (value.type() == value.stype()->type())
+		return value;
 
 	return RValue(new LoadInst(value, "", context), value.stype());
 }
