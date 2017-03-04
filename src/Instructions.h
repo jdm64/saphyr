@@ -87,6 +87,8 @@ public:
 
 	static void InitVariable(CodeContext& context, RValue var, Token* token, NExpressionList* initList, RValue& initVal);
 
+	static RValue StoreTemporary(CodeContext& context, RValue value);
+
 	static RValue StoreTemporary(CodeContext& context, NExpression* exp);
 };
 

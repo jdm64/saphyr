@@ -649,12 +649,17 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 	}
 }
 
+RValue Inst::StoreTemporary(CodeContext& context, RValue value)
+{
+	auto stackAlloc = new AllocaInst(value.type(), "", context);
+	new StoreInst(value, stackAlloc, context);
+	return RValue(stackAlloc, value.stype());
+}
+
 RValue Inst::StoreTemporary(CodeContext& context, NExpression* exp)
 {
 	auto value = CGNExpression::run(context, exp);
 	if (!value)
 		return RValue();
-	auto stackAlloc = new AllocaInst(value.type(), "", context);
-	new StoreInst(value, stackAlloc, context);
-	return RValue(stackAlloc, value.stype());
+	return StoreTemporary(context, value);
 }
