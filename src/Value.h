@@ -114,6 +114,14 @@ public:
 	{
 		return atrs;
 	}
+
+	void dump() const
+	{
+		if (val)
+			val->dump();
+		if (ty)
+			ty->dump();
+	}
 };
 
 class SFunction : public RValue
