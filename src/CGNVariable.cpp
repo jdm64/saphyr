@@ -27,6 +27,7 @@ CGNVariable::classPtr* CGNVariable::buildVTable()
 	auto table = new CGNVariable::classPtr[NODEID_DIFF(NodeId::EndExpression, NodeId::StartExpression)];
 	TABLE_ADD(NAddressOf);
 	TABLE_ADD(NArrayVariable);
+	TABLE_ADD(NArrowOperator);
 	TABLE_ADD(NBaseVariable);
 	TABLE_ADD(NDereference);
 	TABLE_ADD(NExprVariable);
@@ -110,6 +111,18 @@ RValue CGNVariable::visitNArrayVariable(NArrayVariable* nArrVar)
 	indexes.push_back(indexVal);
 
 	return Inst::GetElementPtr(context, var, indexes, var.stype()->subType());
+}
+
+RValue CGNVariable::visitNArrowOperator(NArrowOperator* exp)
+{
+	auto name = exp->getName()->str;
+	if (name == "size") {
+		return Inst::SizeOf(context, exp);
+	} else if (name == "as") {
+		return Inst::CastAs(context, exp);
+	}
+	context.addError("invalid arrow op name: " + name, *exp);
+	return RValue();
 }
 
 RValue CGNVariable::visitNMemberVariable(NMemberVariable* memVar)

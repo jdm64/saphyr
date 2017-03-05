@@ -172,10 +172,14 @@ RValue Inst::CastAs(CodeContext& context, NArrowOperator* exp)
 	if (!expr)
 		return RValue();
 
-	// casting @void to real pointer
 	auto stype = expr.stype();
+	if (stype == to)
+		return expr;
+
+	// casting @void to real pointer
 	if (stype->isPointer() && stype->subType()->isVoid() && to->isPointer()) {
-		return RValue(new BitCastInst(expr, *to, "", context), to);
+		expr =  RValue(new BitCastInst(expr, *to, "", context), to);
+		return StoreTemporary(context, expr);
 	}
 
 	CastTo(context, *exp, expr, to);

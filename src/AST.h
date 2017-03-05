@@ -1633,7 +1633,7 @@ public:
 	ADD_ID(NNullCoalescing)
 };
 
-class NArrowOperator : public NExpression
+class NArrowOperator : public NVariable
 {
 public:
 	enum OfType { DATA, EXP };

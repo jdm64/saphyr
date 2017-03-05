@@ -32,11 +32,11 @@ CGNExpression::classPtr* CGNExpression::buildVTable()
 {
 	auto table = new CGNExpression::classPtr[NODEID_DIFF(NodeId::EndExpression, NodeId::StartExpression)];
 	TABLE_ADD2(NArrayVariable, NVariable);
+	TABLE_ADD2(NArrowOperator, NVariable);
 	TABLE_ADD2(NBaseVariable, NVariable);
 	TABLE_ADD2(NDereference, NVariable);
 	TABLE_ADD2(NMemberVariable, NVariable);
 	TABLE_ADD(NAddressOf);
-	TABLE_ADD(NArrowOperator);
 	TABLE_ADD(NAssignment);
 	TABLE_ADD(NBinaryMathOperator);
 	TABLE_ADD(NBoolConst);
@@ -280,18 +280,6 @@ RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 	if (lhsExp.stype() != rhsExp.stype())
 		context.addError("return types of null coalescing operator must match", *exp);
 	return retVal;
-}
-
-RValue CGNExpression::visitNArrowOperator(NArrowOperator* exp)
-{
-	auto name = exp->getName()->str;
-	if (name == "size") {
-		return Inst::SizeOf(context, exp);
-	} else if (name == "as") {
-		return Inst::CastAs(context, exp);
-	}
-	context.addError("invalid arrow op name: " + name, *exp);
-	return RValue();
 }
 
 RValue CGNExpression::visitNUnaryMathOperator(NUnaryMathOperator* exp)

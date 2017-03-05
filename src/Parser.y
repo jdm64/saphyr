@@ -64,7 +64,7 @@
 // parameter
 %type <t_param> parameter
 // variable
-%type <t_var> variable_expression base_variable_expression function_call
+%type <t_var> variable_expression base_variable_expression function_call arrow_expression
 // variable declaration
 %type <t_var_decl> variable global_variable
 // operators
@@ -85,7 +85,7 @@
 %type <t_exp> bit_and_expression shift_expression addition_expression multiplication_expression unary_expression
 %type <t_exp> primary_expression logical_or_expression logical_and_expression expression_or_empty
 %type <t_exp> value_expression ternary_expression increment_decrement_expression null_coalescing_expression
-%type <t_exp> arrow_expression new_expression
+%type <t_exp> new_expression
 // other nodes
 %type <t_attr> attribute
 %type <t_attr_vals> attribute_value_list
@@ -826,7 +826,6 @@ null_coalescing_expression
 unary_expression
 	: primary_expression
 	| increment_decrement_expression
-	| arrow_expression
 	| unary_operator primary_expression
 	{
 		$$ = new NUnaryMathOperator(($1).op, ($1).tok, $2);
@@ -839,7 +838,7 @@ unary_operator
 	| '~' { $$ = {$1.t_tok, '~'}; }
 	;
 arrow_expression
-	: primary_expression TT_ARROW TT_IDENTIFIER arrow_argument
+	: value_expression TT_ARROW TT_IDENTIFIER arrow_argument
 	{
 		$$ = new NArrowOperator($1, $3, $4);
 	}
@@ -903,6 +902,10 @@ base_variable_expression
 		$$ = new NExprVariable($2);
 	}
 	| function_call
+	| arrow_expression
+	{
+		$$ = $1;
+	}
 	;
 variable_expression
 	: base_variable_expression
@@ -917,6 +920,10 @@ variable_expression
 	| variable_expression '.' TT_IDENTIFIER '(' expression_list ')'
 	{
 		$$ = new NMemberFunctionCall($1, $3, $5);
+	}
+	| variable_expression TT_ARROW TT_IDENTIFIER arrow_argument
+	{
+		$$ = new NArrowOperator($1, $3, $4);
 	}
 	| variable_expression '@'
 	{

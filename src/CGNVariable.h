@@ -32,6 +32,8 @@ class CGNVariable
 
 	RValue visitNArrayVariable(NArrayVariable* nArrVar);
 
+	RValue visitNArrowOperator(NArrowOperator* exp);
+
 	RValue visitNMemberVariable(NMemberVariable* memVar);
 
 	RValue visitNDereference(NDereference* nVar);

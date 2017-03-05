@@ -32,8 +32,6 @@ class CGNExpression
 
 	RValue visitNAddressOf(NAddressOf* nVar);
 
-	RValue visitNArrowOperator(NArrowOperator*);
-
 	RValue visitNAssignment(NAssignment*);
 
 	RValue visitNTernaryOperator(NTernaryOperator*);
