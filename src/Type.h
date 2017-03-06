@@ -473,8 +473,10 @@ public:
 		raw_string_ostream os(s);
 
 		os << "(";
-		for (auto i : params) {
-			os << i->str(context) << ",";
+		for (size_t i = 0; i < params.size(); i++) {
+			if (i != 0)
+				os << ",";
+			os << params[i]->str(context);
 		}
 		os << ")" << returnTy()->str(context);
 		return os.str();

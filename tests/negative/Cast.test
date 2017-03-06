@@ -5,8 +5,17 @@ void foo()
 	@void->as(int);
 }
 
+void bar()
+{
+	@(@void,int)int64 a;
+	@()int b;
+
+	a = b;
+}
+
 ========
 
 negative/Cast.syp:4: as operator requires type argument
 negative/Cast.syp:5: as operator only operates on expression
-found 2 errors
+negative/Cast.syp:13: can not cast @()int32 to @(@void,int32)int64
+found 3 errors
