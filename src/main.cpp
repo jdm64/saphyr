@@ -76,6 +76,8 @@ int main(int argc, char** argv)
 	Parser parser(file);
 
 	if (parser.parse()) {
+		auto err = parser.getError();
+		cout << err.filename << ":" << err.line << ": " << err.str << endl;
 		return 1;
 	} else if (vm.count("imports")) {
 		CGNImportList::run(parser.getRoot());

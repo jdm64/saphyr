@@ -48,10 +48,11 @@ parser.cpp : Parser.y
 	bisonc++ -V Parser.y
 	sed -i -e '/Scanner d_scanner;/c\	unique_ptr<Scanner> d_scanner;' parser.h
 	sed -i -e '/scannerobject/a\	unique_ptr<NStatementList> root;' parser.h
+	sed -i -e '/public:/a\	Token getError() { string token = d_scanner->matched().size()? d_scanner->matched() : "<EOF>"; return Token("Syntax error on: " + token, d_scanner->filename(), d_scanner->lineNr()); }' parser.h
 	sed -i -e '/public:/a\	NStatementList* getRoot() { return root.get(); }' parser.h
 	sed -i -e '/public:/a\	Parser(string filename){ d_scanner = unique_ptr<Scanner>(new Scanner(filename, "-")); d_scanner->setSval(&d_val__); }' parser.h
 	sed -i -e '/return d_scanner.lex();/c\	return d_scanner->lex();' parser.ih
-	sed -i -e '/error("Syntax error");/c\	error(("Syntax error: line " + to_string(d_scanner->lineNr())).c_str());' parser.cpp
+	sed -i -e '/error("Syntax error");/d' parser.cpp
 
 scanner.cpp : Scanner.l parser.cpp
 	rm -f scanner*

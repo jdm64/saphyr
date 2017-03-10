@@ -487,8 +487,11 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 void Builder::LoadImport(CodeContext& context, const string& filename)
 {
 	Parser parser(filename);
-	if (parser.parse())
+	if (parser.parse()) {
+		auto err = parser.getError();
+		context.addError(err.str, &err);
 		return;
+	}
 
 	CGNImportStm::run(context, parser.getRoot(), filename);
 }
