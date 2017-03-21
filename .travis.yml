@@ -17,7 +17,7 @@ matrix:
     - compiler: clang
       env: LLVM_VER="-4.0"
     - compiler: gcc
-      env: COVERAGE=true
+      env: COVERAGE=true LLVM_VER="-3.5"
 
 before_install:
  - ./travisSetup.sh
