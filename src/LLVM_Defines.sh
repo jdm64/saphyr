@@ -14,14 +14,14 @@ cat << 'EOF'
 
 EOF
 
-if (( ${VER_ARR[0]} >= 3 && ${VER_ARR[1]} >= 5 )); then
-	if (( ${VER_ARR[1]} >= 8 )); then
+if (( ${VER_ARR[0]} >= 4 || ${VER_ARR[0]} >= 3 && ${VER_ARR[1]} >= 5 )); then
+	if (( ${VER_ARR[0]} >= 4 || ${VER_ARR[1]} >= 8 )); then
 		echo "#include <llvm/Config/llvm-config.h>"
 	else
 		echo "#include <llvm/Config/config.h>"
 	fi
 
-	if (( ${VER_ARR[1]} >= 7 )); then
+	if (( ${VER_ARR[0]} >= 4 || ${VER_ARR[1]} >= 7 )); then
 		echo "#define _LLVM_IR_PASS_MANAGER_H <llvm/IR/LegacyPassManager.h>"
 	else
 		echo "#define _LLVM_IR_PASS_MANAGER_H <llvm/PassManager.h>"

@@ -36,13 +36,13 @@
 
 #include "Pass.h"
 
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
+#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
 	using namespace llvm::legacy;
 #endif
 
 bool ModuleWriter::validModule()
 {
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
+#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
 	ostringstream buff;
 	raw_os_ostream out(buff);
 	if (verifyModule(module, &out)) {
@@ -65,7 +65,7 @@ tool_output_file* ModuleWriter::getOutFile(const string& name)
 {
 	sys::fs::OpenFlags OpenFlags = sys::fs::F_None;
 
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 6
+#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 6
 	error_code error;
 	auto outFile = new tool_output_file(name, error, OpenFlags);
 
@@ -125,7 +125,7 @@ void ModuleWriter::outputIR()
 	fstream irFile(filename.substr(0, filename.rfind('.')) + ".ll", fstream::out);
 	raw_os_ostream irStream(irFile);
 
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
+#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
 	pm.add(createPrintModulePass(irStream));
 #else
 	pm.add(createPrintModulePass(&irStream));
@@ -141,7 +141,7 @@ void ModuleWriter::outputNative()
 	initTarget();
 	auto objFile = getOutFile(filename.substr(0, filename.rfind('.')) + ".o");
 
-#if LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
+#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
 	buffer_ostream objStream(objFile->os());
 #else
 	formatted_raw_ostream objStream(objFile->os());
