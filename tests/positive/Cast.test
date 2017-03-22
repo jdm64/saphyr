@@ -19,6 +19,13 @@ void complex()
 	int z = p->as(@Foo).a;
 }
 
+void noOp()
+{
+	@Foo p = new Foo;
+
+	int x = p->as(@Foo).a;
+}
+
 ========
 
 %Foo = type { i32 }
@@ -62,5 +69,21 @@ define void @complex() {
   %9 = load i32* %8
   %z = alloca i32
   store i32 %9, i32* %z
+  ret void
+}
+
+define void @noOp() {
+  %1 = call i8* @malloc(i64 4)
+  %2 = bitcast i8* %1 to %Foo*
+  %p = alloca %Foo*
+  store %Foo* %2, %Foo** %p
+  %3 = load %Foo** %p
+  %4 = alloca %Foo*
+  store %Foo* %3, %Foo** %4
+  %5 = load %Foo** %4
+  %6 = getelementptr %Foo* %5, i32 0, i32 0
+  %7 = load i32* %6
+  %x = alloca i32
+  store i32 %7, i32* %x
   ret void
 }

@@ -3,6 +3,7 @@ void foo()
 {
 	null->as;
 	@void->as(int);
+	(int)->as(float);
 }
 
 void bar()
@@ -17,5 +18,6 @@ void bar()
 
 negative/Cast.syp:4: as operator requires type argument
 negative/Cast.syp:5: as operator only operates on expression
-negative/Cast.syp:13: can not cast @()int32 to @(@void,int32)int64
-found 3 errors
+negative/Cast.syp:6: as operator only operates on expression
+negative/Cast.syp:14: can not cast @()int32 to @(@void,int32)int64
+found 4 errors
