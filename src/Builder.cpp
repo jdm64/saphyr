@@ -27,6 +27,7 @@
 #include "CGNStatement.h"
 #include "CGNImportStm.h"
 #include "Instructions.h"
+#include "Util.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs)
 {
@@ -486,7 +487,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 
 void Builder::LoadImport(CodeContext& context, NImportStm* stm)
 {
-	auto filename = relative(context.currFile().parent_path() / stm->getName()->str);
+	auto filename = Util::relative(context.currFile().parent_path() / stm->getName()->str);
 	if (context.fileLoaded(filename)) {
 		return;
 	} else if (!exists(filename)) {

@@ -21,6 +21,7 @@
 #include "CGNStatement.h"
 #include "CGNImportList.h"
 #include "ModuleWriter.h"
+#include "Util.h"
 
 options_description progOpts;
 
@@ -74,7 +75,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	path file = relative(vm["input"].as<string>());
+	auto file = Util::relative(vm["input"].as<string>());
 	if (!exists(file)) {
 		cout << "file not found: " << file << endl;
 		return 1;
