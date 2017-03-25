@@ -20,6 +20,7 @@
 #include <stack>
 #include <list>
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/BasicBlock.h>
@@ -29,6 +30,7 @@
 #include "Value.h"
 
 using namespace boost::program_options;
+using namespace boost::filesystem;
 
 struct LabelBlock
 {
@@ -144,7 +146,8 @@ class CodeContext : public SymbolTable
 	TypeManager typeManager;
 	SFunction currFunc;
 	SClassType* currClass;
-	string filepath;
+	set<path> allFiles;
+	vector<path> filesStack;
 
 	void validateFunction()
 	{
@@ -161,8 +164,8 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	explicit CodeContext(Module* module, const string& filepath)
-	: module(module), typeManager(module), currClass(nullptr), filepath(filepath)
+	explicit CodeContext(Module* module)
+	: module(module), typeManager(module), currClass(nullptr)
 	{
 	}
 
@@ -181,9 +184,25 @@ public:
 		return module;
 	}
 
-	string getFilename() const
+	path currFile() const
 	{
-		return filepath;
+		return filesStack.back();
+	}
+
+	void pushFile(const path& filename)
+	{
+		filesStack.push_back(filename);
+		allFiles.insert(filename);
+	}
+
+	void popFile()
+	{
+		filesStack.pop_back();
+	}
+
+	bool fileLoaded(const path& filename)
+	{
+		return allFiles.find(filename) != allFiles.end();
 	}
 
 	SFunction currFunction() const
@@ -331,15 +350,8 @@ public:
 		if (errors.empty())
 			return false;
 
-		auto filename = filepath.substr(filepath.find_last_of('/') + 1);
 		for (auto& error : errors) {
-			if (error.first.line) {
-				cout << error.first.filename << ":"
-					<< error.first.line << ":";
-			} else {
-				cout << filename << ":";
-			}
-			cout << " " << error.second << endl;
+			cout << error.first.filename << ":" << error.first.line << ": " << error.second << endl;
 		}
 		cout << "found " << errors.size() << " errors" << endl;
 		return true;

@@ -16,7 +16,7 @@ elif [[ $LLVM_VER == "-4.0" ]]; then
 fi
 
 sudo apt-get update -qq
-sudo apt-get install -qq -y --force-yes flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev python3 binutils
+sudo apt-get install -qq -y --force-yes flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev libboost-filesystem-dev python3 binutils
 
 if [[ $COVERAGE == "true" ]]; then
 	sudo pip install cpp-coveralls

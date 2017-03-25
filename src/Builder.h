@@ -51,7 +51,7 @@ public:
 
 	static void CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration);
 
-	static void LoadImport(CodeContext& context, const string& filename);
+	static void LoadImport(CodeContext& context, NImportStm* stm);
 };
 
 #endif

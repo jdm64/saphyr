@@ -24,7 +24,6 @@ class CGNImportStm
 	static classPtr *vtable;
 
 	CodeContext& context;
-	string filepath;
 
 	explicit CGNImportStm(CodeContext& context)
 	: context(context) {}
@@ -63,10 +62,9 @@ class CGNImportStm
 
 public:
 
-	static void run(CodeContext& context, NStatementList* list, string filepath)
+	static void run(CodeContext& context, NStatementList* list)
 	{
 		CGNImportStm runner(context);
-		runner.filepath = filepath;
 		return runner.visit(list);
 	}
 };

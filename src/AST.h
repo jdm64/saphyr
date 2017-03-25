@@ -236,6 +236,11 @@ public:
 		Token::unescape(filename->str);
 	}
 
+	operator Token*() const
+	{
+		return getName();
+	}
+
 	Token* getName() const
 	{
 		return filename;

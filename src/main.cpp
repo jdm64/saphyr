@@ -42,17 +42,19 @@ void loadOptions(int argc, char** argv, variables_map &vm)
 	notify(vm);
 }
 
-int compile(const string& file, NStatementList* statements, variables_map& vm)
+int compile(const path& file, NStatementList* statements, variables_map& vm)
 {
 	LLVMContext llvmContext;
-	unique_ptr<Module> module(new Module(file, llvmContext));
-	CodeContext context(module.get(), file);
+	unique_ptr<Module> module(new Module(file.string(), llvmContext));
+	CodeContext context(module.get());
 
+	context.pushFile(file);
 	CGNStatement::run(context, statements);
 	if (context.handleErrors())
 		return 2;
 
-	ModuleWriter writer(*module.get(), file, vm);
+	context.popFile();
+	ModuleWriter writer(*module.get(), file.string(), vm);
 
 	return writer.run();
 }
@@ -72,9 +74,13 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	string file = vm["input"].as<string>();
-	Parser parser(file);
+	path file = relative(vm["input"].as<string>());
+	if (!exists(file)) {
+		cout << "file not found: " << file << endl;
+		return 1;
+	}
 
+	Parser parser(file.string());
 	if (parser.parse()) {
 		auto err = parser.getError();
 		cout << err.filename << ":" << err.line << ": " << err.str << endl;

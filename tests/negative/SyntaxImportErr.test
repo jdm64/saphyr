@@ -8,5 +8,5 @@ int main()
 
 ========
 
-negative/../files/SyntaxError.syp:4: Syntax error on: <EOF>
+files/SyntaxError.syp:4: Syntax error on: <EOF>
 found 1 errors

@@ -54,11 +54,7 @@ void CGNImportStm::visit(NStatementList* list)
 
 void CGNImportStm::visitNImportStm(NImportStm* stm)
 {
-	auto idx = filepath.rfind('/');
-	string prefix = idx != string::npos? filepath.substr(0, idx + 1) : "";
-	string filename = prefix + stm->getName()->str;
-
-	Builder::LoadImport(context, filename);
+	Builder::LoadImport(context, stm);
 }
 
 void CGNImportStm::visitNVariableDeclGroup(NVariableDeclGroup* stm)

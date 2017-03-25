@@ -77,11 +77,7 @@ void CGNStatement::visit(NStatementList* list)
 
 void CGNStatement::visitNImportStm(NImportStm* stm)
 {
-	auto idx = context.getFilename().rfind('/');
-	string prefix = idx != string::npos? context.getFilename().substr(0, idx + 1) : "";
-	string filename = prefix + stm->getName()->str;
-
-	Builder::LoadImport(context, filename);
+	Builder::LoadImport(context, stm);
 }
 
 void CGNStatement::visitNExpressionStm(NExpressionStm* stm)

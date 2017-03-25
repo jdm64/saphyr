@@ -484,14 +484,23 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 	context.storeGlobalSymbol({var, varType}, name);
 }
 
-void Builder::LoadImport(CodeContext& context, const string& filename)
+void Builder::LoadImport(CodeContext& context, NImportStm* stm)
 {
-	Parser parser(filename);
+	auto filename = relative(context.currFile().parent_path() / stm->getName()->str);
+	if (context.fileLoaded(filename)) {
+		return;
+	} else if (!exists(filename)) {
+		context.addError("file not found: " + filename.string(), *stm);
+		return;
+	}
+	Parser parser(filename.string());
 	if (parser.parse()) {
 		auto err = parser.getError();
 		context.addError(err.str, &err);
 		return;
 	}
 
-	CGNImportStm::run(context, parser.getRoot(), filename);
+	context.pushFile(filename);
+	CGNImportStm::run(context, parser.getRoot());
+	context.popFile();
 }

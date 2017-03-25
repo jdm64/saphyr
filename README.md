@@ -13,7 +13,9 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 
 * [FlexC++](https://fbb-git.github.io/flexcpp/)
 * [BisonC++](https://fbb-git.github.io/bisoncpp/)
-* [Boost](http://www.boost.org/) (for program_options)
+* [Boost](http://www.boost.org/)
+-- Program_Options
+-- Filesystem
 * [LLVM](http://llvm.org/) 3.4+
 * Make
 * C++11 compiler (either GCC or Clang)
@@ -26,7 +28,7 @@ system and the [Bobcat](https://fbb-git.github.io/bobcat/) library which require
 
 Debian 7 (Wheezy) and Ubuntu 14.04 (Trusty) or newer have all the required packages in their repositories.
 
-`sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev clang python3`
+`sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev libboost-filesystem-dev clang python3`
 
 ### Gentoo ###
 
