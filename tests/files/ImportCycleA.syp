@@ -1,0 +1,6 @@
+import "ImportCycleB.syp";
+
+int run(Foo f)
+{
+	return f.a + 4;
+}

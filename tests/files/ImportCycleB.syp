@@ -1,0 +1,6 @@
+import "ImportCycleA.syp";
+
+struct Foo
+{
+	int a;
+}
