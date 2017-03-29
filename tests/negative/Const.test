@@ -1,0 +1,11 @@
+
+void foo()
+{
+	const int a;
+	a = 5;
+}
+
+========
+
+negative/Const.syp:5: assignment not allowed for constant variable
+found 1 errors

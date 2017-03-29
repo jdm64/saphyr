@@ -35,6 +35,11 @@ SType* SType::getAuto(CodeContext& context)
 	return context.typeManager.getAuto();
 }
 
+SType* SType::getConst(CodeContext& context, SType* type)
+{
+	return context.typeManager.getConst(type);
+}
+
 SType* SType::getVoid(CodeContext& context)
 {
 	return context.typeManager.getVoid();

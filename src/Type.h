@@ -48,6 +48,16 @@ protected:
 	SType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
 	: tclass(typeClass), ltype(type), tsize(size), subtype(subtype) {}
 
+	virtual SType* copy()
+	{
+		return new SType(*this);
+	}
+
+	void setConst()
+	{
+		tclass |= CONST;
+	}
+
 public:
 	enum {
 		INTEGER  = 1 << 0,
@@ -65,7 +75,8 @@ public:
 		AUTO     = 1 << 12,
 		ALIAS    = 1 << 13,
 		CLASS    = 1 << 14,
-		OPAQUE   = 1 << 15
+		OPAQUE   = 1 << 15,
+		CONST    = 1 << 16
 	};
 
 	static vector<Type*> convertArr(vector<SType*> arr)
@@ -104,6 +115,8 @@ public:
 
 	static SType* getAuto(CodeContext& context);
 
+	static SType* getConst(CodeContext& context, SType* type);
+
 	static SType* getVoid(CodeContext& context);
 
 	static SType* getBool(CodeContext& context);
@@ -138,6 +151,11 @@ public:
 	bool isAuto() const
 	{
 		return tclass & AUTO;
+	}
+
+	bool isConst() const
+	{
+		return tclass & CONST;
 	}
 
 	bool isVoid() const
@@ -354,6 +372,11 @@ protected:
 
 	SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype = STRUCT);
 
+	SType* copy()
+	{
+		return new SStructType(*this);
+	}
+
 public:
 	pair<int, RValue>* getItem(const string& name);
 
@@ -394,6 +417,11 @@ class SUnionType : public SUserType
 			items[var.first] = var.second;
 	}
 
+	SType* copy()
+	{
+		return new SUnionType(*this);
+	}
+
 public:
 	SType* getItem(const string& name)
 	{
@@ -420,6 +448,11 @@ class SEnumType : public SUserType
 		}
 	}
 
+	SType* copy()
+	{
+		return new SEnumType(*this);
+	}
+
 public:
 	APSInt* getItem(const string& name)
 	{
@@ -438,6 +471,11 @@ class SFunctionType : public SType
 
 	SFunctionType(FunctionType* type, SType* returnTy, const vector<SType*>& params)
 	: SType(FUNCTION, type, 0, returnTy), params(params) {}
+
+	SType* copy()
+	{
+		return new SFunctionType(*this);
+	}
 
 public:
 	using ParamIter = vector<SType*>::iterator;
@@ -495,6 +533,9 @@ class TypeManager
 	STypePtr autoTy, voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
 		uint8Ty, uint16Ty, uint32Ty, uint64Ty;
 
+	// const types
+	map<SType*, STypePtr> constMap;
+
 	// array & vec types
 	map<pair<SType*, uint64_t>, STypePtr> arrMap;
 	map<pair<SType*, uint64_t>, STypePtr> vecMap;
@@ -548,6 +589,19 @@ public:
 	SType* getFloat(bool doubleType = false) const
 	{
 		return doubleType? doubleTy.get() : floatTy.get();
+	}
+
+	SType* getConst(SType* type)
+	{
+		if (!type || type->isConst())
+			return type;
+		STypePtr &item = constMap[type];
+		if (!item.get()) {
+			auto ctype = type->copy();
+			ctype->setConst();
+			item = unique_ptr<SType>(ctype);
+		}
+		return item.get();
 	}
 
 	SType* getArray(SType* arrType, int64_t size);

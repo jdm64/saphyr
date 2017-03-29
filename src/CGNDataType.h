@@ -31,6 +31,8 @@ protected:
 
 	SType* visitNBaseType(NBaseType* type);
 
+	SType* visitNConstType(NConstType* type);
+
 	SType* visitNThisType(NThisType* type);
 
 	SType* visitNArrayType(NArrayType* type);
@@ -71,6 +73,8 @@ class CGNDataTypeNew : public CGNDataType
 	: CGNDataType(context) {}
 
 	SType* visitNBaseType(NBaseType* type);
+
+	SType* visitNConstType(NConstType* type);
 
 	SType* visitNThisType(NThisType* type);
 

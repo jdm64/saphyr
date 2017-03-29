@@ -43,6 +43,7 @@
     <list name="types">
       <item>auto</item>
       <item>bool</item>
+      <item>const</item>
       <item>double</item>
       <item>float</item>
       <item>int</item>

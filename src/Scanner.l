@@ -51,6 +51,7 @@ false		{ SAVE_TOKEN return ParserBase::TT_FALSE; }
 null		{ SAVE_TOKEN return ParserBase::TT_NULL; }
 
 auto		{ SAVE_TOKEN return ParserBase::TT_AUTO; }
+const		{ SAVE_TOKEN return ParserBase::TT_CONST; }
 void		{ SAVE_TOKEN return ParserBase::TT_VOID; }
 bool		{ SAVE_TOKEN return ParserBase::TT_BOOL; }
 int		{ SAVE_TOKEN return ParserBase::TT_INT; }

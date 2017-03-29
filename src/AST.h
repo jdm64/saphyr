@@ -322,6 +322,34 @@ public:
 	ADD_ID(NBaseType)
 };
 
+class NConstType : public NDataType
+{
+	Token* constTok;
+	NDataType* type;
+
+public:
+	NConstType(Token* constTok, NDataType* type)
+	: constTok(constTok), type(type) {}
+
+	operator Token*() const
+	{
+		return constTok;
+	}
+
+	NDataType* getType() const
+	{
+		return type;
+	}
+
+	~NConstType()
+	{
+		delete constTok;
+		delete type;
+	}
+
+	ADD_ID(NConstType);
+};
+
 class NThisType : public NNamedType
 {
 public:

@@ -94,8 +94,12 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 {
 	auto lhsVar = CGNVariable::run(context, exp->getLhs());
 
-	if (!lhsVar)
+	if (!lhsVar) {
 		return RValue();
+	} else if (lhsVar.stype()->isConst()) {
+		context.addError("assignment not allowed for constant variable", *exp->getLhs());
+		return RValue();
+	}
 
 	BasicBlock* endBlock = nullptr;
 

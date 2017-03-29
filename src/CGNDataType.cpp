@@ -31,6 +31,7 @@ CGNDataType::classPtr* CGNDataType::buildVTable()
 	auto table = new CGNDataType::classPtr[NODEID_DIFF(NodeId::EndDataType, NodeId::StartDataType)];
 	TABLE_ADD(NArrayType);
 	TABLE_ADD(NBaseType);
+	TABLE_ADD(NConstType);
 	TABLE_ADD(NFuncPointerType);
 	TABLE_ADD(NPointerType);
 	TABLE_ADD(NThisType);
@@ -79,6 +80,11 @@ SType* CGNDataType::visitNBaseType(NBaseType* type)
 	default:
 		return SType::getAuto(context);
 	}
+}
+
+SType* CGNDataType::visitNConstType(NConstType* type)
+{
+	return SType::getConst(context, visit(type->getType()));
 }
 
 SType* CGNDataType::visitNThisType(NThisType* type)
@@ -229,6 +235,11 @@ SType* CGNDataTypeNew::visitNBaseType(NBaseType* type)
 	if (ty)
 		setSize(ty);
 	return ty;
+}
+
+SType* CGNDataTypeNew::visitNConstType(NConstType* type)
+{
+	return SType::getConst(context, visit(type->getType()));
 }
 
 SType* CGNDataTypeNew::visitNThisType(NThisType* type)

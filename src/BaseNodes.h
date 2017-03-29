@@ -31,6 +31,7 @@ enum class NodeId
 	StartDataType,
 	NArrayType,
 	NBaseType,
+	NConstType,
 	NFuncPointerType,
 	NPointerType,
 	NThisType,

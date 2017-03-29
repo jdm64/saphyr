@@ -39,7 +39,7 @@
 %token <t_tok> TT_FALSE TT_TRUE TT_NULL
 // base types
 %token <t_tok> TT_AUTO TT_VOID TT_BOOL TT_INT TT_INT8 TT_INT16 TT_INT32 TT_INT64 TT_FLOAT TT_DOUBLE
-%token <t_tok> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64
+%token <t_tok> TT_UINT TT_UINT8 TT_UINT16 TT_UINT32 TT_UINT64 TT_CONST
 // operators
 %token <t_tok> TT_LSHIFT TT_RSHIFT TT_LEQ TT_EQ TT_NEQ TT_GEQ TT_LOG_AND TT_LOG_OR
 %token <t_tok> TT_ASG_MUL TT_ASG_DIV TT_ASG_MOD TT_ASG_ADD TT_ASG_SUB TT_ASG_LSH
@@ -593,6 +593,10 @@ data_type
 	;
 explicit_data_type
 	: base_type
+	| TT_CONST data_type
+	{
+		$$ = new NConstType($1, $2);
+	}
 	| '[' expression ']' data_type
 	{
 		$$ = new NArrayType($1.t_tok, $4, $2);
