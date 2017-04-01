@@ -30,6 +30,13 @@ void SType::dump() const
 	dbgs() << str(nullptr) << '\n';
 }
 
+void SStructType::setConst()
+{
+	tclass |= CONST;
+	for (auto item : items)
+		item.second.second.stype()->setConst();
+}
+
 SType* SType::getAuto(CodeContext& context)
 {
 	return context.typeManager.getAuto();

@@ -5,7 +5,32 @@ void foo()
 	a = 5;
 }
 
+struct SS { int a; int b; }
+enum EE { A, B, C }
+union UU { int a; double d; }
+
+void testRecursive()
+{
+	const SS a;
+	a.b = 4;
+
+	const EE b;
+	b = EE.A;
+
+	const UU c;
+	c.a = 5;
+
+	const[3]int d, e;
+	d[2] = 2;
+	d = e;
+}
+
 ========
 
 negative/Const.syp:5: assignment not allowed for constant variable
-found 1 errors
+negative/Const.syp:15: assignment not allowed for constant variable
+negative/Const.syp:18: assignment not allowed for constant variable
+negative/Const.syp:21: assignment not allowed for constant variable
+negative/Const.syp:24: assignment not allowed for constant variable
+negative/Const.syp:25: assignment not allowed for constant variable
+found 6 errors

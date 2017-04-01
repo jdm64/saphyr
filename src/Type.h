@@ -39,6 +39,9 @@ class SType
 protected:
 	friend class TypeManager;
 	friend class SUserType;
+	friend class SAliasType;
+	friend class SStructType;
+	friend class SUnionType;
 
 	int tclass;
 	Type* ltype;
@@ -53,9 +56,11 @@ protected:
 		return new SType(*this);
 	}
 
-	void setConst()
+	virtual void setConst()
 	{
 		tclass |= CONST;
+		if (isSequence())
+			subtype->setConst();
 	}
 
 public:
@@ -352,6 +357,13 @@ class SAliasType : public SUserType
 	explicit SAliasType(SType* type)
 	: SUserType(ALIAS, type->type(), 0, type) {}
 
+protected:
+	void setConst()
+	{
+		tclass |= CONST;
+		subtype->setConst();
+	}
+
 public:
 	string str(CodeContext* context = nullptr) const
 	{
@@ -376,6 +388,8 @@ protected:
 	{
 		return new SStructType(*this);
 	}
+
+	void setConst();
 
 public:
 	pair<int, RValue>* getItem(const string& name);
@@ -420,6 +434,13 @@ class SUnionType : public SUserType
 	SType* copy()
 	{
 		return new SUnionType(*this);
+	}
+
+	void setConst()
+	{
+		tclass |= CONST;
+		for (auto item : items)
+			item.second->setConst();
 	}
 
 public:
