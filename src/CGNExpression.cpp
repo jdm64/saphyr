@@ -388,7 +388,7 @@ RValue CGNExpression::visitNStringLiteral(NStringLiteral* exp)
 {
 	auto strVal = exp->getStrVal();
 	auto arrData = ConstantDataArray::getString(context, strVal, true);
-	auto arrTy = SType::getArray(context, SType::getInt(context, 8), strVal.size() + 1);
+	auto arrTy = SType::getConst(context, SType::getArray(context, SType::getInt(context, 8), strVal.size() + 1));
 	auto arrTyPtr = SType::getPointer(context, arrTy);
 	auto gVar = new GlobalVariable(*context.getModule(), *arrTy, true, GlobalValue::PrivateLinkage, arrData);
 	auto zero = ConstantInt::get(*SType::getInt(context, 32), 0);
