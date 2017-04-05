@@ -367,7 +367,7 @@ protected:
 public:
 	string str(CodeContext* context = nullptr) const
 	{
-		return subtype->str(nullptr);
+		return subtype->str(context);
 	}
 };
 
