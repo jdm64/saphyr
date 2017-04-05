@@ -154,6 +154,9 @@ pair<int, RValue>* SStructType::getItem(const string& name)
 string SStructType::str(CodeContext* context) const
 {
 	stringstream os;
+	if (isConst())
+		os << "const ";
+
 	if (context) {
 		os << context->typeManager.getUserTypeName(this);
 	} else {
@@ -175,6 +178,9 @@ void SClassType::addFunction(const string& name, const SFunction& func)
 string SUnionType::str(CodeContext* context) const
 {
 	stringstream os;
+	if (isConst())
+		os << "const ";
+
 	if (context) {
 		os << context->typeManager.getUserTypeName(this);
 	} else {
@@ -190,6 +196,9 @@ string SUnionType::str(CodeContext* context) const
 string SEnumType::str(CodeContext* context) const
 {
 	stringstream os;
+	if (isConst())
+		os << "const ";
+
 	if (context) {
 		os << context->typeManager.getUserTypeName(this);
 	} else {

@@ -283,12 +283,21 @@ public:
 		raw_string_ostream os(s);
 
 		if (isArray()) {
+			if (isConst())
+				os << "const";
 			os << "[" << size() << "]" << subtype->str(context);
 		} else if (isPointer()) {
+			if (isConst())
+				os << "const";
 			os << "@" << subtype->str(context);
 		} else if (isVec()) {
+			if (isConst())
+				os << "const ";
 			os << "vec<" << size() << "," << subtype->str(context) << ">";
 		} else {
+			if (isConst())
+				os << "const ";
+
 			if (isDouble()) {
 				os << "double";
 			} else if (isFloating()) {
