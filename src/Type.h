@@ -30,6 +30,7 @@ class SFunctionType;
 class SStructType;
 class SFunction;
 class RValue;
+class TypeManager;
 
 using namespace std;
 using namespace llvm;
@@ -56,12 +57,7 @@ protected:
 		return new SType(*this);
 	}
 
-	virtual void setConst()
-	{
-		tclass |= CONST;
-		if (isSequence())
-			subtype->setConst();
-	}
+	virtual void setConst(TypeManager* tmang);
 
 public:
 	enum {
@@ -367,11 +363,7 @@ class SAliasType : public SUserType
 	: SUserType(ALIAS, type->type(), 0, type) {}
 
 protected:
-	void setConst()
-	{
-		tclass |= CONST;
-		subtype->setConst();
-	}
+	void setConst(TypeManager* tmang);
 
 public:
 	string str(CodeContext* context = nullptr) const
@@ -398,7 +390,7 @@ protected:
 		return new SStructType(*this);
 	}
 
-	void setConst();
+	void setConst(TypeManager* tmang);
 
 public:
 	pair<int, RValue>* getItem(const string& name);
@@ -445,12 +437,7 @@ class SUnionType : public SUserType
 		return new SUnionType(*this);
 	}
 
-	void setConst()
-	{
-		tclass |= CONST;
-		for (auto item : items)
-			item.second->setConst();
-	}
+	void setConst(TypeManager* tmang);
 
 public:
 	SType* getItem(const string& name)
@@ -628,8 +615,8 @@ public:
 		STypePtr &item = constMap[type];
 		if (!item.get()) {
 			auto ctype = type->copy();
-			ctype->setConst();
 			item = unique_ptr<SType>(ctype);
+			ctype->setConst(this);
 		}
 		return item.get();
 	}

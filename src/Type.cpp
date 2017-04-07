@@ -30,11 +30,34 @@ void SType::dump() const
 	dbgs() << str(nullptr) << '\n';
 }
 
-void SStructType::setConst()
+void SType::setConst(TypeManager* tmang)
 {
 	tclass |= CONST;
-	for (auto item : items)
-		item.second.second.stype()->setConst();
+	if (isSequence())
+		subtype = tmang->getConst(subtype);
+}
+
+void SAliasType::setConst(TypeManager* tmang)
+{
+	tclass |= CONST;
+	subtype = tmang->getConst(subtype);
+}
+
+void SStructType::setConst(TypeManager* tmang)
+{
+	tclass |= CONST;
+	for (auto& item : items) {
+		auto rval = item.second.second;
+		auto type = tmang->getConst(rval.stype());
+		item.second.second = RValue(rval.value(), type);
+	}
+}
+
+void SUnionType::setConst(TypeManager* tmang)
+{
+	tclass |= CONST;
+	for (auto& item : items)
+		item.second = tmang->getConst(item.second);
 }
 
 SType* SType::getAuto(CodeContext& context)
