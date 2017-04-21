@@ -1,0 +1,4 @@
+[Desktop Entry]
+Name=saphyr
+Exec=runSaphyr.sh
+Icon=logo
