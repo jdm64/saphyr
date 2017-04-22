@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-LLVM_VERSION=$(grep "LLVM_VER" Configfile 2> /dev/null | cut -f2 -d'=' | xargs)
+LLVM_VERSION=$(grep "^LLVM_VER" Configfile 2> /dev/null | cut -f2 -d'=' | xargs)
 if [[ -z "${LLVM_VERSION}" ]]; then
 	LLVM_VERSION=$LLVM_VER
 fi
