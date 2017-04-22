@@ -25,7 +25,8 @@
  */
 path Util::relative(const path& p)
 {
-	return Util::lexically_relative(Util::weakly_canonical(p), Util::weakly_canonical(current_path()));
+	auto rel = Util::lexically_relative(Util::weakly_canonical(p), Util::weakly_canonical(current_path()));
+	return rel.empty()? p : rel;
 }
 
 /**
