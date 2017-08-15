@@ -26,5 +26,5 @@ int main()
 negative/DeclaredSymbols.syp:4: variable f already defined
 negative/DeclaredSymbols.syp:14: variable g already defined
 negative/DeclaredSymbols.syp:18: symbol f doesn't reference a function
-negative/DeclaredSymbols.syp:19: can not cast int32 to ()void
+negative/DeclaredSymbols.syp:19: Cannot cast complex types ( int32 to ()void )
 found 4 errors

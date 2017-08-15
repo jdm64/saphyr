@@ -69,5 +69,5 @@ negative/Unsized.syp:35: Increment/Decrement invalid for File pointer
 negative/Unsized.syp:37: size of void is invalid
 negative/Unsized.syp:38: size of auto is invalid
 negative/Unsized.syp:39: size of File is invalid
-negative/Unsized.syp:47: can not cast @void to @File
+negative/Unsized.syp:47: Cannot cast type to pointer ( @void to @File )
 found 21 errors

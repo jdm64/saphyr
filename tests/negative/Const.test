@@ -52,5 +52,5 @@ negative/Const.syp:24: assignment not allowed for constant variable
 negative/Const.syp:25: assignment not allowed for constant variable
 negative/Const.syp:31: assignment not allowed for constant variable
 negative/Const.syp:34: assignment not allowed for constant variable
-negative/Const.syp:42: can not cast @const int32 to @int32
+negative/Const.syp:42: Cannot cast type to pointer ( @const int32 to @int32 )
 found 9 errors

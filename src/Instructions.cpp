@@ -20,9 +20,9 @@
 #include "CGNVariable.h"
 #include "CGNExpression.h"
 
-void Inst::castError(CodeContext& context, SType* from, SType* to, Token* token)
+void Inst::castError(CodeContext& context, const string& msg, SType* from, SType* to, Token* token)
 {
-	context.addError("can not cast " + from->str(&context) + " to " + to->str(&context), token);
+	context.addError(msg + " ( " + from->str(&context) + " to " + to->str(&context) + " )", token);
 }
 
 bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast)
@@ -62,7 +62,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value.castToSubtype();
 		return false;
 	} else if (type->isComplex() || valueType->isComplex()) {
-		castError(context, valueType, type, token);
+		castError(context, "Cannot cast complex types", valueType, type, token);
 		return true;
 	} else if (type->isPointer()) {
 		if (!valueType->isPointer()) {
@@ -70,7 +70,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			return true;
 		} else if (type->subType()->isArray() && valueType->subType()->isArray()) {
 			if (type->subType()->subType() != valueType->subType()->subType()) {
-				context.addError("Cannot cast array pointers of different types", token);
+				castError(context, "Cannot cast array pointers of different types", valueType, type, token);
 				return true;
 			} else if (type->subType()->size() > valueType->subType()->size()) {
 				context.addError("Pointers to arrays only allowed to cast to smaller arrays", token);
@@ -87,7 +87,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value = RValue(new BitCastInst(value, *type, "", context), type);
 			return false;
 		}
-		castError(context, valueType, type, token);
+		castError(context, "Cannot cast type to pointer", valueType, type, token);
 		return true;
 	} else if (type->isVec()) {
 		// unwrap enum type
@@ -106,7 +106,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value = RValue(retVal, type);
 			return false;
 		} else if (valueType->isPointer()) {
-			castError(context, valueType, type, token);
+			castError(context, "Cannot cast vec to pointer", valueType, type, token);
 			return true;
 		} else if (type->size() != valueType->size()) {
 			context.addError("can not cast vec types of different sizes", token);
@@ -124,11 +124,11 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		}
 	} else if (type->isEnum()) {
 		// casting to enum would violate value constraints
-		castError(context, valueType, type, token);
+		castError(context, "Cannot cast to enum", valueType, type, token);
 		return true;
 	} else if (type->isBool()) {
 		if (valueType->isVec()) {
-			castError(context, valueType, type, token);
+			castError(context, "Cannot cast vec to bool", valueType, type, token);
 			return true;
 		} else if (valueType->isEnum()) {
 			valueType = value.castToSubtype();
@@ -143,7 +143,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 	}
 
 	if (valueType->isPointer()) {
-		castError(context, valueType, type, token);
+		castError(context, "Cannot cast pointer", valueType, type, token);
 		return true;
 	}
 

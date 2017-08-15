@@ -26,7 +26,7 @@ typedef Instruction::CastOps CastOps;
 
 class Inst
 {
-	static inline void castError(CodeContext& context, SType* from, SType* to, Token* token);
+	static inline void castError(CodeContext& context, const string& msg, SType* from, SType* to, Token* token);
 
 	static BinaryOps getOperator(int oper, Token* optToken, SType* type, CodeContext& context);
 

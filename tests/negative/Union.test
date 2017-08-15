@@ -18,5 +18,5 @@ int main()
 negative/Union.syp:7: no return for a non-void function
 negative/Union.syp:11: U doesn't have member t
 negative/Union.syp:13: can not perform operation on composite types
-negative/Union.syp:13: can not cast U to int32
+negative/Union.syp:13: Cannot cast complex types ( U to int32 )
 found 4 errors
