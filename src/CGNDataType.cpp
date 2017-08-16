@@ -188,6 +188,7 @@ CGNDataType::classPtr* CGNDataTypeNew::buildVTable()
 	auto table = new CGNDataType::classPtr[NODEID_DIFF(NodeId::EndDataType, NodeId::StartDataType)];
 	TABLE_ADD2(NArrayType);
 	TABLE_ADD2(NBaseType);
+	TABLE_ADD2(NConstType);
 	TABLE_ADD2(NFuncPointerType);
 	TABLE_ADD2(NPointerType);
 	TABLE_ADD2(NThisType);

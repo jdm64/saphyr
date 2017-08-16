@@ -42,6 +42,15 @@ void testConstPtr()
 	p = a$;
 }
 
+void constPtr()
+{
+	auto p = new const int{4};
+	p@ = 2;
+
+	auto a = new const[5]int;
+	a[3] = 6;
+}
+
 ========
 
 negative/Const.syp:5: assignment not allowed for constant variable
@@ -53,4 +62,6 @@ negative/Const.syp:25: assignment not allowed for constant variable
 negative/Const.syp:31: assignment not allowed for constant variable
 negative/Const.syp:34: assignment not allowed for constant variable
 negative/Const.syp:42: Cannot cast type to pointer ( @const int32 to @int32 )
-found 9 errors
+negative/Const.syp:48: assignment not allowed for constant variable
+negative/Const.syp:51: assignment not allowed for constant variable
+found 11 errors

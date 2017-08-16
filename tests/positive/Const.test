@@ -24,6 +24,12 @@ void bar()
 	zzz(k);
 }
 
+void constPtr()
+{
+	auto p = new const int{4};
+	auto a = new const[5]int;
+}
+
 ========
 
 %S = type { i32, i32* }
@@ -58,3 +64,19 @@ define void @bar() {
   %4 = call i32 @zzz(i32 %3)
   ret void
 }
+
+define void @constPtr() {
+  %1 = call i8* @malloc(i64 4)
+  %2 = bitcast i8* %1 to i32*
+  store i32 4, i32* %2
+  %p = alloca i32*
+  store i32* %2, i32** %p
+  %3 = mul i64 4, 5
+  %4 = call i8* @malloc(i64 %3)
+  %5 = bitcast i8* %4 to [5 x i32]*
+  %a = alloca [5 x i32]*
+  store [5 x i32]* %5, [5 x i32]** %a
+  ret void
+}
+
+declare i8* @malloc(i64)
