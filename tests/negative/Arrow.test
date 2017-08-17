@@ -1,0 +1,11 @@
+
+void test()
+{
+	int a;
+	a->foo;
+}
+
+========
+
+negative/Arrow.syp:5: invalid arrow op name: foo
+found 1 errors
