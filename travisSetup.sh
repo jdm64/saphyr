@@ -19,5 +19,5 @@ sudo apt-get update -qq
 sudo apt-get install -qq -y --force-yes flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev libboost-filesystem-dev python3 binutils
 
 if [[ $COVERAGE == "true" ]]; then
-	sudo pip install cpp-coveralls
+	sudo pip install -U cpp-coveralls
 fi
