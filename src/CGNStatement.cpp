@@ -88,7 +88,11 @@ void CGNStatement::visitNExpressionStm(NExpressionStm* stm)
 void CGNStatement::visitNParameter(NParameter* stm)
 {
 	auto stype = CGNDataType::run(context, stm->getType());
+#if LLVM_VERSION_MAJOR >= 5
+	auto stackAlloc = new AllocaInst(*stype, 0, "", context);
+#else
 	auto stackAlloc = new AllocaInst(*stype, "", context);
+#endif
 	new StoreInst(storedValue, stackAlloc, context);
 	context.storeLocalSymbol({stackAlloc, stype}, stm->getName()->str);
 }
@@ -121,7 +125,11 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 		return;
 	}
 
+#if LLVM_VERSION_MAJOR >= 5
+	auto var = RValue(new AllocaInst(*varType, 0, name, context), varType);
+#else
 	auto var = RValue(new AllocaInst(*varType, name, context), varType);
+#endif
 	context.storeLocalSymbol(var, name);
 
 	Inst::InitVariable(context, var, stm->getName(), stm->getInitList(), initValue);

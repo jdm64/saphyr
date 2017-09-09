@@ -655,7 +655,11 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 
 RValue Inst::StoreTemporary(CodeContext& context, RValue value)
 {
+#if LLVM_VERSION_MAJOR >= 5
+	auto stackAlloc = new AllocaInst(value.type(), 0, "", context);
+#else
 	auto stackAlloc = new AllocaInst(value.type(), "", context);
+#endif
 	new StoreInst(value, stackAlloc, context);
 	return RValue(stackAlloc, value.stype());
 }
