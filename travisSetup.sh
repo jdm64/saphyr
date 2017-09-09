@@ -13,6 +13,9 @@ elif [[ $LLVM_VER == "-3.9" ]]; then
 elif [[ $LLVM_VER == "-4.0" ]]; then
 	echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-4.0 main" | sudo tee /etc/apt/sources.list.d/llvm40.list > /dev/null
 	echo "UNITTEST_ARG = +-4.0" > src/Configfile
+elif [[ $LLVM_VER == "-5.0" ]]; then
+	echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee /etc/apt/sources.list.d/llvm50.list > /dev/null
+	echo "UNITTEST_ARG = +-5.0" > src/Configfile
 fi
 
 sudo apt-get update -qq
