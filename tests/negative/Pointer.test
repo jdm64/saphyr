@@ -61,7 +61,7 @@ negative/Pointer.syp:16: can't perform operation with two pointers
 negative/Pointer.syp:24: Cannot cast vec to pointer ( @int32 to vec<3,int32> )
 negative/Pointer.syp:26: Cannot cast pointer ( @int32 to int32 )
 negative/Pointer.syp:34: Pointers to arrays only allowed to cast to smaller arrays
-negative/Pointer.syp:39: Cannot cast array pointers of different types ( @[0]float to @[0]int32 )
+negative/Pointer.syp:39: Cannot cast array pointers of different types ( @[]float to @[]int32 )
 negative/Pointer.syp:45: Increment/Decrement invalid for void pointer
 negative/Pointer.syp:50: invalid variable initializer
 found 12 errors

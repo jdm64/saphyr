@@ -281,7 +281,11 @@ public:
 		if (isArray()) {
 			if (isConst())
 				os << "const";
-			os << "[" << size() << "]" << subtype->str(context);
+			os << "[";
+			auto s = size();
+			if (s)
+				os << s;
+			os << "]" << subtype->str(context);
 		} else if (isPointer()) {
 			if (isConst())
 				os << "const";
