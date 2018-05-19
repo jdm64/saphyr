@@ -159,7 +159,7 @@ class CodeContext : public SymbolTable
 
 	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, size_t level) const
 	{
-		auto idx = level > 0? branchBlocks.size() - level : abs(level) - 1;
+		auto idx = level > 0? branchBlocks.size() - level : abs((int) level) - 1;
 		return (idx >= 0 && idx < branchBlocks.size())? branchBlocks[idx] : nullptr;
 	}
 
