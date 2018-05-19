@@ -52,7 +52,8 @@ parser.cpp : Parser.y
 	sed -i -e '/public:/a\	NStatementList* getRoot() { return root.get(); }' parser.h
 	sed -i -e '/public:/a\	Parser(string filename){ d_scanner = unique_ptr<Scanner>(new Scanner(filename, "-")); d_scanner->setSval(&d_val__); }' parser.h
 	sed -i -e '/return d_scanner.lex();/c\	return d_scanner->lex();' parser.ih
-	sed -i -e '/error("Syntax error");/d' parser.cpp
+	sed -i -e '/Syntax error/d' parser.cpp
+	sed -i -e '/Syntax error/d' parser.ih
 
 scanner.cpp : Scanner.l parser.cpp
 	rm -f scanner*
