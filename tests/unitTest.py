@@ -103,9 +103,12 @@ class TestCase:
 		Cmd(["rm"] + [self.basename + ext for ext in ext_list])
 
 	def patchAsm(self, file):
+		data = ""
 		with open(file, "r") as asm:
-			data = asm.read()
-		data = re.sub("; ModuleID =.*", "", data).strip() + "\n"
+			for line in asm:
+				if not self.basename in line:
+					data += line
+		data = data.strip() + "\n"
 		with open(file, "w") as asm:
 			asm.write(data)
 
