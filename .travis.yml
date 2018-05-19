@@ -5,21 +5,11 @@ sudo: required
 matrix:
    include:
     - compiler: clang
-      env: LLVM_VER="-3.4"
-    - compiler: clang
-      env: LLVM_VER="-3.5"
-    - compiler: clang
-      env: LLVM_VER="-3.6"
-    - compiler: clang
       env: LLVM_VER="-3.8"
     - compiler: clang
-      env: LLVM_VER="-3.9"
-    - compiler: clang
       env: LLVM_VER="-4.0"
-    - compiler: clang
-      env: LLVM_VER="-5.0"
     - compiler: gcc
-      env: COVERAGE=true LLVM_VER="-3.5"
+      env: LLVM_VER="-5.0" COVERAGE=true
 
 before_install:
  - ./travisSetup.sh

@@ -5,5 +5,4 @@ scanner*
 Parser.y.output
 saphyr
 Configfile
-LLVM_Defines.h
 *.AppImage

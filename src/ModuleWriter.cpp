@@ -21,10 +21,10 @@
 #include <iostream>
 #include <sstream>
 
-#include _LLVM_IR_PASS_MANAGER_H
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/ADT/Triple.h>
-#include _LLVM_IR_PRINTING_PASSES_H
-#include _LLVM_IR_VERIFIER_H
+#include <llvm/IR/IRPrintingPasses.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/Host.h>
@@ -36,13 +36,10 @@
 
 #include "Pass.h"
 
-#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
-	using namespace llvm::legacy;
-#endif
+using namespace llvm::legacy;
 
 bool ModuleWriter::validModule()
 {
-#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
 	ostringstream buff;
 	raw_os_ostream out(buff);
 	if (verifyModule(module, &out)) {
@@ -50,14 +47,6 @@ bool ModuleWriter::validModule()
 			<< buff.str() << endl;
 		return true;
 	}
-#else
-	string err;
-	if (verifyModule(module, ReturnStatusAction, &err)) {
-		cout << "compiler error: broken module" << endl << endl
-			<< err << endl;
-		return true;
-	}
-#endif
 	return false;
 }
 
@@ -65,17 +54,10 @@ tool_output_file* ModuleWriter::getOutFile(const string& name)
 {
 	sys::fs::OpenFlags OpenFlags = sys::fs::F_None;
 
-#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 6
 	error_code error;
 	auto outFile = new tool_output_file(name, error, OpenFlags);
 
 	if (error) {
-#else
-	string error;
-	auto outFile = new tool_output_file(name.c_str(), error, OpenFlags);
-
-	if (!error.empty()) {
-#endif
 		delete outFile;
 		cout << "compiler error: error opening file" << endl << error << endl;
 		return nullptr;
@@ -125,11 +107,7 @@ void ModuleWriter::outputIR()
 	fstream irFile(filename.substr(0, filename.rfind('.')) + ".ll", fstream::out);
 	raw_os_ostream irStream(irFile);
 
-#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 5
 	pm.add(createPrintModulePass(irStream));
-#else
-	pm.add(createPrintModulePass(&irStream));
-#endif
 
 	pm.run(module);
 }
@@ -141,11 +119,7 @@ void ModuleWriter::outputNative()
 	initTarget();
 	auto objFile = getOutFile(filename.substr(0, filename.rfind('.')) + ".o");
 
-#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
 	buffer_ostream objStream(objFile->os());
-#else
-	formatted_raw_ostream objStream(objFile->os());
-#endif
 	unique_ptr<TargetMachine> machine(getMachine());
 	machine->addPassesToEmitFile(pm, objStream, TargetMachine::CGFT_ObjectFile);
 

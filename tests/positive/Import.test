@@ -68,7 +68,7 @@ define void @foo() {
 
 define void @bar() {
   %s = alloca %MyStruct
-  %1 = getelementptr %MyStruct* %s, i32 0, i32 0
+  %1 = getelementptr %MyStruct, %MyStruct* %s, i32 0, i32 0
   store i32 4, i32* %1
   %e = alloca i32
   store i32 0, i32* %e
@@ -85,9 +85,9 @@ define void @other() {
 
 define void @cycle() {
   %f = alloca %Foo
-  %1 = getelementptr %Foo* %f, i32 0, i32 0
+  %1 = getelementptr %Foo, %Foo* %f, i32 0, i32 0
   store i32 3, i32* %1
-  %2 = load %Foo* %f
+  %2 = load %Foo, %Foo* %f
   %3 = call i32 @run(%Foo %2)
   ret void
 }

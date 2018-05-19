@@ -16,7 +16,7 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 * [Boost](http://www.boost.org/)
 -- Program_Options
 -- Filesystem
-* [LLVM](http://llvm.org/) 3.4+
+* [LLVM](http://llvm.org/) 3.8+
 * Make
 * C++11 compiler (either GCC or Clang)
 * Python 3 (for running tests)
@@ -26,7 +26,7 @@ system and the [Bobcat](https://fbb-git.github.io/bobcat/) library which require
 
 ### Debian/Ubuntu ###
 
-Debian 7 (Wheezy) and Ubuntu 14.04 (Trusty) or newer have all the required packages in their repositories.
+Debian 8 (Jessie) and Ubuntu 14.04 (Trusty) or newer have all the required packages in their repositories.
 
 `sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev libboost-filesystem-dev clang python3`
 

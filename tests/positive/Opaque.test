@@ -58,7 +58,7 @@ declare %MyClass* @MyClass_create()
 define i32 @main() {
   %a = alloca %File*
   %b = alloca i8*
-  %1 = load %File** %a
+  %1 = load %File*, %File** %a
   %2 = bitcast %File* %1 to i8*
   store i8* %2, i8** %b
   ret i32 0
@@ -69,8 +69,8 @@ define void @foo() {
   %2 = bitcast i8* %1 to %Fake*
   %a = alloca %Fake*
   store %Fake* %2, %Fake** %a
-  %3 = load %Fake** %a
-  %4 = getelementptr %Fake* %3, i32 0, i32 0
+  %3 = load %Fake*, %Fake** %a
+  %4 = getelementptr %Fake, %Fake* %3, i32 0, i32 0
   store i32 2, i32* %4
   ret void
 }

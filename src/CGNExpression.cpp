@@ -396,11 +396,7 @@ RValue CGNExpression::visitNStringLiteral(NStringLiteral* exp)
 	std::vector<Constant*> idxs;
 	idxs.push_back(zero);
 
-#if LLVM_VERSION_MAJOR >= 4 || LLVM_VERSION_MAJOR == 3 && LLVM_VERSION_MINOR >= 7
 	auto strPtr = ConstantExpr::getGetElementPtr(gVar->getType(), gVar, idxs);
-#else
-	auto strPtr = ConstantExpr::getGetElementPtr(gVar, idxs);
-#endif
 
 	return RValue(strPtr, arrTyPtr);
 }

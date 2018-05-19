@@ -18,10 +18,8 @@
 #ifndef __MODULE_WRITER_H__
 #define __MODULE_WRITER_H__
 
-#include "LLVM_Defines.h"
-
 #include <boost/program_options.hpp>
-#include _LLVM_IR_PASS_MANAGER_H
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/ToolOutputFile.h>
 #include <llvm/Target/TargetMachine.h>

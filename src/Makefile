@@ -30,13 +30,8 @@ objs = parser.o scanner.o Util.o Type.o Value.o Instructions.o Builder.o CGNInt.
 	CGNVariable.o CGNExpression.o CGNStatement.o CGNImportStm.o Pass.o ModuleWriter.o \
 	CGNImportList.o main.o
 
-compiler : LLVM_Defines.sh frontend $(objs)
+compiler : frontend $(objs)
 	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)
-
-LLVM_Defines.sh : LLVM_Defines.h
-
-LLVM_Defines.h :
-	./LLVM_Defines.sh > LLVM_Defines.h
 
 frontend : parser.cpp scanner.cpp
 
@@ -70,7 +65,6 @@ frontend-clean :
 	rm -f parser* scanner*
 
 fullclean : clean frontend-clean
-	rm -f LLVM_Defines.h
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

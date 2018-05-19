@@ -33,8 +33,8 @@ define i32 @excape() {
   store i8 9, i8* %h
   %i = alloca i8
   store i8 11, i8* %i
-  %1 = load i8* %d
-  %2 = load i8* %c
+  %1 = load i8, i8* %d
+  %2 = load i8, i8* %c
   %3 = udiv i8 %1, %2
   %4 = zext i8 %3 to i32
   ret i32 %4
@@ -52,7 +52,7 @@ define i32 @main() {
   %e = alloca i8
   store i8 63, i8* %e
   %1 = call i32 @excape()
-  %2 = load i8* %b
+  %2 = load i8, i8* %b
   %3 = zext i8 %2 to i32
   %4 = mul i32 %1, %3
   ret i32 %4

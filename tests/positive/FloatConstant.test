@@ -23,8 +23,8 @@ define i32 @main() {
   %d = alloca double
   store double 4.300000e+05, double* %d
   %e = alloca double
-  store double 5.400000e-06, double* %e
-  %1 = load double* %c
+  store double 0x3ED6A634B28F33E5, double* %e
+  %1 = load double, double* %c
   %2 = fptosi double %1 to i32
   ret i32 %2
 }

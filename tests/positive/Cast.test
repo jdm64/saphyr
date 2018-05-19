@@ -36,16 +36,16 @@ define void @func() {
   %p = alloca i8*
   %3 = bitcast %Foo* %2 to i8*
   store i8* %3, i8** %p
-  %4 = load i8** %p
+  %4 = load i8*, i8** %p
   %5 = bitcast i8* %4 to %Foo*
   %6 = alloca %Foo*
   store %Foo* %5, %Foo** %6
-  %7 = load %Foo** %6
+  %7 = load %Foo*, %Foo** %6
   %f = alloca %Foo*
   store %Foo* %7, %Foo** %f
   %a = alloca i32
   store i32 10, i32* %a
-  %8 = load i32* %a
+  %8 = load i32, i32* %a
   %9 = icmp ne i32 %8, 0
   %b = alloca i1
   store i1 %9, i1* %b
@@ -60,13 +60,13 @@ define void @complex() {
   %p = alloca i8*
   %3 = bitcast %Foo* %2 to i8*
   store i8* %3, i8** %p
-  %4 = load i8** %p
+  %4 = load i8*, i8** %p
   %5 = bitcast i8* %4 to %Foo*
   %6 = alloca %Foo*
   store %Foo* %5, %Foo** %6
-  %7 = load %Foo** %6
-  %8 = getelementptr %Foo* %7, i32 0, i32 0
-  %9 = load i32* %8
+  %7 = load %Foo*, %Foo** %6
+  %8 = getelementptr %Foo, %Foo* %7, i32 0, i32 0
+  %9 = load i32, i32* %8
   %z = alloca i32
   store i32 %9, i32* %z
   ret void
@@ -77,12 +77,12 @@ define void @noOp() {
   %2 = bitcast i8* %1 to %Foo*
   %p = alloca %Foo*
   store %Foo* %2, %Foo** %p
-  %3 = load %Foo** %p
+  %3 = load %Foo*, %Foo** %p
   %4 = alloca %Foo*
   store %Foo* %3, %Foo** %4
-  %5 = load %Foo** %4
-  %6 = getelementptr %Foo* %5, i32 0, i32 0
-  %7 = load i32* %6
+  %5 = load %Foo*, %Foo** %4
+  %6 = getelementptr %Foo, %Foo* %5, i32 0, i32 0
+  %7 = load i32, i32* %6
   %x = alloca i32
   store i32 %7, i32* %x
   ret void
