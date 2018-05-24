@@ -50,12 +50,21 @@ bool ModuleWriter::validModule()
 	return false;
 }
 
+#if LLVM_VERSION_MAJOR >= 6
+ToolOutputFile* ModuleWriter::getOutFile(const string& name)
+#else
 tool_output_file* ModuleWriter::getOutFile(const string& name)
+#endif
 {
 	sys::fs::OpenFlags OpenFlags = sys::fs::F_None;
 
 	error_code error;
+
+#if LLVM_VERSION_MAJOR >= 6
+	auto outFile = new ToolOutputFile(name, error, OpenFlags);
+#else
 	auto outFile = new tool_output_file(name, error, OpenFlags);
+#endif
 
 	if (error) {
 		delete outFile;
@@ -81,7 +90,7 @@ TargetMachine* ModuleWriter::getMachine()
 
 	triple.setTriple(sys::getDefaultTargetTriple());
 	auto target = TargetRegistry::lookupTarget(triple.getTriple(), err);
-	return target->createTargetMachine(triple.getTriple(), sys::getHostCPUName(), features, options, Reloc::Model::Static, CodeModel::Default, CodeGenOpt::Default);
+	return target->createTargetMachine(triple.getTriple(), sys::getHostCPUName(), features, options, Reloc::Model::Static, CodeModel::Medium, CodeGenOpt::Default);
 }
 
 int ModuleWriter::run()

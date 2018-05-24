@@ -36,7 +36,11 @@ class ModuleWriter
 
 	bool validModule();
 
+#if LLVM_VERSION_MAJOR >= 6
+	ToolOutputFile* getOutFile(const string& name);
+#else
 	tool_output_file* getOutFile(const string& name);
+#endif
 
 	static void initTarget();
 
