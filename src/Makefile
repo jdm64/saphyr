@@ -73,7 +73,7 @@ cppcheck :
 	cppcheck --enable=all --inconclusive ./ 1> /dev/null
 
 analyze : clean
-	scan-build make compiler
+	scan-build$(LLVM_VER) make compiler
 
 tests : compiler
 	cd ../tests; ./unitTest.py $(UNITTEST_ARG)
