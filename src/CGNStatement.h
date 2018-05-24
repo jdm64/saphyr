@@ -88,7 +88,7 @@ public:
 	explicit CGNStatement(CodeContext& context)
 	: context(context) {}
 
-	void visit(NStatement* type);
+	void visit(NStatement* stm);
 
 	void storeValue(RValue value)
 	{

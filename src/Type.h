@@ -618,9 +618,8 @@ public:
 			return type;
 		STypePtr &item = constMap[type];
 		if (!item.get()) {
-			auto ctype = type->copy();
-			item = unique_ptr<SType>(ctype);
-			ctype->setConst(this);
+			item = unique_ptr<SType>(type->copy());
+			item.get()->setConst(this);
 		}
 		return item.get();
 	}

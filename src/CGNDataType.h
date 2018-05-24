@@ -92,7 +92,7 @@ class CGNDataTypeNew : public CGNDataType
 
 	static classPtr* buildVTable();
 
-	void setSize(SType* ty);
+	void setSize(SType* type);
 
 	void setSize(uint64_t size);
 

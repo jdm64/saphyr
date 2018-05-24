@@ -30,7 +30,7 @@ class CGNImportList
 	static classPtr* buildVTable();
 
 public:
-	void visit(NStatement* type);
+	void visit(NStatement* stm);
 
 	static void run(NStatementList* list)
 	{
