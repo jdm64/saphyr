@@ -44,7 +44,7 @@ def findAllTests():
 		root = root.strip("./")
 		for filename in fnmatch.filter(filenames, '*' + TEST_EXT):
 			matches.append(os.path.join(root, filename))
-	return matches
+	return sorted(matches)
 
 def getFiles(files):
 	if not files:
