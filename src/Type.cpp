@@ -160,6 +160,14 @@ bool SType::validate(CodeContext& context, Token* token, SType* type)
 	return validate(context, token, type->subType());
 }
 
+void SUserType::innerStr(CodeContext* context, stringstream& os) const
+{
+	if (isConst())
+		os << "const ";
+	auto ty = isConst() ? context->typeManager.getMutable(static_cast<SType*>(const_cast<SUserType*>(this))) : this;
+	os << context->typeManager.getUserTypeName(ty);
+}
+
 SStructType::SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype)
 : SUserType(ctype | (structure.size()? 0 : OPAQUE), type, structure.size())
 {
@@ -177,11 +185,9 @@ pair<int, RValue>* SStructType::getItem(const string& name)
 string SStructType::str(CodeContext* context) const
 {
 	stringstream os;
-	if (isConst())
-		os << "const ";
 
 	if (context) {
-		os << context->typeManager.getUserTypeName(this);
+		innerStr(context, os);
 	} else {
 		os << "S:{|";
 		for (auto i : items) {
@@ -201,11 +207,9 @@ void SClassType::addFunction(const string& name, const SFunction& func)
 string SUnionType::str(CodeContext* context) const
 {
 	stringstream os;
-	if (isConst())
-		os << "const ";
 
 	if (context) {
-		os << context->typeManager.getUserTypeName(this);
+		innerStr(context, os);
 	} else {
 		os << "U:{|";
 		for (auto i : items) {
@@ -219,11 +223,9 @@ string SUnionType::str(CodeContext* context) const
 string SEnumType::str(CodeContext* context) const
 {
 	stringstream os;
-	if (isConst())
-		os << "const ";
 
 	if (context) {
-		os << context->typeManager.getUserTypeName(this);
+		innerStr(context, os);
 	} else {
 		os << "E:{|";
 		for (auto i : items) {

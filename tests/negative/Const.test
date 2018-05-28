@@ -51,6 +51,18 @@ void constPtr()
 	a[3] = 6;
 }
 
+void userTypeConstName()
+{
+	const SS a;
+	const UU b;
+
+	int x = a;
+	int y = b;
+
+	const EE c;
+	[3]int d = c;
+}
+
 ========
 
 negative/Const.syp:5: assignment not allowed for constant variable
@@ -64,4 +76,7 @@ negative/Const.syp:34: assignment not allowed for constant variable
 negative/Const.syp:42: Cannot cast type to pointer ( @const int32 to @int32 )
 negative/Const.syp:48: assignment not allowed for constant variable
 negative/Const.syp:51: assignment not allowed for constant variable
-found 11 errors
+negative/Const.syp:59: Cannot cast complex types ( const SS to int32 )
+negative/Const.syp:60: Cannot cast complex types ( const UU to int32 )
+negative/Const.syp:63: Cannot cast complex types ( const EE to [3]int32 )
+found 14 errors

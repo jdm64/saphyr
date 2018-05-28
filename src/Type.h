@@ -343,6 +343,8 @@ class SUserType : public SType
 	SUserType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
 	: SType(typeClass, type, size, subtype) {}
 
+	void innerStr(CodeContext* context, stringstream& os) const;
+
 public:
 	static SUserType* lookup(CodeContext& context, const string& name);
 
@@ -557,6 +559,9 @@ class TypeManager
 	// const types
 	map<SType*, STypePtr> constMap;
 
+	// mutable type
+	map<SType*, SType*> mutMap;
+
 	// array & vec types
 	map<pair<SType*, uint64_t>, STypePtr> arrMap;
 	map<pair<SType*, uint64_t>, STypePtr> vecMap;
@@ -619,9 +624,18 @@ public:
 		STypePtr &item = constMap[type];
 		if (!item.get()) {
 			item = unique_ptr<SType>(type->copy());
-			item.get()->setConst(this);
+			auto ctype = item.get();
+			ctype->setConst(this);
+			mutMap[ctype] = type;
 		}
 		return item.get();
+	}
+
+	SType* getMutable(SType* type)
+	{
+		if (!type || !type->isConst())
+			return type;
+		return mutMap[type];
 	}
 
 	SType* getArray(SType* arrType, int64_t size);
