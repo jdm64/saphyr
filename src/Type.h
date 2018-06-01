@@ -118,6 +118,8 @@ public:
 
 	static SType* getConst(CodeContext& context, SType* type);
 
+	static SType* getMutable(CodeContext& context, SType* type);
+
 	static SType* getVoid(CodeContext& context);
 
 	static SType* getBool(CodeContext& context);

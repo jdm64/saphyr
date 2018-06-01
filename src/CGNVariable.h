@@ -48,6 +48,8 @@ class CGNVariable
 
 	RValue visit(NVariable* type);
 
+	RValue MutCast(NArrowOperator* exp);
+
 	static classPtr* buildVTable();
 
 public:

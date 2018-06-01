@@ -860,6 +860,10 @@ arrow_argument
 	{
 		$$ = nullptr;
 	}
+	| '(' ')'
+	{
+		$$ = nullptr;
+	}
 	| '(' data_type ')'
 	{
 		$$ = $2;

@@ -26,6 +26,16 @@ void noOp()
 	int x = p->as(@Foo).a;
 }
 
+void mutCast()
+{
+	const int a = 4;
+	const float b = 2.8;
+
+	a->mut() = 5;
+	a->mut = 7;
+	b->mut = a->mut;
+}
+
 ========
 
 %Foo = type { i32 }
@@ -85,5 +95,19 @@ define void @noOp() {
   %7 = load i32, i32* %6
   %x = alloca i32
   store i32 %7, i32* %x
+  ret void
+}
+
+define void @mutCast() {
+  %a = alloca i32
+  store i32 4, i32* %a
+  %b = alloca float
+  %1 = fptrunc double 2.800000e+00 to float
+  store float %1, float* %b
+  store i32 5, i32* %a
+  store i32 7, i32* %a
+  %2 = load i32, i32* %a
+  %3 = sitofp i32 %2 to float
+  store float %3, float* %b
   ret void
 }
