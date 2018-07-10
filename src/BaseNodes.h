@@ -28,7 +28,6 @@ enum class NodeId
 	NAttrValue,
 
 	// datatypes
-	StartDataType,
 	NArrayType,
 	NBaseType,
 	NConstType,
@@ -37,10 +36,8 @@ enum class NodeId
 	NThisType,
 	NUserType,
 	NVecType,
-	EndDataType,
 
 	// expressions
-	StartExpression,
 	NAddressOf,
 	NArrayVariable,
 	NArrowOperator,
@@ -65,10 +62,8 @@ enum class NodeId
 	NStringLiteral,
 	NTernaryOperator,
 	NUnaryMathOperator,
-	EndExpression,
 
 	// statements
-	StartStatement,
 	NAliasDeclaration,
 	NClassConstructor,
 	NClassDeclaration,
@@ -98,11 +93,12 @@ enum class NodeId
 	NVariableDecl,
 	NVariableDeclGroup,
 	NWhileStatement,
-	EndStatement
 };
 
-#define NODEID_DIFF(LEFT, RIGHT) static_cast<int>(LEFT) - static_cast<int>(RIGHT)
 #define ADD_ID(CLASS) NodeId id() { return NodeId::CLASS; }
+#define VISIT_CASE(ID, NODE) case NodeId::ID: visit##ID(static_cast<ID*>(NODE)); break;
+#define VISIT_CASE_RETURN(ID, NODE) case NodeId::ID: return visit##ID(static_cast<ID*>(NODE));
+#define VISIT_CASE2_RETURN(ID, TWO, NODE) case NodeId::ID: return visit##TWO(static_cast<TWO*>(NODE));
 
 class Node
 {

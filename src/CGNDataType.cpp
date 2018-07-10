@@ -24,27 +24,21 @@
 #include "Instructions.h"
 #include "CGNExpression.h"
 
-#define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartDataType)] = reinterpret_cast<classPtr>(&CGNDataType::visit##ID)
-
-CGNDataType::classPtr* CGNDataType::buildVTable()
-{
-	auto table = new CGNDataType::classPtr[NODEID_DIFF(NodeId::EndDataType, NodeId::StartDataType)];
-	TABLE_ADD(NArrayType);
-	TABLE_ADD(NBaseType);
-	TABLE_ADD(NConstType);
-	TABLE_ADD(NFuncPointerType);
-	TABLE_ADD(NPointerType);
-	TABLE_ADD(NThisType);
-	TABLE_ADD(NUserType);
-	TABLE_ADD(NVecType);
-	return table;
-}
-
-CGNDataType::classPtr* CGNDataType::vtable = CGNDataType::buildVTable();
-
 SType* CGNDataType::visit(NDataType* type)
 {
-	return (this->*vtable[NODEID_DIFF(type->id(), NodeId::StartDataType)])(type);
+	switch (type->id()) {
+	VISIT_CASE_RETURN(NArrayType, type)
+	VISIT_CASE_RETURN(NBaseType, type)
+	VISIT_CASE_RETURN(NConstType, type)
+	VISIT_CASE_RETURN(NFuncPointerType, type)
+	VISIT_CASE_RETURN(NPointerType, type)
+	VISIT_CASE_RETURN(NThisType, type)
+	VISIT_CASE_RETURN(NUserType, type)
+	VISIT_CASE_RETURN(NVecType, type)
+	default:
+		context.addError("NodeId::" + to_string(static_cast<int>(type->id())) + " unrecognized in CGNDataType", *type);
+		return nullptr;
+	}
 }
 
 SType* CGNDataType::visitNBaseType(NBaseType* type)
@@ -181,27 +175,21 @@ SType* CGNDataType::visitNFuncPointerType(NFuncPointerType* type)
 	return ptr? SType::getPointer(context, ptr) : nullptr;
 }
 
-#define TABLE_ADD2(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartDataType)] = reinterpret_cast<classPtr>(&CGNDataTypeNew::visit##ID)
-
-CGNDataType::classPtr* CGNDataTypeNew::buildVTable()
-{
-	auto table = new CGNDataType::classPtr[NODEID_DIFF(NodeId::EndDataType, NodeId::StartDataType)];
-	TABLE_ADD2(NArrayType);
-	TABLE_ADD2(NBaseType);
-	TABLE_ADD2(NConstType);
-	TABLE_ADD2(NFuncPointerType);
-	TABLE_ADD2(NPointerType);
-	TABLE_ADD2(NThisType);
-	TABLE_ADD2(NUserType);
-	TABLE_ADD2(NVecType);
-	return table;
-}
-
-CGNDataType::classPtr* CGNDataTypeNew::vtable = CGNDataTypeNew::buildVTable();
-
 SType* CGNDataTypeNew::visit(NDataType* type)
 {
-	return (this->*vtable[NODEID_DIFF(type->id(), NodeId::StartDataType)])(type);
+	switch (type->id()) {
+	VISIT_CASE_RETURN(NArrayType, type);
+	VISIT_CASE_RETURN(NBaseType, type);
+	VISIT_CASE_RETURN(NConstType, type);
+	VISIT_CASE_RETURN(NFuncPointerType, type);
+	VISIT_CASE_RETURN(NPointerType, type);
+	VISIT_CASE_RETURN(NThisType, type);
+	VISIT_CASE_RETURN(NUserType, type);
+	VISIT_CASE_RETURN(NVecType, type);
+	default:
+		context.addError("NodeId::" + to_string(static_cast<int>(type->id())) + " unrecognized in CGNDataTypeNew", *type);
+		return nullptr;
+	}
 }
 
 SType* CGNDataTypeNew::run(CodeContext& context, NDataType* type, RValue& size)

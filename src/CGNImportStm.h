@@ -19,10 +19,6 @@
 
 class CGNImportStm
 {
-	typedef void (CGNImportStm::*classPtr)(NStatement*);
-
-	static classPtr *vtable;
-
 	CodeContext& context;
 
 	explicit CGNImportStm(CodeContext& context)
@@ -57,8 +53,6 @@ class CGNImportStm
 	void visit(NStatementList* list);
 
 	void visit(NStatement* stm);
-
-	static classPtr* buildVTable();
 
 public:
 

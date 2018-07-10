@@ -19,10 +19,6 @@
 
 class CGNVariable
 {
-	typedef RValue (CGNVariable::*classPtr)(NVariable*);
-
-	static classPtr *vtable;
-
 	CodeContext& context;
 
 	explicit CGNVariable(CodeContext& context)
@@ -49,8 +45,6 @@ class CGNVariable
 	RValue visit(NVariable* type);
 
 	RValue MutCast(NArrowOperator* exp);
-
-	static classPtr* buildVTable();
 
 public:
 

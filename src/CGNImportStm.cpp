@@ -19,31 +19,24 @@
 #include "CGNImportStm.h"
 #include "Builder.h"
 
-#define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartStatement)] = reinterpret_cast<classPtr>(&CGNImportStm::visit##ID)
-
-CGNImportStm::classPtr* CGNImportStm::buildVTable()
-{
-	auto table = new CGNImportStm::classPtr[NODEID_DIFF(NodeId::EndStatement, NodeId::StartStatement)];
-	TABLE_ADD(NAliasDeclaration);
-	TABLE_ADD(NClassConstructor);
-	TABLE_ADD(NClassDeclaration);
-	TABLE_ADD(NClassDestructor);
-	TABLE_ADD(NClassFunctionDecl);
-	TABLE_ADD(NClassStructDecl);
-	TABLE_ADD(NEnumDeclaration);
-	TABLE_ADD(NFunctionDeclaration);
-	TABLE_ADD(NGlobalVariableDecl);
-	TABLE_ADD(NImportStm);
-	TABLE_ADD(NStructDeclaration);
-	TABLE_ADD(NVariableDeclGroup);
-	return table;
-}
-
-CGNImportStm::classPtr* CGNImportStm::vtable = buildVTable();
-
 void CGNImportStm::visit(NStatement* stm)
 {
-	(this->*vtable[NODEID_DIFF(stm->id(), NodeId::StartStatement)])(stm);
+	switch (stm->id()) {
+	VISIT_CASE(NAliasDeclaration, stm)
+	VISIT_CASE(NClassConstructor, stm)
+	VISIT_CASE(NClassDeclaration, stm)
+	VISIT_CASE(NClassDestructor, stm)
+	VISIT_CASE(NClassFunctionDecl, stm)
+	VISIT_CASE(NClassStructDecl, stm)
+	VISIT_CASE(NEnumDeclaration, stm)
+	VISIT_CASE(NFunctionDeclaration, stm)
+	VISIT_CASE(NGlobalVariableDecl, stm)
+	VISIT_CASE(NImportStm, stm)
+	VISIT_CASE(NStructDeclaration, stm)
+	VISIT_CASE(NVariableDeclGroup, stm)
+	default:
+		context.addError("NodeId::" + to_string(static_cast<int>(stm->id())) + " unrecognized in CGNImportStm", nullptr);
+	}
 }
 
 void CGNImportStm::visit(NStatementList* list)

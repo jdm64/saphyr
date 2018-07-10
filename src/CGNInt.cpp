@@ -19,22 +19,16 @@
 #include "CGNInt.h"
 #include "CodeContext.h"
 
-#define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartExpression)] = reinterpret_cast<classPtr>(&CGNInt::visit##ID)
-
-CGNInt::classPtr* CGNInt::buildVTable()
-{
-	auto table = new CGNInt::classPtr[NODEID_DIFF(NodeId::EndExpression, NodeId::StartExpression)];
-	TABLE_ADD(NBoolConst);
-	TABLE_ADD(NCharConst);
-	TABLE_ADD(NIntConst);
-	return table;
-}
-
-CGNInt::classPtr* CGNInt::vtable = CGNInt::buildVTable();
-
 APSInt CGNInt::visit(NIntLikeConst* intConst)
 {
-	return (this->*vtable[NODEID_DIFF(intConst->id(), NodeId::StartExpression)])(intConst);
+	switch (intConst->id()) {
+	VISIT_CASE_RETURN(NBoolConst, intConst)
+	VISIT_CASE_RETURN(NCharConst, intConst)
+	VISIT_CASE_RETURN(NIntConst, intConst)
+	default:
+		context.addError("NodeId::" + to_string(static_cast<int>(intConst->id())) + " unrecognized in CGNInt", *intConst);
+		return APSInt();
+	}
 }
 
 APSInt CGNInt::visitNBoolConst(NBoolConst* boolConst)

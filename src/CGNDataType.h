@@ -20,8 +20,6 @@
 class CGNDataType
 {
 protected:
-	typedef SType* (CGNDataType::*classPtr)(NDataType*);
-
 	CodeContext& context;
 
 	explicit CGNDataType(CodeContext& context)
@@ -49,11 +47,6 @@ protected:
 
 	SType* getArrayType(NArrayType* type);
 
-private:
-	static classPtr* buildVTable();
-
-	static classPtr *vtable;
-
 public:
 
 	static SType* run(CodeContext& context, NDataType* type)
@@ -65,8 +58,6 @@ public:
 
 class CGNDataTypeNew : public CGNDataType
 {
-	static classPtr *vtable;
-
 	RValue sizeVal;
 
 	explicit CGNDataTypeNew(CodeContext& context)
@@ -89,8 +80,6 @@ class CGNDataTypeNew : public CGNDataType
 	SType* visitNFuncPointerType(NFuncPointerType* type);
 
 	SType* visit(NDataType* type);
-
-	static classPtr* buildVTable();
 
 	void setSize(SType* type);
 

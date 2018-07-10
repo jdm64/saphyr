@@ -19,10 +19,6 @@
 
 class CGNExpression
 {
-	typedef RValue (CGNExpression::*classPtr)(NExpression*);
-
-	static classPtr *vtable;
-
 	CodeContext& context;
 
 	explicit CGNExpression(CodeContext& context)
@@ -71,8 +67,6 @@ class CGNExpression
 	void visit(NExpressionList*);
 
 	RValue visit(NExpression*);
-
-	static classPtr* buildVTable();
 
 public:
 

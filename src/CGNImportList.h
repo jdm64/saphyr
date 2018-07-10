@@ -19,15 +19,7 @@
 
 class CGNImportList
 {
-	typedef void (CGNImportList::*classPtr)(NStatement*);
-
-	static classPtr *vtable;
-
 	void visitNImportStm(NImportStm* stm);
-
-	void ignore(NStatement* stm) {}
-
-	static classPtr* buildVTable();
 
 public:
 	void visit(NStatement* stm);

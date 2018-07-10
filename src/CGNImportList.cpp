@@ -18,26 +18,13 @@
 #include "CGNImportList.h"
 #include <iostream>
 
-#define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartStatement)] = reinterpret_cast<classPtr>(&CGNImportList::visit##ID)
-
-CGNImportList::classPtr* CGNImportList::buildVTable()
-{
-	auto size = NODEID_DIFF(NodeId::EndStatement, NodeId::StartStatement);
-	auto table = new CGNImportList::classPtr[size];
-	for (auto i = 0; i < size; i++) {
-		table[i] = nullptr;
-	}
-	TABLE_ADD(NImportStm);
-	return table;
-}
-
-CGNImportList::classPtr* CGNImportList::vtable = CGNImportList::buildVTable();
-
 void CGNImportList::visit(NStatement* stm)
 {
-	auto ptr = vtable[NODEID_DIFF(stm->id(), NodeId::StartStatement)];
-	if (ptr)
-		(this->*ptr)(stm);
+	switch (stm->id()) {
+	VISIT_CASE(NImportStm, stm)
+	default:
+		; // skip
+	}
 }
 
 void CGNImportList::visitNImportStm(NImportStm* stm)

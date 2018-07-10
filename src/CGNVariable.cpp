@@ -20,28 +20,21 @@
 #include "Instructions.h"
 #include "CGNExpression.h"
 
-#define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartExpression)] = reinterpret_cast<classPtr>(&CGNVariable::visit##ID)
-
-CGNVariable::classPtr* CGNVariable::buildVTable()
-{
-	auto table = new CGNVariable::classPtr[NODEID_DIFF(NodeId::EndExpression, NodeId::StartExpression)];
-	TABLE_ADD(NAddressOf);
-	TABLE_ADD(NArrayVariable);
-	TABLE_ADD(NArrowOperator);
-	TABLE_ADD(NBaseVariable);
-	TABLE_ADD(NDereference);
-	TABLE_ADD(NExprVariable);
-	TABLE_ADD(NFunctionCall);
-	TABLE_ADD(NMemberFunctionCall);
-	TABLE_ADD(NMemberVariable);
-	return table;
-}
-
-CGNVariable::classPtr* CGNVariable::vtable = CGNVariable::buildVTable();
-
 RValue CGNVariable::visit(NVariable* type)
 {
-	return (this->*vtable[NODEID_DIFF(type->id(), NodeId::StartExpression)])(type);
+	switch (type->id()) {
+	VISIT_CASE_RETURN(NAddressOf, type)
+	VISIT_CASE_RETURN(NArrayVariable, type)
+	VISIT_CASE_RETURN(NArrowOperator, type)
+	VISIT_CASE_RETURN(NBaseVariable, type)
+	VISIT_CASE_RETURN(NDereference, type)
+	VISIT_CASE_RETURN(NExprVariable, type)
+	VISIT_CASE_RETURN(NFunctionCall, type)
+	VISIT_CASE_RETURN(NMemberFunctionCall, type)
+	VISIT_CASE_RETURN(NMemberVariable, type)
+	default:
+		context.addError("NodeId::" + to_string(static_cast<int>(type->id())) + " unrecognized in CGNVariable", *type);
+	}
 }
 
 RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)

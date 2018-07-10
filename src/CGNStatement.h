@@ -19,10 +19,6 @@
 
 class CGNStatement
 {
-	typedef void (CGNStatement::*classPtr)(NStatement*);
-
-	static classPtr *vtable;
-
 	CodeContext& context;
 	RValue storedValue;
 
@@ -81,8 +77,6 @@ class CGNStatement
 	void visitNDestructorCall(NDestructorCall* stm);
 
 	void visit(NStatementList* list);
-
-	static classPtr* buildVTable();
 
 public:
 	explicit CGNStatement(CodeContext& context)

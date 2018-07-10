@@ -27,46 +27,39 @@
 #include "CGNExpression.h"
 #include "CGNImportStm.h"
 
-#define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartStatement)] = reinterpret_cast<classPtr>(&CGNStatement::visit##ID)
-
-CGNStatement::classPtr* CGNStatement::buildVTable()
-{
-	auto table = new CGNStatement::classPtr[NODEID_DIFF(NodeId::EndStatement, NodeId::StartStatement)];
-	TABLE_ADD(NAliasDeclaration);
-	TABLE_ADD(NClassConstructor);
-	TABLE_ADD(NClassDeclaration);
-	TABLE_ADD(NClassDestructor);
-	TABLE_ADD(NClassFunctionDecl);
-	TABLE_ADD(NClassStructDecl);
-	TABLE_ADD(NDeleteStatement);
-	TABLE_ADD(NDestructorCall);
-	TABLE_ADD(NEnumDeclaration);
-	TABLE_ADD(NExpressionStm);
-	TABLE_ADD(NForStatement);
-	TABLE_ADD(NFunctionDeclaration);
-	TABLE_ADD(NGlobalVariableDecl);
-	TABLE_ADD(NGotoStatement);
-	TABLE_ADD(NIfStatement);
-	TABLE_ADD(NImportStm);
-	TABLE_ADD(NLabelStatement);
-	TABLE_ADD(NLoopBranch);
-	TABLE_ADD(NLoopStatement);
-	TABLE_ADD(NMemberInitializer);
-	TABLE_ADD(NParameter);
-	TABLE_ADD(NReturnStatement);
-	TABLE_ADD(NStructDeclaration);
-	TABLE_ADD(NSwitchStatement);
-	TABLE_ADD(NVariableDecl);
-	TABLE_ADD(NVariableDeclGroup);
-	TABLE_ADD(NWhileStatement);
-	return table;
-}
-
-CGNStatement::classPtr* CGNStatement::vtable = CGNStatement::buildVTable();
-
 void CGNStatement::visit(NStatement* stm)
 {
-	(this->*vtable[NODEID_DIFF(stm->id(), NodeId::StartStatement)])(stm);
+	switch (stm->id()) {
+	VISIT_CASE(NAliasDeclaration, stm)
+	VISIT_CASE(NClassConstructor, stm)
+	VISIT_CASE(NClassDeclaration, stm)
+	VISIT_CASE(NClassDestructor, stm)
+	VISIT_CASE(NClassFunctionDecl, stm)
+	VISIT_CASE(NClassStructDecl, stm)
+	VISIT_CASE(NDeleteStatement, stm)
+	VISIT_CASE(NDestructorCall, stm)
+	VISIT_CASE(NEnumDeclaration, stm)
+	VISIT_CASE(NExpressionStm, stm)
+	VISIT_CASE(NForStatement, stm)
+	VISIT_CASE(NFunctionDeclaration, stm)
+	VISIT_CASE(NGlobalVariableDecl, stm)
+	VISIT_CASE(NGotoStatement, stm)
+	VISIT_CASE(NIfStatement, stm)
+	VISIT_CASE(NImportStm, stm)
+	VISIT_CASE(NLabelStatement, stm)
+	VISIT_CASE(NLoopBranch, stm)
+	VISIT_CASE(NLoopStatement, stm)
+	VISIT_CASE(NMemberInitializer, stm)
+	VISIT_CASE(NParameter, stm)
+	VISIT_CASE(NReturnStatement, stm)
+	VISIT_CASE(NStructDeclaration, stm)
+	VISIT_CASE(NSwitchStatement, stm)
+	VISIT_CASE(NVariableDecl, stm)
+	VISIT_CASE(NVariableDeclGroup, stm)
+	VISIT_CASE(NWhileStatement, stm)
+	default:
+		context.addError("NodeId::" + to_string(static_cast<int>(stm->id())) + " unrecognized in CGNStatement", nullptr);
+	}
 }
 
 void CGNStatement::visit(NStatementList* list)

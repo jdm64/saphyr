@@ -19,10 +19,6 @@
 
 class CGNInt
 {
-	typedef APSInt (CGNInt::*classPtr)(NIntLikeConst*);
-
-	static classPtr *vtable;
-
 	CodeContext& context;
 
 	explicit CGNInt(CodeContext& context)
@@ -35,8 +31,6 @@ class CGNInt
 	APSInt visitNCharConst(NCharConst*);
 
 	APSInt visit(NIntLikeConst*);
-
-	static classPtr* buildVTable();
 
 public:
 

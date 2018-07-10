@@ -25,46 +25,39 @@
 #include "CGNVariable.h"
 #include "Builder.h"
 
-#define TABLE_ADD(ID) table[NODEID_DIFF(NodeId::ID, NodeId::StartExpression)] = reinterpret_cast<classPtr>(&CGNExpression::visit##ID)
-#define TABLE_ADD2(ID, FUNC) table[NODEID_DIFF(NodeId::ID, NodeId::StartExpression)] = reinterpret_cast<classPtr>(&CGNExpression::visit##FUNC)
-
-CGNExpression::classPtr* CGNExpression::buildVTable()
-{
-	auto table = new CGNExpression::classPtr[NODEID_DIFF(NodeId::EndExpression, NodeId::StartExpression)];
-	TABLE_ADD2(NArrayVariable, NVariable);
-	TABLE_ADD2(NArrowOperator, NVariable);
-	TABLE_ADD2(NBaseVariable, NVariable);
-	TABLE_ADD2(NDereference, NVariable);
-	TABLE_ADD2(NMemberVariable, NVariable);
-	TABLE_ADD(NAddressOf);
-	TABLE_ADD(NAssignment);
-	TABLE_ADD(NBinaryMathOperator);
-	TABLE_ADD(NBoolConst);
-	TABLE_ADD(NCharConst);
-	TABLE_ADD(NCompareOperator);
-	TABLE_ADD(NExprVariable);
-	TABLE_ADD(NFloatConst);
-	TABLE_ADD(NFunctionCall);
-	TABLE_ADD(NIncrement);
-	TABLE_ADD(NIntConst);
-	TABLE_ADD(NLogicalOperator);
-	TABLE_ADD(NMemberFunctionCall);
-	TABLE_ADD(NNewExpression);
-	TABLE_ADD(NNullCoalescing);
-	TABLE_ADD(NNullPointer);
-	TABLE_ADD(NStringLiteral);
-	TABLE_ADD(NTernaryOperator);
-	TABLE_ADD(NUnaryMathOperator);
-	return table;
-}
-
-CGNExpression::classPtr* CGNExpression::vtable = CGNExpression::buildVTable();
-
 RValue CGNExpression::visit(NExpression* exp)
 {
 	if (!exp)
 		return RValue();
-	return (this->*vtable[NODEID_DIFF(exp->id(), NodeId::StartExpression)])(exp);
+	switch (exp->id()) {
+	VISIT_CASE2_RETURN(NArrayVariable, NVariable, exp)
+	VISIT_CASE2_RETURN(NArrowOperator, NVariable, exp)
+	VISIT_CASE2_RETURN(NBaseVariable, NVariable, exp)
+	VISIT_CASE2_RETURN(NDereference, NVariable, exp)
+	VISIT_CASE2_RETURN(NMemberVariable, NVariable, exp)
+	VISIT_CASE_RETURN(NAddressOf, exp)
+	VISIT_CASE_RETURN(NAssignment, exp)
+	VISIT_CASE_RETURN(NBinaryMathOperator, exp)
+	VISIT_CASE_RETURN(NBoolConst, exp)
+	VISIT_CASE_RETURN(NCharConst, exp)
+	VISIT_CASE_RETURN(NCompareOperator, exp)
+	VISIT_CASE_RETURN(NExprVariable, exp)
+	VISIT_CASE_RETURN(NFloatConst, exp)
+	VISIT_CASE_RETURN(NFunctionCall, exp)
+	VISIT_CASE_RETURN(NIncrement, exp)
+	VISIT_CASE_RETURN(NIntConst, exp)
+	VISIT_CASE_RETURN(NLogicalOperator, exp)
+	VISIT_CASE_RETURN(NMemberFunctionCall, exp)
+	VISIT_CASE_RETURN(NNewExpression, exp)
+	VISIT_CASE_RETURN(NNullCoalescing, exp)
+	VISIT_CASE_RETURN(NNullPointer, exp)
+	VISIT_CASE_RETURN(NStringLiteral, exp)
+	VISIT_CASE_RETURN(NTernaryOperator, exp)
+	VISIT_CASE_RETURN(NUnaryMathOperator, exp)
+	default:
+		context.addError("NodeId::" + to_string(static_cast<int>(exp->id())) + " unrecognized in CGNExpression", *exp);
+		return RValue();
+	}
 }
 
 void CGNExpression::visit(NExpressionList* list)
