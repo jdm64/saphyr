@@ -1,4 +1,6 @@
 
+// nofmt
+
 import "../files/Opaque.syp";
 
 void byStack()
@@ -34,13 +36,13 @@ void testError()
 
 ========
 
-negative/Opaque.syp:6: can't create variable for an unsized type: MyClass
-negative/Opaque.syp:7: can't create variable for an unsized type: MyStruct
-negative/Opaque.syp:8: can't create variable for an unsized type: MyUnion
-negative/Opaque.syp:13: can't call new on MyClass type
-negative/Opaque.syp:14: can't call new on MyStruct type
-negative/Opaque.syp:15: can't call new on MyUnion type
-negative/Opaque.syp:26: can't create variable for an unsized type: Nothing
-negative/Opaque.syp:29: Empty doesn't have member a
-negative/Opaque.syp:32: Nothing doesn't have member b
+negative/Opaque.syp:8: can't create variable for an unsized type: MyClass
+negative/Opaque.syp:9: can't create variable for an unsized type: MyStruct
+negative/Opaque.syp:10: can't create variable for an unsized type: MyUnion
+negative/Opaque.syp:15: can't call new on MyClass type
+negative/Opaque.syp:16: can't call new on MyStruct type
+negative/Opaque.syp:17: can't call new on MyUnion type
+negative/Opaque.syp:28: can't create variable for an unsized type: Nothing
+negative/Opaque.syp:31: Empty doesn't have member a
+negative/Opaque.syp:34: Nothing doesn't have member b
 found 9 errors

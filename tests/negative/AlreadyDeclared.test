@@ -18,7 +18,10 @@ struct Color
 
 alias MyType = int;
 
-enum MyType { A, B }
+enum MyType
+{
+	A, B
+}
 
 ========
 

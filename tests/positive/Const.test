@@ -1,5 +1,9 @@
 
-struct S { int a; @int b; }
+struct S
+{
+	int a;
+	@int b;
+}
 
 void foo()
 {
@@ -9,7 +13,7 @@ void foo()
 	int c = a + b;
 }
 
-int zzz(const int a)
+const int zzz(const int a)
 {
 	return a + 4;
 }
@@ -21,7 +25,7 @@ void bar()
 	a.b@ = 4;
 
 	int k;
-	zzz(k);
+	auto n = zzz(k);
 }
 
 void constPtr()
@@ -62,6 +66,8 @@ define void @bar() {
   %k = alloca i32
   %3 = load i32, i32* %k
   %4 = call i32 @zzz(i32 %3)
+  %n = alloca i32
+  store i32 %4, i32* %n
   ret void
 }
 

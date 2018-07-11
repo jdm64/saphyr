@@ -1,11 +1,14 @@
 
 class Foo
 {
-	struct this {
+	struct this
+	{
 		int a;
 	}
 
-	void run() {}
+	void run()
+	{
+	}
 
 	#[static]
 	void bar(int v)
@@ -37,10 +40,10 @@ void bla()
 
 ========
 
-negative/StaticClass.syp:13: use of class member invalid in static function
-negative/StaticClass.syp:14: use of class member invalid in static function
-negative/StaticClass.syp:20: unable to call non-static class function from a static function
-negative/StaticClass.syp:21: use of class member invalid in static function
-negative/StaticClass.syp:34: unable to call non-static class function from a static function
-negative/StaticClass.syp:35: cannot access member variable from a static context
+negative/StaticClass.syp:16: use of class member invalid in static function
+negative/StaticClass.syp:17: use of class member invalid in static function
+negative/StaticClass.syp:23: unable to call non-static class function from a static function
+negative/StaticClass.syp:24: use of class member invalid in static function
+negative/StaticClass.syp:37: unable to call non-static class function from a static function
+negative/StaticClass.syp:38: cannot access member variable from a static context
 found 6 errors

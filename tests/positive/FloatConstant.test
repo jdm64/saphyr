@@ -1,4 +1,6 @@
 
+// nofmt
+
 int main()
 {
 	auto a = 1.0, b = 2.1_f, c = 3.2_d, d = 4.3e5, e = 5.4E-6;

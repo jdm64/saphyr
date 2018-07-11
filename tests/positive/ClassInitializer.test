@@ -1,21 +1,35 @@
 
 class Base
 {
-	struct this { int i; }
+	struct this
+	{
+		int i;
+	}
 
-	this(int iVal)  i{iVal} { i = 4; }
+	this(int iVal)
+	i{iVal}
+	{
+		i = 4;
+	}
 }
 
 class Base2
 {
-	struct this { int i; }
+	struct this
+	{
+		int i;
+	}
 
-	this() i{4} {}
+	this()
+	i{4}
+	{
+	}
 }
 
 class Init
 {
-	struct this {
+	struct this
+	{
 		int a;
 		Base b;
 		Base2 c;
@@ -23,12 +37,17 @@ class Init
 
 	this()
 	a{4}, b{1}, c{}
-	{ a = 3; }
+	{
+		a = 3;
+	}
 }
 
 class Default
 {
-	struct this { Base2 b; }
+	struct this
+	{
+		Base2 b;
+	}
 }
 
 ========

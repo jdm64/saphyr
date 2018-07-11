@@ -1,7 +1,8 @@
 
 class Test
 {
-	struct this {
+	struct this
+	{
 		int a;
 	}
 
@@ -10,14 +11,26 @@ class Test
 		a = 4;
 	}
 
-	~this() {}
-	~this() {}
+	~this()
+	{
+	}
+
+	~this()
+	{
+	}
 }
 
 class Bad
 {
-	struct this { int a; }
-	struct this { int b; }
+	struct this
+	{
+		int a;
+	}
+
+	struct this
+	{
+		int b;
+	}
 
 	int a(int one)
 	{
@@ -50,7 +63,8 @@ void func2()
 
 class Good
 {
-	struct this {
+	struct this
+	{
 		int notFunc;
 	}
 
@@ -63,17 +77,17 @@ class Good
 
 ========
 
-negative/Class.syp:14: only one destructor allowed in a class
-negative/Class.syp:20: only one struct allowed in a class
-negative/Class.syp:17: type with name Bad already declared
-negative/Class.syp:22: class Bad already defines symbol a
-negative/Class.syp:32: member function call requires class or class pointer
-negative/Class.syp:34: member function call requires class or class pointer
-negative/Class.syp:36: variable x not declared
-negative/Class.syp:42: use of 'this' is only valid inside of a class
-negative/Class.syp:44: class Test has no symbol nothing
-negative/Class.syp:46: argument count for Test_run function invalid, 2 arguments given, but 1 required.
-negative/Class.syp:48: class Test has no symbol bad
-negative/Class.syp:59: function or function pointer expected
-negative/Class.syp:60: function or function pointer expected
+negative/Class.syp:18: only one destructor allowed in a class
+negative/Class.syp:30: only one struct allowed in a class
+negative/Class.syp:23: type with name Bad already declared
+negative/Class.syp:35: class Bad already defines symbol a
+negative/Class.syp:45: member function call requires class or class pointer
+negative/Class.syp:47: member function call requires class or class pointer
+negative/Class.syp:49: variable x not declared
+negative/Class.syp:55: use of 'this' is only valid inside of a class
+negative/Class.syp:57: class Test has no symbol nothing
+negative/Class.syp:59: argument count for Test_run function invalid, 2 arguments given, but 1 required.
+negative/Class.syp:61: class Test has no symbol bad
+negative/Class.syp:73: function or function pointer expected
+negative/Class.syp:74: function or function pointer expected
 found 13 errors

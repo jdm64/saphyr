@@ -1,5 +1,8 @@
 
-enum Colors { RED, BLUE }
+enum Colors
+{
+	RED, BLUE
+}
 
 int foo()
 {
@@ -23,9 +26,9 @@ int main()
 
 ========
 
-negative/NIncrement.syp:14: Increment/Decrement invalid for function pointer
-negative/NIncrement.syp:15: Increment/Decrement invalid for function pointer
-negative/NIncrement.syp:17: Increment/Decrement invalid for enum type
-negative/NIncrement.syp:18: Increment/Decrement invalid for enum type
-negative/NIncrement.syp:19: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:17: Increment/Decrement invalid for function pointer
+negative/NIncrement.syp:18: Increment/Decrement invalid for function pointer
+negative/NIncrement.syp:20: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:21: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:22: Increment/Decrement invalid for enum type
 found 5 errors

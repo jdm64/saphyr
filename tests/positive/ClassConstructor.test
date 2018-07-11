@@ -9,7 +9,10 @@ class Empty
 
 class MyClass
 {
-	struct this { int a, b; }
+	struct this
+	{
+		int a, b;
+	}
 
 	this()
 	{

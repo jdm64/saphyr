@@ -11,7 +11,10 @@ struct S
 
 class C
 {
-	struct this { int f; }
+	struct this
+	{
+		int f;
+	}
 }
 
 void func2()
@@ -27,7 +30,7 @@ void func2()
 
 ========
 
-negative/ClassFuncPtr.syp:23: function or function pointer expected
-negative/ClassFuncPtr.syp:24: function or function pointer expected
-negative/ClassFuncPtr.syp:25: function or function pointer expected
+negative/ClassFuncPtr.syp:26: function or function pointer expected
+negative/ClassFuncPtr.syp:27: function or function pointer expected
+negative/ClassFuncPtr.syp:28: function or function pointer expected
 found 3 errors

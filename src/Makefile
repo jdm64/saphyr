@@ -23,15 +23,27 @@ endif
 
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
 CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__
-LDFLAGS = -lboost_program_options -lboost_filesystem -lboost_system `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version` $(COV_LD)
-TARGET = ../saphyr
+LDFLAGS = -lboost_program_options -lboost_filesystem -lboost_system $(COV_LD)
+COMPILER_LDFLAGS = $(LDFLAGS) `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version`
+COMPILER = ../saphyr
+FORMATTER = ../syfmt
 
-objs = parser.o scanner.o Util.o Type.o Value.o Instructions.o Builder.o CGNInt.o CGNDataType.o \
+objs = parser.o scanner.o Util.o
+
+compiler_objs = $(objs) Type.o Value.o Instructions.o Builder.o CGNInt.o CGNDataType.o \
 	CGNVariable.o CGNExpression.o CGNStatement.o CGNImportStm.o Pass.o ModuleWriter.o \
 	CGNImportList.o main.o
 
-compiler : frontend $(objs)
-	$(CXX) $(objs) -o $(TARGET) $(LDFLAGS)
+fmt_objs = $(objs) format/WriterUtil.o format/FMNDataType.o format/FMNExpression.o \
+	format/FMNStatement.o format/fmtMain.o
+
+all : formatter compiler
+
+compiler : frontend $(compiler_objs)
+	$(CXX) $(compiler_objs) -o $(COMPILER) $(COMPILER_LDFLAGS)
+
+formatter : frontend $(fmt_objs)
+	$(CXX) $(fmt_objs) -o $(FORMATTER) $(LDFLAGS)
 
 frontend : parser.cpp scanner.cpp
 
@@ -59,7 +71,7 @@ scanner.cpp : Scanner.l parser.cpp
 	sed -i -e '/insert class_h/a\#define SAVE_TOKEN sval->t_tok = new Token(matched(), filename(), lineNr());' scanner.ih
 
 clean :
-	rm -f $(TARGET) *.o *~
+	rm -f $(COMPILER) $(FORMATTER) *.o *~ format/*.o format/*~
 
 frontend-clean :
 	rm -f parser* scanner*
@@ -75,7 +87,7 @@ cppcheck :
 analyze : clean
 	scan-build$(LLVM_VER) make compiler
 
-tests : compiler
+tests : all
 	cd ../tests; ./unitTest.py $(UNITTEST_ARG)
 
 docker-dev :

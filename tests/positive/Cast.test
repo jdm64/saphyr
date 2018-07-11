@@ -1,4 +1,6 @@
 
+// nofmt
+
 struct Foo { int a; }
 
 void func()

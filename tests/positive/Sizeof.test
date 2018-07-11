@@ -8,7 +8,8 @@ struct S
 
 class ZZ
 {
-	struct this {
+	struct this
+	{
 		[24]int8 a;
 	}
 

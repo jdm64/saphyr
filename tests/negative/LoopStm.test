@@ -1,9 +1,8 @@
 
 void foo()
 {
-	loop {
+	loop
 		redo;
-	}
 }
 
 ========

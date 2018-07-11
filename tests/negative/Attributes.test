@@ -2,10 +2,14 @@
 class Test
 {
 	#[bla, bla]
-	void foo() {}
+	void foo()
+	{
+	}
 
 	#[bla("one", "two")]
-	void bar() {}
+	void bar()
+	{
+	}
 }
 
 ========

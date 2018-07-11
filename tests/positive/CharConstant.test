@@ -1,8 +1,7 @@
 
 int excape()
 {
-	auto a = '\0', b = '\a', c = '\b', d = '\e', e = '\f',
-		f = '\n', g = '\r', h = '\t', i = '\v';
+	auto a = '\0', b = '\a', c = '\b', d = '\e', e = '\f', f = '\n', g = '\r', h = '\t', i = '\v';
 	return d / c;
 }
 

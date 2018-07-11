@@ -1,4 +1,6 @@
 
+// nofmt
+
 import "../files/Opaque.syp";
 
 #[opaque]
@@ -8,7 +10,8 @@ struct Simple;
 struct File {}
 
 #[opaque]
-struct Fake {
+struct Fake
+{
 	int a, b;
 }
 

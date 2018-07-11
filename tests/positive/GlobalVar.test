@@ -1,4 +1,6 @@
 
+// nofmt
+
 struct MyStruct
 {
 	int a, b;

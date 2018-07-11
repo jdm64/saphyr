@@ -11,7 +11,10 @@ class A
 
 class B
 {
-	struct this { A a; }
+	struct this
+	{
+		A a;
+	}
 
 	~this()
 	{
@@ -21,12 +24,18 @@ class B
 
 class C
 {
-	struct this { A a; }
+	struct this
+	{
+		A a;
+	}
 }
 
 class D
 {
-	struct this { @[]int p; }
+	struct this
+	{
+		@[]int p;
+	}
 
 	~this()
 	{

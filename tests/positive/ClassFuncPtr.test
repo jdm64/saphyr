@@ -11,9 +11,14 @@ struct S
 
 class C
 {
-	struct this { @()void f; }
+	struct this
+	{
+		@()void f;
+	}
 
-	void func() {}
+	void func()
+	{
+	}
 }
 
 void func2()

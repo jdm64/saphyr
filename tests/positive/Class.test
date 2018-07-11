@@ -1,7 +1,8 @@
 
 class Test
 {
-	struct this {
+	struct this
+	{
 		int a;
 		int b;
 	}

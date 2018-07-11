@@ -2,9 +2,8 @@
 @[4]int newArr(int val)
 {
 	auto p = new [4]int;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++)
 		p[i] = val;
-	}
 	return p;
 }
 

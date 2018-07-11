@@ -20,9 +20,11 @@ import os, sys, fnmatch, re, codecs
 from subprocess import call, Popen, PIPE
 
 SAPHYR_BIN = "../saphyr"
+SYFMT_BIN = "../syfmt"
 ENCODING = "utf-8"
 TEST_EXT = ".test"
 SYP_EXT = ".syp"
+FMT_EXT = ".syp.txt"
 LL_EXT = ".ll"
 ERR_EXT = ".err"
 EXP_EXT = ".exp"
@@ -99,7 +101,7 @@ class TestCase:
 			tstF.write(expF.read())
 
 	def clean(self):
-		ext_list = [SYP_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT, BC_EXT]
+		ext_list = [SYP_EXT, FMT_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT, BC_EXT]
 		Cmd(["rm"] + [self.basename + ext for ext in ext_list])
 
 	def patchAsm(self, file):
@@ -129,11 +131,38 @@ class TestCase:
 			log.write(p.err)
 			log.write(p.out)
 
+	def runFmt(self):
+		with open(self.srcFile, "r") as file:
+			line = file.readline()
+			line += file.readline()
+		if line.find("nofmt") != -1:
+			return False, None
+
+		proc = Cmd([SYFMT_BIN, self.srcFile])
+		if proc.ext < 0:
+			self.writeLog(proc)
+			return True, "[crash format]"
+		elif proc.ext > 0:
+			return False, None
+
+		fmtFile = self.srcFile + ".txt"
+		with open(fmtFile, "w") as file:
+			file.write(proc.out)
+		proc = Cmd(["diff", "-uwB", self.srcFile, fmtFile])
+		if proc.ext != 0:
+			self.writeLog(proc)
+			return True, "[fail format]"
+		return False, None
+
 	def runExe(self):
+		ret = self.runFmt()
+		if ret[0]:
+			return ret
+
 		proc = Cmd([SAPHYR_BIN, "--llvmir", self.srcFile])
 		if proc.ext < 0:
 			self.writeLog(proc)
-			return True, "[crash]"
+			return True, "[crash compile]"
 		elif proc.ext == 0:
 			actual = self.llFile
 			self.fixIR()
@@ -152,7 +181,7 @@ class TestCase:
 			return False, "[updated]"
 		else:
 			self.writeLog(proc)
-			return True, "[output differs]"
+			return True, "[fail compile]"
 
 	def run(self):
 		if self.createFiles():

@@ -31,6 +31,11 @@ public:
 	{
 		return false;
 	}
+
+	virtual bool isBlockStmt() const
+	{
+		return false;
+	}
 };
 
 typedef NodeList<NStatement> NStatementList;
@@ -1146,6 +1151,11 @@ public:
 	NConditionStmt(NExpression* condition, NStatementList* body)
 	: condition(condition), body(body) {}
 
+	bool isBlockStmt() const
+	{
+		return true;
+	}
+
 	NExpression* getCond() const
 	{
 		return condition;
@@ -1253,6 +1263,11 @@ class NSwitchStatement : public NStatement
 public:
 	NSwitchStatement(NExpression* value, NSwitchCaseList* cases)
 	: value(value), cases(cases) {}
+
+	bool isBlockStmt() const
+	{
+		return true;
+	}
 
 	NExpression* getValue() const
 	{

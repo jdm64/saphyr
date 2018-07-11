@@ -2,11 +2,10 @@
 void func()
 {
 	int x = 9;
-	if (x == 4) {
+	if (x == 4)
 		break;
-	} else {
+	else
 		continue;
-	}
 }
 
 void run()
@@ -22,6 +21,6 @@ lb:
 
 negative/Branch.syp:6: break invalid outside a loop/switch block
 negative/Branch.syp:8: continue invalid outside a loop/switch block
-negative/Branch.syp:17: label lb already defined
-negative/Branch.syp:16: label notfound not defined
+negative/Branch.syp:16: label lb already defined
+negative/Branch.syp:15: label notfound not defined
 found 4 errors

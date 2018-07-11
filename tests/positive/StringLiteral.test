@@ -1,4 +1,6 @@
 
+// nofmt
+
 auto gA = "global string";
 
 int main()

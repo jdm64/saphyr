@@ -1,4 +1,6 @@
 
+// nofmt
+
 void intFunc()
 {
 	auto a = 9, b = 8_i8, c = 7_i16, d = 6_i32, e = 5_i64;

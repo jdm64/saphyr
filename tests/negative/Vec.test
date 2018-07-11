@@ -4,11 +4,10 @@ void castVec()
 	vec<2,int8> a;
 	vec<3,int> b;
 
-	if (a) {
+	if (a)
 		auto c = a + b;
-	} else {
+	else
 		a++;
-	}
 }
 
 int func()
@@ -25,7 +24,7 @@ int func()
 negative/Vec.syp:7: Cannot cast vec to bool ( vec<2,int8> to bool )
 negative/Vec.syp:8: can not cast vec types of different sizes
 negative/Vec.syp:8: can not cast vec types of different sizes
-negative/Vec.syp:16: vec size must be greater than 0
+negative/Vec.syp:15: vec size must be greater than 0
+negative/Vec.syp:16: vec type only supports numeric and pointer types
 negative/Vec.syp:17: vec type only supports numeric and pointer types
-negative/Vec.syp:18: vec type only supports numeric and pointer types
 found 6 errors

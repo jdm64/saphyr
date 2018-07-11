@@ -1,4 +1,6 @@
 
+// nofmt
+
 void func1(int x)
 {
 	while (x < 4)
