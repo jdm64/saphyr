@@ -527,7 +527,7 @@ public:
 
 	bool hasInit() const
 	{
-		return initExp;
+		return initExp || initList;
 	}
 
 	NExpression* getInitExp() const
