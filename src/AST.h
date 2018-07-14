@@ -93,10 +93,11 @@ class NConstant : public NExpression
 {
 protected:
 	Token* value;
+	string strVal;
 
 public:
-	explicit NConstant(Token* token)
-	: value(token) {}
+	explicit NConstant(Token* token, string strVal)
+	: value(token), strVal(strVal) {}
 
 	operator Token*() const
 	{
@@ -120,7 +121,7 @@ public:
 
 	const string& getStrVal() const
 	{
-		return value->str;
+		return strVal;
 	}
 
 	static vector<string> getValueAndSuffix(const string& value)
@@ -142,7 +143,7 @@ class NNullPointer : public NConstant
 {
 public:
 	explicit NNullPointer(Token* token)
-	: NConstant(token) {}
+	: NConstant(token, token->str) {}
 
 	ADD_ID(NNullPointer)
 };
@@ -151,9 +152,9 @@ class NStringLiteral : public NConstant
 {
 public:
 	explicit NStringLiteral(Token* str)
-	: NConstant(str)
+	: NConstant(str, str->str)
 	{
-		Token::unescape(str->str);
+		Token::unescape(strVal);
 	}
 
 	ADD_ID(NStringLiteral)
@@ -163,7 +164,7 @@ class NIntLikeConst : public NConstant
 {
 public:
 	explicit NIntLikeConst(Token* token)
-	: NConstant(token) {}
+	: NConstant(token, token->str) {}
 
 	bool isIntConst() const
 	{
@@ -193,7 +194,7 @@ public:
 	explicit NCharConst(Token* charStr)
 	: NIntLikeConst(charStr)
 	{
-		value->str = value->str.substr(1, value->str.length() - 2);
+		strVal = value->str.substr(1, value->str.length() - 2);
 	}
 
 	ADD_ID(NCharConst)
@@ -207,7 +208,7 @@ public:
 	NIntConst(Token* value, int base = 10)
 	: NIntLikeConst(value), base(base)
 	{
-		Token::remove(value->str);
+		Token::remove(strVal);
 	}
 
 	int getBase() const
@@ -222,9 +223,9 @@ class NFloatConst : public NConstant
 {
 public:
 	explicit NFloatConst(Token* value)
-	: NConstant(value)
+	: NConstant(value, value->str)
 	{
-		Token::remove(value->str);
+		Token::remove(strVal);
 	}
 
 	ADD_ID(NFloatConst)

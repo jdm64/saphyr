@@ -294,17 +294,20 @@ string FMNExpression::visitNNullPointer(NNullPointer* exp)
 
 string FMNExpression::visitNStringLiteral(NStringLiteral* exp)
 {
-	return "\"" + exp->getStrVal() + "\"";
+	Token* token = *exp;
+	return token->str;
 }
 
 string FMNExpression::visitNIntConst(NIntConst* exp)
 {
-	return exp->getStrVal();
+	Token* token = *exp;
+	return token->str;
 }
 
 string FMNExpression::visitNFloatConst(NFloatConst* exp)
 {
-	return exp->getStrVal();
+	Token* token = *exp;
+	return token->str;
 }
 
 string FMNExpression::visitNCharConst(NCharConst* exp)
