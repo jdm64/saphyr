@@ -101,9 +101,12 @@ string FMNExpression::visitNArrowOperator(NArrowOperator* exp)
 		break;
 	}
 	line += "->" + exp->getName()->str;
-	auto arg = exp->getArg();
-	if (arg) {
-		line += "(" + FMNDataType::run(context, exp->getArg()) + ")";
+	auto args = exp->getArgs();
+	if (args) {
+		line += "(";
+		for (auto arg : *args)
+			line += FMNDataType::run(context, arg);
+		line += ")";
 	}
 	return line;
 }

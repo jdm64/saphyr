@@ -1,7 +1,8 @@
 
-// nofmt
-
-struct Foo { int a; }
+struct Foo
+{
+	int a;
+}
 
 void func()
 {

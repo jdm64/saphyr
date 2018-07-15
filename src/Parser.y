@@ -60,7 +60,7 @@
 // integer constant
 %type <t_const_int> integer_constant
 // data types
-%type <t_dtype> data_type base_type explicit_data_type arrow_argument
+%type <t_dtype> data_type base_type explicit_data_type
 // parameter
 %type <t_param> parameter
 // variable
@@ -97,7 +97,7 @@
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
 %type <t_caslist> switch_case_list
-%type <t_typelist> data_type_list
+%type <t_typelist> data_type_list arrow_argument
 %type <t_var_dec_list> variable_declarations_list variable_declarations_list_or_empty struct_body
 %type <t_initlist> class_initializer_list
 %type <t_attrlist> attribute_list attribute_declaration optional_attribute_declaration
@@ -860,11 +860,7 @@ arrow_argument
 	{
 		$$ = nullptr;
 	}
-	| '(' ')'
-	{
-		$$ = nullptr;
-	}
-	| '(' data_type ')'
+	| '(' data_type_list ')'
 	{
 		$$ = $2;
 	}

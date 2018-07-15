@@ -1692,14 +1692,14 @@ private:
 	NDataType* dtype;
 	NExpression* exp;
 	Token* name;
-	NDataType* arg;
+	NDataTypeList* args;
 
 public:
-	NArrowOperator(NDataType* dtype, Token* name, NDataType* arg)
-	: type(DATA), dtype(dtype), exp(nullptr), name(name), arg(arg) {}
+	NArrowOperator(NDataType* dtype, Token* name, NDataTypeList* args)
+	: type(DATA), dtype(dtype), exp(nullptr), name(name), args(args) {}
 
-	NArrowOperator(NExpression* exp, Token* name, NDataType* arg)
-	: type(EXP), dtype(nullptr), exp(exp), name(name), arg(arg) {}
+	NArrowOperator(NExpression* exp, Token* name, NDataTypeList* args)
+	: type(EXP), dtype(nullptr), exp(exp), name(name), args(args) {}
 
 	OfType getType() const
 	{
@@ -1721,9 +1721,9 @@ public:
 		return name;
 	}
 
-	NDataType* getArg() const
+	NDataTypeList* getArgs() const
 	{
-		return arg;
+		return args;
 	}
 
 	operator Token*() const
@@ -1745,7 +1745,7 @@ public:
 		delete dtype;
 		delete exp;
 		delete name;
-		delete arg;
+		delete args;
 	}
 
 	ADD_ID(NArrowOperator)

@@ -122,8 +122,8 @@ RValue CGNVariable::visitNArrowOperator(NArrowOperator* exp)
 
 RValue CGNVariable::MutCast(NArrowOperator* exp)
 {
-	auto arg = exp->getArg();
-	if (arg) {
+	auto args = exp->getArgs();
+	if (args && args->size() != 0) {
 		context.addError("mut operator takes no arguments", *exp);
 		return RValue();
 	} else if (exp->getType() == NArrowOperator::DATA) {

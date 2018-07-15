@@ -157,15 +157,18 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 
 RValue Inst::CastAs(CodeContext& context, NArrowOperator* exp)
 {
-	auto toType = exp->getArg();
-	if (!toType) {
+	auto args = exp->getArgs();
+	if (!args) {
 		context.addError("as operator requires type argument", *exp);
+		return RValue();
+	} else if (args->size() != 1) {
+		context.addError("as operator takes only one type argument", *exp);
 		return RValue();
 	} else if (exp->getType() == NArrowOperator::DATA) {
 		context.addError("as operator only operates on expression", *exp);
 		return RValue();
 	}
-	auto to = CGNDataType::run(context, toType);
+	auto to = CGNDataType::run(context, args->at(0));
 	if (!to)
 		return RValue();
 	auto expr = CGNExpression::run(context, exp->getExp());
@@ -433,7 +436,7 @@ RValue Inst::SizeOf(CodeContext& context, Token* name)
 
 RValue Inst::SizeOf(CodeContext& context, NArrowOperator* exp)
 {
-	if (exp->getArg()) {
+	if (exp->getArgs() && exp->getArgs()->size() != 0) {
 		context.addError("size operator takes no arguments", *exp);
 		return RValue();
 	}
