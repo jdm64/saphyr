@@ -1,13 +1,13 @@
 
-// nofmt
-
 import "../files/Opaque.syp";
 
 #[opaque]
 struct Simple;
 
 #[opaque]
-struct File {}
+struct File
+{
+}
 
 #[opaque]
 struct Fake
@@ -17,7 +17,9 @@ struct Fake
 
 class Empty;
 
-class Empty2 {}
+class Empty2
+{
+}
 
 int main()
 {

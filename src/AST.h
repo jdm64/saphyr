@@ -994,13 +994,22 @@ public:
 	NClassDeclaration(Token* name, NClassMemberList* list, NAttributeList* attrs)
 	: NDeclaration(name), list(list), attrs(attrs)
 	{
-		for (auto i : *list)
-			i->setClass(this);
+		if (list) {
+			for (auto i : *list)
+				i->setClass(this);
+		}
 	}
 
-	NClassMemberList* getList() const
+	NClassMemberList* getMembers() const
 	{
 		return list;
+	}
+
+	void setMembers(NClassMemberList* members)
+	{
+		if (list)
+			delete list;
+		list = members;
 	}
 
 	NAttributeList* getAttrs() const

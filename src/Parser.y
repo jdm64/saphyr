@@ -158,7 +158,7 @@ class_declaration
 class_body
 	: ';'
 	{
-		$$ = new NClassMemberList;
+		$$ = nullptr;
 	}
 	| '{' '}'
 	{
@@ -277,7 +277,7 @@ struct_declaration
 struct_body
 	: ';'
 	{
-		$$ = new NVariableDeclGroupList;
+		$$ = nullptr;
 	}
 	| '{' variable_declarations_list_or_empty '}'
 	{

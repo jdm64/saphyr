@@ -139,7 +139,7 @@ void FMNStatement::visitNStructDeclaration(NStructDeclaration* stm)
 		break;
 	}
 	context.addLine(type + " " + stm->getName()->str);
-	if (stm->getVars()->empty()) {
+	if (!stm->getVars()) {
 		context.add(";");
 		return;
 	}
@@ -220,9 +220,13 @@ void FMNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 	context.addLine("");;
 	WriterUtil::writeAttr(context, stm->getAttrs());
 	context.addLine("class " + stm->getName()->str);
+	if (!stm->getMembers()) {
+		context.add(";");
+		return;
+	}
 	context.addLine("{");
 	context.indent();
-	for (auto item : *stm->getList()) {
+	for (auto item : *stm->getMembers()) {
 		visit(item);
 	}
 	context.undent();

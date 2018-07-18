@@ -173,23 +173,27 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 	int structIdx = -1;
 	int constrIdx = -1;
 	int destrtIdx = -1;
-	for (int i = 0; i < stm->getList()->size(); i++) {
-		switch (stm->getList()->at(i)->memberType()) {
+	if (!stm->getMembers())
+		stm->setMembers(new NClassMemberList);
+	auto members = stm->getMembers();
+	auto size = members ? members->size() : 0;
+	for (int i = 0; i < size; i++) {
+		switch (members->at(i)->memberType()) {
 		case NClassMember::MemberType::STRUCT:
 			if (structIdx > -1)
-				context.addError("only one struct allowed in a class", stm->getList()->at(i)->getName());
+				context.addError("only one struct allowed in a class", members->at(i)->getName());
 			else
 				structIdx = i;
 			break;
 		case NClassMember::MemberType::CONSTRUCTOR:
 			if (constrIdx > -1)
-				context.addError("only one constructor allowed in a class", stm->getList()->at(i)->getName());
+				context.addError("only one constructor allowed in a class", members->at(i)->getName());
 			else
 				constrIdx = i;
 			break;
 		case NClassMember::MemberType::DESTRUCTOR:
 			if (destrtIdx > -1)
-				context.addError("only one destructor allowed in a class", stm->getList()->at(i)->getName());
+				context.addError("only one destructor allowed in a class", members->at(i)->getName());
 			else
 				destrtIdx = i;
 			break;
@@ -205,18 +209,18 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 		structDecl->setClass(stm);
 		varList->add(new NVariableDecl(new Token));
 		group->add(new NVariableDeclGroup(new NBaseType(nullptr, ParserBase::TT_INT8), varList));
-		stm->getList()->add(structDecl);
-		structIdx = stm->getList()->size() - 1;
+		members->add(structDecl);
+		structIdx = members->size() - 1;
 	}
 	if (constrIdx < 0) {
 		auto constr = new NClassConstructor(new Token("this"), new NParameterList, new NInitializerList, new NStatementList);
 		constr->setClass(stm);
-		stm->getList()->add(constr);
+		members->add(constr);
 	}
 	if (destrtIdx < 0) {
 		auto destr = new NClassDestructor(new Token, new NStatementList);
 		destr->setClass(stm);
-		stm->getList()->add(destr);
+		members->add(destr);
 	}
 	visitor(structIdx);
 }
@@ -360,8 +364,10 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 	vector<pair<string, SType*> > structVars;
 	set<string> memberNames;
 	bool valid = true;
-	for (auto item : *list)
-		valid &= addMembers(item, structVars, memberNames, context);
+	if (list) {
+		for (auto item : *list)
+			valid &= addMembers(item, structVars, memberNames, context);
+	}
 	if (valid) {
 		switch (ctype) {
 		case NStructDeclaration::CreateType::STRUCT:

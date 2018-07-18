@@ -204,13 +204,13 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 {
 	Builder::CreateClass(context, stm, [=](int structIdx){
-		visit(stm->getList()->at(structIdx));
+		visit(stm->getMembers()->at(structIdx));
 		context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName()->str)));
 
-		for (int i = 0; i < stm->getList()->size(); i++) {
+		for (int i = 0; i < stm->getMembers()->size(); i++) {
 			if (i == structIdx)
 				continue;
-			visit(stm->getList()->at(i));
+			visit(stm->getMembers()->at(i));
 		}
 		context.setClass(nullptr);
 	});
