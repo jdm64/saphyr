@@ -1,7 +1,7 @@
 
 enum Colors
 {
-	RED, ORANGE = 5, YELLOW, GREEN = 2, BLUE = 7, PURPLE
+	RED, ORANGE = 5, YELLOW, GREEN = 2, BLUE{7}, PURPLE
 }
 
 enum Dir<uint8>

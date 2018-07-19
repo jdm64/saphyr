@@ -401,8 +401,21 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 			valid = false;
 			continue;
 		}
-		if (item->hasInit()) {
-			auto initExp = item->getInitExp();
+
+		NExpression* initExp = nullptr;
+		if (item->getInitExp()) {
+			initExp = item->getInitExp();
+		} else if (item->getInitList()) {
+			auto initList = item->getInitList();
+			if (initList->size() != 1) {
+				context.addError("enum initializer list only supports a single value", item->getName());
+				valid = false;
+				continue;
+			}
+			initExp = initList->at(0);
+		}
+
+		if (initExp) {
 			if (!initExp->isConstant()) {
 				context.addError("enum initializer must be a constant", *item->getInitExp());
 				valid = false;
