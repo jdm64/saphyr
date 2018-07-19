@@ -251,7 +251,7 @@ void CGNStatement::visitNLoopStatement(NLoopStatement* stm)
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
-	context.popLoopBranchBlocks();
+	context.popLoopBranchBlocks(BranchType::BREAK | BranchType::CONTINUE);
 }
 
 void CGNStatement::visitNWhileStatement(NWhileStatement* stm)
@@ -277,7 +277,7 @@ void CGNStatement::visitNWhileStatement(NWhileStatement* stm)
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
-	context.popLoopBranchBlocks();
+	context.popLoopBranchBlocks(BranchType::BREAK | BranchType::CONTINUE | BranchType::REDO);
 }
 
 void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
@@ -323,7 +323,7 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	BranchInst::Create(endBlock, context);
 
 	context.popLocalTable();
-	context.popBreakBlock();
+	context.popLoopBranchBlocks(BranchType::BREAK);
 	context.pushBlock(endBlock);
 }
 
@@ -352,7 +352,7 @@ void CGNStatement::visitNForStatement(NForStatement* stm)
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
-	context.popLoopBranchBlocks();
+	context.popLoopBranchBlocks(BranchType::BREAK | BranchType::CONTINUE | BranchType::REDO);
 }
 
 void CGNStatement::visitNIfStatement(NIfStatement* stm)

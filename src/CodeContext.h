@@ -32,6 +32,8 @@
 using namespace boost::program_options;
 using namespace boost::filesystem;
 
+enum BranchType { BREAK = 1, CONTINUE = 1 << 1, REDO = 1 << 2 };
+
 struct LabelBlock
 {
 	BasicBlock* block;
@@ -276,10 +278,7 @@ public:
 		continueBlocks.push_back(block);
 		return block;
 	}
-	void popContinueBlock()
-	{
-		continueBlocks.pop_back();
-	}
+
 	BasicBlock* getContinueBlock(int level = 1) const
 	{
 		return loopBranchLevel(continueBlocks, level);
@@ -291,10 +290,7 @@ public:
 		breakBlocks.push_back(block);
 		return block;
 	}
-	void popBreakBlock()
-	{
-		breakBlocks.pop_back();
-	}
+
 	BasicBlock* getBreakBlock(int level = 1) const
 	{
 		return loopBranchLevel(breakBlocks, level);
@@ -306,20 +302,20 @@ public:
 		redoBlocks.push_back(block);
 		return block;
 	}
-	void popRedoBlock()
-	{
-		redoBlocks.pop_back();
-	}
+
 	BasicBlock* getRedoBlock(int level = 1) const
 	{
 		return loopBranchLevel(redoBlocks, level);
 	}
 
-	void popLoopBranchBlocks()
+	void popLoopBranchBlocks(int type)
 	{
-		popBreakBlock();
-		popContinueBlock();
-		popRedoBlock();
+		if (type & BranchType::BREAK)
+			breakBlocks.pop_back();
+		if (type & BranchType::CONTINUE)
+			continueBlocks.pop_back();
+		if (type & BranchType::REDO)
+			redoBlocks.pop_back();
 	}
 
 	LabelBlock* getLabelBlock(const string& name)
