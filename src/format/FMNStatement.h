@@ -25,10 +25,6 @@ class FMNStatement
 
 	void visitNExpressionStm(NExpressionStm* stm);
 
-	void visitNParameter(NParameter* stm);
-
-	void visitNVariableDecl(NVariableDecl* stm);
-
 	void visitNVariableDeclGroup(NVariableDeclGroup* stm);
 
 	void visitNGlobalVariableDecl(NGlobalVariableDecl* stm);
@@ -48,8 +44,6 @@ class FMNStatement
 	void visitNClassConstructor(NClassConstructor* stm);
 
 	void visitNClassDestructor(NClassDestructor* stm);
-
-	void visitNMemberInitializer(NMemberInitializer* stm);
 
 	void visitNClassDeclaration(NClassDeclaration* stm);
 

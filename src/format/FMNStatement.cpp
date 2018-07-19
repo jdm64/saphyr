@@ -47,12 +47,9 @@ void FMNStatement::visit(NStatement* stm)
 	VISIT_CASE(NLabelStatement, stm);
 	VISIT_CASE(NLoopBranch, stm);
 	VISIT_CASE(NLoopStatement, stm);
-	VISIT_CASE(NMemberInitializer, stm);
-	VISIT_CASE(NParameter, stm);
 	VISIT_CASE(NReturnStatement, stm);
 	VISIT_CASE(NStructDeclaration, stm);
 	VISIT_CASE(NSwitchStatement, stm);
-	VISIT_CASE(NVariableDecl, stm);
 	VISIT_CASE(NVariableDeclGroup, stm);
 	VISIT_CASE(NWhileStatement, stm);
 	default:
@@ -74,16 +71,6 @@ void FMNStatement::visitNImportStm(NImportStm* stm)
 void FMNStatement::visitNExpressionStm(NExpressionStm* stm)
 {
 	context.addLine(FMNExpression::run(context, stm->getExp()) + ";");
-}
-
-void FMNStatement::visitNParameter(NParameter* stm)
-{
-	// Not called
-}
-
-void FMNStatement::visitNVariableDecl(NVariableDecl* stm)
-{
-	// Not called
 }
 
 void FMNStatement::visitNVariableDeclGroup(NVariableDeclGroup* stm)
@@ -208,11 +195,6 @@ void FMNStatement::visitNClassConstructor(NClassConstructor* stm)
 void FMNStatement::visitNClassDestructor(NClassDestructor* stm)
 {
 	WriterUtil::writeFunctionDecl("~this", stm->getAttrs(), stm->getRType(), stm->getParams(), nullptr, stm->getBody(), context);
-}
-
-void FMNStatement::visitNMemberInitializer(NMemberInitializer* stm)
-{
-	// Not called
 }
 
 void FMNStatement::visitNClassDeclaration(NClassDeclaration* stm)
