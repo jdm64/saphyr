@@ -34,6 +34,7 @@ RValue CGNVariable::visit(NVariable* type)
 	VISIT_CASE_RETURN(NMemberVariable, type)
 	default:
 		context.addError("NodeId::" + to_string(static_cast<int>(type->id())) + " unrecognized in CGNVariable", *type);
+		return RValue();
 	}
 }
 
