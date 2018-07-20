@@ -28,30 +28,30 @@
 void FMNStatement::visit(NStatement* stm)
 {
 	switch (stm->id()) {
-	VISIT_CASE(NAliasDeclaration, stm);
-	VISIT_CASE(NClassConstructor, stm);
-	VISIT_CASE(NClassDeclaration, stm);
-	VISIT_CASE(NClassDestructor, stm);
-	VISIT_CASE(NClassFunctionDecl, stm);
-	VISIT_CASE(NClassStructDecl, stm);
-	VISIT_CASE(NDeleteStatement, stm);
-	VISIT_CASE(NDestructorCall, stm);
-	VISIT_CASE(NEnumDeclaration, stm);
-	VISIT_CASE(NExpressionStm, stm);
-	VISIT_CASE(NForStatement, stm);
-	VISIT_CASE(NFunctionDeclaration, stm);
-	VISIT_CASE(NGlobalVariableDecl, stm);
-	VISIT_CASE(NGotoStatement, stm);
-	VISIT_CASE(NIfStatement, stm);
-	VISIT_CASE(NImportStm, stm);
-	VISIT_CASE(NLabelStatement, stm);
-	VISIT_CASE(NLoopBranch, stm);
-	VISIT_CASE(NLoopStatement, stm);
-	VISIT_CASE(NReturnStatement, stm);
-	VISIT_CASE(NStructDeclaration, stm);
-	VISIT_CASE(NSwitchStatement, stm);
-	VISIT_CASE(NVariableDeclGroup, stm);
-	VISIT_CASE(NWhileStatement, stm);
+	VISIT_CASE(NAliasDeclaration, stm)
+	VISIT_CASE(NClassConstructor, stm)
+	VISIT_CASE(NClassDeclaration, stm)
+	VISIT_CASE(NClassDestructor, stm)
+	VISIT_CASE(NClassFunctionDecl, stm)
+	VISIT_CASE(NClassStructDecl, stm)
+	VISIT_CASE(NDeleteStatement, stm)
+	VISIT_CASE(NDestructorCall, stm)
+	VISIT_CASE(NEnumDeclaration, stm)
+	VISIT_CASE(NExpressionStm, stm)
+	VISIT_CASE(NForStatement, stm)
+	VISIT_CASE(NFunctionDeclaration, stm)
+	VISIT_CASE(NGlobalVariableDecl, stm)
+	VISIT_CASE(NGotoStatement, stm)
+	VISIT_CASE(NIfStatement, stm)
+	VISIT_CASE(NImportStm, stm)
+	VISIT_CASE(NLabelStatement, stm)
+	VISIT_CASE(NLoopBranch, stm)
+	VISIT_CASE(NLoopStatement, stm)
+	VISIT_CASE(NReturnStatement, stm)
+	VISIT_CASE(NStructDeclaration, stm)
+	VISIT_CASE(NSwitchStatement, stm)
+	VISIT_CASE(NVariableDeclGroup, stm)
+	VISIT_CASE(NWhileStatement, stm)
 	default:
 		cout << "NodeId::" << static_cast<int>(stm->id()) << " unrecognized in FMNStatement" << endl;
 	}

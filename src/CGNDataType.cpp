@@ -178,14 +178,14 @@ SType* CGNDataType::visitNFuncPointerType(NFuncPointerType* type)
 SType* CGNDataTypeNew::visit(NDataType* type)
 {
 	switch (type->id()) {
-	VISIT_CASE_RETURN(NArrayType, type);
-	VISIT_CASE_RETURN(NBaseType, type);
-	VISIT_CASE_RETURN(NConstType, type);
-	VISIT_CASE_RETURN(NFuncPointerType, type);
-	VISIT_CASE_RETURN(NPointerType, type);
-	VISIT_CASE_RETURN(NThisType, type);
-	VISIT_CASE_RETURN(NUserType, type);
-	VISIT_CASE_RETURN(NVecType, type);
+	VISIT_CASE_RETURN(NArrayType, type)
+	VISIT_CASE_RETURN(NBaseType, type)
+	VISIT_CASE_RETURN(NConstType, type)
+	VISIT_CASE_RETURN(NFuncPointerType, type)
+	VISIT_CASE_RETURN(NPointerType, type)
+	VISIT_CASE_RETURN(NThisType, type)
+	VISIT_CASE_RETURN(NUserType, type)
+	VISIT_CASE_RETURN(NVecType, type)
 	default:
 		context.addError("NodeId::" + to_string(static_cast<int>(type->id())) + " unrecognized in CGNDataTypeNew", *type);
 		return nullptr;
