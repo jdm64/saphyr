@@ -1,6 +1,4 @@
 
-// nofmt
-
 void func(int x)
 {
 	for (;;) {
