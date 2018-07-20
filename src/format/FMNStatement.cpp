@@ -40,7 +40,6 @@ void FMNStatement::visit(NStatement* stm)
 	VISIT_CASE(NExpressionStm, stm)
 	VISIT_CASE(NForStatement, stm)
 	VISIT_CASE(NFunctionDeclaration, stm)
-	VISIT_CASE(NGlobalVariableDecl, stm)
 	VISIT_CASE(NGotoStatement, stm)
 	VISIT_CASE(NIfStatement, stm)
 	VISIT_CASE(NImportStm, stm)
@@ -90,17 +89,6 @@ void FMNStatement::visitNVariableDeclGroup(NVariableDeclGroup* stm)
 		}
 	}
 	context.addLine(line + ";");
-}
-
-void FMNStatement::visitNGlobalVariableDecl(NGlobalVariableDecl* stm)
-{
-	auto line = FMNDataType::run(context, stm->getType()) + " " + stm->getName()->str;
-	if (stm->getInitExp()) {
-		line += " = " + FMNExpression::run(context, stm->getInitExp());
-	} else if (stm->getInitList()) {
-		line += "{" + FMNExpression::run(context, stm->getInitList()) + "}";
-	}
-	context.addLine(line);
 }
 
 void FMNStatement::visitNAliasDeclaration(NAliasDeclaration* stm)

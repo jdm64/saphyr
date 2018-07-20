@@ -27,8 +27,6 @@ class FMNStatement
 
 	void visitNVariableDeclGroup(NVariableDeclGroup* stm);
 
-	void visitNGlobalVariableDecl(NGlobalVariableDecl* stm);
-
 	void visitNAliasDeclaration(NAliasDeclaration* stm);
 
 	void visitNStructDeclaration(NStructDeclaration* stm);
