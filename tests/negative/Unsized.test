@@ -50,25 +50,25 @@ void badCast()
 
 ========
 
-negative/Unsized.syp:4: struct members must not have auto type
-negative/Unsized.syp:5: struct members must not have void type
-negative/Unsized.syp:11: can't create variable for an unsized type: void
-negative/Unsized.syp:13: can't create variable for an unsized type: File
-negative/Unsized.syp:15: parameter can not be void type
-negative/Unsized.syp:15: parameter can not be auto type
-negative/Unsized.syp:15: parameter can not be File type
-negative/Unsized.syp:21: can't create array of void types
-negative/Unsized.syp:22: can't create array of auto types
-negative/Unsized.syp:23: can't create array of File types
-negative/Unsized.syp:25: can't call new on void type
-negative/Unsized.syp:26: can't call new on auto type
-negative/Unsized.syp:27: can't call new on File type
-negative/Unsized.syp:29: can't create variable for an unsized type: void
-negative/Unsized.syp:30: can't create variable for an unsized type: File
-negative/Unsized.syp:33: Increment/Decrement invalid for void pointer
-negative/Unsized.syp:36: Increment/Decrement invalid for File pointer
-negative/Unsized.syp:38: size of void is invalid
-negative/Unsized.syp:39: size of auto is invalid
-negative/Unsized.syp:40: size of File is invalid
-negative/Unsized.syp:48: Cannot cast type to pointer ( @void to @File )
+negative/Unsized.syp:4:2: struct members must not have auto type
+negative/Unsized.syp:5:2: struct members must not have void type
+negative/Unsized.syp:11:1: can't create variable for an unsized type: void
+negative/Unsized.syp:13:1: can't create variable for an unsized type: File
+negative/Unsized.syp:15:14: parameter can not be void type
+negative/Unsized.syp:15:22: parameter can not be auto type
+negative/Unsized.syp:15:30: parameter can not be File type
+negative/Unsized.syp:21:5: can't create array of void types
+negative/Unsized.syp:22:5: can't create array of auto types
+negative/Unsized.syp:23:5: can't create array of File types
+negative/Unsized.syp:25:15: can't call new on void type
+negative/Unsized.syp:26:15: can't call new on auto type
+negative/Unsized.syp:27:15: can't call new on File type
+negative/Unsized.syp:29:2: can't create variable for an unsized type: void
+negative/Unsized.syp:30:2: can't create variable for an unsized type: File
+negative/Unsized.syp:33:3: Increment/Decrement invalid for void pointer
+negative/Unsized.syp:36:3: Increment/Decrement invalid for File pointer
+negative/Unsized.syp:38:2: size of void is invalid
+negative/Unsized.syp:39:2: size of auto is invalid
+negative/Unsized.syp:40:2: size of File is invalid
+negative/Unsized.syp:48:6: Cannot cast type to pointer ( @void to @File )
 found 21 errors

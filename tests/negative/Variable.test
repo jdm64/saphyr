@@ -25,15 +25,15 @@ void func2([3][]int arr)
 
 ========
 
-negative/Variable.syp:3: global variables only support constant value initializer
-negative/Variable.syp:4: global variable initialization requires exact type matching
-negative/Variable.syp:5: auto variable type requires initialization
-negative/Variable.syp:6: can't create a non-pointer to a zero size array
-negative/Variable.syp:10: auto variable type requires initialization
-negative/Variable.syp:12: variable u already defined
-negative/Variable.syp:13: can't create a non-pointer to a zero size array
-negative/Variable.syp:15: variable h not declared
-negative/Variable.syp:20: can't create a non-pointer to a zero size array
-negative/Variable.syp:22: variable arr not declared
-negative/Variable.syp:23: can't create variable for an unsized type: void
+negative/Variable.syp:3:5: global variables only support constant value initializer
+negative/Variable.syp:4:9: global variable initialization requires exact type matching
+negative/Variable.syp:5:1: auto variable type requires initialization
+negative/Variable.syp:6:10: can't create a non-pointer to a zero size array
+negative/Variable.syp:10:2: auto variable type requires initialization
+negative/Variable.syp:12:7: variable u already defined
+negative/Variable.syp:13:11: can't create a non-pointer to a zero size array
+negative/Variable.syp:15:10: variable h not declared
+negative/Variable.syp:20:12: can't create a non-pointer to a zero size array
+negative/Variable.syp:22:2: variable arr not declared
+negative/Variable.syp:23:2: can't create variable for an unsized type: void
 found 11 errors

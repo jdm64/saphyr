@@ -347,7 +347,7 @@ public:
 			return false;
 
 		for (auto& error : errors) {
-			cout << error.first.filename << ":" << error.first.line << ": " << error.second << endl;
+			cout << error.first.filename << ":" << error.first.line << ":" << error.first.col << ": " << error.second << endl;
 		}
 		cout << "found " << errors.size() << " errors" << endl;
 		return true;

@@ -29,11 +29,11 @@ void bar(int x)
 
 ========
 
-negative/Arrays.syp:12: can not cast between S and int32 types
-negative/Arrays.syp:14: array index is not able to be cast to an int
-negative/Arrays.syp:14: S is not an array or vec
-negative/Arrays.syp:19: Array size must be positive
-negative/Arrays.syp:21: variable z not declared
-negative/Arrays.syp:26: Array size must be a constant integer
-negative/Arrays.syp:27: can't create array of void types
+negative/Arrays.syp:12:6: can not cast between S and int32 types
+negative/Arrays.syp:14:11: array index is not able to be cast to an int
+negative/Arrays.syp:14:16: S is not an array or vec
+negative/Arrays.syp:19:3: Array size must be positive
+negative/Arrays.syp:21:2: variable z not declared
+negative/Arrays.syp:26:3: Array size must be a constant integer
+negative/Arrays.syp:27:5: can't create array of void types
 found 7 errors

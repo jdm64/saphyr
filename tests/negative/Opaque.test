@@ -33,13 +33,13 @@ void testError()
 
 ========
 
-negative/Opaque.syp:6: can't create variable for an unsized type: MyClass
-negative/Opaque.syp:7: can't create variable for an unsized type: MyStruct
-negative/Opaque.syp:8: can't create variable for an unsized type: MyUnion
-negative/Opaque.syp:13: can't call new on MyClass type
-negative/Opaque.syp:14: can't call new on MyStruct type
-negative/Opaque.syp:15: can't call new on MyUnion type
-negative/Opaque.syp:25: can't create variable for an unsized type: Nothing
-negative/Opaque.syp:28: Empty doesn't have member a
-negative/Opaque.syp:31: Nothing doesn't have member b
+negative/Opaque.syp:6:2: can't create variable for an unsized type: MyClass
+negative/Opaque.syp:7:2: can't create variable for an unsized type: MyStruct
+negative/Opaque.syp:8:2: can't create variable for an unsized type: MyUnion
+negative/Opaque.syp:13:15: can't call new on MyClass type
+negative/Opaque.syp:14:15: can't call new on MyStruct type
+negative/Opaque.syp:15:15: can't call new on MyUnion type
+negative/Opaque.syp:25:2: can't create variable for an unsized type: Nothing
+negative/Opaque.syp:28:4: Empty doesn't have member a
+negative/Opaque.syp:31:4: Nothing doesn't have member b
 found 9 errors

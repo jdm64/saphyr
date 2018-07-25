@@ -52,15 +52,15 @@ void func3()
 
 ========
 
-negative/Struct.syp:4: struct members must not have auto type
-negative/Struct.syp:5: structs don't support variable initialization
-negative/Struct.syp:6: member name j already declared
-negative/Struct.syp:15: type with name Good already declared
-negative/Struct.syp:28: Nothing type not declared
-negative/Struct.syp:32: int32 is not a struct/union/enum
-negative/Struct.syp:32: Good doesn't have member n
-negative/Struct.syp:40: can not perform operation on composite types
-negative/Struct.syp:41: can not cast between Good and More types
-negative/Struct.syp:42: variable k not declared
-negative/Struct.syp:50: can not cast between Good and More types
+negative/Struct.syp:4:2: struct members must not have auto type
+negative/Struct.syp:5:10: structs don't support variable initialization
+negative/Struct.syp:6:7: member name j already declared
+negative/Struct.syp:15:8: type with name Good already declared
+negative/Struct.syp:28:2: Nothing type not declared
+negative/Struct.syp:32:10: int32 is not a struct/union/enum
+negative/Struct.syp:32:22: Good doesn't have member n
+negative/Struct.syp:40:13: can not perform operation on composite types
+negative/Struct.syp:41:8: can not cast between Good and More types
+negative/Struct.syp:42:2: variable k not declared
+negative/Struct.syp:50:13: can not cast between Good and More types
 found 11 errors

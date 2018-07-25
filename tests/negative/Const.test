@@ -78,18 +78,18 @@ void userTypeConstName()
 
 ========
 
-negative/Const.syp:5: assignment not allowed for constant variable
-negative/Const.syp:28: assignment not allowed for constant variable
-negative/Const.syp:31: assignment not allowed for constant variable
-negative/Const.syp:34: assignment not allowed for constant variable
-negative/Const.syp:37: assignment not allowed for constant variable
-negative/Const.syp:38: assignment not allowed for constant variable
-negative/Const.syp:44: assignment not allowed for constant variable
-negative/Const.syp:47: assignment not allowed for constant variable
-negative/Const.syp:55: Cannot cast type to pointer ( @const int32 to @int32 )
-negative/Const.syp:61: assignment not allowed for constant variable
-negative/Const.syp:64: assignment not allowed for constant variable
-negative/Const.syp:72: Cannot cast complex types ( const SS to int32 )
-negative/Const.syp:73: Cannot cast complex types ( const UU to int32 )
-negative/Const.syp:76: Cannot cast complex types ( const EE to [3]int32 )
+negative/Const.syp:5:2: assignment not allowed for constant variable
+negative/Const.syp:28:4: assignment not allowed for constant variable
+negative/Const.syp:31:2: assignment not allowed for constant variable
+negative/Const.syp:34:4: assignment not allowed for constant variable
+negative/Const.syp:37:3: assignment not allowed for constant variable
+negative/Const.syp:38:2: assignment not allowed for constant variable
+negative/Const.syp:44:5: assignment not allowed for constant variable
+negative/Const.syp:47:3: assignment not allowed for constant variable
+negative/Const.syp:55:7: Cannot cast type to pointer ( @const int32 to @int32 )
+negative/Const.syp:61:3: assignment not allowed for constant variable
+negative/Const.syp:64:3: assignment not allowed for constant variable
+negative/Const.syp:72:6: Cannot cast complex types ( const SS to int32 )
+negative/Const.syp:73:6: Cannot cast complex types ( const UU to int32 )
+negative/Const.syp:76:9: Cannot cast complex types ( const EE to [3]int32 )
 found 14 errors

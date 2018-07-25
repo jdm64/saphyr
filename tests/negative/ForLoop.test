@@ -7,5 +7,5 @@ void func()
 
 ========
 
-negative/ForLoop.syp:4: variable i not declared
+negative/ForLoop.syp:4:9: variable i not declared
 found 1 errors

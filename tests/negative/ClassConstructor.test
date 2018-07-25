@@ -38,8 +38,8 @@ void foo()
 
 ========
 
-negative/ClassConstructor.syp:24: argument count for Test_this function invalid, 4 arguments given, but 3 required.
-negative/ClassConstructor.syp:26: argument count for Test_this function invalid, 1 arguments given, but 3 required.
-negative/ClassConstructor.syp:32: calling destructor only valid for classes
-negative/ClassConstructor.syp:34: argument count for Test_this function invalid, 1 arguments given, but 3 required.
+negative/ClassConstructor.syp:24:7: argument count for Test_this function invalid, 4 arguments given, but 3 required.
+negative/ClassConstructor.syp:26:7: argument count for Test_this function invalid, 1 arguments given, but 3 required.
+negative/ClassConstructor.syp:32:5: calling destructor only valid for classes
+negative/ClassConstructor.syp:34:18: argument count for Test_this function invalid, 1 arguments given, but 3 required.
 found 4 errors

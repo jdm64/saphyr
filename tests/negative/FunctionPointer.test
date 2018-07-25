@@ -15,9 +15,9 @@ int main()
 
 ========
 
-negative/FunctionPointer.syp:2: parameter can not be auto type
-negative/FunctionPointer.syp:2: function return type can not be auto
-negative/FunctionPointer.syp:8: symbol f not defined
-negative/FunctionPointer.syp:10: function return type can not be auto
-negative/FunctionPointer.syp:11: parameter can not be auto type
+negative/FunctionPointer.syp:2:8: parameter can not be auto type
+negative/FunctionPointer.syp:2:1: function return type can not be auto
+negative/FunctionPointer.syp:8:2: symbol f not defined
+negative/FunctionPointer.syp:10:5: function return type can not be auto
+negative/FunctionPointer.syp:11:4: parameter can not be auto type
 found 5 errors

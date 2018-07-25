@@ -25,7 +25,7 @@ enum MyType
 
 ========
 
-negative/AlreadyDeclared.syp:7: type with name One already declared
-negative/AlreadyDeclared.syp:14: type with name Color already declared
-negative/AlreadyDeclared.syp:21: type with name MyType already declared
+negative/AlreadyDeclared.syp:7:7: type with name One already declared
+negative/AlreadyDeclared.syp:14:8: type with name Color already declared
+negative/AlreadyDeclared.syp:21:6: type with name MyType already declared
 found 3 errors

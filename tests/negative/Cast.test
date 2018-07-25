@@ -18,8 +18,8 @@ void bar()
 
 ========
 
-negative/Cast.syp:6: as operator requires type argument
-negative/Cast.syp:7: as operator only operates on expression
-negative/Cast.syp:8: as operator only operates on expression
-negative/Cast.syp:16: Cannot cast type to pointer ( @()int32 to @(@void,int32)int64 )
+negative/Cast.syp:6:2: as operator requires type argument
+negative/Cast.syp:7:2: as operator only operates on expression
+negative/Cast.syp:8:3: as operator only operates on expression
+negative/Cast.syp:16:6: Cannot cast type to pointer ( @()int32 to @(@void,int32)int64 )
 found 4 errors

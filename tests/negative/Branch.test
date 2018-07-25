@@ -19,8 +19,8 @@ lb:
 
 ========
 
-negative/Branch.syp:6: break invalid outside a loop/switch block
-negative/Branch.syp:8: continue invalid outside a loop/switch block
-negative/Branch.syp:16: label lb already defined
-negative/Branch.syp:15: label notfound not defined
+negative/Branch.syp:6:3: break invalid outside a loop/switch block
+negative/Branch.syp:8:3: continue invalid outside a loop/switch block
+negative/Branch.syp:16:1: label lb already defined
+negative/Branch.syp:15:7: label notfound not defined
 found 4 errors

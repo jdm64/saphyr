@@ -26,9 +26,9 @@ int main()
 
 ========
 
-negative/NIncrement.syp:17: Increment/Decrement invalid for function pointer
-negative/NIncrement.syp:18: Increment/Decrement invalid for function pointer
-negative/NIncrement.syp:20: Increment/Decrement invalid for enum type
-negative/NIncrement.syp:21: Increment/Decrement invalid for enum type
-negative/NIncrement.syp:22: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:17:5: Increment/Decrement invalid for function pointer
+negative/NIncrement.syp:18:5: Increment/Decrement invalid for function pointer
+negative/NIncrement.syp:20:3: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:21:12: Increment/Decrement invalid for enum type
+negative/NIncrement.syp:22:8: Increment/Decrement invalid for enum type
 found 5 errors

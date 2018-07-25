@@ -214,14 +214,15 @@ class Token
 {
 public:
 	Token()
-	: line(0) {}
+	: line(0), col(0) {}
 
-	Token(const string& token, const string& filename = "", int lineNum = 0)
-	: str(token), filename(filename), line(lineNum) {}
+	Token(const string& token, const string& filename = "", int lineNum = 0, int colNum = 0)
+	: str(token), filename(filename), line(lineNum), col(colNum) {}
 
 	string str;
 	string filename;
 	int line;
+	int col;
 
 	static void unescape(string &val)
 	{

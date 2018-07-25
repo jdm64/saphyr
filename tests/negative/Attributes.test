@@ -14,5 +14,5 @@ class Test
 
 ========
 
-negative/Attributes.syp:4: duplicate attribute name: bla
+negative/Attributes.syp:4:9: duplicate attribute name: bla
 found 1 errors

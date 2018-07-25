@@ -7,5 +7,5 @@ void test()
 
 ========
 
-negative/Arrow.syp:5: invalid arrow op name: foo
+negative/Arrow.syp:5:2: invalid arrow op name: foo
 found 1 errors

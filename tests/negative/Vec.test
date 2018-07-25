@@ -21,10 +21,10 @@ int func()
 
 ========
 
-negative/Vec.syp:7: Cannot cast vec to bool ( vec<2,int8> to bool )
-negative/Vec.syp:8: can not cast vec types of different sizes
-negative/Vec.syp:8: can not cast vec types of different sizes
-negative/Vec.syp:15: vec size must be greater than 0
-negative/Vec.syp:16: vec type only supports numeric and pointer types
-negative/Vec.syp:17: vec type only supports numeric and pointer types
+negative/Vec.syp:7:6: Cannot cast vec to bool ( vec<2,int8> to bool )
+negative/Vec.syp:8:14: can not cast vec types of different sizes
+negative/Vec.syp:8:14: can not cast vec types of different sizes
+negative/Vec.syp:15:6: vec size must be greater than 0
+negative/Vec.syp:16:9: vec type only supports numeric and pointer types
+negative/Vec.syp:17:9: vec type only supports numeric and pointer types
 found 6 errors

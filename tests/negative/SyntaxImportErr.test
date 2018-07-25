@@ -9,6 +9,6 @@ int main()
 
 ========
 
-files/SyntaxError.syp:4: Syntax error on: <EOF>
-negative/SyntaxImportErr.syp:3: unable to import file: ThisFileNotFound.syp
+files/SyntaxError.syp:4:2: Syntax error on: <EOF>
+negative/SyntaxImportErr.syp:3:8: unable to import file: ThisFileNotFound.syp
 found 2 errors

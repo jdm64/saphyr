@@ -21,10 +21,10 @@ void func()
 
 ========
 
-negative/SpecialOps.syp:13: return types of ternary must match
-negative/SpecialOps.syp:15: return types of null coalescing operator must match
-negative/SpecialOps.syp:17: size of void is invalid
-negative/SpecialOps.syp:17: STR is ambigious, both a type and a variable
-negative/SpecialOps.syp:17: type notdefined is not declared
-negative/SpecialOps.syp:19: size operator takes no arguments
+negative/SpecialOps.syp:13:19: return types of ternary must match
+negative/SpecialOps.syp:15:13: return types of null coalescing operator must match
+negative/SpecialOps.syp:17:6: size of void is invalid
+negative/SpecialOps.syp:17:19: STR is ambigious, both a type and a variable
+negative/SpecialOps.syp:17:31: type notdefined is not declared
+negative/SpecialOps.syp:19:2: size operator takes no arguments
 found 6 errors

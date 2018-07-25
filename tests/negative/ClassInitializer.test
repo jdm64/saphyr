@@ -39,9 +39,9 @@ class X
 
 ========
 
-negative/ClassInitializer.syp:10: initializer for i already defined
-negative/ClassInitializer.syp:10: invalid initializer, class variable not defined: b
-negative/ClassInitializer.syp:24: variable err not declared
-negative/ClassInitializer.syp:24: argument count for T_this function invalid, 2 arguments given, but 1 required.
-negative/ClassInitializer.syp:35: only one constructor allowed in a class
+negative/ClassInitializer.syp:10:8: initializer for i already defined
+negative/ClassInitializer.syp:10:13: invalid initializer, class variable not defined: b
+negative/ClassInitializer.syp:24:4: variable err not declared
+negative/ClassInitializer.syp:24:10: argument count for T_this function invalid, 2 arguments given, but 1 required.
+negative/ClassInitializer.syp:35:2: only one constructor allowed in a class
 found 5 errors

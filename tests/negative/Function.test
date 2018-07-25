@@ -6,5 +6,5 @@ int func(int a, int a)
 
 ========
 
-negative/Function.syp:2: function parameter a already declared
+negative/Function.syp:2:21: function parameter a already declared
 found 1 errors
