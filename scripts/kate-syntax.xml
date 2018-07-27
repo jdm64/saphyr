@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<!-- copy to ~/.local/share/katepart5/syntax/saphyr.xml -->
+<!-- mkdir -p ~/.local/share/katepart5/syntax; cp kate-syntax.xml ~/.local/share/katepart5/syntax/saphyr.xml -->
 <language
     name="Saphyr"
     version="1.2"
