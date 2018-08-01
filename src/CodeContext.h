@@ -64,92 +64,85 @@ public:
 	}
 };
 
-class SymbolTable
+class GlobalContext
 {
+	friend class CodeContext;
+
+	Module* module;
+	TypeManager typeManager;
+
+	vector<pair<Token,string>> errors;
+	list<unique_ptr<NAttributeList>> attrs;
+
+	set<path> allFiles;
+	vector<path> filesStack;
+
 	ScopeTable globalTable;
-	vector<ScopeTable> localTable;
 
 public:
-	void storeGlobalSymbol(RValue var, const string& name)
+	explicit GlobalContext(Module* module)
+	: module(module), typeManager(module) {}
+
+	void addError(string error, Token* token)
 	{
-		globalTable.storeSymbol(var, name);
+		if (token)
+			errors.push_back({*token, error});
+		else
+			errors.push_back({Token(), error});
 	}
 
-	void storeLocalSymbol(RValue var, const string& name)
+	/*
+	 * Returns true on errors
+	 */
+	bool handleErrors() const
 	{
-		localTable.back().storeSymbol(var, name);
-	}
+		if (errors.empty())
+			return false;
 
-	void pushLocalTable()
-	{
-		localTable.push_back(ScopeTable());
-	}
-
-	void popLocalTable()
-	{
-		localTable.pop_back();
-	}
-
-	void clearLocalTable()
-	{
-		localTable.clear();
-	}
-
-	RValue loadSymbolLocal(const string& name) const
-	{
-		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
-			auto var = it->loadSymbol(name);
-			if (var)
-				return var;
+		for (auto& error : errors) {
+			cout << error.first.filename << ":" << error.first.line << ":" << error.first.col << ": " << error.second << endl;
 		}
-		return {};
+		cout << "found " << errors.size() << " errors" << endl;
+		return true;
 	}
 
-	RValue loadSymbolGlobal(const string& name) const
+	NAttributeList* storeAttr(NAttributeList* list)
 	{
-		return globalTable.loadSymbol(name);
+		if (list) {
+			list = list->move<NAttributeList>(false);
+			attrs.push_back(unique_ptr<NAttributeList>(list));
+		}
+		return list;
 	}
 
-	RValue loadSymbol(const string& name) const
+	void pushFile(const path& filename)
 	{
-		auto var = loadSymbolLocal(name);
-		return var? var : globalTable.loadSymbol(name);
+		filesStack.push_back(filename);
+		allFiles.insert(filename);
 	}
 
-	RValue loadSymbolCurr(const string& name) const
+	bool fileLoaded(const path& filename)
 	{
-		return localTable.empty()? globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
+		return allFiles.find(filename) != allFiles.end();
 	}
 };
 
-class CodeContext : public SymbolTable
+class CodeContext
 {
-	friend class SType;
-	friend class SFunction;
-	friend class SUserType;
-	friend class SStructType;
-	friend class SUnionType;
-	friend class SEnumType;
-	friend class SOpaqueType;
-
 	typedef vector<llvm::BasicBlock*> BlockVector;
 	typedef BlockVector::iterator block_iterator;
+
+	GlobalContext& globalCtx;
+
+	SFunction currFunc;
+	SClassType* currClass;
+	vector<ScopeTable> localTable;
 
 	BlockVector funcBlocks;
 	BlockVector continueBlocks;
 	BlockVector breakBlocks;
 	BlockVector redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
-
-	vector<pair<Token,string>> errors;
-	list<unique_ptr<NAttributeList>> attrs;
-
-	Module* module;
-	TypeManager typeManager;
-	SFunction currFunc;
-	SClassType* currClass;
-	set<path> allFiles;
-	vector<path> filesStack;
 
 	void validateFunction()
 	{
@@ -166,45 +159,111 @@ class CodeContext : public SymbolTable
 	}
 
 public:
-	explicit CodeContext(Module* module)
-	: module(module), typeManager(module), currClass(nullptr)
-	{
-	}
+	explicit CodeContext(GlobalContext& context)
+	: globalCtx(context), currClass(nullptr) {}
+
+	/**
+	 * global context functions
+	 **/
 
 	operator LLVMContext&()
 	{
-		return module->getContext();
-	}
-
-	operator BasicBlock*() const
-	{
-		return currBlock();
+		return globalCtx.module->getContext();
 	}
 
 	Module* getModule() const
 	{
-		return module;
+		return globalCtx.module;
 	}
 
-	path currFile() const
+	TypeManager& getTypeManager() const
 	{
-		return filesStack.back();
+		return globalCtx.typeManager;
 	}
 
-	void pushFile(const path& filename)
+	void addError(string error, Token* token)
 	{
-		filesStack.push_back(filename);
-		allFiles.insert(filename);
+		globalCtx.addError(error, token);
+	}
+
+	bool handleErrors() const
+	{
+		return globalCtx.handleErrors();
+	}
+
+	NAttributeList* storeAttr(NAttributeList* list)
+	{
+		return globalCtx.storeAttr(list);
 	}
 
 	void popFile()
 	{
-		filesStack.pop_back();
+		globalCtx.filesStack.pop_back();
+	}
+
+	void pushFile(const path& filename)
+	{
+		globalCtx.pushFile(filename);
 	}
 
 	bool fileLoaded(const path& filename)
 	{
-		return allFiles.find(filename) != allFiles.end();
+		return globalCtx.fileLoaded(filename);
+	}
+
+	virtual path currFile() const
+	{
+		return globalCtx.filesStack.back();
+	}
+
+	void storeGlobalSymbol(RValue var, const string& name)
+	{
+		globalCtx.globalTable.storeSymbol(var, name);
+	}
+
+	RValue loadSymbolGlobal(const string& name) const
+	{
+		return globalCtx.globalTable.loadSymbol(name);
+	}
+
+	/**
+	 * local context functions
+	 **/
+
+	void pushLocalTable()
+	{
+		localTable.push_back(ScopeTable());
+	}
+
+	void popLocalTable()
+	{
+		localTable.pop_back();
+	}
+
+	void storeLocalSymbol(RValue var, const string& name)
+	{
+		localTable.back().storeSymbol(var, name);
+	}
+
+	RValue loadSymbol(const string& name) const
+	{
+		auto var = loadSymbolLocal(name);
+		return var? var : globalCtx.globalTable.loadSymbol(name);
+	}
+
+	RValue loadSymbolLocal(const string& name) const
+	{
+		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
+			auto var = it->loadSymbol(name);
+			if (var)
+				return var;
+		}
+		return {};
+	}
+
+	RValue loadSymbolCurr(const string& name) const
+	{
+		return localTable.empty() ? globalCtx.globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
 	}
 
 	SFunction currFunction() const
@@ -212,26 +271,9 @@ public:
 		return currFunc;
 	}
 
-	NAttributeList* storeAttr(NAttributeList* list)
+	SClassType* getClass() const
 	{
-		if (list) {
-			list = list->move<NAttributeList>(false);
-			attrs.push_back(unique_ptr<NAttributeList>(list));
-		}
-		return list;
-	}
-
-	void addError(string error, Token* token)
-	{
-		if (token)
-			errors.push_back({*token, error});
-		else
-			errors.push_back({Token(), error});
-	}
-
-	BasicBlock* currBlock() const
-	{
-		return funcBlocks.back();
+		return currClass;
 	}
 
 	void setClass(SClassType* classType)
@@ -239,16 +281,16 @@ public:
 		currClass = classType;
 	}
 
-	SClassType* getClass() const
+	operator BasicBlock*() const
 	{
-		return currClass;
+		return currBlock();
 	}
 
 	void startFuncBlock(SFunction function)
 	{
 		pushLocalTable();
 		funcBlocks.clear();
-		funcBlocks.push_back(BasicBlock::Create(module->getContext(), "", function));
+		funcBlocks.push_back(BasicBlock::Create(getModule()->getContext(), "", function));
 		currFunc = function;
 	}
 
@@ -256,7 +298,7 @@ public:
 	{
 		validateFunction();
 
-		clearLocalTable();
+		localTable.clear();
 		funcBlocks.clear();
 		continueBlocks.clear();
 		breakBlocks.clear();
@@ -272,42 +314,6 @@ public:
 		funcBlocks.push_back(block);
 	}
 
-	BasicBlock* createContinueBlock()
-	{
-		auto block = createBlock();
-		continueBlocks.push_back(block);
-		return block;
-	}
-
-	BasicBlock* getContinueBlock(int level = 1) const
-	{
-		return loopBranchLevel(continueBlocks, level);
-	}
-
-	BasicBlock* createBreakBlock()
-	{
-		auto block = createBlock();
-		breakBlocks.push_back(block);
-		return block;
-	}
-
-	BasicBlock* getBreakBlock(int level = 1) const
-	{
-		return loopBranchLevel(breakBlocks, level);
-	}
-
-	BasicBlock* createRedoBlock()
-	{
-		auto block = createBlock();
-		redoBlocks.push_back(block);
-		return block;
-	}
-
-	BasicBlock* getRedoBlock(int level = 1) const
-	{
-		return loopBranchLevel(redoBlocks, level);
-	}
-
 	void popLoopBranchBlocks(int type)
 	{
 		if (type & BranchType::BREAK)
@@ -318,10 +324,58 @@ public:
 			redoBlocks.pop_back();
 	}
 
+	BasicBlock* currBlock() const
+	{
+		return funcBlocks.back();
+	}
+
+	// NOTE: can only be used inside a function to add a new block
+	BasicBlock* createBlock() const
+	{
+		return BasicBlock::Create(getModule()->getContext(), "", currBlock()->getParent());
+	}
+
+	BasicBlock* getBreakBlock(int level = 1) const
+	{
+		return loopBranchLevel(breakBlocks, level);
+	}
+
+	BasicBlock* createBreakBlock()
+	{
+		auto block = createBlock();
+		breakBlocks.push_back(block);
+		return block;
+	}
+
+	BasicBlock* getContinueBlock(int level = 1) const
+	{
+		return loopBranchLevel(continueBlocks, level);
+	}
+
+	BasicBlock* createContinueBlock()
+	{
+		auto block = createBlock();
+		continueBlocks.push_back(block);
+		return block;
+	}
+
+	BasicBlock* getRedoBlock(int level = 1) const
+	{
+		return loopBranchLevel(redoBlocks, level);
+	}
+
+	BasicBlock* createRedoBlock()
+	{
+		auto block = createBlock();
+		redoBlocks.push_back(block);
+		return block;
+	}
+
 	LabelBlock* getLabelBlock(const string& name)
 	{
 		return labelBlocks[name].get();
 	}
+
 	LabelBlock* createLabelBlock(Token* name, bool isPlaceholder)
 	{
 		LabelBlockPtr &item = labelBlocks[name->str];
@@ -330,27 +384,6 @@ public:
 			item.get()->block->setName(name->str);
 		}
 		return item.get();
-	}
-
-	// NOTE: can only be used inside a function to add a new block
-	BasicBlock* createBlock() const
-	{
-		return BasicBlock::Create(module->getContext(), "", currBlock()->getParent());
-	}
-
-	/*
-	 * Returns true on errors
-	 */
-	bool handleErrors() const
-	{
-		if (errors.empty())
-			return false;
-
-		for (auto& error : errors) {
-			cout << error.first.filename << ":" << error.first.line << ":" << error.first.col << ": " << error.second << endl;
-		}
-		cout << "found " << errors.size() << " errors" << endl;
-		return true;
 	}
 };
 

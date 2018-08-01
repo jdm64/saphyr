@@ -62,62 +62,62 @@ void SUnionType::setConst(TypeManager* tmang)
 
 SType* SType::getAuto(CodeContext& context)
 {
-	return context.typeManager.getAuto();
+	return context.getTypeManager().getAuto();
 }
 
 SType* SType::getConst(CodeContext& context, SType* type)
 {
-	return context.typeManager.getConst(type);
+	return context.getTypeManager().getConst(type);
 }
 
 SType* SType::getMutable(CodeContext& context, SType* type)
 {
-	return context.typeManager.getMutable(type);
+	return context.getTypeManager().getMutable(type);
 }
 
 SType* SType::getVoid(CodeContext& context)
 {
-	return context.typeManager.getVoid();
+	return context.getTypeManager().getVoid();
 }
 
 SType* SType::getBool(CodeContext& context)
 {
-	return context.typeManager.getBool();
+	return context.getTypeManager().getBool();
 }
 
 SType* SType::getInt(CodeContext& context, int bitWidth, bool isUnsigned)
 {
-	return context.typeManager.getInt(bitWidth, isUnsigned);
+	return context.getTypeManager().getInt(bitWidth, isUnsigned);
 }
 
 SType* SType::getFloat(CodeContext& context, bool doubleType)
 {
-	return context.typeManager.getFloat(doubleType);
+	return context.getTypeManager().getFloat(doubleType);
 }
 
 SType* SType::getArray(CodeContext& context, SType* arrType, uint64_t size)
 {
-	return context.typeManager.getArray(arrType, size);
+	return context.getTypeManager().getArray(arrType, size);
 }
 
 SType* SType::getVec(CodeContext& context, SType* vecType, uint64_t size)
 {
-	return context.typeManager.getVec(vecType, size);
+	return context.getTypeManager().getVec(vecType, size);
 }
 
 SType* SType::getPointer(CodeContext& context, SType* ptrType)
 {
-	return context.typeManager.getPointer(ptrType);
+	return context.getTypeManager().getPointer(ptrType);
 }
 
 SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, vector<SType*> params)
 {
-	return context.typeManager.getFunction(returnTy, params);
+	return context.getTypeManager().getFunction(returnTy, params);
 }
 
 uint64_t SType::allocSize(CodeContext& context, SType* type)
 {
-	return context.typeManager.allocSize(type);
+	return context.getTypeManager().allocSize(type);
 }
 
 SType* SType::numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min)
@@ -169,8 +169,8 @@ void SUserType::innerStr(CodeContext* context, stringstream& os) const
 {
 	if (isConst())
 		os << "const ";
-	auto ty = isConst() ? context->typeManager.getMutable(static_cast<SType*>(const_cast<SUserType*>(this))) : this;
-	os << context->typeManager.getUserTypeName(ty);
+	auto ty = isConst() ? context->getTypeManager().getMutable(static_cast<SType*>(const_cast<SUserType*>(this))) : this;
+	os << context->getTypeManager().getUserTypeName(ty);
 }
 
 SStructType::SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype)
@@ -243,37 +243,37 @@ string SEnumType::str(CodeContext* context) const
 
 SUserType* SUserType::lookup(CodeContext& context, const string& name)
 {
-	return context.typeManager.lookupUserType(name);
+	return context.getTypeManager().lookupUserType(name);
 }
 
 string SUserType::lookup(CodeContext& context, SType* type)
 {
-	return context.typeManager.getUserTypeName(type);
+	return context.getTypeManager().getUserTypeName(type);
 }
 
 void SUserType::createAlias(CodeContext& context, const string& name, SType* type)
 {
-	context.typeManager.createAlias(name, type);
+	context.getTypeManager().createAlias(name, type);
 }
 
 void SUserType::createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
 {
-	context.typeManager.createStruct(name, structure);
+	context.getTypeManager().createStruct(name, structure);
 }
 
 void SUserType::createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
 {
-	context.typeManager.createClass(name, structure);
+	context.getTypeManager().createClass(name, structure);
 }
 
 void SUserType::createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
 {
-	context.typeManager.createUnion(name, structure);
+	context.getTypeManager().createUnion(name, structure);
 }
 
 void SUserType::createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure, SType* type)
 {
-	context.typeManager.createEnum(name, structure, type);
+	context.getTypeManager().createEnum(name, structure, type);
 }
 
 TypeManager::TypeManager(Module* module)

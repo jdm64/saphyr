@@ -47,7 +47,8 @@ int compile(const path& file, NStatementList* statements, variables_map& vm)
 {
 	LLVMContext llvmContext;
 	unique_ptr<Module> module(new Module(file.string(), llvmContext));
-	CodeContext context(module.get());
+	GlobalContext globalCtx(module.get());
+	CodeContext context(globalCtx);
 
 	context.pushFile(file);
 	CGNStatement::run(context, statements);
