@@ -190,6 +190,18 @@ void FMNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 	context.addLine("");;
 	WriterUtil::writeAttr(context, stm->getAttrs());
 	context.addLine("class " + stm->getName()->str);
+	if (stm->getTemplateParams()) {
+		string line = "<";
+		bool first = true;
+		for (auto item : *stm->getTemplateParams()) {
+			if (!first)
+				line += ", ";
+			first = false;
+			line += item->str;
+		}
+		line += ">";
+		context.add(line);
+	}
 	if (!stm->getMembers()) {
 		context.add(";");
 		return;

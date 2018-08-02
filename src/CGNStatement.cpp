@@ -148,6 +148,10 @@ void CGNStatement::visitNAliasDeclaration(NAliasDeclaration* stm)
 
 void CGNStatement::visitNStructDeclaration(NStructDeclaration* stm)
 {
+	if (stm->getTemplateParams() && !context.inTemplate()) {
+		context.storeTemplate(stm->getName()->str, stm);
+		return;
+	}
 	Builder::CreateStruct(context, stm->getType(), stm->getName(), stm->getVars());
 }
 
@@ -203,6 +207,10 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 {
+	if (stm->getTemplateParams() && !context.inTemplate()) {
+		context.storeTemplate(stm->getName()->str, stm);
+		return;
+	}
 	Builder::CreateClass(context, stm, [=](int structIdx) {
 		visit(stm->getMembers()->at(structIdx));
 		if (!context.getClass())

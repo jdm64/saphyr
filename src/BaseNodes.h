@@ -281,6 +281,8 @@ public:
 	}
 };
 
+typedef NodeList<Token> NIdentifierList;
+
 class NAttrValue : public Node
 {
 	Token* val;

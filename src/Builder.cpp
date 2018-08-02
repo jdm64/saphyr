@@ -77,23 +77,25 @@ void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm,
 	validateAttrList(context, stm->getAttrs());
 
 	auto name = stm->getName();
-	auto theClass = stm->getClass();
 	auto clType = context.getClass();
 	auto item = clType->getItem(name->str);
 	if (item) {
-		context.addError("class " + theClass->getName()->str + " already defines symbol " + name->str, name);
+		context.addError("class " + clType->str(&context) + " already defines symbol " + name->str, name);
 		return;
 	}
 
+	auto rawClName = Token(*stm->getClass()->getName());
+	rawClName.str = SUserType::raw(rawClName.str, context.getTemplateArgs());
+
 	// add this parameter
 	if (!NAttributeList::find(stm->getAttrs(), "static")) {
-		auto thisToken = new Token(*theClass->getName());
+		auto thisToken = new Token(rawClName);
 		auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
 		stm->getParams()->addFront(thisPtr);
 	}
 
 	auto fnToken = *name;
-	fnToken.str = theClass->getName()->str + "_" + name->str;
+	fnToken.str = rawClName.str + "_" + name->str;
 
 	// add function to class type
 	auto func = CreateFunction(context, &fnToken, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody(), stm->getAttrs());
@@ -328,10 +330,9 @@ bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> 
 	return valid;
 }
 
-bool Builder::isDeclared(CodeContext& context, Token* name)
+bool Builder::isDeclared(CodeContext& context, Token* name, vector<SType*> templateArgs)
 {
-	auto utype = SUserType::lookup(context, name->str);
-	if (utype) {
+	if (SUserType::isDeclared(context, name->str, templateArgs)) {
 		context.addError("type with name " + name->str + " already declared", name);
 		return true;
 	}
@@ -358,7 +359,8 @@ void Builder::validateAttrList(CodeContext& context, NAttributeList* attrs)
 
 void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list)
 {
-	if (isDeclared(context, name))
+	auto tArgs = context.getTemplateArgs();
+	if (isDeclared(context, name, tArgs))
 		return;
 
 	auto structName = name->str;
@@ -372,13 +374,13 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 	if (valid) {
 		switch (ctype) {
 		case NStructDeclaration::CreateType::STRUCT:
-			SUserType::createStruct(context, structName, structVars);
+			SUserType::createStruct(context, structName, structVars, tArgs);
 			return;
 		case NStructDeclaration::CreateType::UNION:
-			SUserType::createUnion(context, structName, structVars);
+			SUserType::createUnion(context, structName, structVars, tArgs);
 			return;
 		case NStructDeclaration::CreateType::CLASS:
-			auto cl = SUserType::createClass(context, structName, structVars);
+			auto cl = SUserType::createClass(context, structName, structVars, tArgs);
 			context.setClass(cl);
 			return;
 		}
@@ -387,7 +389,7 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 
 void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 {
-	if (isDeclared(context, stm->getName()))
+	if (isDeclared(context, stm->getName(), {}))
 		return;
 
 	int64_t val = 0;
@@ -447,7 +449,7 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 
 void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 {
-	if (isDeclared(context, stm->getName()))
+	if (isDeclared(context, stm->getName(), {}))
 		return;
 
 	auto realType = CGNDataType::run(context, stm->getType());

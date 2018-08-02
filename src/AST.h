@@ -535,13 +535,26 @@ public:
 
 class NUserType : public NNamedType
 {
+	NDataTypeList* templateArgs;
+
 public:
-	explicit NUserType(Token* name)
-	: NNamedType(name) {}
+	explicit NUserType(Token* name, NDataTypeList* templateArgs = nullptr)
+	: NNamedType(name), templateArgs(templateArgs) {}
 
 	NUserType* copy() const
 	{
-		return new NUserType(token->copy());
+		auto args = templateArgs ? templateArgs->copy() : nullptr;
+		return new NUserType(token->copy(), args);
+	}
+
+	NDataTypeList* getTemplateArgs()
+	{
+		return templateArgs;
+	}
+
+	~NUserType()
+	{
+		delete templateArgs;
 	}
 
 	ADD_ID(NUserType)
@@ -1003,7 +1016,36 @@ public:
 	ADD_ID(NAliasDeclaration)
 };
 
-class NStructDeclaration : public NDeclaration
+class NTemplatedDeclaration : public NDeclaration
+{
+protected:
+	NIdentifierList* templateParams;
+	NAttributeList* attrs;
+
+public:
+	NTemplatedDeclaration(Token* name, NIdentifierList* templateParams, NAttributeList* attrs)
+	: NDeclaration(name), templateParams(templateParams), attrs(attrs) {}
+
+	NTemplatedDeclaration* copy() const = 0;
+
+	NIdentifierList* getTemplateParams() const
+	{
+		return templateParams;
+	}
+
+	NAttributeList* getAttrs() const
+	{
+		return attrs;
+	}
+
+	~NTemplatedDeclaration()
+	{
+		delete templateParams;
+		delete attrs;
+	}
+};
+
+class NStructDeclaration : public NTemplatedDeclaration
 {
 public:
 	enum class CreateType {STRUCT, UNION, CLASS};
@@ -1011,17 +1053,17 @@ public:
 private:
 	CreateType ctype;
 	NVariableDeclGroupList* list;
-	NAttributeList* attrs;
 
 public:
-	NStructDeclaration(Token* name, CreateType ctype, NVariableDeclGroupList* list = nullptr, NAttributeList* attrs = nullptr)
-	: NDeclaration(name), ctype(ctype), list(list), attrs(attrs) {}
+	NStructDeclaration(Token* name, CreateType ctype, NVariableDeclGroupList* list = nullptr, NIdentifierList* templateParams = nullptr, NAttributeList* attrs = nullptr)
+	: NTemplatedDeclaration(name, templateParams, attrs), ctype(ctype), list(list) {}
 
 	NStructDeclaration* copy() const
 	{
 		auto ls = list ? list->copy() : nullptr;
+		auto tp = templateParams ? templateParams->copy() : nullptr;
 		auto at = attrs ? attrs->copy() : nullptr;
-		return new NStructDeclaration(name->copy(), ctype, ls, at);
+		return new NStructDeclaration(name->copy(), ctype, ls, tp, at);
 	}
 
 	CreateType getType() const
@@ -1034,15 +1076,9 @@ public:
 		return list;
 	}
 
-	NAttributeList* getAttrs() const
-	{
-		return attrs;
-	}
-
 	~NStructDeclaration()
 	{
 		delete list;
-		delete attrs;
 	}
 
 	ADD_ID(NStructDeclaration)
@@ -1195,14 +1231,13 @@ public:
 };
 typedef NodeList<NMemberInitializer> NInitializerList;
 
-class NClassDeclaration : public NDeclaration
+class NClassDeclaration : public NTemplatedDeclaration
 {
 	NClassMemberList* list;
-	NAttributeList* attrs;
 
 public:
-	NClassDeclaration(Token* name, NClassMemberList* list = nullptr, NAttributeList* attrs = nullptr)
-	: NDeclaration(name), list(list), attrs(attrs)
+	NClassDeclaration(Token* name, NClassMemberList* list = nullptr, NIdentifierList* templateParams = nullptr, NAttributeList* attrs = nullptr)
+	: NTemplatedDeclaration(name, templateParams, attrs), list(list)
 	{
 		if (list) {
 			for (auto i : *list)
@@ -1213,8 +1248,9 @@ public:
 	NClassDeclaration* copy() const
 	{
 		auto ls = list ? list->copy() : nullptr;
+		auto tp = templateParams ? templateParams->copy() : nullptr;
 		auto at = attrs ? attrs->copy() : nullptr;
-		return new NClassDeclaration(name->copy(), ls, at);
+		return new NClassDeclaration(name->copy(), ls, tp, at);
 	}
 
 	NClassMemberList* getMembers() const
@@ -1229,15 +1265,9 @@ public:
 		list = members;
 	}
 
-	NAttributeList* getAttrs() const
-	{
-		return attrs;
-	}
-
 	~NClassDeclaration()
 	{
 		delete list;
-		delete attrs;
 	}
 
 	ADD_ID(NClassDeclaration)

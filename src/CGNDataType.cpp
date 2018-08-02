@@ -147,9 +147,32 @@ SType* CGNDataType::visitNVecType(NVecType* type)
 
 SType* CGNDataType::visitNUserType(NUserType* type)
 {
-	auto typeName = type->getName()->str;
-	auto ty = SUserType::lookup(context, typeName);
+	vector<SType*> templateArgs;
+	if (type->getTemplateArgs()) {
+		auto valid = true;
+		for (auto item : *type->getTemplateArgs()) {
+			auto arg = CGNDataType::run(context, item);
+			valid &= arg != nullptr;
+			templateArgs.push_back(arg);
+		}
+		if (!valid)
+			return nullptr;
+	}
+	auto ty = SUserType::lookup(context, type->getName(), templateArgs);
 	if (!ty) {
+		auto typeName = type->getName()->str;
+		if (!templateArgs.empty()) {
+			typeName += "<";
+			bool first = true;
+			for (auto item : templateArgs) {
+				if (first)
+					first = false;
+				else
+					typeName += ",";
+				typeName += item->str(&context);
+			}
+			typeName += ">";
+		}
 		context.addError(typeName + " type not declared", *type);
 		return nullptr;
 	}

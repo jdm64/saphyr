@@ -99,7 +99,20 @@ string FMNDataType::visitNVecType(NVecType* type)
 
 string FMNDataType::visitNUserType(NUserType* type)
 {
-	return type->getName()->str;
+	auto ret = type->getName()->str;
+	if (type->getTemplateArgs()) {
+		ret += "<";
+		bool first = true;
+		for (auto item : * type->getTemplateArgs()) {
+			if (first)
+				first = false;
+			else
+				ret += ",";
+			ret += visit(item);
+		}
+		ret += ">";
+	}
+	return ret;
 }
 
 string FMNDataType::visitNPointerType(NPointerType* type)

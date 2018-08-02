@@ -23,6 +23,7 @@
 	NSwitchCase* t_case;
 	NClassMember* t_memb;
 	NMemberInitializer* t_init;
+	NIdentifierList* t_idlist;
 	NDataTypeList* t_typelist;
 	NAttributeList* t_attrlist;
 	NStatementList* t_stmlist;
@@ -60,7 +61,7 @@
 // integer constant
 %type <t_const_int> integer_constant
 // data types
-%type <t_dtype> data_type base_type explicit_data_type
+%type <t_dtype> data_type base_type explicit_data_type variable_type
 // parameter
 %type <t_param> parameter
 // variable
@@ -90,6 +91,7 @@
 %type <t_attr> attribute
 %type <t_attr_vals> attribute_value_list
 // lists
+%type <t_idlist> template_parameters identifier_list
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
 %type <t_clslist> class_member_list class_body
@@ -97,7 +99,7 @@
 %type <t_explist> expression_list
 %type <t_parlist> parameter_list
 %type <t_caslist> switch_case_list
-%type <t_typelist> data_type_list arrow_argument
+%type <t_typelist> data_type_list arrow_argument template_argument
 %type <t_var_dec_list> variable_declarations_list variable_declarations_list_or_empty struct_body
 %type <t_initlist> class_initializer_list
 %type <t_attrlist> attribute_list attribute_declaration optional_attribute_declaration
@@ -150,9 +152,9 @@ alias_declaration
 	}
 	;
 class_declaration
-	: optional_attribute_declaration TT_CLASS TT_IDENTIFIER class_body
+	: optional_attribute_declaration TT_CLASS TT_IDENTIFIER template_parameters class_body
 	{
-		$$ = new NClassDeclaration($3, $4, $1);
+		$$ = new NClassDeclaration($3, $5, $4, $1);
 	}
 	;
 class_body
@@ -221,6 +223,42 @@ member_initializer
 		$$ = new NMemberInitializer($1, $3);
 	}
 	;
+template_parameters
+	:
+	{
+		$$ = nullptr;
+	}
+	| '<' identifier_list '>'
+	{
+		$$ = $2;
+	}
+	;
+template_argument
+	:
+	{
+		$$ = nullptr;
+	}
+	| '<' data_type_list '>'
+	{
+		$$ = $2;
+	}
+	;
+identifier_list
+	:
+	{
+		$$ = new NIdentifierList;
+	}
+	| TT_IDENTIFIER
+	{
+		$$ = new NIdentifierList;
+		$$->add($1);
+	}
+	| identifier_list ',' TT_IDENTIFIER
+	{
+		$1->add($3);
+		$$ = $1;
+	}
+	;
 optional_attribute_declaration
 	:
 	{
@@ -269,9 +307,9 @@ attribute_value_list
 	}
 	;
 struct_declaration
-	: optional_attribute_declaration struct_union_keyword TT_IDENTIFIER struct_body
+	: optional_attribute_declaration struct_union_keyword TT_IDENTIFIER template_parameters struct_body
 	{
-		$$ = new NStructDeclaration($3, $2, $4, $1);
+		$$ = new NStructDeclaration($3, $2, $5, $4, $1);
 	}
 	;
 struct_body
@@ -495,19 +533,20 @@ variable_declarations_list
 	}
 	;
 variable_declarations
-	: explicit_data_type variable_list
+	: variable_type variable_list
 	{
 		$$ = new NVariableDeclGroup($1, $2);
 	}
-	| TT_IDENTIFIER variable_list
+	;
+variable_type
+	: explicit_data_type
+	| TT_IDENTIFIER template_argument
 	{
-		auto type = new NUserType($1);
-		$$ = new NVariableDeclGroup(type, $2);
+		$$ = new NUserType($1, $2);
 	}
-	| TT_THIS variable_list
+	| TT_THIS
 	{
-		auto type = new NThisType($1);
-		$$ = new NVariableDeclGroup(type, $2);
+		$$ = new NThisType($1);
 	}
 	;
 variable_list
@@ -582,9 +621,9 @@ parameter
 	;
 data_type
 	: explicit_data_type
-	| TT_IDENTIFIER
+	| TT_IDENTIFIER template_argument
 	{
-		$$ = new NUserType($1);
+		$$ = new NUserType($1, $2);
 	}
 	| TT_THIS
 	{

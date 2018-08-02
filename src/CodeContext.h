@@ -26,7 +26,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
-#include "BaseNodes.h"
+#include "AST.h"
 #include "Value.h"
 
 using namespace boost::program_options;
@@ -134,6 +134,8 @@ class CodeContext
 
 	GlobalContext& globalCtx;
 
+	vector<pair<string, SType*>> templateArgs;
+
 	SFunction currFunc;
 	SClassType* currClass;
 	vector<ScopeTable> localTable;
@@ -161,6 +163,13 @@ class CodeContext
 public:
 	explicit CodeContext(GlobalContext& context)
 	: globalCtx(context), currClass(nullptr) {}
+
+	static CodeContext newForTemplate(CodeContext& context, vector<pair<string, SType*>> templateMappings)
+	{
+		CodeContext newCtx(context.globalCtx);
+		newCtx.templateArgs = templateMappings;
+		return newCtx;
+	}
 
 	/**
 	 * global context functions
@@ -229,6 +238,33 @@ public:
 	/**
 	 * local context functions
 	 **/
+
+	void storeTemplate(const string& name, NTemplatedDeclaration* decl)
+	{
+		globalCtx.typeManager.storeTemplate(name, decl);
+	}
+
+	bool inTemplate() const
+	{
+		return !templateArgs.empty();
+	}
+
+	SType* getTemplateArg(const string& name)
+	{
+		for (auto item : templateArgs) {
+			if (item.first == name)
+				return item.second;
+		}
+		return nullptr;
+	}
+
+	vector<SType*> getTemplateArgs()
+	{
+		vector<SType*> args;
+		for (auto item : templateArgs)
+			args.push_back(item.second);
+		return args;
+	}
 
 	void pushLocalTable()
 	{
