@@ -203,16 +203,16 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 {
-	Builder::CreateClass(context, stm, [=](int structIdx){
+	Builder::CreateClass(context, stm, [=](int structIdx) {
 		visit(stm->getMembers()->at(structIdx));
-		context.setClass(static_cast<SClassType*>(SUserType::lookup(context, stm->getName()->str)));
+		if (!context.getClass())
+			return;
 
 		for (int i = 0; i < stm->getMembers()->size(); i++) {
 			if (i == structIdx)
 				continue;
 			visit(stm->getMembers()->at(i));
 		}
-		context.setClass(nullptr);
 	});
 }
 

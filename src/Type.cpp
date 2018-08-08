@@ -261,9 +261,9 @@ void SUserType::createStruct(CodeContext& context, const string& name, const vec
 	context.getTypeManager().createStruct(name, structure);
 }
 
-void SUserType::createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
+SClassType* SUserType::createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
 {
-	context.getTypeManager().createClass(name, structure);
+	return context.getTypeManager().createClass(name, structure);
 }
 
 void SUserType::createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure)
@@ -358,12 +358,12 @@ void TypeManager::createStruct(const string& name, const vector<pair<string, STy
 	item = smart_strucTy(buildStruct(name, structure), structure);
 }
 
-void TypeManager::createClass(const string& name, const vector<pair<string, SType*>>& structure)
+SClassType* TypeManager::createClass(const string& name, const vector<pair<string, SType*>>& structure)
 {
 	SUserPtr& item = usrMap[name];
-	if (item.get())
-		return;
-	item = smart_classTy(buildStruct(name, structure), structure);
+	if (!item.get())
+		item = smart_classTy(buildStruct(name, structure), structure);
+	return static_cast<SClassType*>(item.get());
 }
 
 void TypeManager::createUnion(const string& name, const vector<pair<string, SType*>>& structure)

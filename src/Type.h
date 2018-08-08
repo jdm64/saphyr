@@ -334,6 +334,8 @@ public:
 	}
 };
 
+class SClassType;
+
 class SUserType : public SType
 {
 	friend class SStructType;
@@ -356,7 +358,7 @@ public:
 
 	static void createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
-	static void createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
+	static SClassType* createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
 	static void createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure);
 
@@ -666,7 +668,7 @@ public:
 
 	void createStruct(const string& name, const vector<pair<string, SType*>>& structure);
 
-	void createClass(const string& name, const vector<pair<string, SType*>>& structure);
+	SClassType* createClass(const string& name, const vector<pair<string, SType*>>& structure);
 
 	void createUnion(const string& name, const vector<pair<string, SType*>>& structure);
 

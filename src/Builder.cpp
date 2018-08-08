@@ -223,6 +223,7 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 		members->add(destr);
 	}
 	visitor(structIdx);
+	context.setClass(nullptr);
 }
 
 SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs)
@@ -377,7 +378,8 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 			SUserType::createUnion(context, structName, structVars);
 			return;
 		case NStructDeclaration::CreateType::CLASS:
-			SUserType::createClass(context, structName, structVars);
+			auto cl = SUserType::createClass(context, structName, structVars);
+			context.setClass(cl);
 			return;
 		}
 	}
