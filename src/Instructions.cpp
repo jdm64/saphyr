@@ -508,7 +508,7 @@ RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token*
 RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
 {
 	auto type = baseVal.stype();
-	auto className = SUserType::lookup(context, type->subType());
+	auto className = type->subType()->str(&context);
 	auto clType = static_cast<SClassType*>(type->subType());
 	auto sym = clType->getItem(funcName->str);
 	if (!sym) {
@@ -561,7 +561,7 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpr
 void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 {
 	auto type = value.stype();
-	auto className = SUserType::lookup(context, type->subType());
+	auto className = type->subType()->str(&context);
 	auto clType = static_cast<SClassType*>(type->subType());
 	auto sym = clType->getItem("null");
 	if (!sym)
@@ -586,7 +586,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 {
 	auto varType = baseVar.stype();
 	auto member = memberName->str;
-	auto baseName = SUserType::lookup(context, varType);
+	auto baseName = varType->str(&context);
 	if (varType->isStruct()) {
 		auto structType = static_cast<SStructType*>(varType);
 		auto item = structType->getItem(member);

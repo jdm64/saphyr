@@ -18,11 +18,11 @@
 
 #define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
 #define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
-#define smart_aliasTy(type) unique_ptr<SAliasType>(new SAliasType(type))
-#define smart_strucTy(type, structure) unique_ptr<SUserType>(new SStructType(type, structure))
-#define smart_classTy(type, structure) unique_ptr<SUserType>(new SClassType(type, structure))
-#define smart_unionTy(type, structure, size) unique_ptr<SUserType>(new SUnionType(type, structure, size))
-#define smart_enumTy(type, structure) unique_ptr<SUserType>(new SEnumType(type, structure))
+#define smart_aliasTy(name, type) unique_ptr<SAliasType>(new SAliasType(name, type))
+#define smart_strucTy(name, type, structure) unique_ptr<SUserType>(new SStructType(name, type, structure))
+#define smart_classTy(name, type, structure) unique_ptr<SUserType>(new SClassType(name, type, structure))
+#define smart_unionTy(name, type, structure, size) unique_ptr<SUserType>(new SUnionType(name, type, structure, size))
+#define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType(name, type, structure))
 #define smart_opaqueTy(type) unique_ptr<SOpaqueType>(new SOpaqueType(type))
 
 void SType::dump() const
@@ -169,12 +169,11 @@ void SUserType::innerStr(CodeContext* context, stringstream& os) const
 {
 	if (isConst())
 		os << "const ";
-	auto ty = isConst() ? context->getTypeManager().getMutable(static_cast<SType*>(const_cast<SUserType*>(this))) : this;
-	os << context->getTypeManager().getUserTypeName(ty);
+	os << name;
 }
 
-SStructType::SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype)
-: SUserType(ctype | (structure.size()? 0 : OPAQUE), type, structure.size())
+SStructType::SStructType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure, int ctype)
+: SUserType(name, ctype | (structure.size()? 0 : OPAQUE), type, structure.size())
 {
 	int i = 0;
 	for (auto var : structure)
@@ -244,11 +243,6 @@ string SEnumType::str(CodeContext* context) const
 SUserType* SUserType::lookup(CodeContext& context, const string& name)
 {
 	return context.getTypeManager().lookupUserType(name);
-}
-
-string SUserType::lookup(CodeContext& context, SType* type)
-{
-	return context.getTypeManager().getUserTypeName(type);
 }
 
 void SUserType::createAlias(CodeContext& context, const string& name, SType* type)
@@ -337,7 +331,7 @@ void TypeManager::createAlias(const string& name, SType* type)
 	SUserPtr& item = usrMap[name];
 	if (item.get())
 		return;
-	item = smart_aliasTy(type);
+	item = smart_aliasTy(name, type);
 }
 
 StructType* TypeManager::buildStruct(const string& name, const vector<pair<string, SType*>>& structure)
@@ -355,14 +349,14 @@ void TypeManager::createStruct(const string& name, const vector<pair<string, STy
 	SUserPtr& item = usrMap[name];
 	if (item.get())
 		return;
-	item = smart_strucTy(buildStruct(name, structure), structure);
+	item = smart_strucTy(name, buildStruct(name, structure), structure);
 }
 
 SClassType* TypeManager::createClass(const string& name, const vector<pair<string, SType*>>& structure)
 {
 	SUserPtr& item = usrMap[name];
 	if (!item.get())
-		item = smart_classTy(buildStruct(name, structure), structure);
+		item = smart_classTy(name, buildStruct(name, structure), structure);
 	return static_cast<SClassType*>(item.get());
 }
 
@@ -382,7 +376,7 @@ void TypeManager::createUnion(const string& name, const vector<pair<string, STyp
 	}
 	vector<Type*> elements;
 	elements.push_back(*type);
-	item = smart_unionTy(StructType::create(elements, name), structure, size);
+	item = smart_unionTy(name, StructType::create(elements, name), structure, size);
 }
 
 void TypeManager::createEnum(const string& name, const vector<pair<string, int64_t>>& structure, SType* type)
@@ -390,5 +384,5 @@ void TypeManager::createEnum(const string& name, const vector<pair<string, int64
 	SUserPtr& item = usrMap[name];
 	if (item.get() || !structure.size())
 		return;
-	item = smart_enumTy(type, structure);
+	item = smart_enumTy(name, type, structure);
 }

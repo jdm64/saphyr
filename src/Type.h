@@ -344,15 +344,16 @@ class SUserType : public SType
 	friend class SAliasType;
 	friend class SOpaqueType;
 
-	SUserType(int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
-	: SType(typeClass, type, size, subtype) {}
+protected:
+	string name;
+
+	SUserType(const string& name, int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
+	: SType(typeClass, type, size, subtype), name(name) {}
 
 	void innerStr(CodeContext* context, stringstream& os) const;
 
 public:
 	static SUserType* lookup(CodeContext& context, const string& name);
-
-	static string lookup(CodeContext& context, SType* type);
 
 	static void createAlias(CodeContext& context, const string& name, SType* type);
 
@@ -369,8 +370,8 @@ class SAliasType : public SUserType
 {
 	friend class TypeManager;
 
-	explicit SAliasType(SType* type)
-	: SUserType(ALIAS, type->type(), 0, type) {}
+	explicit SAliasType(const string& name, SType* type)
+	: SUserType(name, ALIAS, type->type(), 0, type) {}
 
 protected:
 	void setConst(TypeManager* tmang);
@@ -393,7 +394,7 @@ class SStructType : public SUserType
 protected:
 	container items;
 
-	SStructType(StructType* type, const vector<pair<string, SType*>>& structure, int ctype = STRUCT);
+	SStructType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure, int ctype = STRUCT);
 
 	SType* copy()
 	{
@@ -422,8 +423,8 @@ class SClassType : public SStructType
 {
 	friend class TypeManager;
 
-	SClassType(StructType* type, const vector<pair<string, SType*>>& structure)
-	: SStructType(type, structure, STRUCT | CLASS) {}
+	SClassType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure)
+	: SStructType(name, type, structure, STRUCT | CLASS) {}
 
 public:
 	void addFunction(const string& name, const SFunction& func);
@@ -435,8 +436,8 @@ class SUnionType : public SUserType
 
 	map<string, SType*> items;
 
-	SUnionType(StructType* type, const vector<pair<string, SType*> >& structure, uint64_t size)
-	: SUserType(UNION | (structure.size()? 0 : OPAQUE), type, size)
+	SUnionType(const string& name, StructType* type, const vector<pair<string, SType*> >& structure, uint64_t size)
+	: SUserType(name, UNION | (structure.size()? 0 : OPAQUE), type, size)
 	{
 		for (auto var : structure)
 			items[var.first] = var.second;
@@ -465,8 +466,8 @@ class SEnumType : public SUserType
 
 	map<string, APSInt> items;
 
-	SEnumType(SType* type, const vector<pair<string,int64_t>>& data)
-	: SUserType(ENUM, *type, data.size(), type)
+	SEnumType(const string& name, SType* type, const vector<pair<string,int64_t>>& data)
+	: SUserType(name, ENUM, *type, data.size(), type)
 	{
 		auto numbits = type->size();
 		auto isUnsigned = !type->isUnsigned();
@@ -653,15 +654,6 @@ public:
 	SUserType* lookupUserType(const string& name)
 	{
 		return usrMap[name].get();
-	}
-
-	string getUserTypeName(const SType* type) const
-	{
-		for (auto const &item : usrMap) {
-			if (type == item.second.get())
-				return item.first;
-		}
-		return "";
 	}
 
 	void createAlias(const string& name, SType* type);
