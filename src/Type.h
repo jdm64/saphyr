@@ -342,7 +342,6 @@ class SUserType : public SType
 	friend class SUnionType;
 	friend class SEnumType;
 	friend class SAliasType;
-	friend class SOpaqueType;
 
 protected:
 	string name;

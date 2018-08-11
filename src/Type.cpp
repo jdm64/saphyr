@@ -23,7 +23,6 @@
 #define smart_classTy(name, type, structure) unique_ptr<SUserType>(new SClassType(name, type, structure))
 #define smart_unionTy(name, type, structure, size) unique_ptr<SUserType>(new SUnionType(name, type, structure, size))
 #define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType(name, type, structure))
-#define smart_opaqueTy(type) unique_ptr<SOpaqueType>(new SOpaqueType(type))
 
 void SType::dump() const
 {
