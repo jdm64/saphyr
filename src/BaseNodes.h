@@ -106,6 +106,8 @@ public:
 	virtual ~Node() {};
 
 	virtual NodeId id() = 0;
+
+	virtual Node* copy() const = 0;
 };
 
 template<typename T>
@@ -134,6 +136,15 @@ public:
 			delete this;
 
 		return other;
+	}
+
+	NodeList<T>* copy() const
+	{
+		auto ret = new NodeList<T>(doDelete);
+		ret->list.reserve(list.size());
+		for (auto item : list)
+			ret->add(item->copy());
+		return ret;
 	}
 
 	void setDelete(bool DoDelete)
@@ -219,6 +230,11 @@ public:
 	Token(const string& token, const string& filename = "", int lineNum = 0, int colNum = 0)
 	: str(token), filename(filename), line(lineNum), col(colNum) {}
 
+	Token* copy()
+	{
+		return new Token(*this);
+	}
+
 	string str;
 	string filename;
 	int line;
@@ -276,6 +292,16 @@ public:
 		Token::unescape(value->str);
 	}
 
+	NAttrValue(const NAttrValue& other)
+	: val(other.val->copy())
+	{
+	}
+
+	NAttrValue* copy() const
+	{
+		return new NAttrValue(*this);
+	}
+
 	operator Token*() const
 	{
 		return val;
@@ -314,6 +340,12 @@ public:
 	explicit NAttribute(Token* name, NAttrValueList* values = nullptr)
 	: name(name), values(values) {}
 
+	NAttribute* copy() const
+	{
+		auto v2 = values ? values->copy() : nullptr;
+		return new NAttribute(new Token(*name), static_cast<NAttrValueList*>(v2));
+	}
+
 	operator Token*() const
 	{
 		return name;
@@ -341,6 +373,11 @@ public:
 class NAttributeList : public NodeList<NAttribute>
 {
 public:
+	NAttributeList* copy() const
+	{
+		return static_cast<NAttributeList*>(NodeList<NAttribute>::copy());
+	}
+
 	static NAttribute* find(NAttributeList* list, const string& name)
 	{
 		if (!list)

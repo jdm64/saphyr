@@ -271,7 +271,7 @@ attribute_value_list
 struct_declaration
 	: optional_attribute_declaration struct_union_keyword TT_IDENTIFIER struct_body
 	{
-		$$ = new NStructDeclaration($3, $4, $1, $2);
+		$$ = new NStructDeclaration($3, $2, $4, $1);
 	}
 	;
 struct_body

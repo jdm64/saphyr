@@ -36,6 +36,8 @@ public:
 	{
 		return false;
 	}
+
+	virtual NStatement* copy() const = 0;
 };
 
 typedef NodeList<NStatement> NStatementList;
@@ -44,6 +46,8 @@ class NExpression : public Node
 {
 public:
 	virtual operator Token*() const = 0;
+
+	virtual NExpression* copy() const = 0;
 
 	virtual bool isConstant() const
 	{
@@ -65,6 +69,11 @@ class NExpressionStm : public NStatement
 public:
 	explicit NExpressionStm(NExpression* exp)
 	: exp(exp) {}
+
+	NExpressionStm* copy() const
+	{
+		return new NExpressionStm(exp->copy());
+	}
 
 	static NStatementList* convert(NExpressionList* other)
 	{
@@ -145,6 +154,11 @@ public:
 	explicit NNullPointer(Token* token)
 	: NConstant(token, token->str) {}
 
+	NNullPointer* copy() const
+	{
+		return new NNullPointer(value->copy());
+	}
+
 	ADD_ID(NNullPointer)
 };
 
@@ -155,6 +169,16 @@ public:
 	: NConstant(str, str->str)
 	{
 		Token::unescape(strVal);
+	}
+
+	NStringLiteral(const NStringLiteral& other)
+	: NConstant(other.value->copy(), other.strVal)
+	{
+	}
+
+	NStringLiteral* copy() const
+	{
+		return new NStringLiteral(*this);
 	}
 
 	ADD_ID(NStringLiteral)
@@ -180,6 +204,11 @@ public:
 	NBoolConst(Token* token, bool value)
 	: NIntLikeConst(token), bvalue(value) {}
 
+	NBoolConst* copy() const
+	{
+		return new NBoolConst(value->copy(), bvalue);
+	}
+
 	bool getValue() const
 	{
 		return bvalue;
@@ -197,6 +226,17 @@ public:
 		strVal = value->str.substr(1, value->str.length() - 2);
 	}
 
+	NCharConst(const NCharConst& other)
+	: NIntLikeConst(other.value->copy())
+	{
+		strVal = other.strVal;
+	}
+
+	NCharConst* copy() const
+	{
+		return new NCharConst(*this);
+	}
+
 	ADD_ID(NCharConst)
 };
 
@@ -209,6 +249,17 @@ public:
 	: NIntLikeConst(value), base(base)
 	{
 		Token::remove(strVal);
+	}
+
+	NIntConst(const NIntConst& other)
+	: NIntLikeConst(other.value->copy()), base(other.base)
+	{
+		strVal = other.strVal;
+	}
+
+	NIntConst* copy() const
+	{
+		return new NIntConst(*this);
 	}
 
 	int getBase() const
@@ -228,6 +279,16 @@ public:
 		Token::remove(strVal);
 	}
 
+	NFloatConst(const NFloatConst& other)
+	: NConstant(other.value->copy(), other.strVal)
+	{
+	}
+
+	NFloatConst* copy() const
+	{
+		return new NFloatConst(*this);
+	}
+
 	ADD_ID(NFloatConst)
 };
 
@@ -240,6 +301,16 @@ public:
 	: filename(filename)
 	{
 		Token::unescape(filename->str);
+	}
+
+	NImportStm(const NImportStm& other)
+	: filename(other.filename->copy())
+	{
+	}
+
+	NImportStm* copy() const
+	{
+		return new NImportStm(*this);
 	}
 
 	operator Token*() const
@@ -284,6 +355,8 @@ class NDataType : public Node
 {
 public:
 	virtual operator Token*() const = 0;
+
+	virtual NDataType* copy() const = 0;
 };
 typedef NodeList<NDataType> NDataTypeList;
 
@@ -320,6 +393,11 @@ public:
 	NBaseType(Token* token, int type)
 	: NNamedType(token), type(type) {}
 
+	NBaseType* copy() const
+	{
+		return new NBaseType(token->copy(), type);
+	}
+
 	int getType() const
 	{
 		return type;
@@ -336,6 +414,11 @@ class NConstType : public NDataType
 public:
 	NConstType(Token* constTok, NDataType* type)
 	: constTok(constTok), type(type) {}
+
+	NConstType* copy() const
+	{
+		return new NConstType(constTok->copy(), type->copy());
+	}
 
 	operator Token*() const
 	{
@@ -362,6 +445,11 @@ public:
 	explicit NThisType(Token* token)
 	: NNamedType(token) {}
 
+	NThisType* copy() const
+	{
+		return new NThisType(token->copy());
+	}
+
 	ADD_ID(NThisType);
 };
 
@@ -374,6 +462,12 @@ class NArrayType : public NDataType
 public:
 	NArrayType(Token* lBrac, NDataType* baseType, NExpression* size = nullptr)
 	: lBrac(lBrac), baseType(baseType), size(size) {}
+
+	NArrayType* copy() const
+	{
+		auto sz = size ? size->copy() : nullptr;
+		return new NArrayType(lBrac->copy(), baseType->copy(), sz);
+	}
 
 	operator Token*() const
 	{
@@ -410,6 +504,11 @@ public:
 	NVecType(Token* vecToken, NIntConst* size, NDataType* baseType)
 	: baseType(baseType), size(size), vecToken(vecToken) {}
 
+	NVecType* copy() const
+	{
+		return new NVecType(vecToken->copy(), size->copy(), baseType->copy());
+	}
+
 	NIntConst* getSize() const
 	{
 		return size;
@@ -440,6 +539,11 @@ public:
 	explicit NUserType(Token* name)
 	: NNamedType(name) {}
 
+	NUserType* copy() const
+	{
+		return new NUserType(token->copy());
+	}
+
 	ADD_ID(NUserType)
 };
 
@@ -451,6 +555,12 @@ class NPointerType : public NDataType
 public:
 	explicit NPointerType(NDataType* baseType, Token* atTok = nullptr)
 	: baseType(baseType), atTok(atTok) {}
+
+	NPointerType* copy() const
+	{
+		auto at = atTok ? atTok->copy() : nullptr;
+		return new NPointerType(baseType->copy(), at);
+	}
 
 	operator Token*() const
 	{
@@ -480,6 +590,11 @@ class NFuncPointerType : public NDataType
 public:
 	NFuncPointerType(Token* atTok, NDataType* returnType, NDataTypeList* params)
 	: returnType(returnType), params(params), atTok(atTok) {}
+
+	NFuncPointerType* copy() const
+	{
+		return new NFuncPointerType(atTok->copy(), returnType->copy(), params->copy());
+	}
 
 	operator Token*() const
 	{
@@ -519,6 +634,19 @@ public:
 
 	NVariableDecl(Token* name, NExpressionList* initList)
 	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr) {}
+
+	NVariableDecl(const NVariableDecl& other)
+	: NDeclaration(other.name->copy())
+	{
+		initExp = other.initExp ? other.initExp->copy() : nullptr;
+		initList = other.initList ? other.initList->copy() : nullptr;
+		type = other.type ? other.type->copy() : nullptr;
+	}
+
+	NVariableDecl* copy() const
+	{
+		return new NVariableDecl(*this);
+	}
 
 	NDataType* getType() const
 	{
@@ -563,10 +691,20 @@ public:
 	NGlobalVariableDecl(Token* name, NExpression* initExp = nullptr)
 	: NVariableDecl(name, initExp) {}
 
+	NGlobalVariableDecl* copy() const
+	{
+		auto in = initExp ? initExp-> copy() : nullptr;
+		return new NGlobalVariableDecl(name->copy(), in);
+	}
+
 	ADD_ID(NGlobalVariableDecl)
 };
 
-class NVariable : public NExpression {};
+class NVariable : public NExpression
+{
+public:
+	virtual NVariable* copy() const = 0;
+};
 
 class NBaseVariable : public NVariable
 {
@@ -575,6 +713,11 @@ class NBaseVariable : public NVariable
 public:
 	explicit NBaseVariable(Token* name)
 	: name(name) {}
+
+	NBaseVariable* copy() const
+	{
+		return new NBaseVariable(name->copy());
+	}
 
 	operator Token*() const
 	{
@@ -608,6 +751,11 @@ class NArrayVariable : public NVariable
 public:
 	NArrayVariable(NVariable* arrVar, Token* brackTok, NExpression* index)
 	: arrVar(arrVar), index(index), brackTok(brackTok) {}
+
+	NArrayVariable* copy() const
+	{
+		return new NArrayVariable(arrVar->copy(), brackTok->copy(), index->copy());
+	}
 
 	NExpression* getIndex() const
 	{
@@ -643,6 +791,11 @@ public:
 	NMemberVariable(NVariable* baseVar, Token* memberName)
 	: baseVar(baseVar), memberName(memberName) {}
 
+	NMemberVariable* copy() const
+	{
+		return new NMemberVariable(baseVar->copy(), memberName->copy());
+	}
+
 	NVariable* getBaseVar() const
 	{
 		return baseVar;
@@ -675,6 +828,11 @@ public:
 	explicit NExprVariable(NExpression* expr)
 	: expr(expr) {}
 
+	NExprVariable* copy() const
+	{
+		return new NExprVariable(expr->copy());
+	}
+
 	operator Token*() const
 	{
 		return *expr;
@@ -701,6 +859,11 @@ class NDereference : public NVariable
 public:
 	NDereference(NVariable* derefVar, Token* atTok)
 	: derefVar(derefVar), atTok(atTok) {}
+
+	NDereference* copy() const
+	{
+		return new NDereference(derefVar->copy(), atTok->copy());
+	}
 
 	NVariable* getVar() const
 	{
@@ -730,6 +893,11 @@ public:
 	explicit NAddressOf(NVariable* addVar, Token* token)
 	: addVar(addVar), token(token) {}
 
+	NAddressOf* copy() const
+	{
+		return new NAddressOf(addVar->copy(), token->copy());
+	}
+
 	NVariable* getVar() const
 	{
 		return addVar;
@@ -756,6 +924,11 @@ public:
 	NParameter(NDataType* type, Token* name)
 	: NDeclaration(name), type(type) {}
 
+	NParameter* copy() const
+	{
+		return new NParameter(type->copy(), name->copy());
+	}
+
 	NDataType* getType() const
 	{
 		return type;
@@ -778,6 +951,11 @@ class NVariableDeclGroup : public NStatement
 public:
 	NVariableDeclGroup(NDataType* type, NVariableDeclList* variables)
 	: type(type), variables(variables) {}
+
+	NVariableDeclGroup* copy() const
+	{
+		return new NVariableDeclGroup(type->copy(), variables->copy());
+	}
 
 	NDataType* getType() const
 	{
@@ -807,6 +985,11 @@ public:
 	NAliasDeclaration(Token* name, NDataType* type)
 	: NDeclaration(name), type(type) {}
 
+	NAliasDeclaration* copy() const
+	{
+		return new NAliasDeclaration(name->copy(), type->copy());
+	}
+
 	NDataType* getType() const
 	{
 		return type;
@@ -826,13 +1009,20 @@ public:
 	enum class CreateType {STRUCT, UNION, CLASS};
 
 private:
+	CreateType ctype;
 	NVariableDeclGroupList* list;
 	NAttributeList* attrs;
-	CreateType ctype;
 
 public:
-	NStructDeclaration(Token* name, NVariableDeclGroupList* list, NAttributeList* attrs, CreateType ctype)
-	: NDeclaration(name), list(list), attrs(attrs), ctype(ctype) {}
+	NStructDeclaration(Token* name, CreateType ctype, NVariableDeclGroupList* list = nullptr, NAttributeList* attrs = nullptr)
+	: NDeclaration(name), ctype(ctype), list(list), attrs(attrs) {}
+
+	NStructDeclaration* copy() const
+	{
+		auto ls = list ? list->copy() : nullptr;
+		auto at = attrs ? attrs->copy() : nullptr;
+		return new NStructDeclaration(name->copy(), ctype, ls, at);
+	}
 
 	CreateType getType() const
 	{
@@ -867,6 +1057,12 @@ public:
 	NEnumDeclaration(Token* name, NVariableDeclList* variables, NDataType* baseType = nullptr)
 	: NDeclaration(name), variables(variables), baseType(baseType) {}
 
+	NEnumDeclaration* copy() const
+	{
+		auto bt = baseType ? baseType->copy() : nullptr;
+		return new NEnumDeclaration(name->copy(), variables->copy(), bt);
+	}
+
 	NVariableDeclList* getVarList() const
 	{
 		return variables;
@@ -894,8 +1090,15 @@ class NFunctionDeclaration : public NDeclaration
 	NAttributeList* attrs;
 
 public:
-	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs)
+	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body = nullptr, NAttributeList* attrs = nullptr)
 	: NDeclaration(name), rtype(rtype), params(params), body(body), attrs(attrs) {}
+
+	NFunctionDeclaration* copy() const
+	{
+		auto bd = body ? body->copy() : nullptr;
+		auto at = attrs ? attrs->copy() : nullptr;
+		return new NFunctionDeclaration(name->copy(), rtype->copy(), params->copy(), bd, at);
+	}
 
 	NDataType* getRType() const
 	{
@@ -953,6 +1156,8 @@ public:
 	}
 
 	virtual MemberType memberType() const = 0;
+
+	virtual NClassMember* copy() const = 0;
 };
 typedef NodeList<NClassMember> NClassMemberList;
 
@@ -964,6 +1169,11 @@ class NMemberInitializer : public NStatement
 public:
 	NMemberInitializer(Token* name, NExpressionList* expression)
 	: name(name), expression(expression) {}
+
+	NMemberInitializer* copy() const
+	{
+		return new NMemberInitializer(name->copy(), expression->copy());
+	}
 
 	Token* getName() const
 	{
@@ -991,13 +1201,20 @@ class NClassDeclaration : public NDeclaration
 	NAttributeList* attrs;
 
 public:
-	NClassDeclaration(Token* name, NClassMemberList* list, NAttributeList* attrs)
+	NClassDeclaration(Token* name, NClassMemberList* list = nullptr, NAttributeList* attrs = nullptr)
 	: NDeclaration(name), list(list), attrs(attrs)
 	{
 		if (list) {
 			for (auto i : *list)
 				i->setClass(this);
 		}
+	}
+
+	NClassDeclaration* copy() const
+	{
+		auto ls = list ? list->copy() : nullptr;
+		auto at = attrs ? attrs->copy() : nullptr;
+		return new NClassDeclaration(name->copy(), ls, at);
 	}
 
 	NClassMemberList* getMembers() const
@@ -1034,6 +1251,11 @@ public:
 	NClassStructDecl(Token* name, NVariableDeclGroupList* list)
 	: NClassMember(name), list(list) {}
 
+	NClassStructDecl* copy() const
+	{
+		return new NClassStructDecl(name->copy(), list->copy());
+	}
+
 	MemberType memberType() const
 	{
 		return MemberType::STRUCT;
@@ -1054,6 +1276,7 @@ public:
 
 class NClassFunctionDecl : public NClassMember
 {
+protected:
 	NDataType* rtype;
 	NParameterList* params;
 	NStatementList* body;
@@ -1062,6 +1285,12 @@ class NClassFunctionDecl : public NClassMember
 public:
 	NClassFunctionDecl(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs = nullptr)
 	: NClassMember(name), rtype(rtype), params(params), body(body), attrs(attrs) {}
+
+	NClassFunctionDecl* copy() const
+	{
+		auto at = attrs ? attrs->copy() : nullptr;
+		return new NClassFunctionDecl(name->copy(), rtype->copy(), params->copy(), body->copy(), at);
+	}
 
 	MemberType memberType() const
 	{
@@ -1119,6 +1348,11 @@ public:
 	NClassConstructor(Token* name, NParameterList* params, NInitializerList* initList, NStatementList* body)
 	: NClassFunctionDecl(name, nullptr, params, body), initList(initList) {}
 
+	NClassConstructor* copy() const
+	{
+		return new NClassConstructor(name->copy(), params->copy(), initList->copy(), body->copy());
+	}
+
 	MemberType memberType() const
 	{
 		return MemberType::CONSTRUCTOR;
@@ -1143,6 +1377,11 @@ public:
 	NClassDestructor(Token* name, NStatementList* body)
 	: NClassFunctionDecl(name, nullptr, new NParameterList, body) {}
 
+	NClassDestructor* copy() const
+	{
+		return new NClassDestructor(name->copy(), body->copy());
+	}
+
 	MemberType memberType() const
 	{
 		return MemberType::DESTRUCTOR;
@@ -1160,6 +1399,11 @@ protected:
 public:
 	NConditionStmt(NExpression* condition, NStatementList* body)
 	: condition(condition), body(body) {}
+
+	NConditionStmt* copy() const
+	{
+		return new NConditionStmt(condition->copy(), body->copy());
+	}
 
 	bool isBlockStmt() const
 	{
@@ -1191,6 +1435,11 @@ public:
 	explicit NLoopStatement(NStatementList* body)
 	: NConditionStmt(nullptr, body) {}
 
+	NLoopStatement* copy() const
+	{
+		return new NLoopStatement(body->copy());
+	}
+
 	ADD_ID(NLoopStatement)
 };
 
@@ -1202,6 +1451,12 @@ class NWhileStatement : public NConditionStmt
 public:
 	NWhileStatement(NExpression* condition, NStatementList* body, bool isDoWhile = false, bool isUntil = false)
 	: NConditionStmt(condition, body), isDoWhile(isDoWhile), isUntil(isUntil) {}
+
+	NWhileStatement* copy() const
+	{
+		auto cn = condition ? condition->copy() : nullptr;
+		return new NWhileStatement(cn, body->copy(), isDoWhile, isUntil);
+	}
 
 	bool doWhile() const
 	{
@@ -1225,6 +1480,12 @@ class NSwitchCase : public NStatement
 public:
 	NSwitchCase(Token* token, NStatementList* body, NIntConst* value = nullptr)
 	: value(value), body(body), token(token) {}
+
+	NSwitchCase* copy() const
+	{
+		auto vl = value ? value->copy() : nullptr;
+		return new NSwitchCase(token->copy(), body->copy(), vl);
+	}
 
 	NIntConst* getValue() const
 	{
@@ -1274,6 +1535,11 @@ public:
 	NSwitchStatement(NExpression* value, NSwitchCaseList* cases)
 	: value(value), cases(cases) {}
 
+	NSwitchStatement* copy() const
+	{
+		return new NSwitchStatement(value->copy(), cases->copy());
+	}
+
 	bool isBlockStmt() const
 	{
 		return true;
@@ -1307,6 +1573,12 @@ public:
 	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
 	: NConditionStmt(condition, body), preStm(preStm), postExp(postExp) {}
 
+	NForStatement* copy() const
+	{
+		auto cn = condition ? condition->copy() : nullptr;
+		return new NForStatement(preStm->copy(), cn, postExp->copy(), body->copy());
+	}
+
 	NStatementList* getPreStm() const
 	{
 		return preStm;
@@ -1331,8 +1603,14 @@ class NIfStatement : public NConditionStmt
 	NStatementList* elseBody;
 
 public:
-	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody)
+	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody = nullptr)
 	: NConditionStmt(condition, ifBody), elseBody(elseBody) {}
+
+	NIfStatement* copy() const
+	{
+		auto el = elseBody ? elseBody->copy() : nullptr;
+		return new NIfStatement(condition->copy(), body->copy(), el);
+	}
 
 	NStatementList* getElseBody() const
 	{
@@ -1352,6 +1630,11 @@ class NLabelStatement : public NDeclaration
 public:
 	explicit NLabelStatement(Token* name)
 	: NDeclaration(name) {}
+
+	NLabelStatement* copy() const
+	{
+		return new NLabelStatement(name->copy());
+	}
 
 	ADD_ID(NLabelStatement)
 };
@@ -1373,6 +1656,13 @@ class NReturnStatement : public NJumpStatement
 public:
 	NReturnStatement(Token* retToken = nullptr, NExpression* value = nullptr)
 	: value(value), retToken(retToken) {}
+
+	NReturnStatement* copy() const
+	{
+		auto rt = retToken ? retToken->copy() : nullptr;
+		auto vl = value ? value->copy() : nullptr;
+		return new NReturnStatement(rt, vl);
+	}
 
 	NExpression* getValue() const
 	{
@@ -1401,6 +1691,11 @@ public:
 	explicit NGotoStatement(Token* name)
 	: name(name) {}
 
+	NGotoStatement* copy() const
+	{
+		return new NGotoStatement(name->copy());
+	}
+
 	Token* getName() const
 	{
 		return name;
@@ -1423,6 +1718,12 @@ class NLoopBranch : public NJumpStatement
 public:
 	NLoopBranch(Token* token, int type, NIntConst* level = nullptr)
 	: token(token), type(type), level(level) {}
+
+	NLoopBranch* copy() const
+	{
+		auto lv = level ? level->copy() : nullptr;
+		return new NLoopBranch(token->copy(), type, lv);
+	}
 
 	operator Token*() const
 	{
@@ -1456,6 +1757,11 @@ public:
 	explicit NDeleteStatement(NVariable* variable)
 	: variable(variable) {}
 
+	NDeleteStatement* copy() const
+	{
+		return new NDeleteStatement(variable->copy());
+	}
+
 	NVariable* getVar() const
 	{
 		return variable;
@@ -1477,6 +1783,11 @@ class NDestructorCall : public NStatement
 public:
 	NDestructorCall(NVariable* baseVar, Token* thisToken)
 	: baseVar(baseVar), thisToken(thisToken) {}
+
+	NDestructorCall* copy() const
+	{
+		return new NDestructorCall(baseVar->copy(), thisToken->copy());
+	}
 
 	NVariable* getVar() const
 	{
@@ -1532,6 +1843,11 @@ public:
 	NAssignment(int oper, Token* opToken, NVariable* lhs, NExpression* rhs)
 	: NOperatorExpr(oper, opToken), lhs(lhs), rhs(rhs) {}
 
+	NAssignment* copy() const
+	{
+		return new NAssignment(oper, opTok->copy(), lhs->copy(), rhs->copy());
+	}
+
 	NVariable* getLhs() const
 	{
 		return lhs;
@@ -1561,6 +1877,11 @@ class NTernaryOperator : public NExpression
 public:
 	NTernaryOperator(NExpression* condition, NExpression* trueVal, Token *colTok, NExpression* falseVal)
 	: condition(condition), trueVal(trueVal), falseVal(falseVal), colTok(colTok) {}
+
+	NTernaryOperator* copy() const
+	{
+		return new NTernaryOperator(condition->copy(), trueVal->copy(), colTok->copy(), falseVal->copy());
+	}
 
 	NExpression* getCondition() const
 	{
@@ -1602,6 +1923,12 @@ class NNewExpression : public NExpression
 public:
 	NNewExpression(Token* token, NDataType* type, NExpressionList* args = nullptr)
 	: type(type), token(token), args(args) {}
+
+	NNewExpression* copy() const
+	{
+		auto ar = args ? args->copy() : nullptr;
+		return new NNewExpression(token->copy(), type->copy(), ar);
+	}
 
 	NDataType* getType() const
 	{
@@ -1661,6 +1988,11 @@ public:
 	NLogicalOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
+	NLogicalOperator* copy() const
+	{
+		return new NLogicalOperator(oper, opTok->copy(), lhs->copy(), rhs->copy());
+	}
+
 	ADD_ID(NLogicalOperator)
 };
 
@@ -1669,6 +2001,11 @@ class NCompareOperator : public NBinaryOperator
 public:
 	NCompareOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
+
+	NCompareOperator* copy() const
+	{
+		return new NCompareOperator(oper, opTok->copy(), lhs->copy(), rhs->copy());
+	}
 
 	ADD_ID(NCompareOperator)
 };
@@ -1679,6 +2016,11 @@ public:
 	NBinaryMathOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(oper, opToken, lhs, rhs) {}
 
+	NBinaryMathOperator* copy() const
+	{
+		return new NBinaryMathOperator(oper, opTok->copy(), lhs->copy(), rhs->copy());
+	}
+
 	ADD_ID(NBinaryMathOperator)
 };
 
@@ -1687,6 +2029,11 @@ class NNullCoalescing : public NBinaryOperator
 public:
 	NNullCoalescing(Token* opToken, NExpression* lhs, NExpression* rhs)
 	: NBinaryOperator(0, opToken, lhs, rhs) {}
+
+	NNullCoalescing* copy() const
+	{
+		return new NNullCoalescing(opTok->copy(), lhs->copy(), rhs->copy());
+	}
 
 	ADD_ID(NNullCoalescing)
 };
@@ -1709,6 +2056,19 @@ public:
 
 	NArrowOperator(NExpression* exp, Token* name, NDataTypeList* args)
 	: type(EXP), dtype(nullptr), exp(exp), name(name), args(args) {}
+
+	NArrowOperator(const NArrowOperator& other)
+	: type(other.type), name(other.name)
+	{
+		args = other.args ? other.args->copy() : nullptr;
+		dtype = other.dtype ? other.dtype->copy() : nullptr;
+		exp = other.exp ? other.exp->copy() : nullptr;
+	}
+
+	NArrowOperator* copy() const
+	{
+		return new NArrowOperator(*this);
+	}
 
 	OfType getType() const
 	{
@@ -1786,6 +2146,11 @@ public:
 	NUnaryMathOperator(int oper, Token* opToken, NExpression* unaryExp)
 	: NUnaryOperator(oper, opToken, unaryExp) {}
 
+	NUnaryMathOperator* copy() const
+	{
+		return new NUnaryMathOperator(oper, opTok->copy(), unary->copy());
+	}
+
 	ADD_ID(NUnaryMathOperator)
 };
 
@@ -1797,6 +2162,11 @@ class NFunctionCall : public NVariable
 public:
 	NFunctionCall(Token* name, NExpressionList* arguments)
 	: name(name), arguments(arguments) {}
+
+	NFunctionCall* copy() const
+	{
+		return new NFunctionCall(name->copy(), arguments->copy());
+	}
 
 	operator Token*() const
 	{
@@ -1831,6 +2201,11 @@ class NMemberFunctionCall : public NVariable
 public:
 	NMemberFunctionCall(NVariable* baseVar, Token* funcName, NExpressionList* arguments)
 	: baseVar(baseVar), funcName(funcName), arguments(arguments) {}
+
+	NMemberFunctionCall* copy() const
+	{
+		return new NMemberFunctionCall(baseVar->copy(), funcName->copy(), arguments->copy());
+	}
 
 	NVariable* getBaseVar() const
 	{
@@ -1870,6 +2245,11 @@ class NIncrement : public NOperatorExpr
 public:
 	NIncrement(int oper, Token* opToken, NVariable* variable, bool isPostfix)
 	: NOperatorExpr(oper, opToken), variable(variable), isPostfix(isPostfix) {}
+
+	NIncrement* copy() const
+	{
+		return new NIncrement(oper, opTok->copy(), variable->copy(), isPostfix);
+	}
 
 	NVariable* getVar() const
 	{
