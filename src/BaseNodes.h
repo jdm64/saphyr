@@ -95,7 +95,7 @@ enum class NodeId
 	NWhileStatement,
 };
 
-#define ADD_ID(CLASS) NodeId id() { return NodeId::CLASS; }
+#define ADD_ID(CLASS) NodeId id() const { return NodeId::CLASS; }
 #define VISIT_CASE(ID, NODE) case NodeId::ID: visit##ID(static_cast<ID*>(NODE)); break;
 #define VISIT_CASE_RETURN(ID, NODE) case NodeId::ID: return visit##ID(static_cast<ID*>(NODE));
 #define VISIT_CASE2_RETURN(ID, TWO, NODE) case NodeId::ID: return visit##TWO(static_cast<TWO*>(NODE));
@@ -105,7 +105,7 @@ class Node
 public:
 	virtual ~Node() {};
 
-	virtual NodeId id() = 0;
+	virtual NodeId id() const = 0;
 
 	virtual Node* copy() const = 0;
 };
