@@ -51,7 +51,7 @@ int compile(const path& file, NStatementList* statements, variables_map& vm)
 	CodeContext context(globalCtx);
 
 	context.pushFile(file);
-	CGNStatement::run(context, statements);
+	CGNStatement::run(context, COPY_NODES ? statements->copy() : statements);
 	if (context.handleErrors())
 		return 2;
 

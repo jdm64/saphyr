@@ -16,13 +16,15 @@ endif
 ifeq ($(COVERAGE),true)
 	COV_CXX = --coverage
 	COV_LD  = -coverage
+else
+	COVERAGE = false
 endif
 
 # set LLVM_VER to build with a non-default llvm version
 # example: export LLVM_VER="-3.5"
 
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
-CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__
+CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__ -DCOPY_NODES=$(COVERAGE)
 LDFLAGS = -lboost_program_options -lboost_filesystem -lboost_system $(COV_LD)
 COMPILER_LDFLAGS = $(LDFLAGS) `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version`
 COMPILER = ../saphyr
