@@ -84,7 +84,7 @@ public:
 
 	void visit(NStatement* stm);
 
-	void storeValue(RValue value)
+	void storeValue(const RValue& value)
 	{
 		storedValue = value;
 	}

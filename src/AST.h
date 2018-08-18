@@ -105,7 +105,7 @@ protected:
 	string strVal;
 
 public:
-	explicit NConstant(Token* token, string strVal)
+	explicit NConstant(Token* token, const string& strVal)
 	: value(token), strVal(strVal) {}
 
 	operator Token*() const

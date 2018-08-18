@@ -52,7 +52,7 @@ class ScopeTable
 	map<string, RValue> table;
 
 public:
-	void storeSymbol(RValue var, const string& name)
+	void storeSymbol(const RValue& var, const string& name)
 	{
 		table[name] = var;
 	}
@@ -164,7 +164,7 @@ public:
 	explicit CodeContext(GlobalContext& context)
 	: globalCtx(context), currClass(nullptr) {}
 
-	static CodeContext newForTemplate(CodeContext& context, vector<pair<string, SType*>> templateMappings)
+	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings)
 	{
 		CodeContext newCtx(context.globalCtx);
 		newCtx.templateArgs = templateMappings;
