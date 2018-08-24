@@ -1,0 +1,37 @@
+
+class Foo<T, U>
+{
+}
+
+class Foo<X>
+{
+}
+
+class Foo
+{
+}
+
+class Bar
+{
+}
+
+class Bar<T>
+{
+}
+
+void foo()
+{
+	Foo a;
+	Foo<int> b;
+	Bar<float> c;
+}
+
+========
+
+negative/Template.syp:6:7: type with name Foo already declared
+negative/Template.syp:10:7: type with name Foo already declared
+negative/Template.syp:18:7: type with name Bar already declared
+negative/Template.syp:24:2: Foo type requires template arguments
+negative/Template.syp:25:2: number of template args doesn't match for Foo
+negative/Template.syp:26:2: Bar type is not a template
+found 6 errors

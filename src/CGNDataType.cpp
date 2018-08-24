@@ -158,8 +158,11 @@ SType* CGNDataType::visitNUserType(NUserType* type)
 		if (!valid)
 			return nullptr;
 	}
-	auto ty = SUserType::lookup(context, type->getName(), templateArgs);
+	bool hasErrors = false;
+	auto ty = SUserType::lookup(context, type->getName(), templateArgs, hasErrors);
 	if (!ty) {
+		if (hasErrors)
+			return nullptr;
 		auto typeName = type->getName()->str;
 		if (!templateArgs.empty()) {
 			typeName += "<";

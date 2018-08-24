@@ -239,6 +239,11 @@ public:
 	 * local context functions
 	 **/
 
+	NTemplatedDeclaration* getTemplate(const string& name)
+	{
+		return globalCtx.typeManager.getTemplateType(name);
+	}
+
 	void storeTemplate(const string& name, NTemplatedDeclaration* decl)
 	{
 		globalCtx.typeManager.storeTemplate(name, decl);

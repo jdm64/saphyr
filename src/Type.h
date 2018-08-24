@@ -410,7 +410,7 @@ public:
 
 	static bool isDeclared(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
 
-	static SType* lookup(CodeContext& context, Token* name, vector<SType*> templateArgs);
+	static SType* lookup(CodeContext& context, Token* name, vector<SType*> templateArgs, bool& hasErrors);
 
 	static void createAlias(CodeContext& context, const string& name, SType* type);
 

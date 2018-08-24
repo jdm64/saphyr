@@ -266,38 +266,57 @@ bool SUserType::isDeclared(CodeContext& context, const string& name, const vecto
 	return context.getTypeManager().lookupUserType(rawName);
 }
 
-SType* SUserType::lookup(CodeContext& context, Token* name, vector<SType*> templateArgs)
+SType* SUserType::lookup(CodeContext& context, Token* name, vector<SType*> templateArgs, bool& hasErrors)
 {
-	bool inTemplate = context.inTemplate(), hasArgs = !templateArgs.empty();
-	if (inTemplate && !hasArgs) {
-		auto type = context.getTemplateArg(name->str);
+	auto nameStr = name->str;
+	bool inTemplate = context.inTemplate(), noArgs = templateArgs.empty();
+	if (inTemplate && noArgs) {
+		auto type = context.getTemplateArg(nameStr);
 		if (type)
 			return type;
 	}
 
-	auto rawName = SUserType::raw(name->str, templateArgs);
-	auto type = context.getTypeManager().lookupUserType(rawName);
-	if (!type && hasArgs) {
-		auto templateType = context.getTypeManager().getTemplateType(name->str);
-		if (!templateType)
-			return nullptr;
-
-		auto params = templateType->getTemplateParams();
-		if (params->size() != templateArgs.size()) {
-			context.addError("number of template args doesn't match", name);
+	auto& tm = context.getTypeManager();
+	auto type = tm.lookupUserType(nameStr);
+	if (type) {
+		if (!type->isTemplated() && !noArgs) {
+			hasErrors = true;
+			context.addError(nameStr + " type is not a template", name);
 			return nullptr;
 		}
-
-		vector<pair<string, SType*>> templateMappings;
-		for (size_t i = 0; i < templateArgs.size(); i++)
-			templateMappings.push_back({params->at(i)->str, templateArgs[i]});
-
-		auto templateCtx = CodeContext::newForTemplate(context, templateMappings);
-		auto templatePtr = unique_ptr<NTemplatedDeclaration>(templateType->copy());
-		CGNStatement::run(templateCtx, templatePtr.get());
-		type = context.getTypeManager().lookupUserType(rawName);
+		return type;
+	} else if (noArgs) {
+		if (tm.getTemplateType(nameStr)) {
+			hasErrors = true;
+			context.addError(nameStr + " type requires template arguments", name);
+		}
+		return nullptr;
 	}
-	return type;
+
+	auto rawName = SUserType::raw(nameStr, templateArgs);
+	type = tm.lookupUserType(rawName);
+	if (type)
+		return type;
+
+	auto templateType = tm.getTemplateType(nameStr);
+	if (!templateType)
+		return nullptr;
+
+	auto params = templateType->getTemplateParams();
+	if (params->size() != templateArgs.size()) {
+		hasErrors = true;
+		context.addError("number of template args doesn't match for " + nameStr, name);
+		return nullptr;
+	}
+
+	vector<pair<string, SType*>> templateMappings;
+	for (size_t i = 0; i < templateArgs.size(); i++)
+		templateMappings.push_back({params->at(i)->str, templateArgs[i]});
+
+	auto templateCtx = CodeContext::newForTemplate(context, templateMappings);
+	auto templatePtr = unique_ptr<NTemplatedDeclaration>(templateType->copy());
+	CGNStatement::run(templateCtx, templatePtr.get());
+	return type = context.getTypeManager().lookupUserType(rawName);
 }
 
 void SUserType::createAlias(CodeContext& context, const string& name, SType* type)

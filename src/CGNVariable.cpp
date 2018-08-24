@@ -66,11 +66,12 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 		return var;
 
 	// check user types
-	auto userVar = SUserType::lookup(context, baseVar->getName(), {});
+	bool hasErrors = false;
+	auto userVar = SUserType::lookup(context, baseVar->getName(), {}, hasErrors);
 	if (!userVar) {
 		if (context.currFunction().isStatic()) {
 			context.addError("use of class member invalid in static function", *baseVar);
-		} else {
+		} else if (!hasErrors) {
 			context.addError("variable " + varName + " not declared", *baseVar);
 		}
 		return var;

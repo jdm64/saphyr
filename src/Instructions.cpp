@@ -418,7 +418,8 @@ RValue Inst::SizeOf(CodeContext& context, Token* name)
 		unique_ptr<NThisType> thisType(new NThisType(new Token(*name)));
 		return SizeOf(context, CGNDataType::run(context, thisType.get()), name);
 	}
-	auto isType = SUserType::lookup(context, name, {});
+	bool hasErrors = false;
+	auto isType = SUserType::lookup(context, name, {}, hasErrors);
 	auto isVar = context.loadSymbol(nameStr);
 	SType* stype = nullptr;
 

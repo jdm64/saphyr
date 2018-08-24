@@ -148,9 +148,15 @@ void CGNStatement::visitNAliasDeclaration(NAliasDeclaration* stm)
 
 void CGNStatement::visitNStructDeclaration(NStructDeclaration* stm)
 {
-	if (stm->getTemplateParams() && !context.inTemplate()) {
-		context.storeTemplate(stm->getName()->str, stm);
-		return;
+	if (!context.inTemplate()) {
+		auto name = stm->getName()->str;
+		if (SUserType::isDeclared(context, name, {}) || context.getTemplate(name)) {
+			context.addError("type with name " + name + " already declared", stm->getName());
+			return;
+		} else if (stm->getTemplateParams()) {
+			context.storeTemplate(name, stm);
+			return;
+		}
 	}
 	Builder::CreateStruct(context, stm->getType(), stm->getName(), stm->getVars());
 }
@@ -207,9 +213,15 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 {
-	if (stm->getTemplateParams() && !context.inTemplate()) {
-		context.storeTemplate(stm->getName()->str, stm);
-		return;
+	if (!context.inTemplate()) {
+		auto name = stm->getName()->str;
+		if (SUserType::isDeclared(context, name, {}) || context.getTemplate(name)) {
+			context.addError("type with name " + name + " already declared", stm->getName());
+			return;
+		} else if (stm->getTemplateParams()) {
+			context.storeTemplate(name, stm);
+			return;
+		}
 	}
 	Builder::CreateClass(context, stm, [=](int structIdx) {
 		visit(stm->getMembers()->at(structIdx));
