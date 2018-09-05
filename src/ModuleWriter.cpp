@@ -130,7 +130,11 @@ void ModuleWriter::outputNative()
 
 	buffer_ostream objStream(objFile->os());
 	unique_ptr<TargetMachine> machine(getMachine());
+#if LLVM_VERSION_MAJOR >= 7
+	machine->addPassesToEmitFile(pm, objStream, &objStream, TargetMachine::CGFT_ObjectFile);
+#else
 	machine->addPassesToEmitFile(pm, objStream, TargetMachine::CGFT_ObjectFile);
+#endif
 
 	pm.run(module);
 }
