@@ -1,0 +1,8 @@
+
+class List<T>
+{
+	struct this
+	{
+		@[]T arr;
+	}
+}

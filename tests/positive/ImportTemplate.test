@@ -1,0 +1,16 @@
+
+import "../files/Template.syp";
+
+void foo()
+{
+	List<float> v;
+}
+
+========
+
+%List_f = type { [0 x float]* }
+
+define void @foo() {
+  %v = alloca %List_f
+  ret void
+}

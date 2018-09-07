@@ -114,6 +114,16 @@ void CGNImportStm::visitNClassDestructor(NClassDestructor* stm)
 
 void CGNImportStm::visitNClassDeclaration(NClassDeclaration* stm)
 {
+	if (!context.inTemplate()) {
+		auto name = stm->getName()->str;
+		if (SUserType::isDeclared(context, name, {}) || context.getTemplate(name)) {
+			context.addError("type with name " + name + " already declared", stm->getName());
+			return;
+		} else if (stm->getTemplateParams()) {
+			context.storeTemplate(name, stm);
+			return;
+		}
+	}
 	Builder::CreateClass(context, stm, [=](int structIdx) {
 		visit(stm->getMembers()->at(structIdx));
 		if (!context.getClass())
