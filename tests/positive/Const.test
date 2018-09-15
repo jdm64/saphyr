@@ -77,11 +77,10 @@ define void @constPtr() {
   store i32 4, i32* %2
   %p = alloca i32*
   store i32* %2, i32** %p
-  %3 = mul i64 4, 5
-  %4 = call i8* @malloc(i64 %3)
-  %5 = bitcast i8* %4 to [5 x i32]*
+  %3 = call i8* @malloc(i64 20)
+  %4 = bitcast i8* %3 to [5 x i32]*
   %a = alloca [5 x i32]*
-  store [5 x i32]* %5, [5 x i32]** %a
+  store [5 x i32]* %4, [5 x i32]** %a
   ret void
 }
 

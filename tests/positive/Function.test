@@ -63,19 +63,16 @@ define void @empty() {
 }
 
 define void @run() {
-  %1 = uitofp i1 true to double
-  %2 = call double @calcTime(double %1, double 4.800000e+00)
+  %1 = call double @calcTime(double 1.000000e+00, double 4.800000e+00)
   %a = alloca double
-  store double %2, double* %a
-  %3 = load double, double* %a
-  %4 = sitofp i32 2 to double
-  %5 = fmul double %4, %3
-  %6 = load double, double* %a
-  %7 = sitofp i32 3 to double
-  %8 = fadd double %7, %6
-  %9 = call double @calcTime(double %5, double %8)
+  store double %1, double* %a
+  %2 = load double, double* %a
+  %3 = fmul double 2.000000e+00, %2
+  %4 = load double, double* %a
+  %5 = fadd double 3.000000e+00, %4
+  %6 = call double @calcTime(double %3, double %5)
   %b = alloca double
-  store double %9, double* %b
+  store double %6, double* %b
   ret void
 }
 

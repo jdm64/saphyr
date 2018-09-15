@@ -76,7 +76,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 				context.addError("Pointers to arrays only allowed to cast to smaller arrays", token);
 				return true;
 			}
-			value = RValue(new BitCastInst(value, *type, "", context), type);
+			value = RValue(context.IB().CreateBitCast(value, *type), type);
 			return false;
 		} else if (value.isNullPtr()) {
 			// NOTE: discard current null value and create
@@ -84,7 +84,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			value = RValue::getNullPtr(context, type);
 			return false;
 		} else if (type->subType()->isVoid()) {
-			value = RValue(new BitCastInst(value, *type, "", context), type);
+			value = RValue(context.IB().CreateBitCast(value, *type), type);
 			return false;
 		}
 		castError(context, "Cannot cast type to pointer", valueType, type, token);
@@ -100,8 +100,8 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			auto i32 = SType::getInt(context, 32);
 			auto mask = RValue::getZero(context, SType::getVec(context, i32, type->size()));
 			auto udef = UndefValue::get(*SType::getVec(context, type->subType(), 1));
-			auto instEle = InsertElementInst::Create(udef, value, RValue::getZero(context, i32), "", context);
-			auto retVal = new ShuffleVectorInst(instEle, udef, mask, "", context);
+			auto instEle = context.IB().CreateInsertElement(udef, value, RValue::getZero(context, i32).value());
+			auto retVal = context.IB().CreateShuffleVector(instEle, udef, mask);
 
 			value = RValue(retVal, type);
 			return false;
@@ -114,8 +114,9 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		} else if (type->subType()->isBool()) {
 			// cast to bool is value != 0
 			auto pred = getPredicate(ParserBase::TT_NEQ, token, valueType, context);
-			auto op = valueType->subType()->isFloating()? Instruction::FCmp : Instruction::ICmp;
-			auto val = CmpInst::Create(op, pred, value, RValue::getZero(context, valueType), "", context);
+			auto val = valueType->subType()->isFloating() ?
+				context.IB().CreateFCmp(pred, value, RValue::getZero(context, valueType)) :
+				context.IB().CreateICmp(pred, value, RValue::getZero(context, valueType));
 			value = RValue(val, type);
 			return false;
 		} else {
@@ -136,8 +137,9 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 
 		// cast to bool is value != 0
 		auto pred = getPredicate(ParserBase::TT_NEQ, token, valueType, context);
-		auto op = valueType->isFloating()? Instruction::FCmp : Instruction::ICmp;
-		auto val = CmpInst::Create(op, pred, value, RValue::getZero(context, valueType), "", context);
+		auto val = valueType->isFloating() ?
+			context.IB().CreateFCmp(pred, value, RValue::getZero(context, valueType)) :
+			context.IB().CreateICmp(pred, value, RValue::getZero(context, valueType));
 		value = RValue(val, type);
 		return false;
 	}
@@ -181,7 +183,7 @@ RValue Inst::CastAs(CodeContext& context, NArrowOperator* exp)
 
 	// casting @void to real pointer
 	if (stype->isPointer() && stype->subType()->isVoid() && to->isPointer()) {
-		expr =  RValue(new BitCastInst(expr, *to, "", context), to);
+		expr =  RValue(context.IB().CreateBitCast(expr, *to), to);
 		return StoreTemporary(context, expr);
 	}
 
@@ -220,7 +222,7 @@ void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, Code
 		context.addError("Compiler Error: invalid cast op", nullptr);
 		return;
 	}
-	auto val = CastInst::Create(op, value, *final, "", context);
+	auto val = context.IB().CreateCast(op, value, *final);
 	value = RValue(val, final);
 }
 
@@ -337,7 +339,7 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 	case 0: // no pointer
 	{
 		auto llvmOp = getOperator(type, optToken, lhs.stype(), context);
-		return RValue(BinaryOperator::Create(llvmOp, lhs, rhs, "", context), lhs.stype());
+		return RValue(context.IB().CreateBinOp(llvmOp, lhs, rhs), lhs.stype());
 	}
 	case 1: // lhs != ptr, rhs == ptr
 		swap(lhs, rhs);
@@ -357,7 +359,7 @@ RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* 
 	if (condExp)
 		token = *condExp;
 	CastTo(context, token, condValue, SType::getBool(context));
-	BranchInst::Create(trueBlock, falseBlock, condValue, context);
+	context.IB().CreateCondBr(condValue, trueBlock, falseBlock);
 	return condValue;
 }
 
@@ -367,8 +369,9 @@ RValue Inst::Cmp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext&
 		return RValue();
 	auto pred = getPredicate(type, optToken, lhs.stype(), context);
 	auto cmpType = lhs.stype()->isVec()? lhs.stype()->subType() : lhs.stype();
-	auto op = cmpType->isFloating()? Instruction::FCmp : Instruction::ICmp;
-	auto cmp = CmpInst::Create(op, pred, lhs, rhs, "", context);
+	auto cmp = cmpType->isFloating() ?
+		context.IB().CreateFCmp(pred, lhs, rhs) :
+		context.IB().CreateICmp(pred, lhs, rhs);
 	auto retType = lhs.stype()->isVec()?
 		SType::getVec(context, SType::getBool(context), lhs.stype()->size()) :
 		SType::getBool(context);
@@ -386,14 +389,14 @@ RValue Inst::Load(CodeContext& context, RValue value)
 	else if (value.type() == value.stype()->type())
 		return value;
 
-	return RValue(new LoadInst(value, "", context), value.stype());
+	return RValue(context.IB().CreateLoad(value), value.stype());
 }
 
 RValue Inst::Deref(CodeContext& context, const RValue& value, bool recursive)
 {
 	auto retVal = RValue(value.value(), value.stype());
 	while (retVal.stype()->isPointer()) {
-		retVal = RValue(new LoadInst(retVal, "", context), retVal.stype()->subType());
+		retVal = RValue(context.IB().CreateLoad(retVal), retVal.stype()->subType());
 		if (!recursive)
 			break;
 	}
@@ -477,7 +480,7 @@ RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NE
 			expList.push_back(argExp);
 		}
 	}
-	auto call = CallInst::Create(func, expList, "", context);
+	auto call = context.IB().CreateCall(func.value(), expList);
 	return RValue(call, func.returnTy());
 }
 
@@ -615,7 +618,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 		}
 
 		auto ptr = SType::getPointer(context, item);
-		auto castEl = new BitCastInst(baseVar, *ptr, "", context);
+		auto castEl = context.IB().CreateBitCast(baseVar, *ptr);
 		return RValue(castEl, item);
 	} else if (varType->isEnum()) {
 		auto enumType = static_cast<SEnumType*>(varType);
@@ -643,7 +646,7 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 	if (initList) {
 		if (initList->empty()) {
 			// no constructor and empty initializer; do zero initialization
-			new StoreInst(RValue::getZero(context, varType), var, context);
+			context.IB().CreateStore(RValue::getZero(context, varType), var);
 		} else if (initList->size() > 1) {
 			context.addError("invalid variable initializer", token);
 		} else {
@@ -653,18 +656,14 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 
 	if (initVal) {
 		CastTo(context, token, initVal, varType);
-		new StoreInst(initVal, var, context);
+		context.IB().CreateStore(initVal, var);
 	}
 }
 
 RValue Inst::StoreTemporary(CodeContext& context, RValue value)
 {
-#if LLVM_VERSION_MAJOR >= 5
-	auto stackAlloc = new AllocaInst(value.type(), 0, "", context);
-#else
-	auto stackAlloc = new AllocaInst(value.type(), "", context);
-#endif
-	new StoreInst(value, stackAlloc, context);
+	auto stackAlloc = context.IB().CreateAlloca(value.type());
+	context.IB().CreateStore(value, stackAlloc);
 	return RValue(stackAlloc, value.stype());
 }
 

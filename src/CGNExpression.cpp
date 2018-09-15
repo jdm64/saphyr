@@ -103,7 +103,7 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 		auto trueBlock = context.createBlock();
 		endBlock = context.createBlock();
 
-		BranchInst::Create(endBlock, trueBlock, condExp, context);
+		context.IB().CreateCondBr(condExp, endBlock, trueBlock);
 		context.pushBlock(trueBlock);
 	}
 
@@ -116,10 +116,10 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 		rhsExp = Inst::BinaryOp(exp->getOp(), *exp, lhsLocal, rhsExp, context);
 	}
 	Inst::CastTo(context, *exp->getRhs(), rhsExp, lhsVar.stype());
-	new StoreInst(rhsExp, lhsVar, context);
+	context.IB().CreateStore(rhsExp, lhsVar);
 
 	if (exp->getOp() == ParserBase::TT_DQ_MARK) {
-		BranchInst::Create(endBlock, context);
+		context.IB().CreateBr(endBlock);
 		context.pushBlock(endBlock);
 	}
 
@@ -137,25 +137,25 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
 
-		BranchInst::Create(trueBlock, falseBlock, condExp, context);
+		context.IB().CreateCondBr(condExp, trueBlock, falseBlock);
 
 		context.pushBlock(trueBlock);
 		trueExp = visit(exp->getTrueVal());
-		BranchInst::Create(endBlock, context);
+		context.IB().CreateBr(endBlock);
 
 		context.pushBlock(falseBlock);
 		falseExp = visit(exp->getFalseVal());
-		BranchInst::Create(endBlock, context);
+		context.IB().CreateBr(endBlock);
 
 		context.pushBlock(endBlock);
-		auto result = PHINode::Create(trueExp.type(), 2, "", context);
+		auto result = context.IB().CreatePHI(trueExp.type(), 2);
 		result->addIncoming(trueExp, trueBlock);
 		result->addIncoming(falseExp, falseBlock);
 		retVal = RValue(result, trueExp.stype());
 	} else {
 		trueExp = visit(exp->getTrueVal());
 		falseExp = visit(exp->getFalseVal());
-		auto select = SelectInst::Create(condExp, trueExp, falseExp, "", context);
+		auto select = context.IB().CreateSelect(condExp, trueExp, falseExp);
 		retVal = RValue(select, trueExp.stype());
 	}
 
@@ -193,10 +193,10 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	exp_list.push_back(size);
 
 	auto func = static_cast<SFunction&>(funcVal);
-	auto call = CallInst::Create(func, exp_list, "", context);
+	auto call = context.IB().CreateCall(func.value(), exp_list);
 	auto ptr = RValue(call, func.returnTy());
 	auto ptrType = SType::getPointer(context, nType);
-	auto rPtr = RValue(new BitCastInst(ptr, *ptrType, "", context), ptrType);
+	auto rPtr = RValue(context.IB().CreateBitCast(ptr, *ptrType), ptrType);
 
 	// setup type so the variable is initialized using the base type
 	RValue tmp, ptr2 = RValue(rPtr.value(), nType);
@@ -218,10 +218,10 @@ RValue CGNExpression::visitNLogicalOperator(NLogicalOperator* exp)
 	context.pushBlock(firstBlock);
 	auto rhsExp = visit(exp->getRhs());
 	Inst::CastTo(context, *exp->getRhs(), rhsExp, SType::getBool(context));
-	BranchInst::Create(secondBlock, context);
+	context.IB().CreateBr(secondBlock);
 
 	context.pushBlock(secondBlock);
-	auto result = PHINode::Create(Type::getInt1Ty(context), 2, "", context);
+	auto result = context.IB().CreatePHI(Type::getInt1Ty(context), 2);
 	result->addIncoming(lhsExp, saveBlock);
 	result->addIncoming(rhsExp, firstBlock);
 
@@ -256,21 +256,21 @@ RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
 
-		BranchInst::Create(endBlock, falseBlock, condition, context);
+		context.IB().CreateCondBr(condition, endBlock, falseBlock);
 
 		context.pushBlock(falseBlock);
 		rhsExp = visit(exp->getRhs());
-		BranchInst::Create(endBlock, context);
+		context.IB().CreateBr(endBlock);
 
 		context.pushBlock(endBlock);
-		auto result = PHINode::Create(lhsExp.type(), 2, "", context);
+		auto result = context.IB().CreatePHI(lhsExp.type(), 2);
 		result->addIncoming(lhsExp, trueBlock);
 		result->addIncoming(rhsExp, falseBlock);
 
 		retVal = RValue(result, lhsExp.stype());
 	} else {
 		rhsExp = visit(exp->getRhs());
-		auto select = SelectInst::Create(condition, lhsExp, rhsExp, "", context);
+		auto select = context.IB().CreateSelect(condition, lhsExp, rhsExp);
 		retVal = RValue(select, lhsExp.stype());
 	}
 
@@ -362,7 +362,7 @@ RValue CGNExpression::visitNIncrement(NIncrement* exp)
 	auto incType = type->isPointer()? SType::getInt(context, 32) : type;
 
 	auto result = Inst::BinaryOp(exp->getOp(), *exp, varVal, RValue::getNumVal(context, incType, exp->getOp() == ParserBase::TT_INC? 1:-1), context);
-	new StoreInst(result, varPtr, context);
+	context.IB().CreateStore(result, varPtr);
 
 	return exp->postfix()? varVal : RValue(result, type);
 }

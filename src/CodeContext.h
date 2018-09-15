@@ -22,8 +22,8 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <llvm/IR/Instructions.h>
 #include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
 #include "AST.h"
@@ -136,6 +136,7 @@ class CodeContext
 
 	vector<pair<string, SType*>> templateArgs;
 
+	IRBuilder<> irBuilder;
 	SFunction currFunc;
 	SClassType* currClass;
 	vector<ScopeTable> localTable;
@@ -162,7 +163,7 @@ class CodeContext
 
 public:
 	explicit CodeContext(GlobalContext& context)
-	: globalCtx(context), currClass(nullptr) {}
+	: globalCtx(context), irBuilder(context.module->getContext()), currClass(nullptr) {}
 
 	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings)
 	{
@@ -188,6 +189,11 @@ public:
 	TypeManager& getTypeManager() const
 	{
 		return globalCtx.typeManager;
+	}
+
+	IRBuilder<>& IB()
+	{
+		return irBuilder;
 	}
 
 	void addError(string error, Token* token)
@@ -322,16 +328,12 @@ public:
 		currClass = classType;
 	}
 
-	operator BasicBlock*() const
-	{
-		return currBlock();
-	}
-
 	void startFuncBlock(SFunction function)
 	{
 		pushLocalTable();
 		funcBlocks.clear();
 		funcBlocks.push_back(BasicBlock::Create(getModule()->getContext(), "", function));
+		irBuilder.SetInsertPoint(currBlock());
 		currFunc = function;
 	}
 
@@ -353,6 +355,7 @@ public:
 	{
 		block->moveAfter(currBlock());
 		funcBlocks.push_back(block);
+		irBuilder.SetInsertPoint(currBlock());
 	}
 
 	void popLoopBranchBlocks(int type)

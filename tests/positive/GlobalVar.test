@@ -38,10 +38,7 @@ int main()
 define void @run() {
   %global = alloca i1
   store i1 false, i1* %global
-  %1 = getelementptr %MyStruct, %MyStruct* @mStr, i32 0, i32 2
-  %2 = sext i32 3 to i64
-  %3 = getelementptr [4 x double], [4 x double]* %1, i32 0, i64 %2
-  store double 2.800000e+00, double* %3
+  store double 2.800000e+00, double* getelementptr inbounds (%MyStruct, %MyStruct* @mStr, i32 0, i32 2, i64 3)
   ret void
 }
 

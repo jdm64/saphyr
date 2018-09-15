@@ -81,12 +81,8 @@ void CGNStatement::visitNExpressionStm(NExpressionStm* stm)
 void CGNStatement::visitNParameter(NParameter* stm)
 {
 	auto stype = CGNDataType::run(context, stm->getType());
-#if LLVM_VERSION_MAJOR >= 5
-	auto stackAlloc = new AllocaInst(*stype, 0, "", context);
-#else
-	auto stackAlloc = new AllocaInst(*stype, "", context);
-#endif
-	new StoreInst(storedValue, stackAlloc, context);
+	auto stackAlloc = context.IB().CreateAlloca(*stype);
+	context.IB().CreateStore(storedValue, stackAlloc);
 	context.storeLocalSymbol({stackAlloc, stype}, stm->getName()->str);
 }
 
@@ -118,11 +114,7 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 		return;
 	}
 
-#if LLVM_VERSION_MAJOR >= 5
-	auto var = RValue(new AllocaInst(*varType, 0, name, context), varType);
-#else
-	auto var = RValue(new AllocaInst(*varType, name, context), varType);
-#endif
+	auto var = RValue(context.IB().CreateAlloca(*varType, nullptr, name), varType);
 	context.storeLocalSymbol(var, name);
 
 	Inst::InitVariable(context, var, stm->getName(), stm->getInitList(), initValue);
@@ -253,7 +245,7 @@ void CGNStatement::visitNReturnStatement(NReturnStatement* stm)
 	auto returnVal = CGNExpression::run(context, stm->getValue());
 	if (returnVal)
 		Inst::CastTo(context, *stm->getValue(), returnVal, funcReturn);
-	ReturnInst::Create(context, returnVal, context);
+	context.IB().CreateRet(returnVal);
 	context.pushBlock(context.createBlock());
 }
 
@@ -264,10 +256,10 @@ void CGNStatement::visitNLoopStatement(NLoopStatement* stm)
 
 	context.pushLocalTable();
 
-	BranchInst::Create(bodyBlock, context);
+	context.IB().CreateBr(bodyBlock);
 	context.pushBlock(bodyBlock);
 	visit(stm->getBody());
-	BranchInst::Create(bodyBlock, context);
+	context.IB().CreateBr(bodyBlock);
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
@@ -286,14 +278,14 @@ void CGNStatement::visitNWhileStatement(NWhileStatement* stm)
 
 	context.pushLocalTable();
 
-	BranchInst::Create(startBlock, context);
+	context.IB().CreateBr(startBlock);
 
 	context.pushBlock(condBlock);
 	Inst::Branch(trueBlock, falseBlock, stm->getCond(), context);
 
 	context.pushBlock(bodyBlock);
 	visit(stm->getBody());
-	BranchInst::Create(condBlock, context);
+	context.IB().CreateBr(condBlock);
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
@@ -307,7 +299,7 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
-	auto switchInst = SwitchInst::Create(switchValue, defaultBlock, stm->getCases()->size(), context);
+	auto switchInst = context.IB().CreateSwitch(switchValue, defaultBlock, stm->getCases()->size());
 
 	context.pushLocalTable();
 
@@ -333,14 +325,14 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 			caseBlock = context.currBlock();
 		} else {
 			caseBlock = context.createBlock();
-			BranchInst::Create(caseBlock, context);
+			context.IB().CreateBr(caseBlock);
 			context.pushBlock(caseBlock);
 		}
 	}
 	switchInst->setDefaultDest(defaultBlock);
 
 	// NOTE: the last case will create a dangling block which needs a terminator.
-	BranchInst::Create(endBlock, context);
+	context.IB().CreateBr(endBlock);
 
 	context.popLocalTable();
 	context.popLoopBranchBlocks(BranchType::BREAK);
@@ -357,18 +349,18 @@ void CGNStatement::visitNForStatement(NForStatement* stm)
 	context.pushLocalTable();
 
 	visit(stm->getPreStm());
-	BranchInst::Create(condBlock, context);
+	context.IB().CreateBr(condBlock);
 
 	context.pushBlock(condBlock);
 	Inst::Branch(bodyBlock, endBlock, stm->getCond(), context);
 
 	context.pushBlock(bodyBlock);
 	visit(stm->getBody());
-	BranchInst::Create(postBlock, context);
+	context.IB().CreateBr(postBlock);
 
 	context.pushBlock(postBlock);
 	CGNExpression::run(context, stm->getPostExp());
-	BranchInst::Create(condBlock, context);
+	context.IB().CreateBr(condBlock);
 
 	context.pushBlock(endBlock);
 	context.popLocalTable();
@@ -387,7 +379,7 @@ void CGNStatement::visitNIfStatement(NIfStatement* stm)
 
 	context.pushBlock(ifBlock);
 	visit(stm->getBody());
-	BranchInst::Create(endBlock, context);
+	context.IB().CreateBr(endBlock);
 
 	context.popLocalTable();
 	context.pushLocalTable();
@@ -395,7 +387,7 @@ void CGNStatement::visitNIfStatement(NIfStatement* stm)
 	context.pushBlock(elseBlock);
 	if (stm->getElseBody()) {
 		visit(stm->getElseBody());
-		BranchInst::Create(endBlock, context);
+		context.IB().CreateBr(endBlock);
 	}
 	context.pushBlock(endBlock);
 	context.popLocalTable();
@@ -416,7 +408,7 @@ void CGNStatement::visitNLabelStatement(NLabelStatement* stm)
 	} else {
 		label = context.createLabelBlock(stm->getName(), false);
 	}
-	BranchInst::Create(label->block, context);
+	context.IB().CreateBr(label->block);
 	context.pushBlock(label->block);
 }
 
@@ -429,7 +421,7 @@ void CGNStatement::visitNGotoStatement(NGotoStatement* stm)
 		// later check if it's used at the end of the function.
 		label = context.createLabelBlock(stm->getName(), true);
 	}
-	BranchInst::Create(label->block, context);
+	context.IB().CreateBr(label->block);
 	context.pushBlock(skip);
 }
 
@@ -465,7 +457,7 @@ void CGNStatement::visitNLoopBranch(NLoopBranch* stm)
 		context.addError("undefined loop branch type: " + to_string(stm->getType()), *stm);
 		return;
 	}
-	BranchInst::Create(block, context);
+	context.IB().CreateBr(block);
 	context.pushBlock(context.createBlock());
 	return;
 error:
@@ -501,9 +493,9 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 		Inst::CallDestructor(context, ptr, *stm->getVar());
 
 	vector<Value*> exp_list;
-	exp_list.push_back(new BitCastInst(ptr, *bytePtr, "", context));
+	exp_list.push_back(context.IB().CreateBitCast(ptr, *bytePtr));
 
-	CallInst::Create(static_cast<SFunction&>(func), exp_list, "", context);
+	context.IB().CreateCall(static_cast<SFunction&>(func).value(), exp_list);
 }
 
 void CGNStatement::visitNDestructorCall(NDestructorCall* stm)

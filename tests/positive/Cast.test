@@ -105,12 +105,11 @@ define void @mutCast() {
   %a = alloca i32
   store i32 4, i32* %a
   %b = alloca float
-  %1 = fptrunc double 2.800000e+00 to float
-  store float %1, float* %b
+  store float 0x4006666660000000, float* %b
   store i32 5, i32* %a
   store i32 7, i32* %a
-  %2 = load i32, i32* %a
-  %3 = sitofp i32 %2 to float
-  store float %3, float* %b
+  %1 = load i32, i32* %a
+  %2 = sitofp i32 %1 to float
+  store float %2, float* %b
   ret void
 }

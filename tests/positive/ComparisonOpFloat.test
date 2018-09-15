@@ -19,42 +19,41 @@ int main()
 
 define i32 @main() {
   %f = alloca float
-  %1 = fptrunc double 3.900000e+00 to float
-  store float %1, float* %f
+  store float 0x400F333340000000, float* %f
   %d = alloca double
   store double 5.000000e-01, double* %d
   %a = alloca i1
-  %2 = load float, float* %f
-  %3 = load double, double* %d
-  %4 = fpext float %2 to double
-  %5 = fcmp olt double %4, %3
-  store i1 %5, i1* %a
-  %6 = load double, double* %d
-  %7 = load float, float* %f
-  %8 = fpext float %7 to double
-  %9 = fcmp ogt double %6, %8
-  store i1 %9, i1* %a
-  %10 = load float, float* %f
-  %11 = load double, double* %d
-  %12 = fpext float %10 to double
-  %13 = fcmp ole double %12, %11
-  store i1 %13, i1* %a
-  %14 = load float, float* %f
-  %15 = load double, double* %d
-  %16 = fpext float %14 to double
-  %17 = fcmp oge double %16, %15
-  store i1 %17, i1* %a
-  %18 = load float, float* %f
-  %19 = load double, double* %d
-  %20 = fpext float %18 to double
-  %21 = fcmp one double %20, %19
-  store i1 %21, i1* %a
-  %22 = load float, float* %f
-  %23 = load double, double* %d
-  %24 = fpext float %22 to double
-  %25 = fcmp oeq double %24, %23
-  store i1 %25, i1* %a
-  %26 = load i1, i1* %a
-  %27 = zext i1 %26 to i32
-  ret i32 %27
+  %1 = load float, float* %f
+  %2 = load double, double* %d
+  %3 = fpext float %1 to double
+  %4 = fcmp olt double %3, %2
+  store i1 %4, i1* %a
+  %5 = load double, double* %d
+  %6 = load float, float* %f
+  %7 = fpext float %6 to double
+  %8 = fcmp ogt double %5, %7
+  store i1 %8, i1* %a
+  %9 = load float, float* %f
+  %10 = load double, double* %d
+  %11 = fpext float %9 to double
+  %12 = fcmp ole double %11, %10
+  store i1 %12, i1* %a
+  %13 = load float, float* %f
+  %14 = load double, double* %d
+  %15 = fpext float %13 to double
+  %16 = fcmp oge double %15, %14
+  store i1 %16, i1* %a
+  %17 = load float, float* %f
+  %18 = load double, double* %d
+  %19 = fpext float %17 to double
+  %20 = fcmp one double %19, %18
+  store i1 %20, i1* %a
+  %21 = load float, float* %f
+  %22 = load double, double* %d
+  %23 = fpext float %21 to double
+  %24 = fcmp oeq double %23, %22
+  store i1 %24, i1* %a
+  %25 = load i1, i1* %a
+  %26 = zext i1 %25 to i32
+  ret i32 %26
 }

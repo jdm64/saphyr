@@ -32,17 +32,16 @@ int main()
 
 define i32 @four() {
   %z = alloca %S
-  %1 = icmp ne i32 4, 0
-  br i1 %1, label %5, label %2
+  br i1 true, label %4, label %1
 
-; <label>:2:                                      ; preds = %0
-  %3 = getelementptr %S, %S* %z, i32 0, i32 0
-  %4 = load i32, i32* %3
-  br label %5
+; <label>:1:                                      ; preds = %0
+  %2 = getelementptr %S, %S* %z, i32 0, i32 0
+  %3 = load i32, i32* %2
+  br label %4
 
-; <label>:5:                                      ; preds = %0, %2
-  %6 = phi i32 [ %4, %2 ], [ 5, %0 ]
-  ret i32 %6
+; <label>:4:                                      ; preds = %0, %1
+  %5 = phi i32 [ %3, %1 ], [ 5, %0 ]
+  ret i32 %5
 }
 
 define i32 @func() {
@@ -74,27 +73,25 @@ define i32 @main() {
   %f = alloca double
   store double %3, double* %f
   %4 = load double, double* %f
-  %5 = sitofp i32 10 to double
-  %6 = fcmp ogt double %4, %5
-  br i1 %6, label %7, label %11
+  %5 = fcmp ogt double %4, 1.000000e+01
+  br i1 %5, label %6, label %9
 
-; <label>:7:                                      ; preds = %0
-  %8 = load double, double* %f
-  %9 = sitofp i32 4 to double
-  %10 = fadd double %9, %8
-  br label %15
+; <label>:6:                                      ; preds = %0
+  %7 = load double, double* %f
+  %8 = fadd double 4.000000e+00, %7
+  br label %13
 
-; <label>:11:                                     ; preds = %0
-  %12 = load i32, i32* %x
-  %13 = sitofp i32 %12 to double
-  %14 = fadd double %13, 1.000000e+00
-  br label %15
+; <label>:9:                                      ; preds = %0
+  %10 = load i32, i32* %x
+  %11 = sitofp i32 %10 to double
+  %12 = fadd double %11, 1.000000e+00
+  br label %13
 
-; <label>:15:                                     ; preds = %11, %7
-  %16 = phi double [ %10, %7 ], [ %14, %11 ]
+; <label>:13:                                     ; preds = %9, %6
+  %14 = phi double [ %8, %6 ], [ %12, %9 ]
   %z = alloca double
-  store double %16, double* %z
-  %17 = load double, double* %z
-  %18 = fptosi double %17 to i32
-  ret i32 %18
+  store double %14, double* %z
+  %15 = load double, double* %z
+  %16 = fptosi double %15 to i32
+  ret i32 %16
 }

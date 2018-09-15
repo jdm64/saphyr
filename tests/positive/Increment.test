@@ -80,13 +80,12 @@ define void @call() {
   %10 = call [5 x i32] @func3()
   %11 = alloca [5 x i32]
   store [5 x i32] %10, [5 x i32]* %11
-  %12 = sext i32 3 to i64
-  %13 = getelementptr [5 x i32], [5 x i32]* %11, i32 0, i64 %12
-  %14 = load i32, i32* %13
-  %15 = add i32 %14, 1
-  store i32 %15, i32* %13
+  %12 = getelementptr [5 x i32], [5 x i32]* %11, i32 0, i64 3
+  %13 = load i32, i32* %12
+  %14 = add i32 %13, 1
+  store i32 %14, i32* %12
   %c = alloca i32
-  store i32 %14, i32* %c
+  store i32 %13, i32* %c
   ret void
 }
 

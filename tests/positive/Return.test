@@ -63,8 +63,7 @@ define %Str @structFunc() {
 }
 
 define i32 @castUp() {
-  %1 = zext i1 true to i32
-  ret i32 %1
+  ret i32 1
 }
 
 define i32 @main() {

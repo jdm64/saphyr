@@ -63,7 +63,7 @@ public:
 
 	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
 	{
-		auto ptrVal = GetElementPtrInst::Create(nullptr, ptr, idxs, "", context);
+		auto ptrVal = context.IB().CreateGEP(nullptr, ptr, idxs);
 		return RValue(ptrVal, type);
 	}
 
