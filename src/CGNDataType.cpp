@@ -231,12 +231,12 @@ void CGNDataTypeNew::setSize(SType* type)
 	if (type->isUnsized())
 		sizeVal = RValue();
 	else
-		sizeVal = RValue::getNumVal(context, SType::getInt(context, 64), SType::allocSize(context, type));
+		sizeVal = RValue::getNumVal(context, SType::allocSize(context, type), 64);
 }
 
 void CGNDataTypeNew::setSize(uint64_t size)
 {
-	setSize(RValue::getNumVal(context, SType::getInt(context, 64), size));
+	setSize(RValue::getNumVal(context, size, 64));
 }
 
 void CGNDataTypeNew::setSize(const RValue& size)

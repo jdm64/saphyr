@@ -411,7 +411,7 @@ RValue Inst::SizeOf(CodeContext& context, SType* type, Token* token)
 		context.addError("size of " + type->str(&context) + " is invalid", token);
 		return RValue();
 	}
-	return RValue::getNumVal(context, SType::getInt(context, 64, true), SType::allocSize(context, type));
+	return RValue::getNumVal(context, SType::allocSize(context, type), 64, true);
 }
 
 RValue Inst::SizeOf(CodeContext& context, Token* name)
@@ -606,7 +606,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 
 		vector<Value*> indexes;
 		indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
-		indexes.push_back(RValue::getNumVal(context, SType::getInt(context, 32), item->first));
+		indexes.push_back(RValue::getNumVal(context, item->first));
 
 		return GetElementPtr(context, baseVar, indexes, item->second.stype());
 	} else if (varType->isUnion()) {

@@ -43,6 +43,12 @@ RValue RValue::getNumVal(CodeContext &context, SType* type, int64_t value)
 	return RValue(one, numlike);
 }
 
+RValue RValue::getNumVal(CodeContext &context, int64_t value, int bitwidth, bool isUnsigned)
+{
+	auto type = SType::getInt(context, bitwidth, isUnsigned);
+	return getNumVal(context, type, value);
+}
+
 RValue RValue::getAllOne(CodeContext &context, SType* type)
 {
 	auto numlike = SType::getNumberLike(context, type);

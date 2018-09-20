@@ -45,6 +45,8 @@ public:
 
 	static RValue getNumVal(CodeContext &context, SType* type, int64_t value = 1);
 
+	static RValue getNumVal(CodeContext &context, int64_t value, int bitwidth = 32, bool isUnsigned = false);
+
 	static RValue getAllOne(CodeContext &context, SType* type);
 
 	static RValue getValue(CodeContext &context, const APSInt& intVal);
