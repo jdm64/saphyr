@@ -221,6 +221,22 @@ void SClassType::addFunction(const string& name, const SFunction& func)
 	items[name] = make_pair(0, func);
 }
 
+SFunction SClassType::getConstructor()
+{
+	auto item = getItem("this");
+	if (!item)
+		return {};
+	return static_cast<SFunction&>(item->second);
+}
+
+SFunction SClassType::getDestructor()
+{
+	auto item = getItem("null");
+	if (!item)
+		return {};
+	return static_cast<SFunction&>(item->second);
+}
+
 string SUnionType::str(CodeContext* context) const
 {
 	stringstream os;

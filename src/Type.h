@@ -513,6 +513,10 @@ class SClassType : public SStructType
 
 public:
 	void addFunction(const string& name, const SFunction& func);
+
+	SFunction getConstructor();
+
+	SFunction getDestructor();
 };
 
 class SUnionType : public STemplatedType

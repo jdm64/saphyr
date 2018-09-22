@@ -126,7 +126,7 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		if (it != items.end())
 			continue;
 		auto clTy = static_cast<SClassType*>(stype);
-		if (clTy->getItem("this")) {
+		if (clTy->getConstructor()) {
 			items.insert({item.first, new NMemberInitializer(new Token(item.first), new NExpressionList)});
 		}
 	}
@@ -156,7 +156,7 @@ void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm,
 		if (!ty->isClass())
 			continue;
 		auto itemCl = static_cast<SClassType*>(ty);
-		if (!itemCl->getItem("null"))
+		if (!itemCl->getDestructor())
 			continue;
 		stm->getBody()->add(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
 	}

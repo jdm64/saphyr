@@ -551,11 +551,10 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList)
 {
 	auto clType = static_cast<SClassType*>(var.stype());
-	auto clItem = clType->getItem("this");
-	if (!clItem)
+	auto func = clType->getConstructor();
+	if (!func)
 		return false;
 
-	auto func = static_cast<SFunction&>(clItem->second);
 	vector<Value*> exp_list;
 	exp_list.push_back(var);
 	CallFunction(context, func, token, initList, exp_list);
@@ -567,11 +566,10 @@ void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 	auto type = value.stype();
 	auto className = type->subType()->str(&context);
 	auto clType = static_cast<SClassType*>(type->subType());
-	auto sym = clType->getItem("null");
-	if (!sym)
+	auto func = clType->getDestructor();
+	if (!func)
 		return;
 
-	auto func = static_cast<SFunction&>(sym->second);
 	vector<Value*> exp_list;
 	exp_list.push_back(value);
 	NExpressionList argList;
