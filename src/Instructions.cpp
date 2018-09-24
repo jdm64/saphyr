@@ -645,11 +645,12 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 		if (initList->empty()) {
 			// no constructor and empty initializer; do zero initialization
 			context.IB().CreateStore(RValue::getZero(context, varType), var);
+			return;
 		} else if (initList->size() > 1) {
 			context.addError("invalid variable initializer", token);
-		} else {
-			initVal = CGNExpression::run(context, initList->at(0));
+			return;
 		}
+		initVal = CGNExpression::run(context, initList->at(0));
 	}
 
 	if (initVal) {
