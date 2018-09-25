@@ -550,14 +550,54 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 
 bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList)
 {
-	auto clType = static_cast<SClassType*>(var.stype());
+	bool isArr = false;
+	auto varType = var.stype();
+	SClassType* clType;
+
+	if (varType->isClass()) {
+		clType = static_cast<SClassType*>(varType);
+	} else if (varType->isArray() && varType->subType()->isClass()) {
+		isArr = true;
+		clType = static_cast<SClassType*>(varType->subType());
+	} else {
+		return false;
+	}
+
 	auto func = clType->getConstructor();
 	if (!func)
 		return false;
 
+	Value *endPtr, *nextPtr;
+	if (isArr) {
+		auto startBlock = context.currBlock();
+		vector<Value*> idxs;
+		auto zero = RValue::getZero(context, SType::getInt(context, 32));
+		idxs.push_back(zero);
+		idxs.push_back(zero);
+		auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
+		endPtr = context.IB().CreateGEP(nullptr, startPtr, RValue::getNumVal(context, varType->size(), 64));
+
+		auto block = context.createBlock();
+		context.IB().CreateBr(block);
+		context.pushBlock(block);
+
+		auto phi = context.IB().CreatePHI(startPtr->getType(), 2);
+		nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
+		phi->addIncoming(startPtr, startBlock);
+		phi->addIncoming(nextPtr, block);
+		var = RValue(phi, clType);
+	}
+
 	vector<Value*> exp_list;
 	exp_list.push_back(var);
 	CallFunction(context, func, token, initList, exp_list);
+
+	if (isArr) {
+		auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
+		auto block = context.createBlock();
+		context.IB().CreateCondBr(cmp, block, context.currBlock());
+		context.pushBlock(block);
+	}
 	return true;
 }
 
@@ -635,12 +675,10 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 
 void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpressionList* initList, RValue& initVal)
 {
-	auto varType = var.stype();
-	if (varType->isClass()) {
-		if (CallConstructor(context, var, token, initList))
-			return;
-	}
+	if (CallConstructor(context, var, token, initList))
+		return;
 
+	auto varType = var.stype();
 	if (initList) {
 		if (initList->empty()) {
 			// no constructor and empty initializer; do zero initialization

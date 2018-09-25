@@ -230,6 +230,9 @@ public:
 	Token(const string& token, const string& filename = "", int lineNum = 0, int colNum = 0)
 	: str(token), filename(filename), line(lineNum), col(colNum) {}
 
+	Token(const Token& token, const string& str)
+	: str(str), filename(token.filename), line(token.line), col(token.col) {}
+
 	Token* copy()
 	{
 		return new Token(*this);

@@ -119,15 +119,22 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 
 	auto classTy = context.getClass();
 	for (auto item : *classTy) {
-		auto stype = item.second.second.stype();
-		if (!stype->isClass())
-			continue;
 		auto it = items.find(item.first);
 		if (it != items.end())
 			continue;
-		auto clTy = static_cast<SClassType*>(stype);
+
+		auto stype = item.second.second.stype();
+		SClassType* clTy;
+
+		if (stype->isClass())
+			clTy = static_cast<SClassType*>(stype);
+		else if (stype->isArray() && stype->subType()->isClass())
+			clTy = static_cast<SClassType*>(stype->subType());
+		else
+			continue;
+
 		if (clTy->getConstructor()) {
-			items.insert({item.first, new NMemberInitializer(new Token(item.first), new NExpressionList)});
+			items.insert({item.first, new NMemberInitializer(new Token(*stm->getName(), item.first), new NExpressionList)});
 		}
 	}
 
@@ -215,7 +222,7 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 		structIdx = members->size() - 1;
 	}
 	if (constrIdx < 0) {
-		auto constr = new NClassConstructor(new Token("this"), new NParameterList, new NInitializerList, new NStatementList);
+		auto constr = new NClassConstructor(new Token(*stm->getName(), "this"), new NParameterList, new NInitializerList, new NStatementList);
 		constr->setClass(stm);
 		members->add(constr);
 	}
