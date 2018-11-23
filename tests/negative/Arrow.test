@@ -5,7 +5,17 @@ void test()
 	a->foo;
 }
 
+void lenErr()
+{
+	int a;
+
+	a->len(int);
+	a->len;
+}
+
 ========
 
 negative/Arrow.syp:5:2: invalid arrow op name: foo
-found 1 errors
+negative/Arrow.syp:12:2: len operator takes no arguments
+negative/Arrow.syp:13:5: len operator invalid for int32 type
+found 3 errors

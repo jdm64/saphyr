@@ -63,6 +63,8 @@ public:
 
 	static RValue SizeOf(CodeContext& context, NArrowOperator* exp);
 
+	static RValue LenOp(CodeContext& context, NArrowOperator* exp);
+
 	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
 	{
 		auto ptrVal = context.IB().CreateGEP(nullptr, ptr, idxs);

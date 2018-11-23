@@ -117,6 +117,8 @@ RValue CGNVariable::visitNArrowOperator(NArrowOperator* exp)
 		return Inst::CastAs(context, exp);
 	} else if (name == "mut") {
 		return Inst::MutCast(context, exp);
+	} else if (name == "len") {
+		return Inst::LenOp(context, exp);
 	}
 	context.addError("invalid arrow op name: " + name, *exp);
 	return RValue();

@@ -484,6 +484,37 @@ RValue Inst::SizeOf(CodeContext& context, NArrowOperator* exp)
 	}
 }
 
+RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
+{
+	if (op->getArgs() && op->getArgs()->size() != 0) {
+		context.addError("len operator takes no arguments", *op);
+		return RValue();
+	}
+
+	SType* dtype = nullptr;
+	switch (op->getType()) {
+	case NArrowOperator::DATA:
+		dtype = CGNDataType::run(context, op->getDataType());
+		break;
+	case NArrowOperator::EXP:
+		dtype = CGNExpression::run(context, op->getExp()).stype();
+		break;
+	default:
+		// shouldn't happen
+		return RValue();
+	}
+
+	if (!dtype)
+		return RValue();
+
+	if (dtype->isEnum()) {
+		return RValue::getNumVal(context, dtype->size());
+	}
+
+	context.addError("len operator invalid for " + dtype->str(&context) + " type", op->getName());
+	return RValue();
+}
+
 RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList)
 {
 	// NOTE args can be null
