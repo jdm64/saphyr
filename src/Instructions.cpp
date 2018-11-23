@@ -191,6 +191,28 @@ RValue Inst::CastAs(CodeContext& context, NArrowOperator* exp)
 	return expr;
 }
 
+RValue Inst::MutCast(CodeContext& context, NArrowOperator* exp)
+{
+	auto args = exp->getArgs();
+	if (args && args->size() != 0) {
+		context.addError("mut operator takes no arguments", *exp);
+		return RValue();
+	} else if (exp->getType() == NArrowOperator::DATA) {
+		context.addError("mut operator only operates on expression", *exp);
+		return RValue();
+	}
+	auto varPtr = dynamic_cast<NVariable*>(exp->getExp());
+	if (!varPtr) {
+		context.addError("mut operator only operates on variable expression", *exp);
+		return RValue();
+	}
+	auto expr = CGNVariable::run(context, varPtr);
+	if (!expr)
+		return RValue();
+
+	return RValue(expr.value(), SType::getMutable(context, expr.stype()));
+}
+
 void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, CodeContext& context)
 {
 	CastOps op;

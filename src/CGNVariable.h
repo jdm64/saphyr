@@ -44,8 +44,6 @@ class CGNVariable
 
 	RValue visit(NVariable* type);
 
-	RValue MutCast(NArrowOperator* exp);
-
 public:
 
 	static RValue run(CodeContext& context, NVariable* exp)

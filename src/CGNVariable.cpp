@@ -116,32 +116,10 @@ RValue CGNVariable::visitNArrowOperator(NArrowOperator* exp)
 	} else if (name == "as") {
 		return Inst::CastAs(context, exp);
 	} else if (name == "mut") {
-		return MutCast(exp);
+		return Inst::MutCast(context, exp);
 	}
 	context.addError("invalid arrow op name: " + name, *exp);
 	return RValue();
-}
-
-RValue CGNVariable::MutCast(NArrowOperator* exp)
-{
-	auto args = exp->getArgs();
-	if (args && args->size() != 0) {
-		context.addError("mut operator takes no arguments", *exp);
-		return RValue();
-	} else if (exp->getType() == NArrowOperator::DATA) {
-		context.addError("mut operator only operates on expression", *exp);
-		return RValue();
-	}
-	auto varPtr = dynamic_cast<NVariable*>(exp->getExp());
-	if (!varPtr) {
-		context.addError("mut operator only operates on variable expression", *exp);
-		return RValue();
-	}
-	auto expr = visit(varPtr);
-	if (!expr)
-		return RValue();
-
-	return RValue(expr.value(), SType::getMutable(context, expr.stype()));
 }
 
 RValue CGNVariable::visitNMemberVariable(NMemberVariable* memVar)
