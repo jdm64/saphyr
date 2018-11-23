@@ -111,16 +111,17 @@ SType* CGNDataType::visitNArrayType(NArrayType* type)
 		return nullptr;
 	auto size = type->getSize();
 	if (size) {
-		if (size->isConstant() && static_cast<NConstant*>(size)->isIntConst()) {
-			auto arrSize = CGNInt::run(context, static_cast<NIntLikeConst*>(size)).getSExtValue();
-			if (arrSize <= 0) {
-				context.addError("Array size must be positive", *size);
-				return nullptr;
-			}
-			return SType::getArray(context, btype, arrSize);
+		auto sizeVal = CGNExpression::run(context, size).value();
+		if (!sizeVal || !isa<ConstantInt>(sizeVal)) {
+			context.addError("Array size must be a constant integer", *size);
+			return nullptr;
 		}
-		context.addError("Array size must be a constant integer", *size);
-		return nullptr;
+		auto arrSize = static_cast<ConstantInt*>(sizeVal)->getSExtValue();
+		if (arrSize <= 0) {
+			context.addError("Array size must be positive", *size);
+			return nullptr;
+		}
+		return SType::getArray(context, btype, arrSize);
 	} else {
 		return SType::getArray(context, btype, 0);
 	}

@@ -21,6 +21,11 @@ void expression()
         auto i = (a + b)[1];
 }
 
+void sizeExpr()
+{
+	[2 ? 3 : 5]int a;
+}
+
 int main()
 {
 	[4]int a;
@@ -72,6 +77,11 @@ define void @expression() {
   %6 = load i32, i32* %5
   %i = alloca i32
   store i32 %6, i32* %i
+  ret void
+}
+
+define void @sizeExpr() {
+  %a = alloca <3 x i32>
   ret void
 }
 
