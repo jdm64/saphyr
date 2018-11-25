@@ -26,6 +26,12 @@ void sizeExpr()
 	[2 ? 3 : 5]int a;
 }
 
+int lenOp()
+{
+	[4]int a;
+	return a->len;
+}
+
 int main()
 {
 	[4]int a;
@@ -83,6 +89,12 @@ define void @expression() {
 define void @sizeExpr() {
   %a = alloca <3 x i32>
   ret void
+}
+
+define i32 @lenOp() {
+  %a = alloca [4 x i32]
+  %1 = load [4 x i32], [4 x i32]* %a
+  ret i32 4
 }
 
 define i32 @main() {

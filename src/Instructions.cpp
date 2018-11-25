@@ -507,7 +507,7 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 	if (!dtype)
 		return RValue();
 
-	if (dtype->isEnum()) {
+	if (dtype->isArray() || dtype->isEnum()) {
 		return RValue::getNumVal(context, dtype->size());
 	}
 
