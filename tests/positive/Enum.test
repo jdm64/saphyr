@@ -31,6 +31,12 @@ void lenOp()
 	int t = d->len;
 }
 
+void arrIdx()
+{
+	[Colors->len]int a;
+	a[Colors.BLUE] = 12;
+}
+
 int main()
 {
 	Colors a, b = Colors.BLUE;
@@ -75,6 +81,13 @@ define void @lenOp() {
   %1 = load i8, i8* %d
   %t = alloca i32
   store i32 4, i32* %t
+  ret void
+}
+
+define void @arrIdx() {
+  %a = alloca [6 x i32]
+  %1 = getelementptr [6 x i32], [6 x i32]* %a, i32 0, i64 7
+  store i32 12, i32* %1
   ret void
 }
 

@@ -85,7 +85,7 @@ RValue CGNVariable::visitNArrayVariable(NArrayVariable* nArrVar)
 
 	if (!indexVal) {
 		return indexVal;
-	} else if (!indexVal.stype()->isNumeric()) {
+	} else if (!(indexVal.stype()->isNumeric() || indexVal.stype()->isEnum())) {
 		context.addError("array index is not able to be cast to an int", *nArrVar->getIndex());
 		return RValue();
 	}
