@@ -11,6 +11,8 @@ int global = 234, g2 = 2;
 @[]int p2 = null;
 MyStruct mStr;
 
+const int gExpr = 4 * 10 + 2;
+
 void run()
 {
 	bool global = false;
@@ -34,6 +36,7 @@ int main()
 @p = global i32* null
 @p2 = global [0 x i32]* null
 @mStr = external global %MyStruct
+@gExpr = global i32 42
 
 define void @run() {
   %global = alloca i1

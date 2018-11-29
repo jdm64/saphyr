@@ -472,13 +472,13 @@ void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 
 void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration)
 {
-	if (stm->getInitExp() && !stm->getInitExp()->isConstant()) {
+	auto initValue = CGNExpression::run(context, stm->getInitExp());
+	if (initValue && !isa<Constant>(initValue.value())) {
 		context.addError("global variables only support constant value initializer", stm->getName());
 		return;
 	}
-	auto initValue = CGNExpression::run(context, stm->getInitExp());
-	auto varType = CGNDataType::run(context, stm->getType());
 
+	auto varType = CGNDataType::run(context, stm->getType());
 	if (!varType) {
 		return;
 	} else if (varType->isAuto()) {
@@ -499,7 +499,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 	if (initValue) {
 		if (initValue.isNullPtr()) {
 			Inst::CastTo(context, *stm->getInitExp(), initValue, varType);
-		} else if (varType != initValue.stype()) {
+		} else if (varType != initValue.stype() && SType::getMutable(context, varType) != SType::getMutable(context, initValue.stype())) {
 			context.addError("global variable initialization requires exact type matching", *stm->getInitExp());
 			return;
 		}
