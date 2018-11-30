@@ -395,7 +395,7 @@ protected:
 	void innerStr(CodeContext* context, stringstream& os) const;
 
 public:
-	string raw()
+	string raw() override
 	{
 		return name;
 	}
@@ -431,15 +431,15 @@ class SAliasType : public SUserType
 	: SUserType(name, ALIAS, type->type(), 0, type) {}
 
 protected:
-	void setConst(TypeManager* tmang);
+	void setConst(TypeManager* tmang) override;
 
 public:
-	string str(CodeContext* context = nullptr) const
+	string str(CodeContext* context = nullptr) const override
 	{
 		return subtype->str(context);
 	}
 
-	string raw()
+	string raw() override
 	{
 		return subtype->raw();
 	}
@@ -473,19 +473,19 @@ protected:
 
 	SStructType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs, int ctype = STRUCT);
 
-	SType* copy()
+	SType* copy() override
 	{
 		return new SStructType(*this);
 	}
 
-	void setConst(TypeManager* tmang);
+	void setConst(TypeManager* tmang) override;
 
 public:
 	pair<int, RValue>* getItem(const string& name);
 
-	string str(CodeContext* context = nullptr) const;
+	string str(CodeContext* context = nullptr) const override;
 
-	string raw()
+	string raw() override
 	{
 		auto raw = name;
 		for (auto item : templateArgs)
@@ -532,12 +532,12 @@ class SUnionType : public STemplatedType
 			items[var.first] = var.second;
 	}
 
-	SType* copy()
+	SType* copy() override
 	{
 		return new SUnionType(*this);
 	}
 
-	void setConst(TypeManager* tmang);
+	void setConst(TypeManager* tmang) override;
 
 public:
 	SType* getItem(const string& name)
@@ -546,7 +546,7 @@ public:
 		return iter != items.end()? iter->second : nullptr;
 	}
 
-	string str(CodeContext* context = nullptr) const;
+	string str(CodeContext* context = nullptr) const override;
 };
 
 class SEnumType : public SUserType
@@ -565,7 +565,7 @@ class SEnumType : public SUserType
 		}
 	}
 
-	SType* copy()
+	SType* copy() override
 	{
 		return new SEnumType(*this);
 	}
@@ -577,7 +577,7 @@ public:
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
-	string str(CodeContext* context = nullptr) const;
+	string str(CodeContext* context = nullptr) const override;
 };
 
 class SFunctionType : public SType
@@ -589,7 +589,7 @@ class SFunctionType : public SType
 	SFunctionType(FunctionType* type, SType* returnTy, const vector<SType*>& params)
 	: SType(FUNCTION, type, 0, returnTy), params(params) {}
 
-	SType* copy()
+	SType* copy() override
 	{
 		return new SFunctionType(*this);
 	}
@@ -622,7 +622,7 @@ public:
 		return params[index];
 	}
 
-	string str(CodeContext* context = nullptr) const
+	string str(CodeContext* context = nullptr) const override
 	{
 		string s;
 		raw_string_ostream os(s);
@@ -637,7 +637,7 @@ public:
 		return os.str();
 	}
 
-	string raw()
+	string raw() override
 	{
 		string raw = "m";
 		for (auto item : params)

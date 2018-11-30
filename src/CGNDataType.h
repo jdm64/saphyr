@@ -79,7 +79,7 @@ class CGNDataTypeNew : public CGNDataType
 
 	SType* visitNFuncPointerType(NFuncPointerType* type);
 
-	SType* visit(NDataType* type);
+	SType* visit(NDataType* type) override;
 
 	void setSize(SType* type);
 
