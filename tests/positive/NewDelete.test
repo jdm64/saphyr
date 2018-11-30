@@ -25,6 +25,11 @@ void otherTypes(int size)
 	auto c = new @(int)int;
 }
 
+void sizeExpr()
+{
+	auto a = new [2 * 3]int;
+}
+
 int main()
 {
 	auto x = newArr(5);
@@ -116,6 +121,14 @@ define void @otherTypes(i32 %size) {
   %10 = bitcast i8* %9 to i32 (i32)**
   %c = alloca i32 (i32)**
   store i32 (i32)** %10, i32 (i32)*** %c
+  ret void
+}
+
+define void @sizeExpr() {
+  %1 = call i8* @malloc(i64 24)
+  %2 = bitcast i8* %1 to [6 x i32]*
+  %a = alloca [6 x i32]*
+  store [6 x i32]* %2, [6 x i32]** %a
   ret void
 }
 

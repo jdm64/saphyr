@@ -273,8 +273,9 @@ SType* CGNDataTypeNew::visitNArrayType(NArrayType* type)
 		return nullptr;
 	auto size = type->getSize();
 	if (size) {
-		if (size->isConstant() && static_cast<NConstant*>(size)->isIntConst()) {
-			auto arrSize = CGNInt::run(context, static_cast<NIntLikeConst*>(size)).getSExtValue();
+		auto sizeVal = CGNExpression::run(context, size);
+		if (sizeVal && isa<ConstantInt>(sizeVal.value())) {
+			auto arrSize = static_cast<ConstantInt*>(sizeVal.value())->getSExtValue();
 			if (arrSize <= 0) {
 				context.addError("Array size must be positive", *size);
 				return nullptr;
@@ -282,7 +283,7 @@ SType* CGNDataTypeNew::visitNArrayType(NArrayType* type)
 			setSize(arrSize);
 			return SType::getArray(context, btype, arrSize);
 		}
-		setSize(CGNExpression::run(context, size));
+		setSize(sizeVal);
 	}
 	return SType::getArray(context, btype, 0);
 }

@@ -427,19 +427,19 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 		}
 
 		if (initExp) {
-			if (!initExp->isConstant()) {
-				context.addError("enum initializer must be a constant", *item->getInitExp());
+			auto initVal = CGNExpression::run(context, initExp);
+			if (!initVal) {
+				continue;
+			} else if (!isa<Constant>(initVal.value())) {
+				context.addError("enum initializer must be a constant", *initExp);
+				valid = false;
+				continue;
+			} else if (!isa<ConstantInt>(initVal.value())) {
+				context.addError("enum initializer must be an int-like constant", *initExp);
 				valid = false;
 				continue;
 			}
-			auto constVal = static_cast<NConstant*>(initExp);
-			if (!constVal->isIntConst()) {
-				context.addError("enum initializer must be an int-like constant", *constVal);
-				valid = false;
-				continue;
-			}
-			auto intVal = static_cast<NIntLikeConst*>(constVal);
-			val = CGNInt::run(context, intVal).getSExtValue();
+			val = static_cast<ConstantInt*>(initVal.value())->getSExtValue();
 		}
 		structure.push_back(make_pair(name, val++));
 	}

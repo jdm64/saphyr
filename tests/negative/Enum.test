@@ -9,9 +9,11 @@ enum Dir
 	N, S, E, W
 }
 
+int global;
+
 enum Broken
 {
-	A = 3 + Dir.N, B = 3.4, A = 2, C{2, 5}
+	A = 3 + global, B = 3.4, A = 2, C{2, 5}
 }
 
 enum BadBase<[3]int>
@@ -34,12 +36,12 @@ int main()
 
 ========
 
-negative/Enum.syp:14:8: enum initializer must be a constant
-negative/Enum.syp:14:21: enum initializer must be an int-like constant
-negative/Enum.syp:14:26: enum member name A already declared
-negative/Enum.syp:14:33: enum initializer list only supports a single value
-negative/Enum.syp:17:14: enum base type must be an integer type
-negative/Enum.syp:28:11: int32 is not a struct/union/enum
-negative/Enum.syp:30:6: Cannot cast to enum ( Color to Dir )
-negative/Enum.syp:32:15: Color doesn't have member NotFound
+negative/Enum.syp:16:8: enum initializer must be a constant
+negative/Enum.syp:16:22: enum initializer must be an int-like constant
+negative/Enum.syp:16:27: enum member name A already declared
+negative/Enum.syp:16:34: enum initializer list only supports a single value
+negative/Enum.syp:19:14: enum base type must be an integer type
+negative/Enum.syp:30:11: int32 is not a struct/union/enum
+negative/Enum.syp:32:6: Cannot cast to enum ( Color to Dir )
+negative/Enum.syp:34:15: Color doesn't have member NotFound
 found 8 errors

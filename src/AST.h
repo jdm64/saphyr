@@ -49,11 +49,6 @@ public:
 
 	virtual NExpression* copy() const = 0;
 
-	virtual bool isConstant() const
-	{
-		return false;
-	}
-
 	virtual bool isComplex() const
 	{
 		return true;
@@ -113,17 +108,7 @@ public:
 		return value;
 	}
 
-	bool isConstant() const
-	{
-		return true;
-	}
-
 	bool isComplex() const
-	{
-		return false;
-	}
-
-	virtual bool isIntConst() const
 	{
 		return false;
 	}
@@ -189,11 +174,6 @@ class NIntLikeConst : public NConstant
 public:
 	explicit NIntLikeConst(Token* token)
 	: NConstant(token, token->str) {}
-
-	bool isIntConst() const
-	{
-		return true;
-	}
 };
 
 class NBoolConst : public NIntLikeConst
@@ -2132,11 +2112,6 @@ public:
 		case DATA: return *dtype;
 		case EXP: return *exp;
 		}
-	}
-
-	bool isConstant() const
-	{
-		return type == EXP? exp->isConstant() : true;
 	}
 
 	~NArrowOperator()
