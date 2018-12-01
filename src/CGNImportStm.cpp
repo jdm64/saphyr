@@ -124,12 +124,12 @@ void CGNImportStm::visitNClassDeclaration(NClassDeclaration* stm)
 			return;
 		}
 	}
-	Builder::CreateClass(context, stm, [=](int structIdx) {
+	Builder::CreateClass(context, stm, [=](size_t structIdx) {
 		visit(stm->getMembers()->at(structIdx));
 		if (!context.getClass())
 			return;
 
-		for (int i = 0; i < stm->getMembers()->size(); i++) {
+		for (size_t i = 0; i < stm->getMembers()->size(); i++) {
 			if (i == structIdx)
 				continue;
 			visit(stm->getMembers()->at(i));

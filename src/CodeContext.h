@@ -157,8 +157,9 @@ class CodeContext
 
 	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, int level) const
 	{
-		auto idx = level > 0? branchBlocks.size() - level : -level - 1;
-		return (idx >= 0 && idx < branchBlocks.size())? branchBlocks[idx] : nullptr;
+		int blockCount = branchBlocks.size();
+		int idx = level > 0? blockCount - level : -level - 1;
+		return (idx >= 0 && idx < blockCount)? branchBlocks[idx] : nullptr;
 	}
 
 public:

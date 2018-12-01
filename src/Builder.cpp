@@ -186,7 +186,7 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 		stm->setMembers(new NClassMemberList);
 	auto members = stm->getMembers();
 	auto size = members ? members->size() : 0;
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		switch (members->at(i)->memberType()) {
 		case NClassMember::MemberType::STRUCT:
 			if (structIdx > -1)

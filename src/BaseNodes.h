@@ -167,7 +167,7 @@ public:
 		return list.empty();
 	}
 
-	int size() const
+	size_t size() const
 	{
 		return list.size();
 	}
@@ -328,7 +328,7 @@ public:
 class NAttrValueList : public NodeList<NAttrValue>
 {
 public:
-	static NAttrValue* find(NAttrValueList* list, int index)
+	static NAttrValue* find(NAttrValueList* list, size_t index)
 	{
 		if (!list)
 			return nullptr;
