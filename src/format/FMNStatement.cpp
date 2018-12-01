@@ -367,7 +367,7 @@ void FMNStatement::visitNLoopBranch(NLoopBranch* stm)
 		return;
 	}
 	if (stm->getLevel())
-		line += " " + stm->getLevel()->getStrVal();
+		line += " " + FMNExpression::run(context, stm->getLevel());
 	context.addLine(line + ";");
 }
 

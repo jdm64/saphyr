@@ -155,9 +155,9 @@ class CodeContext
 		}
 	}
 
-	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, size_t level) const
+	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, int level) const
 	{
-		auto idx = level > 0? branchBlocks.size() - level : abs((int) level) - 1;
+		auto idx = level > 0? branchBlocks.size() - level : -level - 1;
 		return (idx >= 0 && idx < branchBlocks.size())? branchBlocks[idx] : nullptr;
 	}
 

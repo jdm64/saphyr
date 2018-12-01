@@ -429,7 +429,18 @@ void CGNStatement::visitNLoopBranch(NLoopBranch* stm)
 {
 	BasicBlock* block;
 	string typeName;
-	auto brLevel = stm->getLevel()? CGNInt::run(context, stm->getLevel()).getSExtValue() : 1;
+	auto brLevel = 1;
+
+	if (stm->getLevel()) {
+		auto levelVal = CGNExpression::run(context, stm->getLevel());
+		if (!levelVal) {
+			return;
+		} else if (!isa<ConstantInt>(levelVal.value())) {
+			context.addError("branch level must be constant int", *stm->getLevel());
+			return;
+		}
+		brLevel = static_cast<ConstantInt*>(levelVal.value())->getSExtValue();
+	}
 
 	switch (stm->getType()) {
 	case ParserBase::TT_CONTINUE:

@@ -1723,10 +1723,10 @@ class NLoopBranch : public NJumpStatement
 {
 	Token* token;
 	int type;
-	NIntConst* level;
+	NExpression* level;
 
 public:
-	NLoopBranch(Token* token, int type, NIntConst* level = nullptr)
+	NLoopBranch(Token* token, int type, NExpression* level = nullptr)
 	: token(token), type(type), level(level) {}
 
 	NLoopBranch* copy() const override
@@ -1745,7 +1745,7 @@ public:
 		return type;
 	}
 
-	NIntConst* getLevel() const
+	NExpression* getLevel() const
 	{
 		return level;
 	}

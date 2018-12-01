@@ -487,7 +487,7 @@ branch_statement
 	{
 		$$ = new NLoopBranch(($1).tok, ($1).op);
 	}
-	| branch_keyword integer_constant ';'
+	| branch_keyword expression ';'
 	{
 		$$ = new NLoopBranch(($1).tok, ($1).op, $2);
 	}

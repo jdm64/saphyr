@@ -17,10 +17,18 @@ lb:
 	int z = 4;
 }
 
+void exprBranch()
+{
+	int a = 2;
+	loop
+		break a;
+}
+
 ========
 
 negative/Branch.syp:6:3: break invalid outside a loop/switch block
 negative/Branch.syp:8:3: continue invalid outside a loop/switch block
 negative/Branch.syp:16:1: label lb already defined
 negative/Branch.syp:15:7: label notfound not defined
-found 4 errors
+negative/Branch.syp:24:9: branch level must be constant int
+found 5 errors
