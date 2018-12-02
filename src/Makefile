@@ -71,8 +71,8 @@ scanner.cpp : Scanner.l parser.cpp
 	sed -i -e '/nsert baseclass_h/a\#include "parserbase.h"' scanner.h
 	sed -i -e '/insert class_h/a\#include "parserbase.h"' scanner.ih
 	sed -i -e '/insert class_h/a\#define SAVE_TOKEN sval->t_tok = new Token(matched(), filename(), lineNr(), colNr() - matched().length());' scanner.ih
-	sed -i -e '/d_lineNr(1)/id_col(1),' scanner.cpp
-	sed -i -e '/d_lineNr(lineNr)/id_col(1),' scanner.cpp
+	sed -i -e '/d_lineNr(1)/a ,d_col(1)' scanner.cpp
+	sed -i -e '/d_lineNr(lineNr)/a ,d_col(1)' scanner.cpp
 	sed -i -e '/++d_lineNr/acol_max = d_col; d_col = 0;' scanner.cpp
 	sed -i -e '/default:/ad_col++;' scanner.cpp
 	sed -i -e '/ch < 0x100/i--d_col;' scanner.cpp
