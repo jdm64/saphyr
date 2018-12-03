@@ -14,4 +14,4 @@ strip -s AppImage/usr/bin/saphyr
 cd AppImage && ln -s usr/bin/saphyr AppRun && cd ..
 
 # patch binary so libraries load correctly
-chrpath -r '$ORIGIN/../lib' AppImage/usr/bin/saphyr
+patchelf --set-rpath '$ORIGIN/../lib' AppImage/usr/bin/saphyr
