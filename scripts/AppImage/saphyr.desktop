@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=saphyr
 Type=Application
-Exec=runSaphyr.sh
+Exec=saphyr
 Icon=logo
 Terminal=true
