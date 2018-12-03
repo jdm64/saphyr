@@ -22,7 +22,7 @@ elif [[ $LLVM_VER == "-6.0" ]] || [[ $LLVM_VER == "-7" ]]; then
 fi
 
 sudo apt-get update -qq
-sudo apt-get install -qq -y flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev libboost-filesystem-dev python3 binutils $OTHER_PKGS
+sudo apt-get install -qq -y flexc++ bisonc++ llvm$LLVM_VER-dev $CXX_PKG libboost-program-options-dev libboost-filesystem-dev python3 binutils patchelf $OTHER_PKGS
 
 if [[ $COVERAGE == "true" ]]; then
 	sudo pip install -U cpp-coveralls
