@@ -3,3 +3,4 @@ Name=saphyr
 Type=Application
 Exec=runSaphyr.sh
 Icon=logo
+Terminal=true
