@@ -50,30 +50,6 @@ bool ModuleWriter::validModule()
 	return false;
 }
 
-#if LLVM_VERSION_MAJOR >= 6
-ToolOutputFile* ModuleWriter::getOutFile(const string& name)
-#else
-tool_output_file* ModuleWriter::getOutFile(const string& name)
-#endif
-{
-	sys::fs::OpenFlags OpenFlags = sys::fs::F_None;
-
-	error_code error;
-
-#if LLVM_VERSION_MAJOR >= 6
-	auto outFile = new ToolOutputFile(name, error, OpenFlags);
-#else
-	auto outFile = new tool_output_file(name, error, OpenFlags);
-#endif
-
-	if (error) {
-		delete outFile;
-		cout << "compiler error: error opening file" << endl << error << endl;
-		return nullptr;
-	}
-	return outFile;
-}
-
 void ModuleWriter::initTarget()
 {
 	InitializeAllTargets();
@@ -126,9 +102,14 @@ void ModuleWriter::outputNative()
 	llvm::legacy::PassManager pm;
 
 	initTarget();
-	auto objFile = getOutFile(filename.substr(0, filename.rfind('.')) + ".o");
 
-	buffer_ostream objStream(objFile->os());
+	error_code error;
+	raw_fd_ostream objStream(filename.substr(0, filename.rfind('.')) + ".o", error, sys::fs::F_None);
+	if (error) {
+		cout << "compiler error: error opening file" << endl << error << endl;
+		return;
+	}
+
 	unique_ptr<TargetMachine> machine(getMachine());
 #if LLVM_VERSION_MAJOR >= 7
 	machine->addPassesToEmitFile(pm, objStream, &objStream, TargetMachine::CGFT_ObjectFile);
