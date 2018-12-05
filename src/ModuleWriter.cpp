@@ -80,8 +80,7 @@ int ModuleWriter::run()
 
 	if (config.count("llvmir"))
 		outputIR();
-	else
-		outputNative();
+	outputNative();
 	return 0;
 }
 
