@@ -68,3 +68,9 @@ define i32 @main() {
   %3 = call %Outer @func(%Outer %2)
   ret i32 0
 }
+
+========
+
+expr T
+func T
+main T

@@ -19,3 +19,7 @@ define i32 @main() {
   %4 = zext i1 %3 to i32
   ret i32 %4
 }
+
+========
+
+main T

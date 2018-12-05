@@ -107,3 +107,13 @@ define void @D_clear(%D* %this) {
   call void @D_null(%D* %2)
   ret void
 }
+
+========
+
+A_null T
+B_null T
+C_null T
+D_clear T
+D_null T
+free U
+x B

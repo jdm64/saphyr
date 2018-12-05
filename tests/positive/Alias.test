@@ -25,3 +25,8 @@ define void @bla(i32* %a) {
   store i32* null, i32** %c
   ret void
 }
+
+========
+
+bla T
+glob B

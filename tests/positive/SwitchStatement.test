@@ -93,3 +93,9 @@ define i32 @main() {
   %3 = fptosi double %2 to i32
   ret i32 %3
 }
+
+========
+
+main T
+switchNoDefault T
+switchWithDefault T

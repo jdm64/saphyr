@@ -152,3 +152,14 @@ define void @init() {
 }
 
 declare i8* @malloc(i64)
+
+========
+
+arrayPtr T
+getPtr T
+inc T
+init T
+main T
+malloc U
+other T
+test T

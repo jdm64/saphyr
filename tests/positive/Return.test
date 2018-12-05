@@ -83,3 +83,11 @@ define i32 @main() {
   %9 = add i32 %7, %8
   ret i32 %9
 }
+
+========
+
+arrFunc T
+castUp T
+main T
+structFunc T
+voidFunc T

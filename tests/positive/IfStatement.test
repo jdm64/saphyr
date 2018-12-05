@@ -106,3 +106,10 @@ define i32 @main() {
   call void @three()
   ret i32 0
 }
+
+========
+
+main T
+one T
+three T
+two T

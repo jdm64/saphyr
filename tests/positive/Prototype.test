@@ -30,3 +30,12 @@ define i32 @main() {
   %4 = fptosi double %3 to i32
   ret i32 %4
 }
+
+========
+
+CPI0_0 r
+CPI1_0 r
+CPI1_1 r
+external U
+here T
+main T

@@ -60,3 +60,15 @@ define i32 @main() {
   %8 = zext i1 %7 to i32
   ret i32 %8
 }
+
+========
+
+g2 D
+gArr U
+gExpr D
+global D
+main T
+mStr U
+p B
+p2 B
+run T

@@ -121,3 +121,13 @@ define void @Foo_p_m_v_a4_i32_v3_i32_add(%Foo_p_m_v_a4_i32_v3_i32* %this, void (
   store <3 x i32> %more, <3 x i32>* %4
   ret void
 }
+
+========
+
+foo T
+Foo_i32_f_d_add T
+Foo_i32_f_d_this T
+Foo_p_m_v_a4_i32_v3_i32_add T
+Foo_p_m_v_a4_i32_v3_i32_this T
+Foo_p_v_b_u64_add T
+Foo_p_v_b_u64_this T

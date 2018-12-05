@@ -93,3 +93,11 @@ define void @bar() {
   %d = alloca %Empty2*
   ret void
 }
+
+========
+
+bar T
+foo T
+main T
+malloc U
+MyClass_create U

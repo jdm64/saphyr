@@ -14,3 +14,7 @@ define void @foo() {
   %v = alloca %List_f
   ret void
 }
+
+========
+
+foo T

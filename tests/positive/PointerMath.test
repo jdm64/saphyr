@@ -44,3 +44,8 @@ define void @foo() {
   store <3 x i32>* %4, <3 x i32>** %p
   ret void
 }
+
+========
+
+foo T
+func T

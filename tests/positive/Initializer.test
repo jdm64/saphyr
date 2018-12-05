@@ -23,3 +23,7 @@ define i32 @foo() {
   store void (i32)* null, void (i32)** %fptr2
   ret i32 99
 }
+
+========
+
+foo T

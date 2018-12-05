@@ -222,3 +222,10 @@ define i32 @main() {
 ; <label>:20:                                     ; preds = %11
   ret i32 0
 }
+
+========
+
+brLoop T
+cnLoop T
+main T
+negBreak T

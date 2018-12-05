@@ -114,3 +114,12 @@ define i32 @main() {
   %12 = mul i32 %5, %11
   ret i32 %12
 }
+
+========
+
+boolArr T
+calcIndex T
+expression T
+lenOp T
+main T
+sizeExpr T

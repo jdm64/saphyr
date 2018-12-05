@@ -60,3 +60,8 @@ end:                                              ; preds = %0, %3
   %6 = load i32, i32* %x
   ret i32 %6
 }
+
+========
+
+main T
+run T

@@ -35,3 +35,7 @@ define i32 @func() {
   %14 = or i32 %10, %13
   ret i32 %14
 }
+
+========
+
+func T

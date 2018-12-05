@@ -149,3 +149,14 @@ define i32 @main() {
 }
 
 declare void @free(i8*)
+
+========
+
+foo T
+free U
+main T
+makeNew T
+malloc U
+newArr T
+otherTypes T
+sizeExpr T

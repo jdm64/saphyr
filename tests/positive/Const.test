@@ -85,3 +85,11 @@ define void @constPtr() {
 }
 
 declare i8* @malloc(i64)
+
+========
+
+bar T
+constPtr T
+foo T
+malloc U
+zzz T

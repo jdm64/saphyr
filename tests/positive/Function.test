@@ -96,3 +96,14 @@ define i32 @main() {
   call void @run()
   ret i32 0
 }
+
+========
+
+calcTime T
+CPI2_0 r
+CPI2_1 r
+CPI2_2 r
+empty T
+get T
+main T
+run T

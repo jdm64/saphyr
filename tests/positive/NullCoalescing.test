@@ -98,3 +98,10 @@ define i32 @main() {
   %11 = phi i32 [ %5, %0 ], [ %9, %7 ]
   ret i32 %11
 }
+
+========
+
+func T
+main T
+more T
+other T

@@ -167,3 +167,16 @@ define i32 @main() {
 }
 
 declare i8* @malloc(i64)
+
+========
+
+Empty_foo T
+Empty_run T
+func T
+func2 T
+func3 T
+main T
+malloc U
+Test_copy T
+Test_getThis T
+Test_run T

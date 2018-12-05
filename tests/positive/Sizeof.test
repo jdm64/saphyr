@@ -97,3 +97,12 @@ define i32 @main() {
   store i32 40, i32* %z
   ret i32 0
 }
+
+========
+
+func T
+func2 T
+main T
+si D
+ZZ_s T
+ZZ_t T

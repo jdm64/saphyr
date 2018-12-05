@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, fnmatch, re, codecs
+import os, sys, fnmatch, re, codecs, difflib
 from subprocess import call, Popen, PIPE
 
 SAPHYR_BIN = "../saphyr"
@@ -30,6 +30,7 @@ ERR_EXT = ".err"
 EXP_EXT = ".exp"
 NEG_EXT = ".neg"
 BC_EXT = ".bc"
+OBJ_EXT = ".o"
 
 class Cmd:
 	def __init__(self, cmd):
@@ -79,18 +80,23 @@ class TestCase:
 		self.srcFile = self.basename + SYP_EXT
 		self.expFile = self.basename + EXP_EXT
 		self.llFile = self.basename + LL_EXT
+		self.objFile = self.basename + OBJ_EXT
 		self.errFile = self.basename + ERR_EXT
 		self.negFile = self.basename + NEG_EXT
 
 	def createFiles(self):
 		with codecs.open(self.tstFile, "r", ENCODING) as testFile:
 			data = testFile.read().split("========")
-			if len(data) != 2:
+			if len(data) < 2:
 				return True
 			with codecs.open(self.srcFile, "w", ENCODING) as sourceFile:
 				sourceFile.write(data[0])
 			with codecs.open(self.expFile, "w", ENCODING) as asmFile:
 				asmFile.write(data[1].lstrip())
+
+			self.expSyms = data[2].lstrip() if len(data) >= 3 else "\n"
+			self.actSyms = None
+
 		return False
 
 	def update(self, isPos):
@@ -99,9 +105,12 @@ class TestCase:
 			tstF.write("\n" + sourceF.read().strip() + "\n\n")
 			tstF.write("========\n\n")
 			tstF.write(expF.read())
+			if isPos:
+				tstF.write("\n========\n\n")
+				tstF.write(self.actSyms if self.actSyms else self.expSyms)
 
 	def clean(self):
-		ext_list = [SYP_EXT, FMT_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT, BC_EXT]
+		ext_list = [SYP_EXT, FMT_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT, BC_EXT, OBJ_EXT]
 		Cmd(["rm"] + [self.basename + ext for ext in ext_list])
 
 	def patchAsm(self, file):
@@ -175,13 +184,39 @@ class TestCase:
 
 		proc = Cmd(["diff", "-uwB", self.expFile, actual])
 		if proc.ext == 0:
-			return False, "[ok]"
+			if not isPos:
+				return False, "[ok]"
 		elif self.doUpdate:
 			self.update(isPos)
 			return False, "[updated]"
 		else:
 			self.writeLog(proc)
 			return True, "[fail compile]"
+
+		return self.runSym()
+
+	def runSym(self):
+		proc = Cmd(["nm", "-fp", self.objFile])
+		if proc.ext != 0:
+			self.writeLog(proc)
+			return True, "[no symbols]"
+
+		expected = self.expSyms.splitlines(1)
+		actual = [" ".join(x.split(None, 2)[0:2]) + "\n" for x in proc.out.splitlines(1)]
+		if self.doUpdate:
+			self.actSyms = "".join(actual)
+			self.update(True)
+			return False, "[updated]"
+
+		diff = difflib.unified_diff(expected, actual, fromfile='expected.sym', tofile='actual.sym')
+		diff = ''.join(diff)
+
+		if not len(diff):
+			return False, "[ok]"
+
+		with open(self.errFile, "w") as log:
+			log.write(diff)
+		return True, "[diff symbols]"
 
 	def run(self):
 		if self.createFiles():

@@ -115,3 +115,11 @@ define void @withSep() {
   store i32 1002003, i32* %b
   ret void
 }
+
+========
+
+base T
+intFunc T
+main T
+uintFunc T
+withSep T

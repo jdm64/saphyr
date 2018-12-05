@@ -63,3 +63,10 @@ define void @bla() {
   %2 = call i32 @Foo_bar(i32 4)
   ret void
 }
+
+========
+
+bla T
+Foo_bar T
+Foo_run T
+Foo_test T

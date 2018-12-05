@@ -109,3 +109,13 @@ define i32 @main() {
   %9 = load i32, i32* %a
   ret i32 %9
 }
+
+========
+
+call T
+CPI4_0 r
+CPI4_1 r
+func T
+func2 T
+func3 T
+main T

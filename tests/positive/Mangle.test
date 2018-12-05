@@ -48,3 +48,10 @@ define void @bla() {
   call void @super_mangle(%MyClass* %a)
   ret void
 }
+
+========
+
+bar T
+bla T
+super_mangle T
+test T

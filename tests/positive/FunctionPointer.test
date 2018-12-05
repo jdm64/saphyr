@@ -124,3 +124,13 @@ define void @classPtr() {
   store void (%Test*)* @Test_run, void (%Test*)** %b
   ret void
 }
+
+========
+
+classPtr T
+complexFunc T
+func T
+func2 T
+main T
+Test_calc T
+Test_run T

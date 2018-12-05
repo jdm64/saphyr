@@ -73,3 +73,13 @@ define void @three() {
   store i8 %12, i8* %a
   ret void
 }
+
+========
+
+CPI1_0 r
+CPI1_1 r
+CPI1_2 r
+fmodf U
+one T
+three T
+two T

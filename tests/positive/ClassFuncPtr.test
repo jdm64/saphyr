@@ -65,3 +65,8 @@ define void @func2() {
   call void @C_func(%C* %10)
   ret void
 }
+
+========
+
+C_func T
+func2 T

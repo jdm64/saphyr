@@ -113,3 +113,11 @@ define void @mutCast() {
   store float %2, float* %b
   ret void
 }
+
+========
+
+complex T
+func T
+malloc U
+mutCast T
+noOp T

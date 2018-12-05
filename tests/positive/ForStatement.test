@@ -115,3 +115,9 @@ define i32 @main() {
 ; <label>:12:                                     ; preds = %8, %1
   ret i32 0
 }
+
+========
+
+func T
+func2 T
+main T

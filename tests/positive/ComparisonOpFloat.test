@@ -57,3 +57,8 @@ define i32 @main() {
   %26 = zext i1 %25 to i32
   ret i32 %26
 }
+
+========
+
+CPI0_0 r
+main T

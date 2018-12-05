@@ -66,3 +66,10 @@ define i32 @main() {
   %10 = urem i32 %9, %8
   ret i32 %10
 }
+
+========
+
+CPI0_0 r
+CPI0_1 r
+main T
+other T

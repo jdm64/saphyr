@@ -170,3 +170,12 @@ define void @sub() {
   store i32 %11, i32* %i
   ret void
 }
+
+========
+
+add T
+div T
+fmod U
+mod T
+mult T
+sub T

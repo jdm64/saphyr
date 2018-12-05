@@ -256,3 +256,18 @@ define void @testBoth() {
   call void @Both_this(%Both* %b)
   ret void
 }
+
+========
+
+arrayLocal T
+arrayNew T
+Both_this T
+Empty_this T
+foo T
+free U
+main T
+malloc U
+MyClass_makeNew T
+MyClass_null T
+MyClass_this T
+testBoth T

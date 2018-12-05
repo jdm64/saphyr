@@ -44,3 +44,8 @@ define i32 @unsignedShifts() {
   %6 = lshr i32 %4, %5
   ret i32 %6
 }
+
+========
+
+signedShifts T
+unsignedShifts T

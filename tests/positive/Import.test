@@ -90,3 +90,15 @@ define void @cycle() {
   %3 = call i32 @run(%Foo %2)
   ret void
 }
+
+========
+
+bar T
+cycle T
+foo T
+MyClass_calc U
+MyClass_this U
+myFunc U
+MyGlobal U
+other T
+run U

@@ -137,3 +137,17 @@ define void @vecPointer() {
 }
 
 declare i8* @malloc(i64)
+
+========
+
+CPI0_0 r
+CPI1_0 r
+CPI2_0 r
+CPI2_1 r
+malloc U
+numToVec T
+retVecWithNum T
+vecCasting T
+vecEquality T
+vecOps T
+vecPointer T

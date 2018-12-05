@@ -107,3 +107,10 @@ define void @Default_this(%Default* %this) {
   call void @Base2_this(%Base2* %3)
   ret void
 }
+
+========
+
+Base2_this T
+Base_this T
+Default_this T
+Init_this T

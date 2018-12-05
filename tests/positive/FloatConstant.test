@@ -34,3 +34,8 @@ define void @withSep() {
   store double 1.555000e+00, double* %d
   ret void
 }
+
+========
+
+main T
+withSep T

@@ -33,3 +33,7 @@ define i32 @foo() {
   %8 = load i32, i32* %a
   ret i32 %8
 }
+
+========
+
+foo T
