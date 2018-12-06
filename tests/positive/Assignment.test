@@ -76,9 +76,6 @@ define void @three() {
 
 ========
 
-CPI1_0 r
-CPI1_1 r
-CPI1_2 r
 fmodf U
 one T
 three T

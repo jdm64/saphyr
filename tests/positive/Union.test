@@ -76,6 +76,5 @@ define i32 @main() {
 
 ========
 
-CPI1_0 r
 doUnion T
 main T

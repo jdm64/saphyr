@@ -202,7 +202,7 @@ class TestCase:
 			return True, "[no symbols]"
 
 		expected = self.expSyms.splitlines(1)
-		actual = [" ".join(x.split(None, 2)[0:2]) + "\n" for x in proc.out.splitlines(1)]
+		actual = [" ".join(x.split(None, 2)[0:2]) + "\n" for x in proc.out.splitlines(1) if " r " not in x]
 		if self.doUpdate:
 			self.actSyms = "".join(actual)
 			self.update(True)

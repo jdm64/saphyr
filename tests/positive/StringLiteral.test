@@ -53,10 +53,3 @@ define void @func() {
 func T
 gA D
 main T
-__unnamed_1 r
-__unnamed_2 r
-__unnamed_3 r
-__unnamed_4 r
-__unnamed_5 r
-__unnamed_6 r
-__unnamed_7 r

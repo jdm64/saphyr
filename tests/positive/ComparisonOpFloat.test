@@ -60,5 +60,4 @@ define i32 @main() {
 
 ========
 
-CPI0_0 r
 main T

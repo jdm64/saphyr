@@ -98,10 +98,6 @@ define i32 @main() {
 
 ========
 
-CPI2_0 r
-CPI2_1 r
-CPI2_2 r
-CPI2_3 r
 four T
 func T
 main T

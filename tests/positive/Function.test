@@ -100,9 +100,6 @@ define i32 @main() {
 ========
 
 calcTime T
-CPI2_0 r
-CPI2_1 r
-CPI2_2 r
 empty T
 get T
 main T
