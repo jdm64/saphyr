@@ -4,4 +4,4 @@ Type=Application
 Exec=saphyr
 Icon=logo
 Terminal=true
-Categories=Development;Building;ConsoleOnly
+Categories=Development;Building;ConsoleOnly;
