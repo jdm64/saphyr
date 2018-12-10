@@ -22,7 +22,6 @@
 #include "CodeContext.h"
 #include "Instructions.h"
 #include "CGNDataType.h"
-#include "CGNInt.h"
 #include "CGNExpression.h"
 #include "CGNStatement.h"
 #include "CGNImportStm.h"

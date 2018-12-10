@@ -23,7 +23,6 @@
 #include "Builder.h"
 #include "CGNDataType.h"
 #include "CGNVariable.h"
-#include "CGNInt.h"
 #include "CGNExpression.h"
 #include "CGNImportStm.h"
 
@@ -307,7 +306,8 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	bool hasDefault = false;
 	for (auto caseItem : *stm->getCases()) {
 		if (caseItem->isValueCase()) {
-			auto val = ConstantInt::get(context, CGNInt::run(context, caseItem->getValue()));
+			auto caseVal = CGNExpression::run(context, caseItem->getValue());
+			auto val = static_cast<ConstantInt*>(caseVal.value());
 			if (!unique.insert(val->getSExtValue()).second)
 				context.addError("switch case values are not unique", *caseItem->getValue());
 			switchInst->addCase(val, caseBlock);

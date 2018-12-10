@@ -20,7 +20,6 @@
 #include "CodeContext.h"
 #include "parserbase.h"
 #include "Instructions.h"
-#include "CGNInt.h"
 #include "CGNDataType.h"
 #include "CGNVariable.h"
 #include "Builder.h"
@@ -369,7 +368,8 @@ RValue CGNExpression::visitNIncrement(NIncrement* exp)
 
 RValue CGNExpression::visitNBoolConst(NBoolConst* exp)
 {
-	return RValue::getValue(context, CGNInt::run(context, exp));
+	auto val = exp->getValue() ? ConstantInt::getTrue(context) : ConstantInt::getFalse(context);
+	return RValue(val, SType::getBool(context));
 }
 
 RValue CGNExpression::visitNNullPointer(NNullPointer* exp)
@@ -396,7 +396,29 @@ RValue CGNExpression::visitNStringLiteral(NStringLiteral* exp)
 
 RValue CGNExpression::visitNIntConst(NIntConst* exp)
 {
-	return RValue::getValue(context, CGNInt::run(context, exp));
+	static const map<string, SType*> suffix = {
+		{"i8", SType::getInt(context, 8)},
+		{"u8", SType::getInt(context, 8, true)},
+		{"i16", SType::getInt(context, 16)},
+		{"u16", SType::getInt(context, 16, true)},
+		{"i32", SType::getInt(context, 32)},
+		{"u32", SType::getInt(context, 32, true)},
+		{"i64", SType::getInt(context, 64)},
+		{"u64", SType::getInt(context, 64, true)} };
+	auto type = SType::getInt(context, 32); // default is int32
+
+	auto data = NConstant::getValueAndSuffix(exp->getStrVal());
+	if (data.size() > 1) {
+		auto suf = suffix.find(data[1]);
+		if (suf == suffix.end())
+			context.addError("invalid integer suffix: " + data[1], *exp);
+		else
+			type = suf->second;
+	}
+	auto base = exp->getBase();
+	string intVal(data[0], base == 10? 0:2);
+	auto val = ConstantInt::get(static_cast<IntegerType*>(type->type()), intVal, base);
+	return RValue(val, type);
 }
 
 RValue CGNExpression::visitNFloatConst(NFloatConst* exp)
@@ -420,5 +442,23 @@ RValue CGNExpression::visitNFloatConst(NFloatConst* exp)
 
 RValue CGNExpression::visitNCharConst(NCharConst* exp)
 {
-	return RValue::getValue(context, CGNInt::run(context, exp));
+	auto strVal = exp->getStrVal();
+	char cVal = strVal.at(0);
+	if (cVal == '\\' && strVal.length() > 1) {
+		switch (strVal.at(1)) {
+		case '0': cVal = '\0'; break;
+		case 'a': cVal = '\a'; break;
+		case 'b': cVal = '\b'; break;
+		case 'e': cVal =   27; break;
+		case 'f': cVal = '\f'; break;
+		case 'n': cVal = '\n'; break;
+		case 'r': cVal = '\r'; break;
+		case 't': cVal = '\t'; break;
+		case 'v': cVal = '\v'; break;
+		default: cVal = strVal.at(1);
+		}
+	}
+	auto type = SType::getInt(context, 8, true);
+	auto val = ConstantInt::get(type->type(), cVal);
+	return RValue(val, type);
 }

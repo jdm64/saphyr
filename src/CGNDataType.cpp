@@ -20,7 +20,6 @@
 #include "CodeContext.h"
 #include "parserbase.h"
 #include "Builder.h"
-#include "CGNInt.h"
 #include "Instructions.h"
 #include "CGNExpression.h"
 
@@ -130,7 +129,8 @@ SType* CGNDataType::visitNArrayType(NArrayType* type)
 SType* CGNDataType::visitNVecType(NVecType* type)
 {
 	auto size = type->getSize();
-	auto arrSize = CGNInt::run(context, size).getSExtValue();
+	auto sizeVal = CGNExpression::run(context, size).value();
+	auto arrSize = static_cast<ConstantInt*>(sizeVal)->getSExtValue();
 	if (arrSize <= 0) {
 		context.addError("vec size must be greater than 0", *size);
 		return nullptr;
