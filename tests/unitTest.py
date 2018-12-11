@@ -188,7 +188,7 @@ class TestCase:
 				return False, "[ok]"
 		elif self.doUpdate:
 			self.update(isPos)
-			return False, "[updated]"
+			return False, "[updated compile]"
 		else:
 			self.writeLog(proc)
 			return True, "[fail compile]"
@@ -203,16 +203,15 @@ class TestCase:
 
 		expected = self.expSyms.splitlines(1)
 		actual = [" ".join(x.split(None, 2)[0:2]) + "\n" for x in proc.out.splitlines(1) if " r " not in x]
-		if self.doUpdate:
-			self.actSyms = "".join(actual)
-			self.update(True)
-			return False, "[updated]"
-
 		diff = difflib.unified_diff(expected, actual, fromfile='expected.sym', tofile='actual.sym')
 		diff = ''.join(diff)
 
 		if not len(diff):
 			return False, "[ok]"
+		elif self.doUpdate:
+			self.actSyms = "".join(actual)
+			self.update(True)
+			return False, "[updated symbols]"
 
 		with open(self.errFile, "w") as log:
 			log.write(diff)
