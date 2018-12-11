@@ -36,7 +36,7 @@ int main()
 @p = global i32* null
 @p2 = global [0 x i32]* null
 @mStr = external global %MyStruct
-@gExpr = global i32 42
+@gExpr = constant i32 42
 
 define void @run() {
   %global = alloca i1
@@ -65,7 +65,7 @@ define i32 @main() {
 
 g2 D
 gArr U
-gExpr D
+gExpr R
 global D
 main T
 mStr U

@@ -76,6 +76,8 @@ void userTypeConstName()
 	[3]int d = c;
 }
 
+const int gVar;
+
 ========
 
 negative/Const.syp:5:2: assignment not allowed for constant variable
@@ -92,4 +94,5 @@ negative/Const.syp:64:3: assignment not allowed for constant variable
 negative/Const.syp:72:6: Cannot cast complex types ( const SS to int32 )
 negative/Const.syp:73:6: Cannot cast complex types ( const UU to int32 )
 negative/Const.syp:76:9: Cannot cast complex types ( const EE to [3]int32 )
-found 14 errors
+negative/Const.syp:79:11: const variables require initialization
+found 15 errors

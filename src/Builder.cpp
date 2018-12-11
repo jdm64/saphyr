@@ -504,6 +504,11 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 		}
 	}
 
+	if (varType->isConst() && !initValue) {
+		context.addError("const variables require initialization", stm->getName());
+		return;
+	}
+
 	auto name = stm->getName()->str;
 	if (context.loadSymbolCurr(name)) {
 		context.addError("variable " + name + " already defined", stm->getName());
@@ -511,6 +516,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 	}
 
 	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, declaration? nullptr : (Constant*) initValue.value(), name);
+	var->setConstant(varType->isConst());
 	context.storeGlobalSymbol({var, varType}, name);
 }
 

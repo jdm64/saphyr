@@ -8,7 +8,7 @@ struct S
 void foo()
 {
 	const int a = 3;
-	const int b;
+	const int b = 5;
 
 	int c = a + b;
 }
@@ -42,6 +42,7 @@ define void @foo() {
   %a = alloca i32
   store i32 3, i32* %a
   %b = alloca i32
+  store i32 5, i32* %b
   %1 = load i32, i32* %a
   %2 = load i32, i32* %b
   %3 = add i32 %1, %2
