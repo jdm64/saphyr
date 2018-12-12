@@ -141,7 +141,7 @@ class TestCase:
 			log.write(p.out)
 
 	def runFmt(self):
-		with open(self.srcFile, "r") as file:
+		with codecs.open(self.srcFile, "r", ENCODING) as file:
 			line = file.readline()
 			line += file.readline()
 		if line.find("nofmt") != -1:
@@ -155,7 +155,7 @@ class TestCase:
 			return False, None
 
 		fmtFile = self.srcFile + ".txt"
-		with open(fmtFile, "w") as file:
+		with codecs.open(fmtFile, "w", ENCODING) as file:
 			file.write(proc.out)
 		proc = Cmd(["diff", "-uwB", self.srcFile, fmtFile])
 		if proc.ext != 0:
