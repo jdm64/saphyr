@@ -26,6 +26,11 @@ int main()
 	return b;
 }
 
+int replace()
+{
+	return gExpr + 8;
+}
+
 ========
 
 %MyStruct = type { i32, i32, [4 x double] }
@@ -61,6 +66,10 @@ define i32 @main() {
   ret i32 %8
 }
 
+define i32 @replace() {
+  ret i32 50
+}
+
 ========
 
 g2 D
@@ -71,4 +80,5 @@ main T
 mStr U
 p B
 p2 B
+replace T
 run T

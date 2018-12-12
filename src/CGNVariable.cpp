@@ -62,8 +62,15 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 
 	// check global variables
 	var = context.loadSymbolGlobal(varName);
-	if (var)
+	if (var) {
+		if (var.stype()->isConst() && isa<GlobalVariable>(var.value())) {
+			auto init = static_cast<GlobalVariable*>(var.value())->getInitializer();
+			if (init) {
+				return RValue(init, var.stype());
+			}
+		}
 		return var;
+	}
 
 	// check user types
 	bool hasErrors = false;
