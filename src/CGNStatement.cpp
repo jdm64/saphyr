@@ -294,6 +294,9 @@ void CGNStatement::visitNWhileStatement(NWhileStatement* stm)
 void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 {
 	auto switchValue = CGNExpression::run(context, stm->getValue());
+	if (!switchValue)
+		return;
+
 	Inst::CastTo(context, *stm->getValue(), switchValue, SType::getInt(context, 32));
 
 	auto caseBlock = context.createBlock();
@@ -306,11 +309,15 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	bool hasDefault = false;
 	for (auto caseItem : *stm->getCases()) {
 		if (caseItem->isValueCase()) {
-			auto caseVal = CGNExpression::run(context, caseItem->getValue());
-			auto val = static_cast<ConstantInt*>(caseVal.value());
-			if (!unique.insert(val->getSExtValue()).second)
-				context.addError("switch case values are not unique", *caseItem->getValue());
-			switchInst->addCase(val, caseBlock);
+			auto caseVal = CGNExpression::run(context, caseItem->getValue()).value();
+			if (!caseVal || !isa<ConstantInt>(caseVal)) {
+				context.addError("case value must be a constant int", *caseItem->getValue());
+			} else {
+				auto val = static_cast<ConstantInt*>(caseVal);
+				if (!unique.insert(val->getSExtValue()).second)
+					context.addError("switch case values are not unique", *caseItem->getValue());
+				switchInst->addCase(val, caseBlock);
+			}
 		} else {
 			if (hasDefault)
 				context.addError("switch statement has more than one default", *caseItem);

@@ -473,7 +473,7 @@ switch_case_list
 	}
 	;
 switch_case
-	: TT_CASE integer_constant ':' statement_list_or_empty
+	: TT_CASE expression ':' statement_list_or_empty
 	{
 		$$ = new NSwitchCase($1.t_tok, $4, $2);
 	}

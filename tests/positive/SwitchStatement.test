@@ -1,4 +1,11 @@
 
+const int GLOB = 9;
+
+enum Color
+{
+	RED, GREEN, BLUE
+}
+
 void switchWithDefault(int x)
 {
 	switch (x) {
@@ -33,7 +40,24 @@ int main()
 	return x;
 }
 
+void switchWithExpressions(int val)
+{
+	switch (val) {
+	case 2 + 2:
+		val++;
+		break;
+	case GLOB:
+		val += GLOB;
+		break;
+	case Color.BLUE:
+		val *= Color.BLUE;
+		break;
+	}
+}
+
 ========
+
+@GLOB = constant i32 9
 
 define void @switchWithDefault(i32 %x) {
   %1 = alloca i32
@@ -94,8 +118,42 @@ define i32 @main() {
   ret i32 %3
 }
 
+define void @switchWithExpressions(i32 %val) {
+  %1 = alloca i32
+  store i32 %val, i32* %1
+  %2 = load i32, i32* %1
+  switch i32 %2, label %12 [
+    i32 4, label %3
+    i32 9, label %6
+    i32 2, label %9
+  ]
+
+; <label>:3:                                      ; preds = %0
+  %4 = load i32, i32* %1
+  %5 = add i32 %4, 1
+  store i32 %5, i32* %1
+  br label %12
+
+; <label>:6:                                      ; preds = %0
+  %7 = load i32, i32* %1
+  %8 = add i32 %7, 9
+  store i32 %8, i32* %1
+  br label %12
+
+; <label>:9:                                      ; preds = %0
+  %10 = load i32, i32* %1
+  %11 = mul i32 %10, 2
+  store i32 %11, i32* %1
+  br label %12
+
+; <label>:12:                                     ; preds = %0, %9, %6, %3
+  ret void
+}
+
 ========
 
+GLOB R
 main T
 switchNoDefault T
 switchWithDefault T
+switchWithExpressions T

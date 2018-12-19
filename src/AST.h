@@ -1483,12 +1483,12 @@ public:
 
 class NSwitchCase : public NStatement
 {
-	NIntConst* value;
+	NExpression* value;
 	NStatementList* body;
 	Token* token;
 
 public:
-	NSwitchCase(Token* token, NStatementList* body, NIntConst* value = nullptr)
+	NSwitchCase(Token* token, NStatementList* body, NExpression* value = nullptr)
 	: value(value), body(body), token(token) {}
 
 	NSwitchCase* copy() const override
@@ -1497,7 +1497,7 @@ public:
 		return new NSwitchCase(token->copy(), body->copy(), vl);
 	}
 
-	NIntConst* getValue() const
+	NExpression* getValue() const
 	{
 		return value;
 	}
