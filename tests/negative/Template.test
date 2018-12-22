@@ -26,6 +26,32 @@ void foo()
 	Bar<float> c;
 }
 
+class List<T>
+{
+	void run()
+	{
+		T a;
+	}
+}
+
+class HasConstr
+{
+	struct this
+	{
+		int a;
+	}
+
+	this(int b)
+	{
+		a = b + 5;
+	}
+}
+
+void errMsg()
+{
+	List<HasConstr> a;
+}
+
 ========
 
 negative/Template.syp:6:7: type with name Foo already declared
@@ -34,4 +60,6 @@ negative/Template.syp:18:7: type with name Bar already declared
 negative/Template.syp:24:2: Foo type requires template arguments
 negative/Template.syp:25:2: number of template args doesn't match for Foo
 negative/Template.syp:26:2: Bar type is not a template
-found 6 errors
+negative/Template.syp:33:5: argument count for HasConstr_this function invalid, 1 arguments given, but 2 required.
+negative/Template.syp:52:2: errors when creating type: List<HasConstr>
+found 8 errors

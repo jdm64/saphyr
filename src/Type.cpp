@@ -332,7 +332,12 @@ SType* SUserType::lookup(CodeContext& context, Token* name, vector<SType*> templ
 	auto templateCtx = CodeContext::newForTemplate(context, templateMappings);
 	auto templatePtr = unique_ptr<NTemplatedDeclaration>(templateType->copy());
 	CGNStatement::run(templateCtx, templatePtr.get());
-	return type = context.getTypeManager().lookupUserType(rawName);
+
+	type = context.getTypeManager().lookupUserType(rawName);
+	if (templateCtx.hasErrors()) {
+		context.addError("errors when creating type: " + type->str(&context), name);
+	}
+	return type;
 }
 
 void SUserType::createAlias(CodeContext& context, const string& name, SType* type)

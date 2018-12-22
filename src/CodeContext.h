@@ -83,6 +83,11 @@ public:
 	explicit GlobalContext(Module* module)
 	: module(module), typeManager(module) {}
 
+	bool hasErrors() const
+	{
+		return !errors.empty();
+	}
+
 	void addError(string error, Token* token)
 	{
 		if (token)
@@ -195,6 +200,11 @@ public:
 	IRBuilder<>& IB()
 	{
 		return irBuilder;
+	}
+
+	bool hasErrors() const
+	{
+		return globalCtx.hasErrors();
 	}
 
 	void addError(string error, Token* token)
