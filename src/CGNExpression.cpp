@@ -165,8 +165,9 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 
 RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 {
-	auto funcVal = context.loadSymbol("malloc");
-	if (!funcVal) {
+	RValue funcVal;
+	auto syms = context.loadSymbol("malloc");
+	if (syms.empty()) {
 		vector<SType*> args;
 		args.push_back(SType::getInt(context, 64));
 		auto retType = SType::getPointer(context, SType::getInt(context, 8));
@@ -174,9 +175,11 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 		Token mallocName("malloc");
 
 		funcVal = Builder::getFuncPrototype(context, &mallocName, funcType);
-	} else if (!funcVal.isFunction()) {
+	} else if (!syms[0].isFunction() || syms.size() > 1) {
 		context.addError("Compiler Error: malloc not function", *exp);
-		return RValue();
+		return {};
+	} else {
+		funcVal = syms[0];
 	}
 
 	RValue size;
@@ -300,8 +303,8 @@ RValue CGNExpression::visitNUnaryMathOperator(NUnaryMathOperator* exp)
 RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 {
 	auto funcName = exp->getName()->str;
-	auto sym = context.loadSymbol(funcName);
-	if (!sym) {
+	auto syms = context.loadSymbol(funcName);
+	if (syms.empty()) {
 		auto cl = context.getClass();
 		if (cl) {
 			auto item = cl->getItem(funcName);
@@ -315,21 +318,24 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 				}
 			}
 		}
+		context.addError("symbol " + funcName + " not defined", *exp);
+		return {};
 	}
 
-	if (!sym) {
-		context.addError("symbol " + funcName + " not defined", *exp);
-		return sym;
+	vector<SFunction> funcs;
+	for (auto sym : syms) {
+		auto deSym = Inst::Deref(context, sym, true);
+		if (deSym.isFunction())
+			funcs.push_back(static_cast<SFunction&>(deSym));
 	}
-	auto deSym = Inst::Deref(context, sym, true);
-	if (!deSym.isFunction()) {
+
+	if (funcs.empty()) {
 		context.addError("symbol " + funcName + " doesn't reference a function", *exp);
 		return RValue();
 	}
 
-	auto func = static_cast<SFunction&>(deSym);
-	vector<Value*> exp_list;
-	return Inst::CallFunction(context, func, exp->getName(), exp->getArguments(), exp_list);
+	vector<RValue> exp_list;
+	return Inst::CallFunction(context, funcs, exp->getName(), exp->getArguments(), exp_list);
 }
 
 RValue CGNExpression::visitNMemberFunctionCall(NMemberFunctionCall* exp)

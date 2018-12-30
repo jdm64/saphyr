@@ -236,42 +236,59 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 
 SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs)
 {
+	string rawName;
+	auto mangle = NAttributeList::find(attrs, "mangle");
+	if (mangle) {
+		auto mangleVal = NAttrValueList::find(mangle->getValues(), 0);
+		if (mangleVal) {
+			rawName = mangleVal->str();
+		} else {
+			context.addError("mangle attribute requires value", *mangle);
+		}
+	}
+
 	auto funcName = name->str;
-	auto sym = context.loadSymbolGlobal(funcName);
-	if (!sym) {
-		string mangleName;
-		auto mangle = NAttributeList::find(attrs, "mangle");
-		if (mangle) {
-			auto mangleVal = NAttrValueList::find(mangle->getValues(), 0);
-			if (mangleVal) {
-				mangleName = mangleVal->str();
-				sym = context.loadSymbolGlobal(mangleName);
-				if (sym) {
-					context.addError("cannot mangle function to existing symbol", *mangleVal);
-					mangleName = "";
-				}
-			} else {
-				context.addError("mangle attribute requires value", *mangle);
-			}
+	if (rawName.empty()) {
+		rawName = funcName;
+	}
+	auto isOverride = rawName != funcName;
+
+	auto syms = context.loadSymbolGlobal(funcName);
+	if (syms.size()) {
+		// find function that already matches
+		auto isFunction = false;
+		for (auto sym : syms) {
+			if (!sym.isFunction())
+				continue;
+
+			auto function = static_cast<SFunction&>(sym);
+			if (funcType == function.stype())
+				return function;
+			isFunction = true;
 		}
 
-		auto realName = mangleName.size()? mangleName : funcName;
-		auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, realName, context.getModule());
-		auto function = SFunction::create(context, func, funcType, attrs);
-		context.storeGlobalSymbol(function, funcName);
-		if (mangleName.size())
-			context.storeGlobalSymbol(function, mangleName);
-		return function;
-	} else if (!sym.isFunction()) {
-		context.addError("variable " + funcName + " already defined", name);
-		return SFunction();
+		if (!isFunction || !isOverride) {
+			if (isFunction) {
+				context.addError("function type for " + funcName + " doesn't match definition", name);
+			} else {
+				context.addError("variable " + funcName + " already defined", name);
+			}
+			return {};
+		}
+
+		// function ok to override -- fall through
 	}
 
-	auto function = static_cast<SFunction&>(sym);
-	if (funcType != function.stype()) {
-		context.addError("function type for " + funcName + " doesn't match definition", name);
-		return SFunction();
+	if (isOverride && context.loadSymbolGlobal(rawName).size()) {
+		context.addError("cannot mangle function to existing symbol " + rawName, name);
+		return {};
 	}
+
+	auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, rawName, context.getModule());
+	auto function = SFunction::create(context, func, funcType, attrs);
+	context.storeGlobalSymbol(function, rawName);
+	if (isOverride)
+		context.storeGlobalSymbol(function, funcName);
 	return function;
 }
 
@@ -510,7 +527,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 	}
 
 	auto name = stm->getName()->str;
-	if (context.loadSymbolCurr(name)) {
+	if (context.loadSymbolCurr(name).size()) {
 		context.addError("variable " + name + " already defined", stm->getName());
 		return;
 	}

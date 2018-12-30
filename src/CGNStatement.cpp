@@ -108,7 +108,7 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 	}
 
 	auto name = stm->getName()->str;
-	if (context.loadSymbolCurr(name)) {
+	if (context.loadSymbolCurr(name).size()) {
 		context.addError("variable " + name + " already defined", stm->getName());
 		return;
 	}
@@ -484,9 +484,10 @@ error:
 
 void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 {
+	SFunction func;
 	auto bytePtr = SType::getPointer(context, SType::getInt(context, 8));
-	auto func = context.loadSymbol("free");
-	if (!func) {
+	auto syms = context.loadSymbol("free");
+	if (syms.empty()) {
 		vector<SType*> args;
 		args.push_back(bytePtr);
 		auto retType = SType::getVoid(context);
@@ -494,9 +495,11 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 		Token freeName("free");
 
 		func = Builder::getFuncPrototype(context, &freeName, funcType);
-	} else if (!func.isFunction()) {
+	} else if (!syms[0].isFunction() || syms.size() > 1) {
 		context.addError("Compiler Error: free not function", *stm->getVar());
 		return;
+	} else {
+		func = static_cast<SFunction&>(syms[0]);
 	}
 
 	auto ptr = CGNExpression::run(context, stm->getVar());
@@ -513,7 +516,7 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 	vector<Value*> exp_list;
 	exp_list.push_back(context.IB().CreateBitCast(ptr, *bytePtr));
 
-	context.IB().CreateCall(static_cast<SFunction&>(func).value(), exp_list);
+	context.IB().CreateCall(func.value(), exp_list);
 }
 
 void CGNStatement::visitNDestructorCall(NDestructorCall* stm)

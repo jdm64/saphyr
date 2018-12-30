@@ -71,7 +71,7 @@ public:
 		return RValue(ptrVal, type);
 	}
 
-	static RValue CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList);
+	static RValue CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, NExpressionList* args, vector<RValue>& expList);
 
 	static RValue CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments);
 

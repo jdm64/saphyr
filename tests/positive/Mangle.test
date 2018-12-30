@@ -24,6 +24,27 @@ void bla()
 	a.foo();
 }
 
+void calc()
+{
+}
+
+#[mangle("calc2")]
+void calc(int a)
+{
+}
+
+#[mangle("calc3")]
+void calc(double b)
+{
+}
+
+void callCalc()
+{
+	calc();
+	calc(3);
+	calc(4.6);
+}
+
 ========
 
 %MyClass = type { i8 }
@@ -49,9 +70,36 @@ define void @bla() {
   ret void
 }
 
+define void @calc() {
+  ret void
+}
+
+define void @calc2(i32 %a) {
+  %1 = alloca i32
+  store i32 %a, i32* %1
+  ret void
+}
+
+define void @calc3(double %b) {
+  %1 = alloca double
+  store double %b, double* %1
+  ret void
+}
+
+define void @callCalc() {
+  call void @calc()
+  call void @calc2(i32 3)
+  call void @calc3(double 4.600000e+00)
+  ret void
+}
+
 ========
 
 bar T
 bla T
+calc T
+calc2 T
+calc3 T
+callCalc T
 super_mangle T
 test T

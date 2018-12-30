@@ -47,20 +47,23 @@ struct LabelBlock
 typedef unique_ptr<LabelBlock> LabelBlockPtr;
 #define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, token, placeholder))
 
+typedef vector<RValue> VecRValue;
+typedef vector<SFunction> VecSFunc;
+
 class ScopeTable
 {
-	map<string, RValue> table;
+	map<string, VecRValue> table;
 
 public:
 	void storeSymbol(const RValue& var, const string& name)
 	{
-		table[name] = var;
+		table[name].push_back(var);
 	}
 
-	RValue loadSymbol(const string& name) const
+	VecRValue loadSymbol(const string& name) const
 	{
 		auto varData = table.find(name);
-		return varData != table.end()? varData->second : RValue();
+		return varData != table.end()? varData->second : VecRValue();
 	}
 };
 
@@ -247,7 +250,7 @@ public:
 		globalCtx.globalTable.storeSymbol(var, name);
 	}
 
-	RValue loadSymbolGlobal(const string& name) const
+	VecRValue loadSymbolGlobal(const string& name) const
 	{
 		return globalCtx.globalTable.loadSymbol(name);
 	}
@@ -303,23 +306,23 @@ public:
 		localTable.back().storeSymbol(var, name);
 	}
 
-	RValue loadSymbol(const string& name) const
+	VecRValue loadSymbol(const string& name) const
 	{
-		auto var = loadSymbolLocal(name);
-		return var? var : globalCtx.globalTable.loadSymbol(name);
+		auto data = loadSymbolLocal(name);
+		return data.size() ? data : globalCtx.globalTable.loadSymbol(name);
 	}
 
-	RValue loadSymbolLocal(const string& name) const
+	VecRValue loadSymbolLocal(const string& name) const
 	{
 		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
-			auto var = it->loadSymbol(name);
-			if (var)
-				return var;
+			auto data = it->loadSymbol(name);
+			if (data.size())
+				return data;
 		}
 		return {};
 	}
 
-	RValue loadSymbolCurr(const string& name) const
+	VecRValue loadSymbolCurr(const string& name) const
 	{
 		return localTable.empty() ? globalCtx.globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
 	}

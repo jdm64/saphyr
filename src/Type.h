@@ -612,7 +612,7 @@ public:
 		return subtype;
 	}
 
-	int numParams() const
+	size_t numParams() const
 	{
 		return params.size();
 	}

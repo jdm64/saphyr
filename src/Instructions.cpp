@@ -448,12 +448,12 @@ RValue Inst::SizeOf(CodeContext& context, Token* name)
 	auto isVar = context.loadSymbol(nameStr);
 	SType* stype = nullptr;
 
-	if (isType && isVar) {
+	if ((isType && isVar.size()) || isVar.size() > 1) {
 		context.addError(nameStr + " is ambigious, both a type and a variable", name);
 	} else if (isType) {
 		stype = isType;
-	} else if (isVar) {
-		stype = isVar.stype();
+	} else if (isVar.size()) {
+		stype = isVar[0].stype();
 	} else {
 		context.addError("type " + nameStr + " is not declared", name);
 	}
@@ -515,25 +515,67 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 	return RValue();
 }
 
-RValue Inst::CallFunction(CodeContext& context, SFunction& func, Token* name, NExpressionList* args, vector<Value*>& expList)
+RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, NExpressionList* args, vector<RValue>& expList)
 {
-	// NOTE args can be null
-	auto argCount = (args? args->size() : 0) + expList.size();
-	auto paramCount = func.numParams();
-	if (argCount != paramCount) {
-		context.addError("argument count for " + func.name().str() + " function invalid, "
-			+ to_string(argCount) + " arguments given, but " + to_string(paramCount) + " required.", name);
-		return RValue();
-	}
-	int i = expList.size();
+	auto argOffset = expList.size();
 	if (args) {
 		for (auto arg : *args) {
-			auto argExp = CGNExpression::run(context, arg);
-			CastTo(context, name, argExp, func.getParam(i++));
-			expList.push_back(argExp);
+			expList.push_back(CGNExpression::run(context, arg));
 		}
 	}
-	auto call = context.IB().CreateCall(func.value(), expList);
+
+	auto argCount = expList.size();
+	vector<SFunction> sizeMatch;
+	for (auto func : funcs) {
+		if (func.numParams() == argCount) {
+			sizeMatch.push_back(func);
+		}
+	}
+
+	if (sizeMatch.empty()) {
+		// TODO make better error message with all functions
+		context.addError("argument count for " + funcs[0].name().str() + " function invalid, "
+			+ to_string(argCount) + " arguments given, but " + to_string(funcs[0].numParams()) + " required.", name);
+		return {};
+	}
+
+	SFunction func;
+	if (sizeMatch.size() == 1) {
+		func = sizeMatch[0];
+	} else {
+		vector<SFunction> paramMatch;
+		int bestCount = 1;
+		for (auto func : sizeMatch) {
+			int matchCount = 0;
+			for (size_t i = 0; i < argCount; i++) {
+				if (func.getParam(i) == expList[i].stype()) {
+					matchCount++;
+				}
+			}
+			if (matchCount == bestCount) {
+				paramMatch.push_back(func);
+			} else if (matchCount > bestCount) {
+				bestCount = matchCount;
+				paramMatch.clear();
+				paramMatch.push_back(func);
+			}
+		}
+		if (paramMatch.empty() || paramMatch.size() > 1) {
+			context.addError("arguments ambigious for overloaded function " + name->str, name);
+			return {};
+		}
+		func = paramMatch[0];
+	}
+
+	for (size_t i = argOffset; i < func.numParams(); i++) {
+		CastTo(context, name, expList[i], func.getParam(i));
+	}
+
+	vector<Value*> values;
+	for (auto item : expList) {
+		values.push_back(item);
+	}
+	auto call = context.IB().CreateCall(func.value(), values);
 	return RValue(call, func.returnTy());
 }
 
@@ -576,7 +618,7 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 	}
 
 	auto func = static_cast<SFunction&>(sym->second);
-	vector<Value*> exp_list;
+	vector<RValue> exp_list;
 	if (!func.isStatic()) {
 		if (baseVal.isUndef()) {
 			context.addError("unable to call non-static class function from a static function", funcName);
@@ -584,7 +626,10 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 		}
 		exp_list.push_back(baseVal);
 	}
-	return CallFunction(context, func, funcName, arguments, exp_list);
+
+	VecSFunc funcs;
+	funcs.push_back(func);
+	return CallFunction(context, funcs, funcName, arguments, exp_list);
 }
 
 RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
@@ -597,8 +642,11 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 		return RValue();
 	}
 	auto func = static_cast<SFunction&>(sym);
-	vector<Value*> exp_list;
-	return CallFunction(context, func, funcName, arguments, exp_list);
+	vector<RValue> exp_list;
+
+	VecSFunc funcs;
+	funcs.push_back(func);
+	return CallFunction(context, funcs, funcName, arguments, exp_list);
 }
 
 bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList)
@@ -641,9 +689,11 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpr
 		var = RValue(phi, clType);
 	}
 
-	vector<Value*> exp_list;
+	vector<RValue> exp_list;
 	exp_list.push_back(var);
-	CallFunction(context, func, token, initList, exp_list);
+	VecSFunc funcs;
+	funcs.push_back(func);
+	CallFunction(context, funcs, token, initList, exp_list);
 
 	if (isArr) {
 		auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
@@ -663,10 +713,13 @@ void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 	if (!func)
 		return;
 
-	vector<Value*> exp_list;
+	vector<RValue> exp_list;
 	exp_list.push_back(value);
 	NExpressionList argList;
-	CallFunction(context, func, valueToken, &argList, exp_list);
+
+	VecSFunc funcs;
+	funcs.push_back(func);
+	CallFunction(context, funcs, valueToken, &argList, exp_list);
 }
 
 RValue Inst::LoadMemberVar(CodeContext& context, const string& name)

@@ -43,9 +43,14 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 	auto varName = baseVar->getName()->str;
 
 	// check current function
-	auto var = context.loadSymbolLocal(varName);
-	if (var)
-		return var;
+	auto syms = context.loadSymbolLocal(varName);
+	if (syms.size()) {
+		if (syms.size() > 1) {
+			context.addError("ambiguous symbol " + varName, *baseVar);
+			return {};
+		}
+		return syms[0];
+	}
 
 	// check class variables
 	auto currClass = context.getClass();
@@ -61,8 +66,13 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 	}
 
 	// check global variables
-	var = context.loadSymbolGlobal(varName);
-	if (var) {
+	syms = context.loadSymbolGlobal(varName);
+	if (syms.size()) {
+		if (syms.size() > 1) {
+			context.addError("ambiguous symbol " + varName, *baseVar);
+			return {};
+		}
+		auto var = syms[0];
 		if (var.stype()->isConst() && isa<GlobalVariable>(var.value())) {
 			auto init = static_cast<GlobalVariable*>(var.value())->getInitializer();
 			if (init) {
@@ -81,7 +91,7 @@ RValue CGNVariable::visitNBaseVariable(NBaseVariable* baseVar)
 		} else if (!hasErrors) {
 			context.addError("variable " + varName + " not declared", *baseVar);
 		}
-		return var;
+		return {};
 	}
 	return RValue::getUndef(userVar);
 }
