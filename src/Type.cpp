@@ -48,9 +48,12 @@ void SStructType::setConst(TypeManager* tmang)
 {
 	tclass |= CONST;
 	for (auto& item : items) {
-		auto rval = item.second.second;
-		auto type = tmang->getConst(rval.stype());
-		item.second.second = RValue(rval.value(), type);
+		for (auto& pair : item.second) {
+			auto rval = pair.second;
+			auto type = tmang->getConst(rval.stype());
+			pair.second = RValue(rval.value(), type);
+		}
+
 	}
 }
 
@@ -178,10 +181,10 @@ SStructType::SStructType(const string& name, StructType* type, const vector<pair
 {
 	int i = 0;
 	for (auto var : structure)
-		items[var.first] = make_pair(i++, RValue(nullptr, var.second));
+		items[var.first].push_back(make_pair(i++, RValue(nullptr, var.second)));
 }
 
-pair<int, RValue>* SStructType::getItem(const string& name)
+vector<pair<int, RValue>>* SStructType::getItem(const string& name)
 {
 	auto iter = items.find(name);
 	return iter != items.end()? &iter->second : nullptr;
@@ -208,8 +211,16 @@ string SStructType::str(CodeContext* context) const
 	} else {
 		os << "S:{|";
 		for (auto i : items) {
-			os << i.first << "=" << i.second.first << ":"
-				<< i.second.second.stype()->str(context) << "|";
+			os << i.first << "=";
+			auto first = true;
+			for (auto p : i.second) {
+				if (first)
+					first = false;
+				else
+					os << ",";
+				os << p.first << ":" << p.second.stype()->str(context);
+			}
+			os << "|";
 		}
 		os << "}";
 	}
@@ -218,15 +229,19 @@ string SStructType::str(CodeContext* context) const
 
 void SClassType::addFunction(const string& name, const SFunction& func)
 {
-	items[name] = make_pair(0, func);
+	items[name].push_back(make_pair(0, func));
 }
 
-SFunction SClassType::getConstructor()
+vector<SFunction> SClassType::getConstructor()
 {
 	auto item = getItem("this");
 	if (!item)
 		return {};
-	return static_cast<SFunction&>(item->second);
+	vector<SFunction> ret;
+	for (auto p : *item) {
+		ret.push_back(static_cast<SFunction&>(p.second));
+	}
+	return ret;
 }
 
 SFunction SClassType::getDestructor()
@@ -234,7 +249,7 @@ SFunction SClassType::getDestructor()
 	auto item = getItem("null");
 	if (!item)
 		return {};
-	return static_cast<SFunction&>(item->second);
+	return static_cast<SFunction&>((*item)[0].second);
 }
 
 string SUnionType::str(CodeContext* context) const

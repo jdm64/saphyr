@@ -1355,12 +1355,12 @@ class NClassConstructor : public NClassFunctionDecl
 	NInitializerList* initList;
 
 public:
-	NClassConstructor(Token* name, NParameterList* params, NInitializerList* initList, NStatementList* body)
-	: NClassFunctionDecl(name, nullptr, params, body), initList(initList) {}
+	NClassConstructor(Token* name,  NParameterList* params, NInitializerList* initList, NStatementList* body, NAttributeList* attrs = nullptr)
+	: NClassFunctionDecl(name, nullptr, params, body, attrs), initList(initList) {}
 
 	NClassConstructor* copy() const override
 	{
-		return new NClassConstructor(name->copy(), params->copy(), initList->copy(), body->copy());
+		return new NClassConstructor(name->copy(), params->copy(), initList->copy(), body->copy(), attrs ? attrs->copy() : nullptr);
 	}
 
 	MemberType memberType() const override

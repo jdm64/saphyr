@@ -78,7 +78,7 @@ void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm,
 	auto name = stm->getName();
 	auto clType = context.getClass();
 	auto item = clType->getItem(name->str);
-	if (item) {
+	if (item && !item->at(0).second.isFunction()) {
 		context.addError("class " + clType->str(&context) + " already defines symbol " + name->str, name);
 		return;
 	}
@@ -122,7 +122,8 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		if (it != items.end())
 			continue;
 
-		auto stype = item.second.second.stype();
+		// all these types should be fields
+		auto stype = item.second[0].second.stype();
 		SClassType* clTy;
 
 		if (stype->isClass())
@@ -132,7 +133,7 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		else
 			continue;
 
-		if (clTy->getConstructor()) {
+		if (clTy->getConstructor().size()) {
 			items.insert({item.first, new NMemberInitializer(new Token(*stm->getName(), item.first), new NExpressionList)});
 		}
 	}
@@ -158,7 +159,8 @@ void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm,
 {
 	auto clType = context.getClass();
 	for (auto item : *clType) {
-		auto ty = item.second.second.stype();
+		// only looking for fields so first item will do
+		auto ty = item.second[0].second.stype();
 		if (!ty->isClass())
 			continue;
 		auto itemCl = static_cast<SClassType*>(ty);
@@ -194,10 +196,7 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 				structIdx = i;
 			break;
 		case NClassMember::MemberType::CONSTRUCTOR:
-			if (constrIdx > -1)
-				context.addError("only one constructor allowed in a class", members->at(i)->getName());
-			else
-				constrIdx = i;
+			constrIdx = i;
 			break;
 		case NClassMember::MemberType::DESTRUCTOR:
 			if (destrtIdx > -1)

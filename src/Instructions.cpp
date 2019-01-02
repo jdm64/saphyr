@@ -515,9 +515,12 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 	return RValue();
 }
 
-RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, NExpressionList* args, vector<RValue>& expList)
+RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, NExpressionList* args, RValue instVar)
 {
-	auto argOffset = expList.size();
+	VecRValue expList;
+	if (instVar)
+		expList.push_back(instVar);
+	auto argOffset = instVar ? 1 : 0;
 	if (args) {
 		for (auto arg : *args) {
 			expList.push_back(CGNExpression::run(context, arg));
@@ -613,23 +616,27 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 	if (!sym) {
 		context.addError("class " + className + " has no symbol " + funcName->str, funcName);
 		return RValue();
-	} else if (!sym->second.isFunction()) {
-		return CallMemberFunctionNonClass(context, baseVar, baseVal, funcName, arguments);
-	}
-
-	auto func = static_cast<SFunction&>(sym->second);
-	vector<RValue> exp_list;
-	if (!func.isStatic()) {
-		if (baseVal.isUndef()) {
-			context.addError("unable to call non-static class function from a static function", funcName);
-			return RValue();
-		}
-		exp_list.push_back(baseVal);
 	}
 
 	VecSFunc funcs;
-	funcs.push_back(func);
-	return CallFunction(context, funcs, funcName, arguments, exp_list);
+	auto isStatic = true;
+	for (auto item : *sym) {
+		if (item.second.isFunction()) {
+			auto func = static_cast<SFunction&>(item.second);
+			isStatic &= func.isStatic();
+			funcs.push_back(func);
+		}
+	}
+	if (funcs.empty()) {
+		return CallMemberFunctionNonClass(context, baseVar, baseVal, funcName, arguments);
+	}
+
+	if (!isStatic && baseVal.isUndef()) {
+		context.addError("unable to call non-static class function from a static function", funcName);
+		return {};
+	}
+
+	return CallFunction(context, funcs, funcName, arguments, isStatic ? RValue() : baseVal);
 }
 
 RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
@@ -641,12 +648,10 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 		context.addError("function or function pointer expected", funcName);
 		return RValue();
 	}
-	auto func = static_cast<SFunction&>(sym);
-	vector<RValue> exp_list;
 
 	VecSFunc funcs;
-	funcs.push_back(func);
-	return CallFunction(context, funcs, funcName, arguments, exp_list);
+	funcs.push_back(static_cast<SFunction&>(sym));
+	return CallFunction(context, funcs, funcName, arguments, RValue());
 }
 
 bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList)
@@ -664,8 +669,8 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpr
 		return false;
 	}
 
-	auto func = clType->getConstructor();
-	if (!func)
+	auto funcs = clType->getConstructor();
+	if (funcs.empty())
 		return false;
 
 	Value *endPtr, *nextPtr;
@@ -689,11 +694,7 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpr
 		var = RValue(phi, clType);
 	}
 
-	vector<RValue> exp_list;
-	exp_list.push_back(var);
-	VecSFunc funcs;
-	funcs.push_back(func);
-	CallFunction(context, funcs, token, initList, exp_list);
+	CallFunction(context, funcs, token, initList, var);
 
 	if (isArr) {
 		auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
@@ -713,13 +714,11 @@ void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 	if (!func)
 		return;
 
-	vector<RValue> exp_list;
-	exp_list.push_back(value);
 	NExpressionList argList;
 
 	VecSFunc funcs;
 	funcs.push_back(func);
-	CallFunction(context, funcs, valueToken, &argList, exp_list);
+	CallFunction(context, funcs, valueToken, &argList, value);
 }
 
 RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
@@ -741,8 +740,11 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 		if (!item) {
 			context.addError(baseName + " doesn't have member " + member, memberName);
 			return RValue();
-		} else if (item->second.isFunction()) {
-			return item->second;
+		} else if (item->size() > 1) {
+			context.addError("member is ambigious: " + member, memberName);
+			return {};
+		} else if (item->at(0).second.isFunction()) {
+			return item->at(0).second;
 		} else if (baseVar.isUndef()) {
 			context.addError("cannot access member variable from a static context", memberName);
 			return RValue();
@@ -750,9 +752,9 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 
 		vector<Value*> indexes;
 		indexes.push_back(RValue::getZero(context, SType::getInt(context, 32)));
-		indexes.push_back(RValue::getNumVal(context, item->first));
+		indexes.push_back(RValue::getNumVal(context, item->at(0).first));
 
-		return GetElementPtr(context, baseVar, indexes, item->second.stype());
+		return GetElementPtr(context, baseVar, indexes, item->at(0).second.stype());
 	} else if (varType->isUnion()) {
 		auto unionType = static_cast<SUnionType*>(varType);
 		auto item = unionType->getItem(member);

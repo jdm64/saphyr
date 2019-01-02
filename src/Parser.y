@@ -192,9 +192,9 @@ class_member
 	{
 		$$ = new NClassFunctionDecl($3, $2, $5, $7, $1);
 	}
-	| TT_THIS '(' parameter_list ')' class_initializer_list function_body
+	| optional_attribute_declaration TT_THIS '(' parameter_list ')' class_initializer_list function_body
 	{
-		$$ = new NClassConstructor($1, $3, $5, $6);
+		$$ = new NClassConstructor($2, $4, $6, $7, $1);
 	}
 	| '~' TT_THIS '(' ')' function_body
 	{

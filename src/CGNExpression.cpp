@@ -334,8 +334,7 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 		return RValue();
 	}
 
-	vector<RValue> exp_list;
-	return Inst::CallFunction(context, funcs, exp->getName(), exp->getArguments(), exp_list);
+	return Inst::CallFunction(context, funcs, exp->getName(), exp->getArguments(), RValue());
 }
 
 RValue CGNExpression::visitNMemberFunctionCall(NMemberFunctionCall* exp)

@@ -465,7 +465,7 @@ class SStructType : public STemplatedType
 	friend class TypeManager;
 	friend class SClassType;
 
-	typedef map<string, pair<int, RValue>> container;
+	typedef map<string, vector<pair<int, RValue>>> container;
 	typedef container::const_iterator const_iterator;
 
 protected:
@@ -481,7 +481,7 @@ protected:
 	void setConst(TypeManager* tmang) override;
 
 public:
-	pair<int, RValue>* getItem(const string& name);
+	vector<pair<int, RValue>>* getItem(const string& name);
 
 	string str(CodeContext* context = nullptr) const override;
 
@@ -514,7 +514,7 @@ class SClassType : public SStructType
 public:
 	void addFunction(const string& name, const SFunction& func);
 
-	SFunction getConstructor();
+	vector<SFunction> getConstructor();
 
 	SFunction getDestructor();
 };
