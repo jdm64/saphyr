@@ -111,6 +111,11 @@ public:
 	 */
 	static bool validate(CodeContext& context, Token* token, SType* type);
 
+	/**
+	 * returns true if the types differ only by const-ness
+	 */
+	static bool isConstEQ(CodeContext& context, SType* lhs, SType* rhs);
+
 	static uint64_t allocSize(CodeContext& context, SType* type);
 
 	static SType* numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min = true);

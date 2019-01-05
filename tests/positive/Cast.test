@@ -39,6 +39,16 @@ void mutCast()
 	b->mut = a->mut;
 }
 
+alias CONSTARRY = const @const []const int;
+
+void constCast()
+{
+	@[]int b = null;
+	CONSTARRY a = b->as(CONSTARRY);
+
+	b = a->as(@[]int);
+}
+
 ========
 
 %Foo = type { i32 }
@@ -114,9 +124,27 @@ define void @mutCast() {
   ret void
 }
 
+define void @constCast() {
+  %b = alloca [0 x i32]*
+  store [0 x i32]* null, [0 x i32]** %b
+  %1 = load [0 x i32]*, [0 x i32]** %b
+  %2 = alloca [0 x i32]*
+  store [0 x i32]* %1, [0 x i32]** %2
+  %3 = load [0 x i32]*, [0 x i32]** %2
+  %a = alloca [0 x i32]*
+  store [0 x i32]* %3, [0 x i32]** %a
+  %4 = load [0 x i32]*, [0 x i32]** %a
+  %5 = alloca [0 x i32]*
+  store [0 x i32]* %4, [0 x i32]** %5
+  %6 = load [0 x i32]*, [0 x i32]** %5
+  store [0 x i32]* %6, [0 x i32]** %b
+  ret void
+}
+
 ========
 
 complex T
+constCast T
 func T
 malloc U
 mutCast T

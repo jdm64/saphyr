@@ -169,6 +169,15 @@ bool SType::validate(CodeContext& context, Token* token, SType* type)
 	return validate(context, token, type->subType());
 }
 
+bool SType::isConstEQ(CodeContext& context, SType* lhs, SType* rhs)
+{
+	auto mask = POINTER | ARRAY | VEC;
+	if (mask & lhs->tclass & rhs->tclass) {
+		return lhs->size() == rhs->size() && isConstEQ(context, lhs->subType(), rhs->subType());
+	}
+	return getMutable(context, lhs) == getMutable(context, rhs);
+}
+
 void SUserType::innerStr(CodeContext* context, stringstream& os) const
 {
 	if (isConst())

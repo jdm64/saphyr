@@ -514,7 +514,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 	if (initValue) {
 		if (initValue.isNullPtr()) {
 			Inst::CastTo(context, *stm->getInitExp(), initValue, varType);
-		} else if (varType != initValue.stype() && SType::getMutable(context, varType) != SType::getMutable(context, initValue.stype())) {
+		} else if (!SType::isConstEQ(context, varType, initValue.stype())) {
 			context.addError("global variable initialization requires exact type matching", *stm->getInitExp());
 			return;
 		}

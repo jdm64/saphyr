@@ -178,8 +178,12 @@ RValue Inst::CastAs(CodeContext& context, NArrowOperator* exp)
 		return RValue();
 
 	auto stype = expr.stype();
-	if (stype == to)
+	if (stype == to) {
 		return StoreTemporary(context, expr);
+	} else if (SType::isConstEQ(context, stype, to)) {
+		expr = RValue(expr.value(), to);
+		return StoreTemporary(context, expr);
+	}
 
 	// casting @void to real pointer
 	if (stype->isPointer() && stype->subType()->isVoid() && to->isPointer()) {
