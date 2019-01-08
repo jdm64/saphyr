@@ -71,17 +71,22 @@ TargetMachine* ModuleWriter::getMachine()
 
 int ModuleWriter::run()
 {
-	llvm::legacy::PassManager clean;
-	clean.add(new SimpleBlockClean());
-	clean.run(module);
+	auto noClean = config.count("noclean");
+	if (!noClean) {
+		llvm::legacy::PassManager clean;
+		clean.add(new SimpleBlockClean());
+		clean.run(module);
+	}
 
-	if (validModule())
-		return 1;
-
-	if (config.count("llvmir"))
+	auto noVerify = noClean || config.count("noverify");
+	if (noVerify || config.count("llvmir"))
 		outputIR();
-	outputNative();
-	return 0;
+
+	auto hasErrors = noVerify ? true : validModule();
+	if (!hasErrors)
+		outputNative();
+
+	return hasErrors;
 }
 
 void ModuleWriter::outputIR()

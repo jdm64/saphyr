@@ -30,7 +30,9 @@ void initOptions()
 	progOpts.add_options()
 		("help", "produce help message")
 		("input", "input file")
-		("llvmir", "output LLVM IR instead of object code")
+		("llvmir", "write LLVM IR file")
+		("noverify", "do not verify module but write LLVM IR file")
+		("noclean", "do not run clean or verify on module but write LLVM IR file")
 		("imports", "output imports listed in the file");
 }
 
