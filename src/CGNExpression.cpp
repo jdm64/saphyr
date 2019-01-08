@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <llvm/IR/CFG.h>
 #include "Value.h"
 #include "AST.h"
 #include "CGNExpression.h"
@@ -140,16 +141,18 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 
 		context.pushBlock(trueBlock);
 		trueExp = visit(exp->getTrueVal());
+		auto tBlk = context.currBlock();
 		context.IB().CreateBr(endBlock);
 
 		context.pushBlock(falseBlock);
 		falseExp = visit(exp->getFalseVal());
+		auto fBlk = context.currBlock();
 		context.IB().CreateBr(endBlock);
 
 		context.pushBlock(endBlock);
 		auto result = context.IB().CreatePHI(trueExp.type(), 2);
-		result->addIncoming(trueExp, trueBlock);
-		result->addIncoming(falseExp, falseBlock);
+		result->addIncoming(trueExp, tBlk);
+		result->addIncoming(falseExp, fBlk);
 		retVal = RValue(result, trueExp.stype());
 	} else {
 		trueExp = visit(exp->getTrueVal());
@@ -209,23 +212,24 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 
 RValue CGNExpression::visitNLogicalOperator(NLogicalOperator* exp)
 {
-	auto saveBlock = context.currBlock();
 	auto firstBlock = context.createBlock();
 	auto secondBlock = context.createBlock();
 	auto trueBlock = (exp->getOp() == ParserBase::TT_LOG_AND)? firstBlock : secondBlock;
 	auto falseBlock = (exp->getOp() == ParserBase::TT_LOG_AND)? secondBlock : firstBlock;
 
 	auto lhsExp = Inst::Branch(trueBlock, falseBlock, exp->getLhs(), context);
+	auto lBlk = context.currBlock();
 
 	context.pushBlock(firstBlock);
 	auto rhsExp = visit(exp->getRhs());
 	Inst::CastTo(context, *exp->getRhs(), rhsExp, SType::getBool(context));
+	auto rBlk = context.currBlock();
 	context.IB().CreateBr(secondBlock);
 
 	context.pushBlock(secondBlock);
 	auto result = context.IB().CreatePHI(Type::getInt1Ty(context), 2);
-	result->addIncoming(lhsExp, saveBlock);
-	result->addIncoming(rhsExp, firstBlock);
+	result->addIncoming(lhsExp, lBlk);
+	result->addIncoming(rhsExp, rBlk);
 
 	return RValue(result, SType::getBool(context));
 }
@@ -254,20 +258,21 @@ RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 
 	Inst::CastTo(context, *exp->getLhs(), condition, SType::getBool(context), false);
 	if (exp->getRhs()->isComplex()) {
-		auto trueBlock = context.currBlock();
 		auto falseBlock = context.createBlock();
 		auto endBlock = context.createBlock();
 
+		auto lBlk = context.currBlock();
 		context.IB().CreateCondBr(condition, endBlock, falseBlock);
 
 		context.pushBlock(falseBlock);
 		rhsExp = visit(exp->getRhs());
+		auto rBlk = context.currBlock();
 		context.IB().CreateBr(endBlock);
 
 		context.pushBlock(endBlock);
 		auto result = context.IB().CreatePHI(lhsExp.type(), 2);
-		result->addIncoming(lhsExp, trueBlock);
-		result->addIncoming(rhsExp, falseBlock);
+		result->addIncoming(lhsExp, lBlk);
+		result->addIncoming(rhsExp, rBlk);
 
 		retVal = RValue(result, lhsExp.stype());
 	} else {

@@ -34,29 +34,23 @@ bool SimpleBlockClean::removeBranchBlock(BasicBlock* block)
 		return false;
 
 	auto branchTo = branch->getSuccessor(0);
-	vector<TerminatorInst*> termVec;
-	vector<BasicBlock*> predBlocks;
-	for (auto pred = pred_begin(block), end = pred_end(block); pred != end; ++pred) {
-		auto blk = *pred;
-		predBlocks.push_back(blk);
-		termVec.push_back(blk->getTerminator());
-	}
-	for (auto& inst : termVec) {
-		for (uint i = 0; i < inst->getNumSuccessors(); i++) {
-			auto successor = inst->getSuccessor(i);
-			if (successor == block)
-				inst->setSuccessor(i, branchTo);
-		}
-	}
-	// removing a branch will invalidate any PHI instructions
-	// BUG: will a PHI always be first?
 	auto& inst = branchTo->front();
 	if (isa<PHINode>(inst)) {
-		auto phi = static_cast<PHINode*>(&inst);
-		auto val = phi->removeIncomingValue(block, false);
-		for (auto pBlock : predBlocks)
-			phi->addIncoming(val, pBlock);
+		return false;
 	}
+
+	vector<TerminatorInst*> termVec;
+	for (auto pred = pred_begin(block), end = pred_end(block); pred != end; ++pred) {
+		termVec.push_back((*pred)->getTerminator());
+	}
+
+	for (auto term : termVec) {
+		for (uint i = 0; i < term->getNumSuccessors(); i++) {
+			if (term->getSuccessor(i) == block)
+				term->setSuccessor(i, branchTo);
+		}
+	}
+
 	return true;
 }
 
@@ -68,16 +62,10 @@ bool SimpleBlockClean::runOnFunction(Function &func)
 	auto iter = func.begin();
 	iter++; // skip first block
 	while (iter != end) {
-		if (iter->empty() || pred_begin(&*iter) == pred_end(&*iter)) {
+		if (iter->empty() || pred_begin(&*iter) == pred_end(&*iter)
+				|| (iter->size() == 1 && removeBranchBlock(&*iter))) {
 			(iter++)->eraseFromParent();
 			modified = true;
-		} else if (iter->size() == 1) {
-			if (removeBranchBlock(&*iter)) {
-				(iter++)->eraseFromParent();
-				modified = true;
-			} else {
-				++iter;
-			}
 		} else {
 			++iter;
 		}
