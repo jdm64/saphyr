@@ -34,6 +34,14 @@ void constPtr()
 	auto a = new const[5]int;
 }
 
+void arrToPtr()
+{
+	[256]int8 arr;
+	@[]const int8 ptr;
+
+	ptr = arr$;
+}
+
 ========
 
 %S = type { i32, i32* }
@@ -87,8 +95,17 @@ define void @constPtr() {
 
 declare i8* @malloc(i64)
 
+define void @arrToPtr() {
+  %arr = alloca [256 x i8]
+  %ptr = alloca [0 x i8]*
+  %1 = bitcast [256 x i8]* %arr to [0 x i8]*
+  store [0 x i8]* %1, [0 x i8]** %ptr
+  ret void
+}
+
 ========
 
+arrToPtr T
 bar T
 constPtr T
 foo T

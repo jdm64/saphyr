@@ -69,7 +69,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 			context.addError("Cannot cast non-pointer to pointer", token);
 			return true;
 		} else if (type->subType()->isArray() && valueType->subType()->isArray()) {
-			if (type->subType()->subType() != valueType->subType()->subType()) {
+			if (!SType::isConstEQ(context, type->subType()->subType(), valueType->subType()->subType())) {
 				castError(context, "Cannot cast array pointers of different types", valueType, type, token);
 				return true;
 			} else if (type->subType()->size() > valueType->subType()->size()) {
