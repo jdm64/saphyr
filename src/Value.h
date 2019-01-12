@@ -117,12 +117,19 @@ public:
 		return atrs;
 	}
 
-	void dump() const
+	void dump(CodeContext* context) const
 	{
+		dbgs() << "Value: ";
 		if (val)
-			val->dump();
+			val->print(dbgs(), true);
+		else
+			dbgs() << "null";
+		dbgs() << " || Type: ";
 		if (ty)
-			ty->dump();
+			dbgs() << ty->str(context);
+		else
+			dbgs() << "null";
+		dbgs() << "\n";
 	}
 };
 
