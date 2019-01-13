@@ -519,19 +519,16 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 	return RValue();
 }
 
-RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, NExpressionList* args, RValue instVar)
+RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, VecRValue* argVals, RValue instVar)
 {
-	VecRValue expList;
+	VecRValue args;
 	if (instVar)
-		expList.push_back(instVar);
+		args.push_back(instVar);
+	if (argVals)
+		args.insert(args.end(), argVals->begin(), argVals->end());
 	auto argOffset = instVar ? 1 : 0;
-	if (args) {
-		for (auto arg : *args) {
-			expList.push_back(CGNExpression::run(context, arg));
-		}
-	}
 
-	auto argCount = expList.size();
+	auto argCount = args.size();
 	vector<SFunction> sizeMatch;
 	for (auto func : funcs) {
 		if (func.numParams() == argCount) {
@@ -555,7 +552,7 @@ RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token*
 		for (auto func : sizeMatch) {
 			int matchCount = 0;
 			for (size_t i = 0; i < argCount; i++) {
-				if (func.getParam(i) == expList[i].stype()) {
+				if (func.getParam(i) == args[i].stype()) {
 					matchCount++;
 				}
 			}
@@ -575,11 +572,11 @@ RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token*
 	}
 
 	for (size_t i = argOffset; i < func.numParams(); i++) {
-		CastTo(context, name, expList[i], func.getParam(i));
+		CastTo(context, name, args[i], func.getParam(i));
 	}
 
 	vector<Value*> values;
-	for (auto item : expList) {
+	for (auto item : args) {
 		values.push_back(item);
 	}
 	auto call = context.IB().CreateCall(func.value(), values);
@@ -640,7 +637,8 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 		return {};
 	}
 
-	return CallFunction(context, funcs, funcName, arguments, isStatic ? RValue() : baseVal);
+	auto args = CGNExpression::collect(context, arguments);
+	return CallFunction(context, funcs, funcName, args.get(), isStatic ? RValue() : baseVal);
 }
 
 RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
@@ -655,10 +653,11 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 
 	VecSFunc funcs;
 	funcs.push_back(static_cast<SFunction&>(sym));
-	return CallFunction(context, funcs, funcName, arguments, RValue());
+	auto args = CGNExpression::collect(context, arguments);
+	return CallFunction(context, funcs, funcName, args.get(), RValue());
 }
 
-bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList)
+bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, VecRValue* initList)
 {
 	bool isArr = false;
 	auto varType = var.stype();
@@ -718,11 +717,9 @@ void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 	if (!func)
 		return;
 
-	NExpressionList argList;
-
 	VecSFunc funcs;
 	funcs.push_back(func);
-	CallFunction(context, funcs, valueToken, &argList, value);
+	CallFunction(context, funcs, valueToken, nullptr, value);
 }
 
 RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
@@ -785,13 +782,13 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 	return RValue();
 }
 
-void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpressionList* initList, RValue& initVal)
+void Inst::InitVariable(CodeContext& context, RValue var, Token* token, VecRValue* initList)
 {
 	if (CallConstructor(context, var, token, initList))
 		return;
 
-	auto varType = var.stype();
 	if (initList) {
+		auto varType = var.stype();
 		if (initList->empty()) {
 			// no constructor and empty initializer; do zero initialization
 			context.IB().CreateStore(RValue::getZero(context, varType), var);
@@ -800,12 +797,11 @@ void Inst::InitVariable(CodeContext& context, RValue var, Token* token, NExpress
 			context.addError("invalid variable initializer", token);
 			return;
 		}
-		initVal = CGNExpression::run(context, initList->at(0));
-	}
-
-	if (initVal) {
-		CastTo(context, token, initVal, varType);
-		context.IB().CreateStore(initVal, var);
+		auto initVal = initList->at(0);
+		if (initVal) {
+			CastTo(context, token, initVal, varType);
+			context.IB().CreateStore(initVal, var);
+		}
 	}
 }
 

@@ -116,7 +116,13 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 	auto var = RValue(context.IB().CreateAlloca(*varType, nullptr, name), varType);
 	context.storeLocalSymbol(var, name);
 
-	Inst::InitVariable(context, var, stm->getName(), stm->getInitList(), initValue);
+	auto initList = CGNExpression::collect(context, stm->getInitList());
+	if (initValue) {
+		if (!initList)
+			initList = make_unique<vector<RValue>>();
+		initList->push_back(initValue);
+	}
+	Inst::InitVariable(context, var, stm->getName(), initList.get());
 }
 
 void CGNStatement::visitNVariableDeclGroup(NVariableDeclGroup* stm)
@@ -198,8 +204,8 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 	}
 
 	auto var = Inst::LoadMemberVar(context, stm->getName()->str);
-	RValue empty;
-	Inst::InitVariable(context, var, stm->getName(), stm->getExp(), empty);
+	auto exp = CGNExpression::collect(context, stm->getExp());
+	Inst::InitVariable(context, var, stm->getName(), exp.get());
 }
 
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)

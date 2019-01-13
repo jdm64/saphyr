@@ -204,8 +204,9 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	auto rPtr = RValue(context.IB().CreateBitCast(ptr, *ptrType), ptrType);
 
 	// setup type so the variable is initialized using the base type
-	RValue tmp, ptr2 = RValue(rPtr.value(), nType);
-	Inst::InitVariable(context, ptr2, *exp->getType(), exp->getArgs(), tmp);
+	RValue ptr2 = RValue(rPtr.value(), nType);
+	auto args = CGNExpression::collect(context, exp->getArgs());
+	Inst::InitVariable(context, ptr2, *exp->getType(), args.get());
 
 	return rPtr;
 }
@@ -339,7 +340,8 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 		return RValue();
 	}
 
-	return Inst::CallFunction(context, funcs, exp->getName(), exp->getArguments(), RValue());
+	auto args = CGNExpression::collect(context, exp->getArguments());
+	return Inst::CallFunction(context, funcs, exp->getName(), args.get(), RValue());
 }
 
 RValue CGNExpression::visitNMemberFunctionCall(NMemberFunctionCall* exp)

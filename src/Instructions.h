@@ -71,13 +71,13 @@ public:
 		return RValue(ptrVal, type);
 	}
 
-	static RValue CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, NExpressionList* args, RValue instVar);
+	static RValue CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, VecRValue* argVals, RValue instVar);
 
 	static RValue CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments);
 
 	static RValue CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments);
 
-	static bool CallConstructor(CodeContext& context, RValue var, Token* token, NExpressionList* initList);
+	static bool CallConstructor(CodeContext& context, RValue var, Token* token, VecRValue* initList);
 
 	static void CallDestructor(CodeContext& context, RValue value, Token* valueToken);
 
@@ -85,7 +85,7 @@ public:
 
 	static RValue LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToken, Token* memberName);
 
-	static void InitVariable(CodeContext& context, RValue var, Token* token, NExpressionList* initList, RValue& initVal);
+	static void InitVariable(CodeContext& context, RValue var, Token* token, VecRValue* initList);
 
 	static RValue StoreTemporary(CodeContext& context, RValue value);
 

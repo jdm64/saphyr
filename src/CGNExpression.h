@@ -81,6 +81,18 @@ public:
 		CGNExpression runner(context);
 		return runner.visit(list);
 	}
+
+	static unique_ptr<vector<RValue>> collect(CodeContext& context, NExpressionList* list)
+	{
+		unique_ptr<vector<RValue>> ret;
+		if (list) {
+			ret = make_unique<vector<RValue>>();
+			CGNExpression runner(context);
+			for (auto item : *list)
+				ret->push_back(runner.visit(item));
+		}
+		return ret;
+	}
 };
 
 #endif

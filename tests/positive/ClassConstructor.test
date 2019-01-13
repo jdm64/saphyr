@@ -80,11 +80,42 @@ void testBoth()
 	Both b;
 }
 
+class String
+{
+	struct this
+	{
+		@[]int8 ptr;
+	}
+
+	this()
+	ptr{null}
+	{
+	}
+
+	#[mangle("String_this2")]
+	this(String str)
+	ptr{str.ptr}
+	{
+	}
+}
+
+String retString()
+{
+	String s;
+	return s;
+}
+
+void initStr()
+{
+	String s = retString();
+}
+
 ========
 
 %Empty = type { i8 }
 %MyClass = type { i32, i32 }
 %Both = type { [2 x %MyClass], [4 x %Empty] }
+%String = type { [0 x i8]* }
 
 define void @Empty_this(%Empty* %this, i32 %a) {
   %1 = alloca %Empty*
@@ -257,6 +288,42 @@ define void @testBoth() {
   ret void
 }
 
+define void @String_this(%String* %this) {
+  %1 = alloca %String*
+  store %String* %this, %String** %1
+  %2 = load %String*, %String** %1
+  %3 = getelementptr %String, %String* %2, i32 0, i32 0
+  store [0 x i8]* null, [0 x i8]** %3
+  ret void
+}
+
+define void @String_this2(%String* %this, %String %str) {
+  %1 = alloca %String*
+  store %String* %this, %String** %1
+  %2 = alloca %String
+  store %String %str, %String* %2
+  %3 = load %String*, %String** %1
+  %4 = getelementptr %String, %String* %3, i32 0, i32 0
+  %5 = getelementptr %String, %String* %2, i32 0, i32 0
+  %6 = load [0 x i8]*, [0 x i8]** %5
+  store [0 x i8]* %6, [0 x i8]** %4
+  ret void
+}
+
+define %String @retString() {
+  %s = alloca %String
+  call void @String_this(%String* %s)
+  %1 = load %String, %String* %s
+  ret %String %1
+}
+
+define void @initStr() {
+  %1 = call %String @retString()
+  %s = alloca %String
+  call void @String_this2(%String* %s, %String %1)
+  ret void
+}
+
 ========
 
 arrayLocal T
@@ -265,9 +332,13 @@ Both_this T
 Empty_this T
 foo T
 free U
+initStr T
 main T
 malloc U
 MyClass_makeNew T
 MyClass_null T
 MyClass_this T
+retString T
+String_this T
+String_this2 T
 testBoth T

@@ -51,6 +51,38 @@ void arr()
 	Foo c;
 }
 
+class String
+{
+	struct this
+	{
+		@[]int8 ptr;
+	}
+
+	this()
+	ptr{null}
+	{
+	}
+
+	#[mangle("String_this2")]
+	this(String str)
+	ptr{str.ptr}
+	{
+	}
+}
+
+String retString()
+{
+	String s;
+	return s;
+}
+
+void initStr()
+{
+	int a = 4;
+	String s = a;
+	String v{1, 2, 3};
+}
+
 ========
 
 negative/ClassConstructor.syp:24:7: argument count for Test_this function invalid, 4 arguments given, but 3 required.
@@ -60,4 +92,6 @@ negative/ClassConstructor.syp:34:18: argument count for Test_this function inval
 negative/ClassConstructor.syp:39:7: argument count for Test_this function invalid, 1 arguments given, but 3 required.
 negative/ClassConstructor.syp:49:10: argument count for Test_this function invalid, 2 arguments given, but 3 required.
 negative/ClassConstructor.syp:50:10: argument count for Test_this function invalid, 1 arguments given, but 3 required.
-found 7 errors
+negative/ClassConstructor.syp:82:9: Cannot cast complex types ( int32 to String )
+negative/ClassConstructor.syp:83:9: argument count for String_this function invalid, 4 arguments given, but 1 required.
+found 9 errors
