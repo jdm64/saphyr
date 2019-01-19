@@ -86,7 +86,7 @@ public:
 	{
 		unique_ptr<vector<RValue>> ret;
 		if (list) {
-			ret = make_unique<vector<RValue>>();
+			ret = unique_ptr<vector<RValue>>(new vector<RValue>());
 			CGNExpression runner(context);
 			for (auto item : *list)
 				ret->push_back(runner.visit(item));
