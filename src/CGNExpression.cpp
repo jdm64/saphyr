@@ -402,8 +402,11 @@ RValue CGNExpression::visitNStringLiteral(NStringLiteral* exp)
 	idxs.push_back(zero);
 
 	auto strPtr = ConstantExpr::getGetElementPtr(gVar->getType(), gVar, idxs);
+	auto strLit = RValue(strPtr, arrTyPtr);
 
-	return RValue(strPtr, arrTyPtr);
+	auto zeroSizePtr = SType::getPointer(context, SType::getConst(context, SType::getArray(context, SType::getInt(context, 8), 0)));
+	Inst::CastTo(context, *exp, strLit, zeroSizePtr);
+	return strLit;
 }
 
 RValue CGNExpression::visitNIntConst(NIntConst* exp)
