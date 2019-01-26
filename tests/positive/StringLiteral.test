@@ -1,4 +1,6 @@
 
+alias StrPtr = @const[]const int8;
+
 auto gA = "global string";
 
 int main()
@@ -17,6 +19,16 @@ void func()
 	auto c = "-\0-\a-\b-\e-\f-\n-\r-\t-\v-";
 }
 
+StrPtr getStr(StrPtr s)
+{
+	return "this test";
+}
+
+void callStr()
+{
+	auto s = getStr("hello");
+}
+
 ========
 
 @0 = private constant [14 x i8] c"global string\00"
@@ -27,6 +39,8 @@ void func()
 @4 = private constant [11 x i8] c"1\0A23\0A\0A45\5C6\00"
 @5 = private constant [7 x i8] c"--\5C\5C--\00"
 @6 = private constant [20 x i8] c"-\00-\07-\08-\1B-\0C-\0A-\0D-\09-\0B-\00"
+@7 = private constant [10 x i8] c"this test\00"
+@8 = private constant [6 x i8] c"hello\00"
 
 define i32 @main() {
   %str1 = alloca [0 x i8]*
@@ -48,8 +62,23 @@ define void @func() {
   ret void
 }
 
+define [0 x i8]* @getStr([0 x i8]* %s) {
+  %1 = alloca [0 x i8]*
+  store [0 x i8]* %s, [0 x i8]** %1
+  ret [0 x i8]* bitcast ([10 x i8]* @7 to [0 x i8]*)
+}
+
+define void @callStr() {
+  %1 = call [0 x i8]* @getStr([0 x i8]* bitcast ([6 x i8]* @8 to [0 x i8]*))
+  %s = alloca [0 x i8]*
+  store [0 x i8]* %1, [0 x i8]** %s
+  ret void
+}
+
 ========
 
+callStr T
 func T
 gA D
+getStr T
 main T
