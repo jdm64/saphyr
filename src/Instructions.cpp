@@ -565,7 +565,21 @@ RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token*
 			}
 		}
 		if (paramMatch.empty() || paramMatch.size() > 1) {
-			context.addError("arguments ambigious for overloaded function " + name->str, name);
+			string argStr;
+			bool second = false;
+			for (auto arg : args) {
+				if (second)
+					argStr += ",";
+				else
+					second = true;
+				argStr += arg.stype()->str(&context);
+			}
+			string msg = "arguments ambigious for overloaded function:\n\t";
+			msg += "args:\n\t\t" + argStr + "\n\t" +
+				"functions:";
+			for (auto func : sizeMatch)
+				msg += "\n\t\t" + func.stype()->str(&context);
+			context.addError(msg, name);
 			return {};
 		}
 		func = paramMatch[0];

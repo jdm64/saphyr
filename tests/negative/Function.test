@@ -4,7 +4,27 @@ int func(int a, int a)
 	return 0;
 }
 
+void over(int a, double b)
+{
+}
+
+#[mangle("over2")]
+void over(bool a, @int b)
+{
+}
+
+void callOver()
+{
+	over(true, 2.0);
+}
+
 ========
 
 negative/Function.syp:2:21: function parameter a already declared
-found 1 errors
+negative/Function.syp:18:2: arguments ambigious for overloaded function:
+	args:
+		bool,double
+	functions:
+		(int32,double)void
+		(bool,@int32)void
+found 2 errors
