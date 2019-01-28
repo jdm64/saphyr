@@ -341,7 +341,7 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 	}
 
 	auto args = CGNExpression::collect(context, exp->getArguments());
-	return Inst::CallFunction(context, funcs, exp->getName(), args.get(), RValue());
+	return Inst::CallFunction(context, funcs, exp->getName(), *args.get());
 }
 
 RValue CGNExpression::visitNMemberFunctionCall(NMemberFunctionCall* exp)

@@ -519,15 +519,8 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 	return RValue();
 }
 
-RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, VecRValue* argVals, RValue instVar)
+RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, VecRValue& args)
 {
-	VecRValue args;
-	if (instVar)
-		args.push_back(instVar);
-	if (argVals)
-		args.insert(args.end(), argVals->begin(), argVals->end());
-	auto argOffset = instVar ? 1 : 0;
-
 	auto argCount = args.size();
 	vector<SFunction> sizeMatch;
 	for (auto func : funcs) {
@@ -585,7 +578,7 @@ RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token*
 		func = paramMatch[0];
 	}
 
-	for (size_t i = argOffset; i < func.numParams(); i++) {
+	for (size_t i = 0; i < func.numParams(); i++) {
 		CastTo(context, name, args[i], func.getParam(i));
 	}
 
@@ -652,7 +645,9 @@ RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, R
 	}
 
 	auto args = CGNExpression::collect(context, arguments);
-	return CallFunction(context, funcs, funcName, args.get(), isStatic ? RValue() : baseVal);
+	if (!isStatic)
+		args->insert(args->begin(), baseVal);
+	return CallFunction(context, funcs, funcName, *args.get());
 }
 
 RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
@@ -668,7 +663,7 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 	VecSFunc funcs;
 	funcs.push_back(static_cast<SFunction&>(sym));
 	auto args = CGNExpression::collect(context, arguments);
-	return CallFunction(context, funcs, funcName, args.get(), RValue());
+	return CallFunction(context, funcs, funcName, *args.get());
 }
 
 bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, VecRValue* initList)
@@ -711,7 +706,11 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, VecRV
 		var = RValue(phi, clType);
 	}
 
-	CallFunction(context, funcs, token, initList, var);
+	VecRValue args;
+	args.push_back({var.value(), SType::getPointer(context, var.stype())});
+	if (initList)
+		args.insert(args.end(), initList->begin(), initList->end());
+	CallFunction(context, funcs, token, args);
 
 	if (isArr) {
 		auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
@@ -724,16 +723,16 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, VecRV
 
 void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 {
-	auto type = value.stype();
-	auto className = type->subType()->str(&context);
-	auto clType = static_cast<SClassType*>(type->subType());
+	auto clType = static_cast<SClassType*>(value.stype()->subType());
 	auto func = clType->getDestructor();
 	if (!func)
 		return;
 
 	VecSFunc funcs;
 	funcs.push_back(func);
-	CallFunction(context, funcs, valueToken, nullptr, value);
+	VecRValue args;
+	args.push_back(value);
+	CallFunction(context, funcs, valueToken, args);
 }
 
 RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
