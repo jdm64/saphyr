@@ -328,7 +328,7 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 		return {};
 	}
 
-	vector<SFunction> funcs;
+	VecSFunc funcs;
 	for (auto sym : syms) {
 		auto deSym = Inst::Deref(context, sym, true);
 		if (deSym.isFunction())

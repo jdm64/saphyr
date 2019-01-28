@@ -47,9 +47,6 @@ struct LabelBlock
 typedef unique_ptr<LabelBlock> LabelBlockPtr;
 #define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, token, placeholder))
 
-typedef vector<RValue> VecRValue;
-typedef vector<SFunction> VecSFunc;
-
 class ScopeTable
 {
 	map<string, VecRValue> table;

@@ -241,12 +241,12 @@ void SClassType::addFunction(const string& name, const SFunction& func)
 	items[name].push_back(make_pair(0, func));
 }
 
-vector<SFunction> SClassType::getConstructor()
+VecSFunc SClassType::getConstructor()
 {
 	auto item = getItem("this");
 	if (!item)
 		return {};
-	vector<SFunction> ret;
+	VecSFunc ret;
 	for (auto p : *item) {
 		ret.push_back(static_cast<SFunction&>(p.second));
 	}

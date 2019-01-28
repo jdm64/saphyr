@@ -200,4 +200,7 @@ public:
 	}
 };
 
+typedef vector<RValue> VecRValue;
+typedef vector<SFunction> VecSFunc;
+
 #endif

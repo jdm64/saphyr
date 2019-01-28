@@ -519,10 +519,10 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 	return RValue();
 }
 
-RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token* name, VecRValue& args)
+RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, VecRValue& args)
 {
 	auto argCount = args.size();
-	vector<SFunction> sizeMatch;
+	VecSFunc sizeMatch;
 	for (auto func : funcs) {
 		if (func.numParams() == argCount) {
 			sizeMatch.push_back(func);
@@ -540,7 +540,7 @@ RValue Inst::CallFunction(CodeContext& context, vector<SFunction>& funcs, Token*
 	if (sizeMatch.size() == 1) {
 		func = sizeMatch[0];
 	} else {
-		vector<SFunction> paramMatch;
+		VecSFunc paramMatch;
 		int bestCount = 1;
 		for (auto func : sizeMatch) {
 			int matchCount = 0;
