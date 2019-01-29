@@ -80,8 +80,7 @@ public:
 
 	bool isFunction() const
 	{
-		auto type = stype();
-		return type && type->isFunction();
+		return ty && ty->isFunction();
 	}
 
 	bool isNullPtr()

@@ -220,7 +220,7 @@ RValue Inst::MutCast(CodeContext& context, NArrowOperator* exp)
 void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, CodeContext& context)
 {
 	CastOps op;
-	switch (from->isFloating() | to->isFloating() << 1) {
+	switch (from->isFloating() | (to->isFloating() << 1)) {
 	case 0:
 		// both int
 		if (to->size() > from->size()) {
