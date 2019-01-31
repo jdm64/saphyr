@@ -20,6 +20,11 @@ else
 	COVERAGE = false
 endif
 
+# location to install
+ifeq ($(INSTALL_DIR),)
+	INSTALL_DIR = /usr/local/bin/
+endif
+
 # set LLVM_VER to build with a non-default llvm version
 # example: export LLVM_VER="-3.5"
 
@@ -110,3 +115,6 @@ appimage :
 
 appimage-filecopy : compiler
 	cd ../scripts; ./buildAppImage-filecopy.sh
+
+install : all
+	sudo cp $(COMPILER) $(FORMATTER) $(INSTALL_DIR)
