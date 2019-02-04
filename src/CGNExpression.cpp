@@ -291,6 +291,8 @@ RValue CGNExpression::visitNUnaryMathOperator(NUnaryMathOperator* exp)
 {
 	auto unaryExp = visit(exp->getExp());
 	auto type = unaryExp.stype();
+	if (!type)
+		return {};
 
 	switch (exp->getOp()) {
 	case '+':

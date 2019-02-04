@@ -1,0 +1,42 @@
+
+enum Colors
+{
+	RED, BLUE
+}
+
+int foo()
+{
+	return 4;
+}
+
+void unary()
+{
+	auto a = !undefined;
+	auto b = ~other;
+}
+
+int main()
+{
+	auto ptr = foo;
+	Colors c = Colors.RED;
+
+	ptr++;
+	foo++;
+
+	c++;
+	Colors.RED++;
+	Colors++;
+
+	return 0;
+}
+
+========
+
+negative/NOperator.syp:14:12: variable undefined not declared
+negative/NOperator.syp:15:12: variable other not declared
+negative/NOperator.syp:23:5: Increment/Decrement invalid for function pointer
+negative/NOperator.syp:24:5: Increment/Decrement invalid for function pointer
+negative/NOperator.syp:26:3: Increment/Decrement invalid for enum type
+negative/NOperator.syp:27:12: Increment/Decrement invalid for enum type
+negative/NOperator.syp:28:8: Increment/Decrement invalid for enum type
+found 7 errors
