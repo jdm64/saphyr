@@ -58,33 +58,10 @@ frontend-docker :
 	sudo docker run --rm -v $(PWD):/usr/src/saphyr -w /usr/src/saphyr jdm64/saphyr make frontend
 
 parser.cpp : Parser.y
-	rm -f parser*
-	bisonc++ -V Parser.y
-	sed -i -e '/Scanner d_scanner;/c\	unique_ptr<Scanner> d_scanner;' parser.h
-	sed -i -e '/scannerobject/a\	unique_ptr<NStatementList> root;' parser.h
-	sed -i -e '/public:/a\	Token getError() { string token = d_scanner->matched().size()? d_scanner->matched() : "<EOF>"; return Token("Syntax error on: " + token, d_scanner->filename(), d_scanner->lineNr(), d_scanner->colNr()); }' parser.h
-	sed -i -e '/public:/a\	NStatementList* getRoot() { return root.get(); }' parser.h
-	sed -i -e '/public:/a\	Parser(string filename){ d_scanner = unique_ptr<Scanner>(new Scanner(filename, "-")); d_scanner->setSval(&d_val__); }' parser.h
-	sed -i -e '/return d_scanner.lex();/c\	return d_scanner->lex();' parser.ih
-	sed -i -e '/Syntax error/d' parser.cpp
-	sed -i -e '/Syntax error/d' parser.ih
+	./Parser.sh
 
 scanner.cpp : Scanner.l parser.cpp
-	rm -f scanner*
-	flexc++ Scanner.l
-	sed -i -e '/insert lexFunctionDecl/a\void setSval(ParserBase::STYPE__ *dval){ sval = dval; } ParserBase::STYPE__* sval;' scanner.h
-	sed -i -e '/nsert baseclass_h/a\#include "parserbase.h"' scanner.h
-	sed -i -e '/insert class_h/a\#include "parserbase.h"' scanner.ih
-	sed -i -e '/insert class_h/a\#define SAVE_TOKEN sval->t_tok = new Token(matched(), filename(), lineNr(), colNr() - matched().length());' scanner.ih
-	sed -i -e '/d_lineNr(1)/a ,d_col(1)' scanner.cpp
-	sed -i -e '/d_lineNr(lineNr)/a ,d_col(1)' scanner.cpp
-	sed -i -e '/++d_lineNr/acol_max = d_col; d_col = 0;' scanner.cpp
-	sed -i -e '/default:/ad_col++;' scanner.cpp
-	sed -i -e '/ch < 0x100/i--d_col;' scanner.cpp
-	sed -i -e '/--d_lineNr;/c{ --d_lineNr; d_col = col_max; }' scanner.cpp
-	sed -i -e '/size_t d_lineNr;/asize_t d_col; size_t col_max;' scannerbase.h
-	sed -i -e '/size_t lineNr()/isize_t colNr() const { return d_col; }' scannerbase.h
-	sed -i -e '/insert interactiveDecl/isize_t colNr() { return d_input.colNr(); }' scannerbase.h
+	./Scanner.sh
 
 clean :
 	rm -f $(COMPILER) $(FORMATTER) *.o *~ format/*.o format/*~
