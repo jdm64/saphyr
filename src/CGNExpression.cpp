@@ -150,6 +150,8 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 		context.IB().CreateBr(endBlock);
 
 		context.pushBlock(endBlock);
+		if (!trueExp || !falseExp)
+			return {};
 		auto result = context.IB().CreatePHI(trueExp.type(), 2);
 		result->addIncoming(trueExp, tBlk);
 		result->addIncoming(falseExp, fBlk);
