@@ -84,7 +84,7 @@ negative/Class.syp:35:6: class Bad already defines symbol a
 negative/Class.syp:45:4: member function call requires class or class pointer
 negative/Class.syp:47:5: member function call requires class or class pointer
 negative/Class.syp:49:2: variable x not declared
-negative/Class.syp:55:2: use of 'this' is only valid inside of a class
+negative/Class.syp:55:2: use of 'this' is only valid inside struct or union type
 negative/Class.syp:57:4: class Test has no symbol nothing
 negative/Class.syp:59:4: argument count for Test_run function invalid, 2 arguments given, but 1 required.
 negative/Class.syp:61:4: class Test has no symbol bad

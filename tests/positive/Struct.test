@@ -31,10 +31,25 @@ int main()
 	return 0;
 }
 
+struct Node
+{
+	int data;
+	@Node next;
+	@this back;
+}
+
+void useNode()
+{
+	Node n;
+	n.data = 5;
+	n.next = new Node;
+}
+
 ========
 
 %Outer = type { %Inner, %Inner, i64 }
 %Inner = type { i32, i32 }
+%Node = type { i32, %Node*, %Node* }
 
 define %Outer @func(%Outer %n) {
   %1 = alloca %Outer
@@ -69,8 +84,23 @@ define i32 @main() {
   ret i32 0
 }
 
+define void @useNode() {
+  %n = alloca %Node
+  %1 = getelementptr %Node, %Node* %n, i32 0, i32 0
+  store i32 5, i32* %1
+  %2 = getelementptr %Node, %Node* %n, i32 0, i32 1
+  %3 = call i8* @malloc(i64 24)
+  %4 = bitcast i8* %3 to %Node*
+  store %Node* %4, %Node** %2
+  ret void
+}
+
+declare i8* @malloc(i64)
+
 ========
 
 expr T
 func T
 main T
+malloc U
+useNode T

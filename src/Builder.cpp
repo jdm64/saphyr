@@ -231,6 +231,7 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 	}
 	visitor(structIdx);
 	context.setClass(nullptr);
+	context.setThis(nullptr);
 }
 
 SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs)
@@ -333,7 +334,7 @@ bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> 
 	if (!stype) {
 		return false;
 	} else if (stype->isUnsized()) {
-		context.addError("struct members must not have " + stype->str(&context) + " type", *group->getType());
+		context.addError("unsized struct member not allowed: " + stype->str(&context), *group->getType());
 		return false;
 	}
 	bool valid = true;
@@ -389,24 +390,32 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 	vector<pair<string, SType*> > structVars;
 	set<string> memberNames;
 	bool valid = true;
+
+	STemplatedType* userType;
+	switch (ctype) {
+	case NStructDeclaration::CreateType::STRUCT:
+		userType = SUserType::createStruct(context, structName, tArgs);
+		break;
+	case NStructDeclaration::CreateType::UNION:
+		userType = SUserType::createUnion(context, structName, tArgs);
+		break;
+	case NStructDeclaration::CreateType::CLASS:
+		userType = SUserType::createClass(context, structName, tArgs);
+		break;
+	}
+	context.setThis(userType);
+	if (userType->isClass())
+		context.setClass(static_cast<SClassType*>(userType));
+
 	if (list) {
 		for (auto item : *list)
 			valid &= addMembers(item, structVars, memberNames, context);
+		if (valid)
+			SUserType::setBody(context, userType, structVars);
 	}
-	if (valid) {
-		switch (ctype) {
-		case NStructDeclaration::CreateType::STRUCT:
-			SUserType::createStruct(context, structName, structVars, tArgs);
-			return;
-		case NStructDeclaration::CreateType::UNION:
-			SUserType::createUnion(context, structName, structVars, tArgs);
-			return;
-		case NStructDeclaration::CreateType::CLASS:
-			auto cl = SUserType::createClass(context, structName, structVars, tArgs);
-			context.setClass(cl);
-			return;
-		}
-	}
+
+	if (!userType->isClass())
+		context.setThis(nullptr);
 }
 
 void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)

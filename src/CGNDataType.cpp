@@ -82,9 +82,9 @@ SType* CGNDataType::visitNConstType(NConstType* type)
 
 SType* CGNDataType::visitNThisType(NThisType* type)
 {
-	auto cl = context.getClass();
+	auto cl = context.getThis();
 	if (!cl) {
-		context.addError("use of 'this' is only valid inside of a class", *type);
+		context.addError("use of 'this' is only valid inside struct or union type", *type);
 		return nullptr;
 	}
 	return cl;

@@ -383,6 +383,8 @@ public:
 };
 
 class SClassType;
+class STemplatedType;
+class SUnionType;
 
 class SUserType : public SType
 {
@@ -419,11 +421,13 @@ public:
 
 	static void createAlias(CodeContext& context, const string& name, SType* type);
 
-	static void createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs);
+	static SStructType* createStruct(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
 
-	static SClassType* createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs);
+	static SClassType* createClass(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
 
-	static void createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs);
+	static SUnionType* createUnion(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
+
+	static void setBody(CodeContext& context, STemplatedType* type, const vector<pair<string, SType*>>& structure);
 
 	static void createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure, SType* type);
 };
@@ -455,10 +459,18 @@ class STemplatedType : public SUserType
 protected:
 	vector<SType*> templateArgs;
 
-	STemplatedType(const string& name, int typeClass, Type* type, uint64_t size, const vector<SType*>& templateArgs)
-	: SUserType(name, typeClass | (templateArgs.size() ? TEMPLATED : 0), type, size), templateArgs(templateArgs) {}
+	STemplatedType(const string& name, int typeClass, const vector<SType*>& templateArgs)
+	: SUserType(name, typeClass | OPAQUE | (templateArgs.size() ? TEMPLATED : 0), nullptr, 0), templateArgs(templateArgs) {}
 
 public:
+	string raw() override
+	{
+		auto raw = name;
+		for (auto item : templateArgs)
+			raw += "_" + item->raw();
+		return raw;
+	}
+
 	vector<SType*> getTemplateArgs() const
 	{
 		return templateArgs;
@@ -476,7 +488,8 @@ class SStructType : public STemplatedType
 protected:
 	container items;
 
-	SStructType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs, int ctype = STRUCT);
+	SStructType(const string& name, const vector<SType*>& templateArgs, int ctype = STRUCT)
+	: STemplatedType(name, ctype, templateArgs) {}
 
 	SType* copy() override
 	{
@@ -489,14 +502,6 @@ public:
 	vector<pair<int, RValue>>* getItem(const string& name);
 
 	string str(CodeContext* context = nullptr) const override;
-
-	string raw() override
-	{
-		auto raw = name;
-		for (auto item : templateArgs)
-			raw += "_" + item->raw();
-		return raw;
-	}
 
 	const_iterator begin() const
 	{
@@ -513,8 +518,8 @@ class SClassType : public SStructType
 {
 	friend class TypeManager;
 
-	SClassType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs)
-	: SStructType(name, type, structure, templateArgs, STRUCT | CLASS) {}
+	SClassType(const string& name, const vector<SType*>& templateArgs)
+	: SStructType(name, templateArgs, STRUCT | CLASS) {}
 
 public:
 	void addFunction(const string& name, const SFunction& func);
@@ -530,12 +535,8 @@ class SUnionType : public STemplatedType
 
 	map<string, SType*> items;
 
-	SUnionType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure, uint64_t size, const vector<SType*>& templateArgs)
-	: STemplatedType(name, UNION | (structure.size()? 0 : OPAQUE), type, size, templateArgs)
-	{
-		for (auto var : structure)
-			items[var.first] = var.second;
-	}
+	SUnionType(const string& name, const vector<SType*>& templateArgs)
+	: STemplatedType(name, UNION, templateArgs) {}
 
 	SType* copy() override
 	{
@@ -660,6 +661,7 @@ class TypeManager
 	using STempPtr = unique_ptr<NTemplatedDeclaration>;
 
 	DataLayout datalayout;
+	LLVMContext& context;
 
 	// built-in types
 	STypePtr autoTy, voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
@@ -686,8 +688,6 @@ class TypeManager
 
 	// template types
 	map<string, STempPtr> templateMap;
-
-	StructType* buildStruct(const string& name, const vector<pair<string, SType*>>& structure);
 
 public:
 	explicit TypeManager(Module* module);
@@ -775,11 +775,13 @@ public:
 
 	void createAlias(const string& name, SType* type);
 
-	void createStruct(const string& name, const string& rawName, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs);
+	void setBody(STemplatedType* type, const vector<pair<string, SType*>>& structure);
 
-	SClassType* createClass(const string& name, const string& rawName, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs);
+	SStructType* createStruct(const string& name, const string& rawName, const vector<SType*>& templateArgs);
 
-	void createUnion(const string& name, const string& rawName, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs);
+	SClassType* createClass(const string& name, const string& rawName, const vector<SType*>& templateArgs);
+
+	SUnionType* createUnion(const string& name, const string& rawName, const vector<SType*>& templateArgs);
 
 	void createEnum(const string& name, const vector<pair<string,int64_t>>& structure, SType* type);
 };

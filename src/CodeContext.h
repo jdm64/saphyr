@@ -143,6 +143,7 @@ class CodeContext
 
 	IRBuilder<> irBuilder;
 	SFunction currFunc;
+	STemplatedType* thisType;
 	SClassType* currClass;
 	vector<ScopeTable> localTable;
 
@@ -327,6 +328,16 @@ public:
 	SFunction currFunction() const
 	{
 		return currFunc;
+	}
+
+	STemplatedType* getThis() const
+	{
+		return thisType;
+	}
+
+	void setThis(STemplatedType* type)
+	{
+		thisType = type;
 	}
 
 	SClassType* getClass() const

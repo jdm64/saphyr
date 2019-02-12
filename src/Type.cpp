@@ -21,9 +21,9 @@
 #define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
 #define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
 #define smart_aliasTy(name, type) unique_ptr<SAliasType>(new SAliasType(name, type))
-#define smart_strucTy(name, type, structure, args) unique_ptr<SUserType>(new SStructType(name, type, structure, args))
-#define smart_classTy(name, type, structure, args) unique_ptr<SUserType>(new SClassType(name, type, structure, args))
-#define smart_unionTy(name, type, structure, size, args) unique_ptr<SUserType>(new SUnionType(name, type, structure, size, args))
+#define smart_strucTy(name, args) unique_ptr<SUserType>(new SStructType(name, args))
+#define smart_classTy(name, args) unique_ptr<SUserType>(new SClassType(name, args))
+#define smart_unionTy(name, args) unique_ptr<SUserType>(new SUnionType(name, args))
 #define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType(name, type, structure))
 
 void SType::dump() const
@@ -183,14 +183,6 @@ void SUserType::innerStr(CodeContext* context, stringstream& os) const
 	if (isConst())
 		os << "const ";
 	os << name;
-}
-
-SStructType::SStructType(const string& name, StructType* type, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs, int ctype)
-: STemplatedType(name, ctype | (structure.size()? 0 : OPAQUE), type, structure.size(), templateArgs)
-{
-	int i = 0;
-	for (auto var : structure)
-		items[var.first].push_back(make_pair(i++, RValue(nullptr, var.second)));
 }
 
 vector<pair<int, RValue>>* SStructType::getItem(const string& name)
@@ -369,22 +361,27 @@ void SUserType::createAlias(CodeContext& context, const string& name, SType* typ
 	context.getTypeManager().createAlias(name, type);
 }
 
-void SUserType::createStruct(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs)
+SStructType* SUserType::createStruct(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
 {
 	auto rawName = SUserType::raw(name, templateArgs);
-	context.getTypeManager().createStruct(name, rawName, structure, templateArgs);
+	return context.getTypeManager().createStruct(name, rawName, templateArgs);
 }
 
-SClassType* SUserType::createClass(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs)
+SClassType* SUserType::createClass(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
 {
 	auto rawName = SUserType::raw(name, templateArgs);
-	return context.getTypeManager().createClass(name, rawName, structure, templateArgs);
+	return context.getTypeManager().createClass(name, rawName, templateArgs);
 }
 
-void SUserType::createUnion(CodeContext& context, const string& name, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs)
+SUnionType* SUserType::createUnion(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
 {
 	auto rawName = SUserType::raw(name, templateArgs);
-	context.getTypeManager().createUnion(name, rawName, structure, templateArgs);
+	return context.getTypeManager().createUnion(name, rawName, templateArgs);
+}
+
+void SUserType::setBody(CodeContext& context, STemplatedType* type, const vector<pair<string, SType*>>& structure)
+{
+	context.getTypeManager().setBody(type, structure);
 }
 
 void SUserType::createEnum(CodeContext& context, const string& name, const vector<pair<string, int64_t>>& structure, SType* type)
@@ -393,9 +390,8 @@ void SUserType::createEnum(CodeContext& context, const string& name, const vecto
 }
 
 TypeManager::TypeManager(Module* module)
-: datalayout(module)
+: datalayout(module), context(module->getContext())
 {
-	auto &context = module->getContext();
 	autoTy = smart_stype(SType::AUTO, Type::getInt32Ty(context), 0, nullptr);
 	voidTy = smart_stype(SType::VOID, Type::getVoidTy(context), 0, nullptr);
 	boolTy = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt1Ty(context), 1, nullptr);
@@ -456,49 +452,67 @@ void TypeManager::createAlias(const string& name, SType* type)
 	item = smart_aliasTy(name, type);
 }
 
-StructType* TypeManager::buildStruct(const string& name, const vector<pair<string, SType*>>& structure)
+void TypeManager::setBody(STemplatedType* type, const vector<pair<string,SType*>>& structure)
 {
-	vector<Type*> elements;
-	if (structure.empty())
-		elements.push_back(*int8Ty.get());
-	for (auto item : structure)
-		elements.push_back(*item.second);
-	return StructType::create(elements, name);
-}
-
-void TypeManager::createStruct(const string& name, const string& rawName, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs)
-{
-	SUserPtr& item = usrMap[rawName];
-	if (item.get())
+	if (structure.size())
+		type->tclass &= ~SType::OPAQUE;
+	else
 		return;
-	item = smart_strucTy(name, buildStruct(rawName, structure), structure, templateArgs);
+
+	vector<Type*> elements;
+	if (type->isStruct()) {
+		auto sTy = static_cast<SStructType*>(type);
+		int i = 0;
+		for (auto item : structure) {
+			sTy->items[item.first].push_back(make_pair(i++, RValue(nullptr, item.second)));
+			elements.push_back(*item.second);
+		}
+	} else if (type->isUnion()) {
+		auto uTy = static_cast<SUnionType*>(type);
+		SType* rawType = nullptr; // structure[0].second;
+		uint64_t size = 0; // allocSize(rawType);
+		for (auto item : structure) {
+			auto tsize = allocSize(item.second);
+			if (tsize > size) {
+				size = tsize;
+				rawType = item.second;
+			}
+			uTy->items[item.first] = item.second;
+		}
+		elements.push_back(*rawType);
+	}
+
+	static_cast<StructType*>(type->ltype)->setBody(elements);
 }
 
-SClassType* TypeManager::createClass(const string& name, const string& rawName, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs)
+SStructType* TypeManager::createStruct(const string& name, const string& rawName, const vector<SType*>& templateArgs)
 {
 	SUserPtr& item = usrMap[rawName];
-	if (!item.get())
-		item = smart_classTy(name, buildStruct(rawName, structure), structure, templateArgs);
+	if (!item.get()) {
+		item = smart_strucTy(name, templateArgs);
+		item.get()->ltype = StructType::create(context, rawName);
+	}
+	return static_cast<SStructType*>(item.get());
+}
+
+SClassType* TypeManager::createClass(const string& name, const string& rawName, const vector<SType*>& templateArgs)
+{
+	SUserPtr& item = usrMap[rawName];
+	if (!item.get()) {
+		item = smart_classTy(name, templateArgs);
+		item.get()->ltype = StructType::create(context, rawName);
+	}
 	return static_cast<SClassType*>(item.get());
 }
 
-void TypeManager::createUnion(const string& name, const string& rawName, const vector<pair<string, SType*>>& structure, const vector<SType*>& templateArgs)
+SUnionType* TypeManager::createUnion(const string& name, const string& rawName, const vector<SType*>& templateArgs)
 {
 	SUserPtr& item = usrMap[rawName];
-	if (item.get())
-		return;
-	auto type = structure.size()? structure[0].second : int8Ty.get();
-	auto size = allocSize(type);
-	for (auto item : structure) {
-		auto tsize = allocSize(item.second);
-		if (tsize > size) {
-			size = tsize;
-			type = item.second;
-		}
+	if (!item.get()) {
+		item = smart_unionTy(name, templateArgs);
+		item.get()->ltype = StructType::create(context, rawName);
 	}
-	vector<Type*> elements;
-	elements.push_back(*type);
-	item = smart_unionTy(name, StructType::create(elements, rawName), structure, size, templateArgs);
+	return static_cast<SUnionType*>(item.get());
 }
 
 void TypeManager::createEnum(const string& name, const vector<pair<string, int64_t>>& structure, SType* type)

@@ -49,12 +49,12 @@ void bar()
 
 ========
 
-%MyClass = type { i8 }
-%File = type { i8 }
+%MyClass = type opaque
+%File = type opaque
 %Fake = type { i32, i32 }
-%MyStruct = type { i8 }
-%MyUnion = type { i8 }
-%Simple = type { i8 }
+%MyStruct = type opaque
+%MyUnion = type opaque
+%Simple = type opaque
 %Empty = type { i8 }
 %Empty2 = type { i8 }
 

@@ -50,8 +50,8 @@ void badCast()
 
 ========
 
-negative/Unsized.syp:4:2: struct members must not have auto type
-negative/Unsized.syp:5:2: struct members must not have void type
+negative/Unsized.syp:4:2: unsized struct member not allowed: auto
+negative/Unsized.syp:5:2: unsized struct member not allowed: void
 negative/Unsized.syp:11:1: can't create variable for an unsized type: void
 negative/Unsized.syp:13:1: can't create variable for an unsized type: File
 negative/Unsized.syp:15:14: parameter can not be void type
