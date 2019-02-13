@@ -70,6 +70,9 @@ void CGNImportStm::visitNAliasDeclaration(NAliasDeclaration* stm)
 
 void CGNImportStm::visitNStructDeclaration(NStructDeclaration* stm)
 {
+	if (Builder::StoreTemplate(context, stm))
+		return;
+
 	NVariableDeclGroupList empty;
 	auto vars = NAttributeList::find(stm->getAttrs(), "opaque")? &empty : stm->getVars();
 
@@ -114,16 +117,9 @@ void CGNImportStm::visitNClassDestructor(NClassDestructor* stm)
 
 void CGNImportStm::visitNClassDeclaration(NClassDeclaration* stm)
 {
-	if (!context.inTemplate()) {
-		auto name = stm->getName()->str;
-		if (SUserType::isDeclared(context, name, {}) || context.getTemplate(name)) {
-			context.addError("type with name " + name + " already declared", stm->getName());
-			return;
-		} else if (stm->getTemplateParams()) {
-			context.storeTemplate(name, stm);
-			return;
-		}
-	}
+	if (Builder::StoreTemplate(context, stm))
+		return;
+
 	Builder::CreateClass(context, stm, [=](size_t structIdx) {
 		visit(stm->getMembers()->at(structIdx));
 		if (!context.getClass())

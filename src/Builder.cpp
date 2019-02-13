@@ -380,6 +380,21 @@ void Builder::validateAttrList(CodeContext& context, NAttributeList* attrs)
 	}
 }
 
+bool Builder::StoreTemplate(CodeContext& context, NTemplatedDeclaration* stm)
+{
+	if (!context.inTemplate()) {
+		auto name = stm->getName()->str;
+		if (SUserType::isDeclared(context, name, {}) || context.getTemplate(name)) {
+			context.addError("type with name " + name + " already declared", stm->getName());
+			return true;
+		} else if (stm->getTemplateParams()) {
+			context.storeTemplate(name, stm);
+			return true;
+		}
+	}
+	return false;
+}
+
 void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list)
 {
 	auto tArgs = context.getTemplateArgs();

@@ -41,6 +41,8 @@ public:
 
 	static void CreateClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype);
 
+	static bool StoreTemplate(CodeContext& context, NTemplatedDeclaration* stm);
+
 	static void CreateClass(CodeContext& context, NClassDeclaration* stm, function<void(int)> visitor);
 
 	static void CreateStruct(CodeContext& context, NStructDeclaration::CreateType ctype, Token* name, NVariableDeclGroupList* list);

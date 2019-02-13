@@ -4,14 +4,17 @@ import "../files/Template.syp";
 void foo()
 {
 	List<float> v;
+	Node<int> n;
 }
 
 ========
 
 %List_f = type { [0 x float]* }
+%Node_i32 = type { i32, %Node_i32* }
 
 define void @foo() {
   %v = alloca %List_f
+  %n = alloca %Node_i32
   ret void
 }
 
