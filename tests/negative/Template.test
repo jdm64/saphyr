@@ -50,6 +50,7 @@ class HasConstr
 void errMsg()
 {
 	List<HasConstr> a;
+	List<int> b;
 }
 
 ========

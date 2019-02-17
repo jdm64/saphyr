@@ -345,12 +345,13 @@ SType* SUserType::lookup(CodeContext& context, Token* name, vector<SType*> templ
 	for (size_t i = 0; i < templateArgs.size(); i++)
 		templateMappings.push_back({params->at(i)->str, templateArgs[i]});
 
+	auto errorCount = context.errorCount();
 	auto templateCtx = CodeContext::newForTemplate(context, templateMappings);
 	auto templatePtr = unique_ptr<NTemplatedDeclaration>(templateType->copy());
 	CGNStatement::run(templateCtx, templatePtr.get());
 
 	type = context.getTypeManager().lookupUserType(rawName);
-	if (templateCtx.hasErrors()) {
+	if (context.errorCount() > errorCount) {
 		context.addError("errors when creating type: " + type->str(&context), name);
 	}
 	return type;

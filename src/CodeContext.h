@@ -208,6 +208,11 @@ public:
 		return globalCtx.hasErrors();
 	}
 
+	size_t errorCount()
+	{
+		return globalCtx.errors.size();
+	}
+
 	void addError(string error, Token* token)
 	{
 		globalCtx.addError(error, token);
