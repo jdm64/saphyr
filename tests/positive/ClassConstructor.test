@@ -110,6 +110,11 @@ void initStr()
 	String s = retString();
 }
 
+@[]MyClass classArrayWithConstructor(int a)
+{
+	return new[a + 5]MyClass;
+}
+
 ========
 
 %Empty = type { i8 }
@@ -324,11 +329,36 @@ define void @initStr() {
   ret void
 }
 
+define [0 x %MyClass]* @classArrayWithConstructor(i32 %a) {
+  %1 = alloca i32
+  store i32 %a, i32* %1
+  %2 = load i32, i32* %1
+  %3 = add i32 %2, 5
+  %4 = sext i32 %3 to i64
+  %5 = mul i64 8, %4
+  %6 = call i8* @malloc(i64 %5)
+  %7 = bitcast i8* %6 to [0 x %MyClass]*
+  %8 = getelementptr [0 x %MyClass], [0 x %MyClass]* %7, i32 0, i32 0
+  %9 = getelementptr %MyClass, %MyClass* %8, i32 %3
+  br label %10
+
+; <label>:10:                                     ; preds = %10, %0
+  %11 = phi %MyClass* [ %8, %0 ], [ %12, %10 ]
+  %12 = getelementptr %MyClass, %MyClass* %11, i64 1
+  call void @MyClass_this(%MyClass* %11)
+  %13 = icmp eq %MyClass* %12, %9
+  br i1 %13, label %14, label %10
+
+; <label>:14:                                     ; preds = %10
+  ret [0 x %MyClass]* %7
+}
+
 ========
 
 arrayLocal T
 arrayNew T
 Both_this T
+classArrayWithConstructor T
 Empty_this T
 foo T
 free U

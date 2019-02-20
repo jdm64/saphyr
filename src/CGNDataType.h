@@ -58,7 +58,8 @@ public:
 
 class CGNDataTypeNew : public CGNDataType
 {
-	RValue sizeVal;
+	RValue sizeArr;
+	RValue sizeBytes;
 
 	explicit CGNDataTypeNew(CodeContext& context)
 	: CGNDataType(context) {}
@@ -89,7 +90,7 @@ class CGNDataTypeNew : public CGNDataType
 
 public:
 
-	static SType* run(CodeContext& context, NDataType* type, RValue& size);
+	static SType* run(CodeContext& context, NDataType* type, RValue& sizeBytes, RValue& size);
 };
 
 #endif

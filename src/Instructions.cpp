@@ -666,7 +666,7 @@ RValue Inst::CallMemberFunctionNonClass(CodeContext& context, NVariable* baseVar
 	return CallFunction(context, funcs, funcName, *args.get());
 }
 
-bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, VecRValue* initList)
+bool Inst::CallConstructor(CodeContext& context, RValue var, RValue arrSize, VecRValue* initList, Token* token)
 {
 	bool isArr = false;
 	auto varType = var.stype();
@@ -693,7 +693,8 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, Token* token, VecRV
 		idxs.push_back(zero);
 		idxs.push_back(zero);
 		auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
-		endPtr = context.IB().CreateGEP(nullptr, startPtr, RValue::getNumVal(context, varType->size(), 64));
+		arrSize = arrSize ? arrSize : RValue::getNumVal(context, varType->size(), 64);
+		endPtr = context.IB().CreateGEP(nullptr, startPtr, arrSize);
 
 		auto block = context.createBlock();
 		context.IB().CreateBr(block);
@@ -795,9 +796,9 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 	return RValue();
 }
 
-void Inst::InitVariable(CodeContext& context, RValue var, Token* token, VecRValue* initList)
+void Inst::InitVariable(CodeContext& context, RValue var, RValue arrSize, VecRValue* initList, Token* token)
 {
-	if (CallConstructor(context, var, token, initList))
+	if (CallConstructor(context, var, arrSize, initList, token))
 		return;
 
 	if (initList) {

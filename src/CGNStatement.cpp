@@ -122,7 +122,7 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 			initList = make_unique<VecRValue>();
 		initList->push_back(initValue);
 	}
-	Inst::InitVariable(context, var, stm->getName(), initList.get());
+	Inst::InitVariable(context, var, {}, initList.get(), stm->getName());
 }
 
 void CGNStatement::visitNVariableDeclGroup(NVariableDeclGroup* stm)
@@ -198,7 +198,7 @@ void CGNStatement::visitNMemberInitializer(NMemberInitializer* stm)
 
 	auto var = Inst::LoadMemberVar(context, stm->getName()->str);
 	auto exp = CGNExpression::collect(context, stm->getExp());
-	Inst::InitVariable(context, var, stm->getName(), exp.get());
+	Inst::InitVariable(context, var, {}, exp.get(), stm->getName());
 }
 
 void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)

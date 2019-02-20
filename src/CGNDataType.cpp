@@ -219,20 +219,24 @@ SType* CGNDataTypeNew::visit(NDataType* type)
 	}
 }
 
-SType* CGNDataTypeNew::run(CodeContext& context, NDataType* type, RValue& size)
+SType* CGNDataTypeNew::run(CodeContext& context, NDataType* type, RValue& sizeBytes, RValue& sizeArr)
 {
 	CGNDataTypeNew runner(context);
 	auto ty = runner.visit(type);
-	size = runner.sizeVal;
+	sizeBytes = runner.sizeBytes;
+	sizeArr = runner.sizeArr;
 	return ty;
 }
 
 void CGNDataTypeNew::setSize(SType* type)
 {
-	if (type->isUnsized())
-		sizeVal = RValue();
-	else
-		sizeVal = RValue::getNumVal(context, SType::allocSize(context, type), 64);
+	if (type->isUnsized()) {
+		sizeBytes = {};
+		sizeArr = {};
+	} else {
+		sizeBytes = RValue::getNumVal(context, SType::allocSize(context, type), 64);
+		sizeArr = RValue::getNumVal(context, 1);
+	}
 }
 
 void CGNDataTypeNew::setSize(uint64_t size)
@@ -242,7 +246,8 @@ void CGNDataTypeNew::setSize(uint64_t size)
 
 void CGNDataTypeNew::setSize(const RValue& size)
 {
-	sizeVal = Inst::BinaryOp('*', nullptr, sizeVal, size, context);
+	sizeArr = size;
+	sizeBytes = Inst::BinaryOp('*', nullptr, sizeBytes, size, context);
 }
 
 SType* CGNDataTypeNew::visitNBaseType(NBaseType* type)

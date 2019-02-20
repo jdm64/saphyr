@@ -187,8 +187,9 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 		funcVal = syms[0];
 	}
 
-	RValue size;
-	auto nType = CGNDataTypeNew::run(context, exp->getType(), size);
+	RValue sizeBytes;
+	RValue sizeArr;
+	auto nType = CGNDataTypeNew::run(context, exp->getType(), sizeBytes, sizeArr);
 	if (!nType) {
 		return RValue();
 	} else if (nType->isUnsized()) {
@@ -197,7 +198,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	}
 
 	vector<Value*> exp_list;
-	exp_list.push_back(size);
+	exp_list.push_back(sizeBytes);
 
 	auto func = static_cast<SFunction&>(funcVal);
 	auto call = context.IB().CreateCall(func.value(), exp_list);
@@ -208,7 +209,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	// setup type so the variable is initialized using the base type
 	RValue ptr2 = RValue(rPtr.value(), nType);
 	auto args = CGNExpression::collect(context, exp->getArgs());
-	Inst::InitVariable(context, ptr2, *exp->getType(), args.get());
+	Inst::InitVariable(context, ptr2, sizeArr, args.get(), *exp->getType());
 
 	return rPtr;
 }
