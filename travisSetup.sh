@@ -13,16 +13,18 @@ wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 
 OTHER_PKGS=""
 
+if [[ $APPIMAGE == "true" ]]; then
+	# install patchelf for building AppImage
+	wget http://ftp.br.debian.org/debian/pool/main/p/patchelf/patchelf_0.8-2_amd64.deb
+	sudo dpkg -i patchelf_0.8-2_amd64.deb
+fi
+
 if [[ $LLVM_VER == "-3.8" ]] || [[ $LLVM_VER == "-4.0" ]]; then
 	VER=${LLVM_VER:1}
 	echo "UNITTEST_ARG = +$VER-5.0" > src/Configfile
 	OTHER_PKGS="llvm-5.0-dev"
 elif [[ $LLVM_VER == "-6.0" ]] || [[ $LLVM_VER == "-7" ]]; then
 	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-
-	# install patchelf for building AppImage
-	wget http://ftp.br.debian.org/debian/pool/main/p/patchelf/patchelf_0.8-2_amd64.deb
-	sudo dpkg -i patchelf_0.8-2_amd64.deb
 fi
 
 sudo apt-get update -qq

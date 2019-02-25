@@ -7,11 +7,11 @@ matrix:
     - compiler: clang
       env: LLVM_VER="-3.8"
     - compiler: clang
-      env: LLVM_VER="-4.0"
+      env: LLVM_VER="-4.0" APPIMAGE=true
     - compiler: gcc
       env: LLVM_VER="-5.0" COVERAGE=true
     - compiler: clang
-      env: LLVM_VER="-6.0" APPIMAGE=true
+      env: LLVM_VER="-6.0"
 #    - compiler: gcc
 #      env: LLVM_VER="-7"
 
