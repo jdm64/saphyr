@@ -8,6 +8,7 @@ echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-4.0 main" | sudo tee
 echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee /etc/apt/sources.list.d/llvm50.list > /dev/null
 echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-6.0 main" | sudo tee /etc/apt/sources.list.d/llvm60.list > /dev/null
 echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-7   main" | sudo tee /etc/apt/sources.list.d/llvm70.list > /dev/null
+echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-8   main" | sudo tee /etc/apt/sources.list.d/llvm80.list > /dev/null
 
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 
@@ -23,7 +24,7 @@ if [[ $LLVM_VER == "-3.8" ]] || [[ $LLVM_VER == "-4.0" ]]; then
 	VER=${LLVM_VER:1}
 	echo "UNITTEST_ARG = +$VER-5.0" > src/Configfile
 	OTHER_PKGS="llvm-5.0-dev"
-elif [[ $LLVM_VER == "-6.0" ]] || [[ $LLVM_VER == "-7" ]]; then
+elif [[ $LLVM_VER == "-6.0" ]] || [[ $LLVM_VER == "-7" ]] || [[ $LLVM_VER == "-8" ]]; then
 	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 fi
 

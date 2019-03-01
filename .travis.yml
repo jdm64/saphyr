@@ -14,6 +14,8 @@ matrix:
       env: LLVM_VER="-6.0"
 #    - compiler: gcc
 #      env: LLVM_VER="-7"
+    - compiler: clang
+      env: LLVM_VER="-8"
 
 before_install:
  - ./travisSetup.sh
