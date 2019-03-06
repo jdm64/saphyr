@@ -644,7 +644,7 @@ explicit_data_type
 	{
 		$$ = new NArrayType($1.t_tok, $3);
 	}
-	| TT_VEC '<' integer_constant ',' data_type '>'
+	| TT_VEC '<' expression ',' data_type '>'
 	{
 		$$ = new NVecType($1.t_tok, $3, $5);
 	}

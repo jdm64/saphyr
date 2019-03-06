@@ -52,6 +52,11 @@ void vecPointer()
 	a[0]@ = 4;
 }
 
+void vecSizeExpr()
+{
+	vec<3 + 5, int> v;
+}
+
 ========
 
 define <3 x i32> @retVecWithNum() {
@@ -138,6 +143,11 @@ define void @vecPointer() {
 
 declare i8* @malloc(i64)
 
+define void @vecSizeExpr() {
+  %v = alloca <8 x i32>
+  ret void
+}
+
 ========
 
 malloc U
@@ -147,3 +157,4 @@ vecCasting T
 vecEquality T
 vecOps T
 vecPointer T
+vecSizeExpr T

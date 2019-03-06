@@ -477,11 +477,11 @@ public:
 class NVecType : public NDataType
 {
 	NDataType* baseType;
-	NIntConst* size;
+	NExpression* size;
 	Token* vecToken;
 
 public:
-	NVecType(Token* vecToken, NIntConst* size, NDataType* baseType)
+	NVecType(Token* vecToken, NExpression* size, NDataType* baseType)
 	: baseType(baseType), size(size), vecToken(vecToken) {}
 
 	NVecType* copy() const override
@@ -489,7 +489,7 @@ public:
 		return new NVecType(vecToken->copy(), size->copy(), baseType->copy());
 	}
 
-	NIntConst* getSize() const
+	NExpression* getSize() const
 	{
 		return size;
 	}

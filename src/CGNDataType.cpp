@@ -130,6 +130,10 @@ SType* CGNDataType::visitNVecType(NVecType* type)
 {
 	auto size = type->getSize();
 	auto sizeVal = CGNExpression::run(context, size).value();
+	if (!sizeVal || !isa<ConstantInt>(sizeVal)) {
+		context.addError("vec size must be a constant integer", *size);
+		return nullptr;
+	}
 	auto arrSize = static_cast<ConstantInt*>(sizeVal)->getSExtValue();
 	if (arrSize <= 0) {
 		context.addError("vec size must be greater than 0", *size);
