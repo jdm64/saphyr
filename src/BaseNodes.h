@@ -245,15 +245,15 @@ public:
 
 	static void unescape(string &val)
 	{
-		string str;
+		string tmp;
 
 		val = val.substr(1, val.size() - 2);
-		str.reserve(val.size());
+		tmp.reserve(val.size());
 
 		for (int i = 0;;) {
 			auto idx = val.find('\\', i);
 			if (idx == string::npos) {
-				str.append(val, i, string::npos);
+				tmp.append(val, i, string::npos);
 				break;
 			} else {
 				char c = val.at(++idx);
@@ -270,12 +270,12 @@ public:
 				default:
 					break;
 				}
-				str.append(val, i, idx - i - 1);
-				str += c;
+				tmp.append(val, i, idx - i - 1);
+				tmp += c;
 				i = idx + 1;
 			}
 		}
-		val = str;
+		val = tmp;
 	}
 
 	static void remove(string& val, char c = '\'')

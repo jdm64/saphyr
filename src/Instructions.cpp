@@ -542,19 +542,19 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 	} else {
 		VecSFunc paramMatch;
 		int bestCount = 1;
-		for (auto func : sizeMatch) {
+		for (auto mFunc : sizeMatch) {
 			int matchCount = 0;
 			for (size_t i = 0; i < argCount; i++) {
-				if (func.getParam(i) == args[i].stype()) {
+				if (mFunc.getParam(i) == args[i].stype()) {
 					matchCount++;
 				}
 			}
 			if (matchCount == bestCount) {
-				paramMatch.push_back(func);
+				paramMatch.push_back(mFunc);
 			} else if (matchCount > bestCount) {
 				bestCount = matchCount;
 				paramMatch.clear();
-				paramMatch.push_back(func);
+				paramMatch.push_back(mFunc);
 			}
 		}
 		if (paramMatch.empty() || paramMatch.size() > 1) {
@@ -570,8 +570,8 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 			string msg = "arguments ambigious for overloaded function:\n\t";
 			msg += "args:\n\t\t" + argStr + "\n\t" +
 				"functions:";
-			for (auto func : sizeMatch)
-				msg += "\n\t\t" + func.stype()->str(&context);
+			for (auto mFunc : sizeMatch)
+				msg += "\n\t\t" + mFunc.stype()->str(&context);
 			context.addError(msg, name);
 			return {};
 		}

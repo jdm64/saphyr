@@ -223,7 +223,6 @@ void FMNStatement::visitNReturnStatement(NReturnStatement* stm)
 
 void FMNStatement::visitNLoopStatement(NLoopStatement* stm)
 {
-	auto expr = FMNExpression::run(context, stm->getCond());
 	context.addLine("loop");
 	WriterUtil::writeBlockStmt(context, stm->getBody());
 }

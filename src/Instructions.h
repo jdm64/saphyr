@@ -63,7 +63,7 @@ public:
 
 	static RValue SizeOf(CodeContext& context, NArrowOperator* exp);
 
-	static RValue LenOp(CodeContext& context, NArrowOperator* exp);
+	static RValue LenOp(CodeContext& context, NArrowOperator* op);
 
 	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
 	{
@@ -71,7 +71,7 @@ public:
 		return RValue(ptrVal, type);
 	}
 
-	static RValue CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, VecRValue& argVals);
+	static RValue CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, VecRValue& args);
 
 	static RValue CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments);
 

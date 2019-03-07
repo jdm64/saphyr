@@ -296,9 +296,9 @@ public:
 
 		if (isArray()) {
 			os << "[";
-			auto s = size();
-			if (s)
-				os << s;
+			auto sz = size();
+			if (sz)
+				os << sz;
 			os << "]" << subtype->str(context);
 		} else if (isPointer()) {
 			os << "@" << subtype->str(context);
@@ -341,9 +341,9 @@ public:
 
 		if (isArray()) {
 			os << "a";
-			auto s = size();
-			if (s)
-				os << s;
+			auto sz = size();
+			if (sz)
+				os << sz;
 			os << "_" << subtype->raw();
 		} else if (isPointer()) {
 			os << "p_" << subtype->raw();

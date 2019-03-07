@@ -404,7 +404,6 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 	auto structName = name->str;
 	vector<pair<string, SType*> > structVars;
 	set<string> memberNames;
-	bool valid = true;
 
 	STemplatedType* userType;
 	switch (ctype) {
@@ -423,6 +422,7 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 		context.setClass(static_cast<SClassType*>(userType));
 
 	if (list) {
+		bool valid = true;
 		for (auto item : *list)
 			valid &= addMembers(item, structVars, memberNames, context);
 		if (valid)

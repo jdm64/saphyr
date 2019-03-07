@@ -170,7 +170,7 @@ class CodeContext
 
 public:
 	explicit CodeContext(GlobalContext& context)
-	: globalCtx(context), irBuilder(context.module->getContext()), currClass(nullptr) {}
+	: globalCtx(context), irBuilder(context.module->getContext()), thisType(nullptr), currClass(nullptr) {}
 
 	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings)
 	{
@@ -208,7 +208,7 @@ public:
 		return globalCtx.hasErrors();
 	}
 
-	size_t errorCount()
+	size_t errorCount() const
 	{
 		return globalCtx.errors.size();
 	}
