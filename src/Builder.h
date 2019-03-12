@@ -31,7 +31,7 @@ class Builder
 public:
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 
-	static SFunction getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs = nullptr);
+	static SFunction getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs = nullptr, bool allowMangle = true);
 
 	static SFunction CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs = nullptr);
 

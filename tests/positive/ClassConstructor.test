@@ -92,7 +92,7 @@ class String
 	{
 	}
 
-	#[mangle("String_this2")]
+	#[mangle("this2")]
 	this(String str)
 	ptr{str.ptr}
 	{

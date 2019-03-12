@@ -83,21 +83,15 @@ void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm,
 		return;
 	}
 
-	auto rawClName = Token(*stm->getClass()->getName());
-	rawClName.str = SUserType::raw(rawClName.str, context.getTemplateArgs());
-
 	// add this parameter
 	if (!NAttributeList::find(stm->getAttrs(), "static")) {
-		auto thisToken = new Token(rawClName);
+		auto thisToken = new Token(clType->raw());
 		auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
 		stm->getParams()->addFront(thisPtr);
 	}
 
-	auto fnToken = *name;
-	fnToken.str = rawClName.str + "_" + name->str;
-
 	// add function to class type
-	auto func = CreateFunction(context, &fnToken, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody(), stm->getAttrs());
+	auto func = CreateFunction(context, name, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody(), stm->getAttrs());
 	if (func)
 		clType->addFunction(name->str, func);
 }
@@ -234,20 +228,35 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 	context.setThis(nullptr);
 }
 
-SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs)
+SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs, bool allowMangle)
 {
-	string rawName;
-	auto mangle = NAttributeList::find(attrs, "mangle");
-	if (mangle) {
-		auto mangleVal = NAttrValueList::find(mangle->getValues(), 0);
-		if (mangleVal) {
-			rawName = mangleVal->str();
-		} else {
-			context.addError("mangle attribute requires value", *mangle);
+	string rawName, funcName = name->str;
+
+	if (allowMangle) {
+		bool fullMangle = false;
+		auto mangle = NAttributeList::find(attrs, "mangle");
+		if (mangle) {
+			auto mangleVal = NAttrValueList::find(mangle->getValues(), 0);
+			if (mangleVal) {
+				rawName = mangleVal->str();
+				fullMangle = NAttrValueList::find(mangle->getValues(), 1) != nullptr;
+			} else {
+				context.addError("mangle attribute requires value", *mangle);
+			}
+		}
+		if (context.getClass()) {
+			auto clName = context.getClass()->raw();
+			if (!rawName.empty()) {
+				if (!fullMangle) {
+					rawName = clName + "_" + rawName;
+				} else if (context.getClass()->isTemplated()) {
+					context.addError("cannot use fullname mangling with templated class functions", *mangle);
+				}
+			}
+			funcName = clName + "_" + funcName;
 		}
 	}
 
-	auto funcName = name->str;
 	if (rawName.empty()) {
 		rawName = funcName;
 	}

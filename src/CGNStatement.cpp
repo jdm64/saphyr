@@ -486,7 +486,7 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 		auto funcType = SType::getFunction(context, retType, args);
 		Token freeName("free");
 
-		func = Builder::getFuncPrototype(context, &freeName, funcType);
+		func = Builder::getFuncPrototype(context, &freeName, funcType, nullptr, false);
 	} else if (!syms[0].isFunction() || syms.size() > 1) {
 		context.addError("Compiler Error: free not function", *stm->getVar());
 		return;

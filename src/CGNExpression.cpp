@@ -179,7 +179,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 		auto funcType = SType::getFunction(context, retType, args);
 		Token mallocName("malloc");
 
-		funcVal = Builder::getFuncPrototype(context, &mallocName, funcType);
+		funcVal = Builder::getFuncPrototype(context, &mallocName, funcType, nullptr, false);
 	} else if (!syms[0].isFunction() || syms.size() > 1) {
 		context.addError("Compiler Error: malloc not function", *exp);
 		return {};
