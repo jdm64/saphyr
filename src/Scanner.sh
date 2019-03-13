@@ -3,8 +3,10 @@
 rm -f scanner*
 flexc++ Scanner.l
 
+STYPE=$(grep "union STYPE" parserbase.h | cut -f2 -d' ')
+
 sed -i -e '
-/insert lexFunctionDecl/a\void setSval(ParserBase::STYPE__ *dval){ sval = dval; } ParserBase::STYPE__* sval;
+/insert lexFunctionDecl/a\void setSval(ParserBase::'"$STYPE"' *dval){ sval = dval; } ParserBase::'"$STYPE"'* sval;
 /nsert baseclass_h/a\#include "parserbase.h"
 ' scanner.h
 
