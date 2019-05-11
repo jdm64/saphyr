@@ -156,15 +156,21 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 		result->addIncoming(trueExp, tBlk);
 		result->addIncoming(falseExp, fBlk);
 		retVal = RValue(result, trueExp.stype());
+
+		if (trueExp.stype() != falseExp.stype())
+			context.addError("return types of ternary must match", *exp);
 	} else {
 		trueExp = visit(exp->getTrueVal());
 		falseExp = visit(exp->getFalseVal());
-		auto select = context.IB().CreateSelect(condExp, trueExp, falseExp);
-		retVal = RValue(select, trueExp.stype());
+
+		if (trueExp.stype() == falseExp.stype()) {
+			auto select = context.IB().CreateSelect(condExp, trueExp, falseExp);
+			retVal = RValue(select, trueExp.stype());
+		} else {
+			context.addError("return types of ternary must match", *exp);
+		}
 	}
 
-	if (trueExp.stype() != falseExp.stype())
-		context.addError("return types of ternary must match", *exp);
 	return retVal;
 }
 
@@ -279,14 +285,20 @@ RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 		result->addIncoming(rhsExp, rBlk);
 
 		retVal = RValue(result, lhsExp.stype());
+
+		if (lhsExp.stype() != rhsExp.stype())
+			context.addError("return types of null coalescing operator must match", *exp);
 	} else {
 		rhsExp = visit(exp->getRhs());
-		auto select = context.IB().CreateSelect(condition, lhsExp, rhsExp);
-		retVal = RValue(select, lhsExp.stype());
+
+		if (lhsExp.stype() == rhsExp.stype()) {
+			auto select = context.IB().CreateSelect(condition, lhsExp, rhsExp);
+			retVal = RValue(select, lhsExp.stype());
+		} else {
+			context.addError("return types of null coalescing operator must match", *exp);
+		}
 	}
 
-	if (lhsExp.stype() != rhsExp.stype())
-		context.addError("return types of null coalescing operator must match", *exp);
 	return retVal;
 }
 
