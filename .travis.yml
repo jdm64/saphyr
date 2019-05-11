@@ -1,5 +1,5 @@
 language: cpp
-dist: trusty
+dist: xenial
 sudo: required
 
 matrix:
@@ -16,6 +16,24 @@ matrix:
 #      env: LLVM_VER="-7"
     - compiler: clang
       env: LLVM_VER="-8"
+
+addons:
+   apt:
+      sources:
+       - llvm-toolchain-xenial-8
+      packages:
+       - llvm-3.8-dev
+       - llvm-4.0-dev
+       - llvm-5.0-dev
+       - llvm-6.0-dev
+       - llvm-8-dev
+       - flexc++
+       - bisonc++
+       - libboost-program-options-dev
+       - libboost-filesystem-dev
+       - python3
+       - binutils
+       - patchelf
 
 before_install:
  - ./travisSetup.sh
