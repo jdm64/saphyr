@@ -7,7 +7,7 @@ matrix:
     - compiler: clang
       env: LLVM_VER="-3.8"
     - compiler: clang
-      env: LLVM_VER="-4.0" APPIMAGE=true
+      env: LLVM_VER="-4.0" PACKAGE=true
     - compiler: gcc
       env: LLVM_VER="-5.0" COVERAGE=true
     - compiler: clang
@@ -37,13 +37,14 @@ addons:
 
 before_install:
  - if [[ $LLVM_VER == "-3.8" ]] || [[ $LLVM_VER == "-4.0" ]]; then VER=${LLVM_VER:1} ; echo "UNITTEST_ARG = +$VER-5.0" > src/Configfile ; fi
+ - if [[ $PACKAGE ]]; then echo "STATIC_BOOST=true" >> src/Configfile ; fi
  - if [[ $COVERAGE ]]; then sudo pip install -U cpp-coveralls ; fi
 
 script: cd src && make frontend && make -j2 tests
 
 after_success:
  - if [[ $COVERAGE ]]; then coveralls --gcov-options '\-lp' -t $COV_TOKEN -e scanner.cpp -e scanner.h -e scannerbase.h -e parser.cpp -e parser.h -e parser.ih -e parserbase.h; fi
- - if [[ $PACKAGE ]]; then cd ../scripts/ ; ./build-AppImage.sh ; wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh ; bash upload.sh saphyr-x86_64.AppImage ; fi
+ - if [[ $PACKAGE ]]; then cd ../scripts/ ; ./build-AppImage.sh ; ./build-deb.sh ; wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh ; bash upload.sh saphyr-x86_64.AppImage saphyr.deb ; fi
 
 branches:
    except:
