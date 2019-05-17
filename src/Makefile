@@ -91,12 +91,8 @@ tests : all
 docker-dev :
 	sudo docker run -it --rm -v $(PWD)/../:/usr/src/saphyr -w /usr/src/saphyr/src jdm64/saphyr bash
 
-appimage :
-	sudo docker run -it --rm -v $(PWD)/../:/usr/src/saphyr -w /usr/src/saphyr/src jdm64/saphyr make appimage-filecopy
-	cd ../scripts; ./buildAppImage-create.sh
-
-appimage-filecopy : compiler
-	cd ../scripts; ./buildAppImage-filecopy.sh
+appimage : all
+	cd ../scripts; ./build-AppImage.sh
 
 install : all
 	sudo cp $(COMPILER) $(FORMATTER) $(INSTALL_DIR)

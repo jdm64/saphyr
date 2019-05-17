@@ -43,7 +43,7 @@ script: cd src && make frontend && make -j2 tests
 
 after_success:
  - if [[ $COVERAGE ]]; then coveralls --gcov-options '\-lp' -t $COV_TOKEN -e scanner.cpp -e scanner.h -e scannerbase.h -e parser.cpp -e parser.h -e parser.ih -e parserbase.h; fi
- - if [[ $APPIMAGE ]]; then cd ../scripts/ ; ./buildAppImage-filecopy.sh ; ./buildAppImage-create.sh ; wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh ; bash upload.sh saphyr-x86_64.AppImage ; fi
+ - if [[ $PACKAGE ]]; then cd ../scripts/ ; ./build-AppImage.sh ; wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh ; bash upload.sh saphyr-x86_64.AppImage ; fi
 
 branches:
    except:
