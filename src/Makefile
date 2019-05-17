@@ -94,5 +94,8 @@ docker-dev :
 appimage : all
 	cd ../scripts; ./build-AppImage.sh
 
+deb : all
+	cd ../scripts; ./build-deb.sh
+
 install : all
 	sudo cp $(COMPILER) $(FORMATTER) $(INSTALL_DIR)
