@@ -26,6 +26,7 @@ addons:
        - llvm-4.0-dev
        - llvm-5.0-dev
        - llvm-6.0-dev
+       - llvm-7-dev
        - llvm-8-dev
        - flexc++
        - bisonc++
@@ -37,7 +38,7 @@ addons:
 
 before_install:
  - if [[ $LLVM_VER == "-3.8" ]] || [[ $LLVM_VER == "-4.0" ]]; then VER=${LLVM_VER:1} ; echo "UNITTEST_ARG = +$VER-5.0" > src/Configfile ; fi
- - if [[ $PACKAGE ]]; then echo "STATIC_BOOST=true" >> src/Configfile ; fi
+ - if [[ $PACKAGE ]]; then echo -e "STATIC_BOOST=true\nLTO=true" >> src/Configfile ; fi
  - if [[ $COVERAGE ]]; then sudo pip install -U cpp-coveralls ; fi
 
 script: cd src && make frontend && make -j2 tests

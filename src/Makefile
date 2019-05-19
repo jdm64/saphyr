@@ -40,6 +40,11 @@ COMPILER_LDFLAGS = $(LDFLAGS) `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-co
 COMPILER = ../saphyr
 FORMATTER = ../syfmt
 
+ifeq ($(LTO),true)
+	LDFLAGS := -flto $(LDFLAGS)
+	CXXFLAGS := -flto $(CXXFLAGS)
+endif
+
 objs = parser.o scanner.o Util.o
 
 compiler_objs = $(objs) Type.o Value.o Instructions.o Builder.o CGNDataType.o \
