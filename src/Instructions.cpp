@@ -557,7 +557,7 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 				paramMatch.push_back(mFunc);
 			}
 		}
-		if (paramMatch.empty() || paramMatch.size() > 1) {
+		if (paramMatch.size() != 1) {
 			string argStr;
 			bool second = false;
 			for (auto arg : args) {
