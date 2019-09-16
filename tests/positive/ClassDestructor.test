@@ -98,8 +98,6 @@ define void @D_null(%D* %this) {
   ret void
 }
 
-declare void @free(i8*)
-
 define void @D_clear(%D* %this) {
   %1 = alloca %D*
   store %D* %this, %D** %1
@@ -107,6 +105,8 @@ define void @D_clear(%D* %this) {
   call void @D_null(%D* %2)
   ret void
 }
+
+declare void @free(i8*)
 
 ========
 

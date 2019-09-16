@@ -25,14 +25,14 @@ class Test
 
 class Empty
 {
-	int run()
-	{
-		return 3;
-	}
-
 	int foo()
 	{
 		return 5 + run();
+	}
+
+	int run()
+	{
+		return 3;
 	}
 }
 
@@ -103,12 +103,6 @@ define %Test* @Test_getThis(%Test* %this) {
   ret %Test* %2
 }
 
-define i32 @Empty_run(%Empty* %this) {
-  %1 = alloca %Empty*
-  store %Empty* %this, %Empty** %1
-  ret i32 3
-}
-
 define i32 @Empty_foo(%Empty* %this) {
   %1 = alloca %Empty*
   store %Empty* %this, %Empty** %1
@@ -116,6 +110,12 @@ define i32 @Empty_foo(%Empty* %this) {
   %3 = call i32 @Empty_run(%Empty* %2)
   %4 = add i32 5, %3
   ret i32 %4
+}
+
+define i32 @Empty_run(%Empty* %this) {
+  %1 = alloca %Empty*
+  store %Empty* %this, %Empty** %1
+  ret i32 3
 }
 
 define void @func() {

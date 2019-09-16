@@ -211,6 +211,15 @@ void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 		if (!context.getClass())
 			return;
 
+
+		auto errorCount = context.errorCount();
+		for (size_t i = 0; i < stm->getMembers()->size(); i++) {
+			if (i == structIdx)
+				continue;
+			CGNImportStm::run(context, stm->getMembers()->at(i));
+		}
+		if (errorCount != context.errorCount())
+			return;
 		for (size_t i = 0; i < stm->getMembers()->size(); i++) {
 			if (i == structIdx)
 				continue;

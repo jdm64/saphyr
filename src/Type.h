@@ -501,6 +501,8 @@ protected:
 public:
 	vector<pair<int, RValue>>* getItem(const string& name);
 
+	bool hasItem(const string& name, RValue& item);
+
 	string str(CodeContext* context = nullptr) const override;
 
 	const_iterator begin() const

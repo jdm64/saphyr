@@ -192,6 +192,13 @@ public:
 		list.insert(list.begin(), item);
 	}
 
+	T* popFront()
+	{
+		auto ret = front();
+		list.erase(list.begin());
+		return ret;
+	}
+
 	void addAll(NodeList<T>& other)
 	{
 		list.insert(list.end(), other.begin(), other.end());

@@ -152,8 +152,6 @@ define %MyClass* @MyClass_makeNew(%MyClass* %this) {
   ret %MyClass* %3
 }
 
-declare i8* @malloc(i64)
-
 define void @MyClass_null(%MyClass* %this) {
   %1 = alloca %MyClass*
   store %MyClass* %this, %MyClass** %1
@@ -162,6 +160,8 @@ define void @MyClass_null(%MyClass* %this) {
   store i32 3, i32* %3
   ret void
 }
+
+declare i8* @malloc(i64)
 
 define void @Both_this(%Both* %this) {
   %1 = alloca %Both*

@@ -61,6 +61,12 @@ public:
 		CGNImportStm runner(context);
 		return runner.visit(list);
 	}
+
+	static void run(CodeContext& context, NStatement* stm)
+	{
+		CGNImportStm runner(context);
+		return runner.visit(stm);
+	}
 };
 
 #endif

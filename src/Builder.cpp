@@ -84,20 +84,28 @@ void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm,
 	}
 
 	// add this parameter
+	bool hasThis = false;
 	if (!NAttributeList::find(stm->getAttrs(), "static")) {
 		auto thisToken = new Token(clType->raw());
 		auto thisPtr = new NParameter(new NPointerType(new NUserType(thisToken)), new Token("this"));
 		stm->getParams()->addFront(thisPtr);
+		hasThis = true;
 	}
 
 	// add function to class type
 	auto func = CreateFunction(context, name, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody(), stm->getAttrs());
-	if (func)
+	if (func && !clType->hasItem(name->str, func)) {
 		clType->addFunction(name->str, func);
+	}
+	if (hasThis)
+		delete stm->getParams()->popFront();
 }
 
-void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* stm, bool prototype)
+bool Builder::SetupClassConstructor(CodeContext& context, NClassConstructor* stm, bool prototype)
 {
+	if (prototype && (stm->getBody()->size() || stm->getInitList()->size()))
+		return true;
+
 	map<string,NMemberInitializer*> items;
 	for (auto item : *stm->getInitList()) {
 		auto token = item->getName();
@@ -108,7 +116,9 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		}
 		items.insert({token->str, item});
 	}
-	stm->getInitList()->clear();
+
+	if (!prototype)
+		stm->getInitList()->clear();
 
 	auto classTy = context.getClass();
 	for (auto item : *classTy) {
@@ -132,7 +142,7 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		}
 	}
 
-	if (!items.empty()) {
+	if (!prototype && items.size()) {
 		auto newBody = new NStatementList;
 		newBody->reserve(items.size() + stm->getBody()->size());
 		for (auto item : items)
@@ -142,15 +152,24 @@ void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* st
 		stm->setBody(newBody);
 	}
 
-	if (stm->getBody()->empty())
-		return;
-
-	stm->setRType(new NBaseType(nullptr, ParserBase::TT_VOID));
-	CreateClassFunction(context, stm, prototype);
+	return stm->getBody()->size() || items.size();
 }
 
-void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype)
+void Builder::CreateClassConstructor(CodeContext& context, NClassConstructor* stm, bool prototype)
 {
+	if (!stm->getRType())
+		stm->setRType(new NBaseType(nullptr, ParserBase::TT_VOID));
+
+	if (SetupClassConstructor(context, stm, prototype))
+		CreateClassFunction(context, stm, prototype);
+}
+
+bool Builder::SetupClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype)
+{
+	if (prototype && stm->getBody()->size())
+		return true;
+
+	// TODO check if destructor exists
 	auto clType = context.getClass();
 	for (auto item : *clType) {
 		// only looking for fields so first item will do
@@ -160,16 +179,23 @@ void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm,
 		auto itemCl = static_cast<SClassType*>(ty);
 		if (!itemCl->getDestructor())
 			continue;
-		stm->getBody()->add(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
+
+		if (!prototype)
+			stm->getBody()->add(new NDestructorCall(new NBaseVariable(new Token(item.first)), nullptr));
+		else
+			return true;
 	}
+	return stm->getBody()->size();
+}
 
-	if (stm->getBody()->empty())
-		return;
-
-	stm->setRType(new NBaseType(nullptr, ParserBase::TT_VOID));
+void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype)
+{
 	stm->getName()->str = "null";
+	if (!stm->getRType())
+		stm->setRType(new NBaseType(nullptr, ParserBase::TT_VOID));
 
-	CreateClassFunction(context, stm, prototype);
+	if (SetupClassDestructor(context, stm, prototype))
+		CreateClassFunction(context, stm, prototype);
 }
 
 void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function<void(int)> visitor)

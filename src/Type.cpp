@@ -191,6 +191,18 @@ vector<pair<int, RValue>>* SStructType::getItem(const string& name)
 	return iter != items.end()? &iter->second : nullptr;
 }
 
+bool SStructType::hasItem(const string& name, RValue& item)
+{
+	auto list = getItem(name);
+	if (!list)
+		return false;
+	for (auto it : *list) {
+		if (item.value() == it.second.value() && item.type() == it.second.type())
+			return true;
+	}
+	return false;
+}
+
 string SStructType::str(CodeContext* context) const
 {
 	stringstream os;

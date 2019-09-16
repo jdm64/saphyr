@@ -28,6 +28,10 @@ class Builder
 
 	static void validateAttrList(CodeContext& context, NAttributeList* attrs);
 
+	static bool SetupClassConstructor(CodeContext& context, NClassConstructor* stm, bool prototype);
+
+	static bool SetupClassDestructor(CodeContext& context, NClassDestructor* stm, bool prototype);
+
 public:
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 
