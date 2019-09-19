@@ -16,11 +16,16 @@ matrix:
 #      env: LLVM_VER="-7"
     - compiler: clang
       env: LLVM_VER="-8"
+    - compiler: clang
+      env: LLVM_VER="-9"
 
 addons:
    apt:
       sources:
-       - llvm-toolchain-xenial-8
+       - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+         key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+       - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
+         key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
       packages:
        - llvm-3.8-dev
        - llvm-4.0-dev
@@ -28,6 +33,7 @@ addons:
        - llvm-6.0-dev
 #       - llvm-7-dev
        - llvm-8-dev
+       - llvm-9-dev
        - flexc++
        - bisonc++
        - libboost-program-options-dev
