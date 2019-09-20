@@ -44,6 +44,7 @@ addons:
 
 before_install:
  - if [[ $LLVM_VER == "-3.8" ]] || [[ $LLVM_VER == "-4.0" ]]; then VER=${LLVM_VER:1} ; echo "UNITTEST_ARG = +$VER-5.0" > src/Configfile ; fi
+ - if [[ $LLVM_VER == "-9" ]]; then VER=${LLVM_VER:1} ; echo "UNITTEST_ARG = +$VER-8" > src/Configfile ; fi
  - if [[ $PACKAGE ]]; then echo -e "STATIC_BOOST=true" >> src/Configfile ; fi
  - if [[ $COVERAGE ]]; then sudo pip install -U cpp-coveralls ; fi
 
