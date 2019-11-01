@@ -18,7 +18,7 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 -- Filesystem
 * [LLVM](http://llvm.org/) 3.8+
 * Make
-* C++11 compiler (either GCC or Clang)
+* C++14 compiler (either GCC or Clang)
 * Python 3 (for running tests)
 
 Note: Building FlexC++/BisonC++ from sources requires the [Icmake](https://fbb-git.github.io/icmake/) build

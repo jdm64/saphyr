@@ -35,7 +35,7 @@ endif
 # example: export LLVM_VER="-3.5"
 
 WARNINGS = -Wall -Wextra -pedantic -Wno-unused-parameter
-CXXFLAGS = -std=c++11 `llvm-config$(LLVM_VER) --cxxflags` $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__ -DCOPY_NODES=$(COVERAGE)
+CXXFLAGS = `llvm-config$(LLVM_VER) --cxxflags` -std=c++14 $(O_LEVEL) $(COV_CXX) $(WARNINGS) -frtti -fexceptions -D__STRICT_ANSI__ -DCOPY_NODES=$(COVERAGE)
 COMPILER_LDFLAGS = $(LDFLAGS) `llvm-config$(LLVM_VER) --ldflags` -lLLVM-`llvm-config$(LLVM_VER) --version`
 COMPILER = ../saphyr
 FORMATTER = ../syfmt
