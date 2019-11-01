@@ -84,8 +84,7 @@ public:
 	static vector<Type*> convertArr(vector<SType*> arr)
 	{
 		vector<Type*> vec;
-		for (auto item : arr)
-			vec.push_back(*item);
+		transform(arr.begin(), arr.end(), back_inserter(vec), [](auto i){ return *i; });
 		return vec;
 	}
 

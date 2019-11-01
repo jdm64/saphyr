@@ -225,7 +225,7 @@ class NIntConst : public NIntLikeConst
 	int base;
 
 public:
-	NIntConst(Token* value, int base = 10)
+	explicit NIntConst(Token* value, int base = 10)
 	: NIntLikeConst(value), base(base)
 	{
 		Token::remove(strVal);
@@ -622,7 +622,7 @@ protected:
 	NDataType* type;
 
 public:
-	NVariableDecl(Token* name, NExpression* initExp = nullptr)
+	explicit NVariableDecl(Token* name, NExpression* initExp = nullptr)
 	: NDeclaration(name), initExp(initExp), initList(nullptr), type(nullptr) {}
 
 	NVariableDecl(Token* name, NExpressionList* initList)
@@ -681,7 +681,7 @@ typedef NodeList<NVariableDecl> NVariableDeclList;
 class NGlobalVariableDecl : public NVariableDecl
 {
 public:
-	NGlobalVariableDecl(Token* name, NExpression* initExp = nullptr)
+	explicit NGlobalVariableDecl(Token* name, NExpression* initExp = nullptr)
 	: NVariableDecl(name, initExp) {}
 
 	NGlobalVariableDecl* copy() const override
@@ -1216,7 +1216,7 @@ class NClassDeclaration : public NTemplatedDeclaration
 	NClassMemberList* list;
 
 public:
-	NClassDeclaration(Token* name, NClassMemberList* list = nullptr, NIdentifierList* templateParams = nullptr, NAttributeList* attrs = nullptr)
+	explicit NClassDeclaration(Token* name, NClassMemberList* list = nullptr, NIdentifierList* templateParams = nullptr, NAttributeList* attrs = nullptr)
 	: NTemplatedDeclaration(name, templateParams, attrs), list(list)
 	{
 		if (list) {

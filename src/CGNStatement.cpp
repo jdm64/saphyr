@@ -119,7 +119,7 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 	auto initList = CGNExpression::collect(context, stm->getInitList());
 	if (initValue) {
 		if (!initList)
-			initList = make_unique<VecRValue>();
+			initList = std::make_unique<VecRValue>();
 		initList->push_back(initValue);
 	}
 	Inst::InitVariable(context, var, {}, initList.get(), stm->getName());

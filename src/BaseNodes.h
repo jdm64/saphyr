@@ -234,7 +234,7 @@ public:
 	Token()
 	: line(0), col(0) {}
 
-	Token(const string& token, const string& filename = "", int lineNum = 0, int colNum = 0)
+	explicit Token(const string& token, const string& filename = "", int lineNum = 0, int colNum = 0)
 	: str(token), filename(filename), line(lineNum), col(colNum) {}
 
 	Token(const Token& token, const string& str)

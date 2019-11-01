@@ -279,18 +279,15 @@ public:
 
 	SType* getTemplateArg(const string& name)
 	{
-		for (auto item : templateArgs) {
-			if (item.first == name)
-				return item.second;
-		}
-		return nullptr;
+		auto it = find_if(templateArgs.begin(), templateArgs.end(),
+			[&name](auto i){ return i.first == name; });
+		return it != templateArgs.end() ? it->second : nullptr;
 	}
 
 	vector<SType*> getTemplateArgs()
 	{
 		vector<SType*> args;
-		for (auto item : templateArgs)
-			args.push_back(item.second);
+		transform(templateArgs.begin(), templateArgs.end(), back_inserter(args), [](auto i){ return i.second; });
 		return args;
 	}
 
