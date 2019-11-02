@@ -88,8 +88,7 @@ public:
 		if (list) {
 			ret = unique_ptr<VecRValue>(new VecRValue());
 			CGNExpression runner(context);
-			for (auto item : *list)
-				ret->push_back(runner.visit(item));
+			transform(list->begin(), list->end(), back_inserter(*ret), [&](auto i){ return runner.visit(i); });
 		}
 		return ret;
 	}

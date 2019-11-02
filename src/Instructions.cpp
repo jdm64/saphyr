@@ -523,11 +523,7 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 {
 	auto argCount = args.size();
 	VecSFunc sizeMatch;
-	for (auto func : funcs) {
-		if (func.numParams() == argCount) {
-			sizeMatch.push_back(func);
-		}
-	}
+	copy_if(funcs.begin(), funcs.end(), back_inserter(sizeMatch), [=](auto i){ return i.numParams() == argCount; });
 
 	if (sizeMatch.empty()) {
 		// TODO make better error message with all functions
@@ -583,9 +579,7 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 	}
 
 	vector<Value*> values;
-	for (auto item : args) {
-		values.push_back(item);
-	}
+	copy(args.begin(), args.end(), back_inserter(values));
 	auto call = context.IB().CreateCall(func.value(), values);
 	return RValue(call, func.returnTy());
 }

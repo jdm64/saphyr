@@ -457,11 +457,8 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 		context.setClass(static_cast<SClassType*>(userType));
 
 	if (list) {
-		bool valid = true;
-		for (auto item : *list)
-			valid &= addMembers(item, structVars, memberNames, context);
-		if (valid)
-			SUserType::setBody(context, userType, structVars);
+		for_each(list->begin(), list->end(), [&](auto i){ return addMembers(i, structVars, memberNames, context); });
+		SUserType::setBody(context, userType, structVars);
 	}
 
 	if (!userType->isClass())

@@ -196,11 +196,7 @@ bool SStructType::hasItem(const string& name, RValue& item)
 	auto list = getItem(name);
 	if (!list)
 		return false;
-	for (auto it : *list) {
-		if (item.value() == it.second.value() && item.type() == it.second.type())
-			return true;
-	}
-	return false;
+	return any_of(list->begin(), list->end(), [&](auto i){ return item.value() == i.second.value() && item.type() == i.second.type(); });
 }
 
 string SStructType::str(CodeContext* context) const
@@ -251,9 +247,7 @@ VecSFunc SClassType::getConstructor()
 	if (!item)
 		return {};
 	VecSFunc ret;
-	for (auto p : *item) {
-		ret.push_back(static_cast<SFunction&>(p.second));
-	}
+	transform(item->begin(), item->end(), back_inserter(ret), [](auto p){ return static_cast<SFunction&>(p.second); });
 	return ret;
 }
 
