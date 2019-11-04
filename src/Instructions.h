@@ -85,7 +85,7 @@ public:
 
 	static RValue LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToken, Token* memberName);
 
-	static void InitVariable(CodeContext& context, RValue var, RValue arrSize, VecRValue* initList, Token* token);
+	static void InitVariable(CodeContext& context, RValue var, const RValue& arrSize, VecRValue* initList, Token* token);
 
 	static RValue StoreTemporary(CodeContext& context, RValue value);
 

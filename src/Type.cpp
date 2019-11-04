@@ -476,7 +476,7 @@ void TypeManager::setBody(STemplatedType* type, const vector<pair<string,SType*>
 		}
 	} else if (type->isUnion()) {
 		auto uTy = static_cast<SUnionType*>(type);
-		SType* rawType = nullptr; // structure[0].second;
+		SType* rawType = int8Ty.get(); // structure[0].second;
 		uint64_t size = 0; // allocSize(rawType);
 		for (auto item : structure) {
 			auto tsize = allocSize(item.second);

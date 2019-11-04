@@ -790,7 +790,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 	return RValue();
 }
 
-void Inst::InitVariable(CodeContext& context, RValue var, RValue arrSize, VecRValue* initList, Token* token)
+void Inst::InitVariable(CodeContext& context, RValue var, const RValue& arrSize, VecRValue* initList, Token* token)
 {
 	if (CallConstructor(context, var, arrSize, initList, token))
 		return;
