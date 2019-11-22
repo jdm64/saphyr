@@ -271,25 +271,25 @@ public:
 	ADD_ID(NFloatConst)
 };
 
-class NImportStm : public NStatement
+class NImportFileStm : public NStatement
 {
 	uPtr<Token> filename;
 
 public:
-	explicit NImportStm(Token* filename)
+	explicit NImportFileStm(Token* filename)
 	: filename(filename)
 	{
 		Token::unescape(filename->str);
 	}
 
-	NImportStm(const NImportStm& other)
+	NImportFileStm(const NImportFileStm& other)
 	: filename(other.filename->copy())
 	{
 	}
 
-	NImportStm* copy() const override
+	NImportFileStm* copy() const override
 	{
-		return new NImportStm(*this);
+		return new NImportFileStm(*this);
 	}
 
 	operator Token*() const
@@ -302,7 +302,49 @@ public:
 		return filename.get();
 	}
 
-	ADD_ID(NImportStm)
+	ADD_ID(NImportFileStm)
+};
+
+class NImportPkgStm : public NImportFileStm
+{
+	NIdentifierList* segments;
+
+	static Token* loadName(NIdentifierList* list)
+	{
+		Token* ret = list->at(0)->copy();
+		for (size_t i = 1; i < list->size(); i++)
+			ret->str += "." + list->at(i)->str;
+		ret->str = "\"" + ret->str + "\"";
+		return ret;
+	}
+
+public:
+	explicit NImportPkgStm(NIdentifierList* segments)
+	: NImportFileStm(loadName(segments)), segments(segments)
+	{
+	}
+
+	NImportPkgStm(const NImportPkgStm& other)
+	: NImportFileStm(loadName(other.segments)), segments(other.segments->copy())
+	{
+	}
+
+	NImportPkgStm* copy() const override
+	{
+		return new NImportPkgStm(*this);
+	}
+
+	operator Token*() const
+	{
+		return getSegments()->at(0);
+	}
+
+	NIdentifierList* getSegments() const
+	{
+		return segments;
+	}
+
+	ADD_ID(NImportPkgStm)
 };
 
 class NDeclaration : public NStatement

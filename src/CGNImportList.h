@@ -21,7 +21,9 @@ class CGNImportList
 {
 	string buff;
 
-	void visitNImportStm(NImportStm* stm);
+	void visitNImportFileStm(NImportFileStm* stm);
+
+	void visitNImportPkgStm(NImportPkgStm* stm);
 
 public:
 	void visit(NStatement* stm);

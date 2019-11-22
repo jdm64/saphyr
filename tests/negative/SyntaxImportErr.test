@@ -1,6 +1,7 @@
 
 import "../files/SyntaxError.syp";
 import "ThisFileNotFound.syp";
+import not.found.File;
 
 int main()
 {
@@ -10,5 +11,6 @@ int main()
 ========
 
 files/SyntaxError.syp:4:2: Syntax error on: <EOF>
-negative/SyntaxImportErr.syp:3:8: unable to import file: ThisFileNotFound.syp
-found 2 errors
+negative/SyntaxImportErr.syp:3:8: unable to import: ThisFileNotFound.syp
+negative/SyntaxImportErr.syp:4:8: unable to import: not.found.File
+found 3 errors

@@ -31,13 +31,19 @@ void CGNImportList::run(NStatementList* list)
 void CGNImportList::visit(NStatement* stm)
 {
 	switch (stm->id()) {
-	VISIT_CASE(NImportStm, stm)
+	VISIT_CASE(NImportFileStm, stm)
+	VISIT_CASE(NImportPkgStm, stm)
 	default:
 		; // skip
 	}
 }
 
-void CGNImportList::visitNImportStm(NImportStm* stm)
+void CGNImportList::visitNImportFileStm(NImportFileStm* stm)
+{
+	buff += stm->getName()->str + "\n";
+}
+
+void CGNImportList::visitNImportPkgStm(NImportPkgStm* stm)
 {
 	buff += stm->getName()->str + "\n";
 }

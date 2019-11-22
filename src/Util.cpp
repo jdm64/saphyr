@@ -142,3 +142,17 @@ path Util::weakly_canonical(const path& p)
 		? Util::lexically_normal(head / tail)
 		: head/tail);
 }
+
+string Util::GetEnv(string name)
+{
+	auto env = getenv(name.c_str());
+	return env ? string(env) : "";
+}
+
+path Util::getDataDir()
+{
+	auto root = path(GetEnv("XDG_DATA_HOME"));
+	if (root.empty())
+		root = path(GetEnv("HOME")) / ".local/share";
+	return root / "saphyr/pkgs";
+}

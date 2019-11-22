@@ -91,7 +91,7 @@
 %type <t_attr> attribute
 %type <t_attr_vals> attribute_value_list
 // lists
-%type <t_idlist> template_parameters identifier_list
+%type <t_idlist> template_parameters identifier_list package_name_list
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
 %type <t_stmlist> declaration_or_expression_list else_statement function_body
 %type <t_clslist> class_member_list class_body
@@ -136,7 +136,23 @@ declaration
 import_declaration
 	: TT_IMPORT TT_STR_LIT ';'
 	{
-		$$ = new NImportStm($2);
+		$$ = new NImportFileStm($2);
+	}
+	| TT_IMPORT package_name_list ';'
+	{
+		$$ = new NImportPkgStm($2);
+	}
+	;
+package_name_list
+	: TT_IDENTIFIER
+	{
+		$$ = new NIdentifierList;
+		$$->add($1);
+	}
+	| package_name_list '.' TT_IDENTIFIER
+	{
+		$1->add($3);
+		$$ = $1;
 	}
 	;
 global_variable_declaration

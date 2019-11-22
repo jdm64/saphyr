@@ -24,7 +24,9 @@ class CGNImportStm
 	explicit CGNImportStm(CodeContext& context)
 	: context(context) {}
 
-	void visitNImportStm(NImportStm* stm);
+	void visitNImportFileStm(NImportFileStm* stm);
+
+	void visitNImportPkgStm(NImportPkgStm* stm);
 
 	void visitNVariableDeclGroup(NVariableDeclGroup* stm);
 

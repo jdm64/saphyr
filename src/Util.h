@@ -18,6 +18,7 @@
 #include <boost/filesystem.hpp>
 
 using namespace boost::filesystem;
+using namespace std;
 
 class Util
 {
@@ -53,4 +54,8 @@ public:
 	 * See http://www.boost.org/LICENSE_1_0.txt
 	 */
 	static path relative(const path& p);
+
+	static string GetEnv(string name);
+
+	static path getDataDir();
 };

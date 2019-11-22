@@ -18,7 +18,6 @@
 #include "AST.h"
 #include "parser.h"
 #include "Value.h"
-#include "Builder.h"
 #include "CodeContext.h"
 #include "Instructions.h"
 #include "CGNDataType.h"
@@ -27,6 +26,7 @@
 #include "CGNImportStm.h"
 #include "Instructions.h"
 #include "Util.h"
+#include "Builder.h"
 
 SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs)
 {
@@ -595,13 +595,23 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 	context.storeGlobalSymbol({var, varType}, name);
 }
 
-void Builder::LoadImport(CodeContext& context, NImportStm* stm)
+void Builder::LoadImport(CodeContext& context, NImportFileStm* stm)
 {
-	auto filename = Util::relative(context.currFile().parent_path() / stm->getName()->str);
+	path filename;
+	if (stm->id() == NodeId::NImportPkgStm) {
+		auto imp = static_cast<NImportPkgStm*>(stm);
+		filename = Util::getDataDir();
+		for (auto seg : *imp->getSegments())
+			filename /= seg->str;
+		filename = filename.string() + ".syp";
+	} else {
+		filename = Util::relative(context.currFile().parent_path() / stm->getName()->str);
+	}
+
 	if (context.fileLoaded(filename)) {
 		return;
 	} else if (!exists(filename)) {
-		context.addError("unable to import file: " + stm->getName()->str, stm->getName());
+		context.addError("unable to import: " + stm->getName()->str, stm->getName());
 		return;
 	}
 	Parser parser(filename.string());

@@ -44,7 +44,8 @@ void CGNStatement::visit(NStatement* stm)
 	VISIT_CASE(NGlobalVariableDecl, stm)
 	VISIT_CASE(NGotoStatement, stm)
 	VISIT_CASE(NIfStatement, stm)
-	VISIT_CASE(NImportStm, stm)
+	VISIT_CASE(NImportFileStm, stm)
+	VISIT_CASE(NImportPkgStm, stm)
 	VISIT_CASE(NLabelStatement, stm)
 	VISIT_CASE(NLoopBranch, stm)
 	VISIT_CASE(NLoopStatement, stm)
@@ -67,7 +68,12 @@ void CGNStatement::visit(NStatementList* list)
 		visit(item);
 }
 
-void CGNStatement::visitNImportStm(NImportStm* stm)
+void CGNStatement::visitNImportFileStm(NImportFileStm* stm)
+{
+	Builder::LoadImport(context, stm);
+}
+
+void CGNStatement::visitNImportPkgStm(NImportPkgStm* stm)
 {
 	Builder::LoadImport(context, stm);
 }

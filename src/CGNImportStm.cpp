@@ -31,7 +31,8 @@ void CGNImportStm::visit(NStatement* stm)
 	VISIT_CASE(NEnumDeclaration, stm)
 	VISIT_CASE(NFunctionDeclaration, stm)
 	VISIT_CASE(NGlobalVariableDecl, stm)
-	VISIT_CASE(NImportStm, stm)
+	VISIT_CASE(NImportFileStm, stm)
+	VISIT_CASE(NImportPkgStm, stm)
 	VISIT_CASE(NStructDeclaration, stm)
 	VISIT_CASE(NVariableDeclGroup, stm)
 	default:
@@ -45,7 +46,12 @@ void CGNImportStm::visit(NStatementList* list)
 		visit(item);
 }
 
-void CGNImportStm::visitNImportStm(NImportStm* stm)
+void CGNImportStm::visitNImportFileStm(NImportFileStm* stm)
+{
+	Builder::LoadImport(context, stm);
+}
+
+void CGNImportStm::visitNImportPkgStm(NImportPkgStm* stm)
 {
 	Builder::LoadImport(context, stm);
 }

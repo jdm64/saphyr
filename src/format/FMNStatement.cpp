@@ -42,7 +42,8 @@ void FMNStatement::visit(NStatement* stm)
 	VISIT_CASE(NFunctionDeclaration, stm)
 	VISIT_CASE(NGotoStatement, stm)
 	VISIT_CASE(NIfStatement, stm)
-	VISIT_CASE(NImportStm, stm)
+	VISIT_CASE(NImportFileStm, stm)
+	VISIT_CASE(NImportPkgStm, stm)
 	VISIT_CASE(NLabelStatement, stm)
 	VISIT_CASE(NLoopBranch, stm)
 	VISIT_CASE(NLoopStatement, stm)
@@ -62,9 +63,14 @@ void FMNStatement::visit(NStatementList* list)
 		visit(item);
 }
 
-void FMNStatement::visitNImportStm(NImportStm* stm)
+void FMNStatement::visitNImportFileStm(NImportFileStm* stm)
 {
 	context.addLine("import \"" + stm->getName()->str + "\";");
+}
+
+void FMNStatement::visitNImportPkgStm(NImportPkgStm* stm)
+{
+	context.addLine("import " + stm->getName()->str + ";");
 }
 
 void FMNStatement::visitNExpressionStm(NExpressionStm* stm)

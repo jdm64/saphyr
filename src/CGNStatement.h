@@ -22,7 +22,9 @@ class CGNStatement
 	CodeContext& context;
 	RValue storedValue;
 
-	void visitNImportStm(NImportStm* stm);
+	void visitNImportFileStm(NImportFileStm* stm);
+
+	void visitNImportPkgStm(NImportPkgStm* stm);
 
 	void visitNExpressionStm(NExpressionStm* stm);
 
