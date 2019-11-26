@@ -1,6 +1,6 @@
 # Saphyr Compiler
 [![Build Status](https://travis-ci.org/jdm64/saphyr.svg)](https://travis-ci.org/jdm64/saphyr)
-[![Scan Status](https://scan.coverity.com/projects/4591/badge.svg)](https://scan.coverity.com/projects/4591)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=jdm64_saphyr&metric=bugs)](https://sonarcloud.io/dashboard?id=jdm64_saphyr)
 [![Coverage Status](https://coveralls.io/repos/github/jdm64/saphyr/badge.svg?branch=master)](https://coveralls.io/github/jdm64/saphyr?branch=master)
 
 A C++ Like compiler using LLVM as a backend.
