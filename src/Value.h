@@ -199,7 +199,7 @@ public:
 	}
 };
 
-typedef vector<RValue> VecRValue;
-typedef vector<SFunction> VecSFunc;
+using VecRValue = vector<RValue>;
+using VecSFunc = vector<SFunction>;
 
 #endif

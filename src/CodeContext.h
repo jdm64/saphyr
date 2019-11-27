@@ -44,7 +44,7 @@ struct LabelBlock
 	: block(block), token(*token), isPlaceholder(isPlaceholder) {}
 };
 
-typedef unique_ptr<LabelBlock> LabelBlockPtr;
+using LabelBlockPtr = unique_ptr<LabelBlock>;
 #define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, token, placeholder))
 
 class ScopeTable
@@ -134,8 +134,7 @@ public:
 
 class CodeContext
 {
-	typedef vector<llvm::BasicBlock*> BlockVector;
-	typedef BlockVector::iterator block_iterator;
+	using BlockVector = vector<llvm::BasicBlock*>;
 
 	GlobalContext& globalCtx;
 

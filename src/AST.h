@@ -40,7 +40,7 @@ public:
 	virtual NStatement* copy() const override = 0;
 };
 
-typedef NodeList<NStatement> NStatementList;
+using NStatementList = NodeList<NStatement>;
 
 class NExpression : public Node
 {
@@ -55,7 +55,7 @@ public:
 	}
 };
 
-typedef NodeList<NExpression> NExpressionList;
+using NExpressionList = NodeList<NExpression>;
 
 class NExpressionStm : public NStatement
 {
@@ -338,7 +338,7 @@ public:
 
 	virtual NDataType* copy() const override = 0;
 };
-typedef NodeList<NDataType> NDataTypeList;
+using NDataTypeList = NodeList<NDataType>;
 
 class NNamedType : public NDataType
 {
@@ -676,7 +676,7 @@ public:
 	ADD_ID(NVariableDecl)
 };
 
-typedef NodeList<NVariableDecl> NVariableDeclList;
+using NVariableDeclList = NodeList<NVariableDecl>;
 
 class NGlobalVariableDecl : public NVariableDecl
 {
@@ -934,7 +934,7 @@ public:
 
 	ADD_ID(NParameter)
 };
-typedef NodeList<NParameter> NParameterList;
+using NParameterList = NodeList<NParameter>;
 
 class NVariableDeclGroup : public NStatement
 {
@@ -968,7 +968,7 @@ public:
 
 	ADD_ID(NVariableDeclGroup)
 };
-typedef NodeList<NVariableDeclGroup> NVariableDeclGroupList;
+using NVariableDeclGroupList = NodeList<NVariableDeclGroup>;
 
 class NAliasDeclaration : public NDeclaration
 {
@@ -1175,7 +1175,7 @@ public:
 
 	virtual NClassMember* copy() const = 0;
 };
-typedef NodeList<NClassMember> NClassMemberList;
+using NClassMemberList = NodeList<NClassMember>;
 
 class NMemberInitializer : public NStatement
 {
@@ -1209,7 +1209,7 @@ public:
 
 	ADD_ID(NMemberInitializer)
 };
-typedef NodeList<NMemberInitializer> NInitializerList;
+using NInitializerList = NodeList<NMemberInitializer>;
 
 class NClassDeclaration : public NTemplatedDeclaration
 {
@@ -1534,7 +1534,7 @@ public:
 
 	ADD_ID(NSwitchCase)
 };
-typedef NodeList<NSwitchCase> NSwitchCaseList;
+using NSwitchCaseList = NodeList<NSwitchCase>;
 
 class NSwitchStatement : public NStatement
 {

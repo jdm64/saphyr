@@ -481,8 +481,8 @@ class SStructType : public STemplatedType
 	friend class TypeManager;
 	friend class SClassType;
 
-	typedef map<string, vector<pair<int, RValue>>> container;
-	typedef container::const_iterator const_iterator;
+	using container = map<string, vector<pair<int, RValue>>>;
+	using const_iterator = container::const_iterator;
 
 protected:
 	container items;

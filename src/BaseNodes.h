@@ -113,8 +113,8 @@ public:
 template<typename T>
 class NodeList
 {
-	typedef vector<T*> container;
-	typedef typename container::iterator iterator;
+	using container = vector<T*>;
+	using iterator = typename container::iterator;
 
 	bool doDelete;
 
@@ -291,7 +291,7 @@ public:
 	}
 };
 
-typedef NodeList<Token> NIdentifierList;
+using NIdentifierList = NodeList<Token>;
 
 class NAttrValue : public Node
 {

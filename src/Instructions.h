@@ -20,9 +20,9 @@
 #include "AST.h"
 #include "CodeContext.h"
 
-typedef CmpInst::Predicate Predicate;
-typedef Instruction::BinaryOps BinaryOps;
-typedef Instruction::CastOps CastOps;
+using Predicate = CmpInst::Predicate;
+using BinaryOps = Instruction::BinaryOps;
+using CastOps = Instruction::CastOps;
 
 class Inst
 {
