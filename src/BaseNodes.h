@@ -19,6 +19,7 @@
 #define __BASE_NODES__
 
 #include <string>
+#include <memory>
 
 using namespace std;
 
@@ -99,6 +100,9 @@ enum class NodeId
 #define VISIT_CASE(ID, NODE) case NodeId::ID: visit##ID(static_cast<ID*>(NODE)); break;
 #define VISIT_CASE_RETURN(ID, NODE) case NodeId::ID: return visit##ID(static_cast<ID*>(NODE));
 #define VISIT_CASE2_RETURN(ID, TWO, NODE) case NodeId::ID: return visit##TWO(static_cast<TWO*>(NODE));
+
+template<typename T>
+using uPtr = std::unique_ptr<T>;
 
 class Node
 {
@@ -295,7 +299,7 @@ using NIdentifierList = NodeList<Token>;
 
 class NAttrValue : public Node
 {
-	Token* val;
+	uPtr<Token> val;
 
 public:
 	explicit NAttrValue(Token* value)
@@ -316,17 +320,12 @@ public:
 
 	operator Token*() const
 	{
-		return val;
+		return val.get();
 	}
 
 	string str() const
 	{
 		return val->str;
-	}
-
-	~NAttrValue()
-	{
-		delete val;
 	}
 
 	ADD_ID(NAttrValue)
@@ -345,8 +344,8 @@ public:
 
 class NAttribute : public Node
 {
-	Token* name;
-	NAttrValueList* values;
+	uPtr<Token> name;
+	uPtr<NAttrValueList> values;
 
 public:
 	explicit NAttribute(Token* name, NAttrValueList* values = nullptr)
@@ -360,23 +359,17 @@ public:
 
 	operator Token*() const
 	{
-		return name;
+		return name.get();
 	}
 
 	Token* getName() const
 	{
-		return name;
+		return name.get();
 	}
 
 	NAttrValueList* getValues() const
 	{
-		return values;
-	}
-
-	~NAttribute()
-	{
-		delete name;
-		delete values;
+		return values.get();
 	}
 
 	ADD_ID(NAttribute)

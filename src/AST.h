@@ -59,7 +59,7 @@ using NExpressionList = NodeList<NExpression>;
 
 class NExpressionStm : public NStatement
 {
-	NExpression* exp;
+	uPtr<NExpression> exp;
 
 public:
 	explicit NExpressionStm(NExpression* exp)
@@ -82,12 +82,7 @@ public:
 
 	NExpression* getExp() const
 	{
-		return exp;
-	}
-
-	~NExpressionStm()
-	{
-		delete exp;
+		return exp.get();
 	}
 
 	ADD_ID(NExpressionStm)
@@ -96,7 +91,7 @@ public:
 class NConstant : public NExpression
 {
 protected:
-	Token* value;
+	uPtr<Token> value;
 	string strVal;
 
 public:
@@ -105,7 +100,7 @@ public:
 
 	operator Token*() const override
 	{
-		return value;
+		return value.get();
 	}
 
 	bool isComplex() const override
@@ -125,11 +120,6 @@ public:
 			return {value};
 		else
 			return {value.substr(0, pos), value.substr(pos + 1)};
-	}
-
-	~NConstant()
-	{
-		delete value;
 	}
 };
 
@@ -274,7 +264,7 @@ public:
 
 class NImportStm : public NStatement
 {
-	Token* filename;
+	uPtr<Token> filename;
 
 public:
 	explicit NImportStm(Token* filename)
@@ -300,12 +290,7 @@ public:
 
 	Token* getName() const
 	{
-		return filename;
-	}
-
-	~NImportStm()
-	{
-		delete filename;
+		return filename.get();
 	}
 
 	ADD_ID(NImportStm)
@@ -314,7 +299,7 @@ public:
 class NDeclaration : public NStatement
 {
 protected:
-	Token* name;
+	uPtr<Token> name;
 
 public:
 	explicit NDeclaration(Token* name)
@@ -322,12 +307,7 @@ public:
 
 	Token* getName() const
 	{
-		return name;
-	}
-
-	~NDeclaration()
-	{
-		delete name;
+		return name.get();
 	}
 };
 
@@ -343,7 +323,7 @@ using NDataTypeList = NodeList<NDataType>;
 class NNamedType : public NDataType
 {
 protected:
-	Token* token;
+	uPtr<Token> token;
 
 public:
 	explicit NNamedType(Token* token)
@@ -356,12 +336,7 @@ public:
 
 	Token* getName() const
 	{
-		return token;
-	}
-
-	~NNamedType()
-	{
-		delete token;
+		return token.get();
 	}
 };
 
@@ -388,8 +363,8 @@ public:
 
 class NConstType : public NDataType
 {
-	Token* constTok;
-	NDataType* type;
+	uPtr<Token> constTok;
+	uPtr<NDataType> type;
 
 public:
 	NConstType(Token* constTok, NDataType* type)
@@ -402,18 +377,12 @@ public:
 
 	operator Token*() const override
 	{
-		return constTok;
+		return constTok.get();
 	}
 
 	NDataType* getType() const
 	{
-		return type;
-	}
-
-	~NConstType()
-	{
-		delete constTok;
-		delete type;
+		return type.get();
 	}
 
 	ADD_ID(NConstType);
@@ -435,9 +404,9 @@ public:
 
 class NArrayType : public NDataType
 {
-	Token* lBrac;
-	NDataType* baseType;
-	NExpression* size;
+	uPtr<Token> lBrac;
+	uPtr<NDataType> baseType;
+	uPtr<NExpression> size;
 
 public:
 	NArrayType(Token* lBrac, NDataType* baseType, NExpression* size = nullptr)
@@ -451,24 +420,17 @@ public:
 
 	operator Token*() const override
 	{
-		return lBrac;
+		return lBrac.get();
 	}
 
 	NDataType* getBaseType() const
 	{
-		return baseType;
+		return baseType.get();
 	}
 
 	NExpression* getSize() const
 	{
-		return size;
-	}
-
-	~NArrayType()
-	{
-		delete baseType;
-		delete size;
-		delete lBrac;
+		return size.get();
 	}
 
 	ADD_ID(NArrayType)
@@ -476,9 +438,9 @@ public:
 
 class NVecType : public NDataType
 {
-	NDataType* baseType;
-	NExpression* size;
-	Token* vecToken;
+	uPtr<NDataType> baseType;
+	uPtr<NExpression> size;
+	uPtr<Token> vecToken;
 
 public:
 	NVecType(Token* vecToken, NExpression* size, NDataType* baseType)
@@ -491,23 +453,17 @@ public:
 
 	NExpression* getSize() const
 	{
-		return size;
+		return size.get();
 	}
 
 	NDataType* getBaseType() const
 	{
-		return baseType;
+		return baseType.get();
 	}
 
 	operator Token*() const override
 	{
-		return vecToken;
-	}
-
-	~NVecType()
-	{
-		delete baseType;
-		delete size;
+		return vecToken.get();
 	}
 
 	ADD_ID(NVecType)
@@ -515,7 +471,7 @@ public:
 
 class NUserType : public NNamedType
 {
-	NDataTypeList* templateArgs;
+	uPtr<NDataTypeList> templateArgs;
 
 public:
 	explicit NUserType(Token* name, NDataTypeList* templateArgs = nullptr)
@@ -529,12 +485,7 @@ public:
 
 	NDataTypeList* getTemplateArgs()
 	{
-		return templateArgs;
-	}
-
-	~NUserType()
-	{
-		delete templateArgs;
+		return templateArgs.get();
 	}
 
 	ADD_ID(NUserType)
@@ -542,8 +493,8 @@ public:
 
 class NPointerType : public NDataType
 {
-	NDataType* baseType;
-	Token* atTok;
+	uPtr<NDataType> baseType;
+	uPtr<Token> atTok;
 
 public:
 	explicit NPointerType(NDataType* baseType, Token* atTok = nullptr)
@@ -557,18 +508,12 @@ public:
 
 	operator Token*() const override
 	{
-		return atTok;
+		return atTok.get();
 	}
 
 	NDataType* getBaseType() const
 	{
-		return baseType;
-	}
-
-	~NPointerType()
-	{
-		delete baseType;
-		delete atTok;
+		return baseType.get();
 	}
 
 	ADD_ID(NPointerType)
@@ -576,9 +521,9 @@ public:
 
 class NFuncPointerType : public NDataType
 {
-	NDataType* returnType;
-	NDataTypeList* params;
-	Token* atTok;
+	uPtr<NDataType> returnType;
+	uPtr<NDataTypeList> params;
+	uPtr<Token> atTok;
 
 public:
 	NFuncPointerType(Token* atTok, NDataType* returnType, NDataTypeList* params)
@@ -591,24 +536,17 @@ public:
 
 	operator Token*() const override
 	{
-		return atTok;
+		return atTok.get();
 	}
 
 	NDataType* getReturnType() const
 	{
-		return returnType;
+		return returnType.get();
 	}
 
 	NDataTypeList* getParams() const
 	{
-		return params;
-	}
-
-	~NFuncPointerType()
-	{
-		delete returnType;
-		delete params;
-		delete atTok;
+		return params.get();
 	}
 
 	ADD_ID(NFuncPointerType)
@@ -617,8 +555,8 @@ public:
 class NVariableDecl : public NDeclaration
 {
 protected:
-	NExpression* initExp;
-	NExpressionList* initList;
+	uPtr<NExpression> initExp;
+	uPtr<NExpressionList> initList;
 	NDataType* type;
 
 public:
@@ -631,9 +569,9 @@ public:
 	NVariableDecl(const NVariableDecl& other)
 	: NDeclaration(other.name->copy())
 	{
-		initExp = other.initExp ? other.initExp->copy() : nullptr;
-		initList = other.initList ? other.initList->copy() : nullptr;
-		type = other.type ? other.type->copy() : nullptr;
+		initExp.reset(other.initExp.get() ? other.initExp->copy() : nullptr);
+		initList.reset(other.initList.get() ? other.initList->copy() : nullptr);
+		type = other.type;
 	}
 
 	NVariableDecl* copy() const override
@@ -659,18 +597,12 @@ public:
 
 	NExpression* getInitExp() const
 	{
-		return initExp;
+		return initExp.get();
 	}
 
 	NExpressionList* getInitList() const
 	{
-		return initList;
-	}
-
-	~NVariableDecl()
-	{
-		delete initExp;
-		delete initList;
+		return initList.get();
 	}
 
 	ADD_ID(NVariableDecl)
@@ -701,7 +633,7 @@ public:
 
 class NBaseVariable : public NVariable
 {
-	Token* name;
+	uPtr<Token> name;
 
 public:
 	explicit NBaseVariable(Token* name)
@@ -719,7 +651,7 @@ public:
 
 	Token* getName() const
 	{
-		return name;
+		return name.get();
 	}
 
 	bool isComplex() const override
@@ -727,19 +659,14 @@ public:
 		return false;
 	}
 
-	~NBaseVariable()
-	{
-		delete name;
-	}
-
 	ADD_ID(NBaseVariable)
 };
 
 class NArrayVariable : public NVariable
 {
-	NVariable* arrVar;
-	NExpression* index;
-	Token* brackTok;
+	uPtr<NVariable> arrVar;
+	uPtr<NExpression> index;
+	uPtr<Token> brackTok;
 
 public:
 	NArrayVariable(NVariable* arrVar, Token* brackTok, NExpression* index)
@@ -752,24 +679,17 @@ public:
 
 	NExpression* getIndex() const
 	{
-		return index;
+		return index.get();
 	}
 
 	operator Token*() const override
 	{
-		return brackTok;
+		return brackTok.get();
 	}
 
 	NVariable* getArrayVar() const
 	{
-		return arrVar;
-	}
-
-	~NArrayVariable()
-	{
-		delete arrVar;
-		delete index;
-		delete brackTok;
+		return arrVar.get();
 	}
 
 	ADD_ID(NArrayVariable)
@@ -777,8 +697,8 @@ public:
 
 class NMemberVariable : public NVariable
 {
-	NVariable* baseVar;
-	Token* memberName;
+	uPtr<NVariable> baseVar;
+	uPtr<Token> memberName;
 
 public:
 	NMemberVariable(NVariable* baseVar, Token* memberName)
@@ -791,7 +711,7 @@ public:
 
 	NVariable* getBaseVar() const
 	{
-		return baseVar;
+		return baseVar.get();
 	}
 
 	operator Token*() const override
@@ -801,13 +721,7 @@ public:
 
 	Token* getMemberName() const
 	{
-		return memberName;
-	}
-
-	~NMemberVariable()
-	{
-		delete baseVar;
-		delete memberName;
+		return memberName.get();
 	}
 
 	ADD_ID(NMemberVariable)
@@ -815,7 +729,7 @@ public:
 
 class NExprVariable : public NVariable
 {
-	NExpression* expr;
+	uPtr<NExpression> expr;
 
 public:
 	explicit NExprVariable(NExpression* expr)
@@ -828,17 +742,12 @@ public:
 
 	operator Token*() const override
 	{
-		return *expr;
+		return *getExp();
 	}
 
 	NExpression* getExp() const
 	{
-		return expr;
-	}
-
-	~NExprVariable()
-	{
-		delete expr;
+		return expr.get();
 	}
 
 	ADD_ID(NExprVariable)
@@ -846,8 +755,8 @@ public:
 
 class NDereference : public NVariable
 {
-	NVariable* derefVar;
-	Token* atTok;
+	uPtr<NVariable> derefVar;
+	uPtr<Token> atTok;
 
 public:
 	NDereference(NVariable* derefVar, Token* atTok)
@@ -860,18 +769,12 @@ public:
 
 	NVariable* getVar() const
 	{
-		return derefVar;
+		return derefVar.get();
 	}
 
 	operator Token*() const override
 	{
-		return atTok;
-	}
-
-	~NDereference()
-	{
-		delete derefVar;
-		delete atTok;
+		return atTok.get();
 	}
 
 	ADD_ID(NDereference)
@@ -879,8 +782,8 @@ public:
 
 class NAddressOf : public NVariable
 {
-	NVariable* addVar;
-	Token* token;
+	uPtr<NVariable> addVar;
+	uPtr<Token> token;
 
 public:
 	explicit NAddressOf(NVariable* addVar, Token* token)
@@ -893,17 +796,12 @@ public:
 
 	NVariable* getVar() const
 	{
-		return addVar;
+		return addVar.get();
 	}
 
 	operator Token*() const override
 	{
-		return token;
-	}
-
-	~NAddressOf()
-	{
-		delete addVar;
+		return token.get();
 	}
 
 	ADD_ID(NAddressOf)
@@ -911,7 +809,7 @@ public:
 
 class NParameter : public NDeclaration
 {
-	NDataType* type;
+	uPtr<NDataType> type;
 
 public:
 	NParameter(NDataType* type, Token* name)
@@ -924,12 +822,7 @@ public:
 
 	NDataType* getType() const
 	{
-		return type;
-	}
-
-	~NParameter()
-	{
-		delete type;
+		return type.get();
 	}
 
 	ADD_ID(NParameter)
@@ -938,8 +831,8 @@ using NParameterList = NodeList<NParameter>;
 
 class NVariableDeclGroup : public NStatement
 {
-	NDataType* type;
-	NVariableDeclList* variables;
+	uPtr<NDataType> type;
+	uPtr<NVariableDeclList> variables;
 
 public:
 	NVariableDeclGroup(NDataType* type, NVariableDeclList* variables)
@@ -952,18 +845,12 @@ public:
 
 	NDataType* getType() const
 	{
-		return type;
+		return type.get();
 	}
 
 	NVariableDeclList* getVars() const
 	{
-		return variables;
-	}
-
-	~NVariableDeclGroup()
-	{
-		delete variables;
-		delete type;
+		return variables.get();
 	}
 
 	ADD_ID(NVariableDeclGroup)
@@ -972,7 +859,7 @@ using NVariableDeclGroupList = NodeList<NVariableDeclGroup>;
 
 class NAliasDeclaration : public NDeclaration
 {
-	NDataType* type;
+	uPtr<NDataType> type;
 
 public:
 	NAliasDeclaration(Token* name, NDataType* type)
@@ -985,12 +872,7 @@ public:
 
 	NDataType* getType() const
 	{
-		return type;
-	}
-
-	~NAliasDeclaration()
-	{
-		delete type;
+		return type.get();
 	}
 
 	ADD_ID(NAliasDeclaration)
@@ -999,8 +881,8 @@ public:
 class NTemplatedDeclaration : public NDeclaration
 {
 protected:
-	NIdentifierList* templateParams;
-	NAttributeList* attrs;
+	uPtr<NIdentifierList> templateParams;
+	uPtr<NAttributeList> attrs;
 
 public:
 	NTemplatedDeclaration(Token* name, NIdentifierList* templateParams, NAttributeList* attrs)
@@ -1010,18 +892,12 @@ public:
 
 	NIdentifierList* getTemplateParams() const
 	{
-		return templateParams;
+		return templateParams.get();
 	}
 
 	NAttributeList* getAttrs() const
 	{
-		return attrs;
-	}
-
-	~NTemplatedDeclaration()
-	{
-		delete templateParams;
-		delete attrs;
+		return attrs.get();
 	}
 };
 
@@ -1032,7 +908,7 @@ public:
 
 private:
 	CreateType ctype;
-	NVariableDeclGroupList* list;
+	uPtr<NVariableDeclGroupList> list;
 
 public:
 	NStructDeclaration(Token* name, CreateType ctype, NVariableDeclGroupList* list = nullptr, NIdentifierList* templateParams = nullptr, NAttributeList* attrs = nullptr)
@@ -1053,12 +929,7 @@ public:
 
 	NVariableDeclGroupList* getVars() const
 	{
-		return list;
-	}
-
-	~NStructDeclaration()
-	{
-		delete list;
+		return list.get();
 	}
 
 	ADD_ID(NStructDeclaration)
@@ -1066,8 +937,8 @@ public:
 
 class NEnumDeclaration : public NDeclaration
 {
-	NVariableDeclList* variables;
-	NDataType* baseType;
+	uPtr<NVariableDeclList> variables;
+	uPtr<NDataType> baseType;
 
 public:
 	NEnumDeclaration(Token* name, NVariableDeclList* variables, NDataType* baseType = nullptr)
@@ -1081,18 +952,12 @@ public:
 
 	NVariableDeclList* getVarList() const
 	{
-		return variables;
+		return variables.get();
 	}
 
 	NDataType* getBaseType() const
 	{
-		return baseType;
-	}
-
-	~NEnumDeclaration()
-	{
-		delete variables;
-		delete baseType;
+		return baseType.get();
 	}
 
 	ADD_ID(NEnumDeclaration)
@@ -1100,10 +965,10 @@ public:
 
 class NFunctionDeclaration : public NDeclaration
 {
-	NDataType* rtype;
-	NParameterList* params;
-	NStatementList* body;
-	NAttributeList* attrs;
+	uPtr<NDataType> rtype;
+	uPtr<NParameterList> params;
+	uPtr<NStatementList> body;
+	uPtr<NAttributeList> attrs;
 
 public:
 	NFunctionDeclaration(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body = nullptr, NAttributeList* attrs = nullptr)
@@ -1118,30 +983,22 @@ public:
 
 	NDataType* getRType() const
 	{
-		return rtype;
+		return rtype.get();
 	}
 
 	NParameterList* getParams() const
 	{
-		return params;
+		return params.get();
 	}
 
 	NStatementList* getBody() const
 	{
-		return body;
+		return body.get();
 	}
 
 	NAttributeList* getAttrs() const
 	{
-		return attrs;
-	}
-
-	~NFunctionDeclaration()
-	{
-		delete rtype;
-		delete params;
-		delete body;
-		delete attrs;
+		return attrs.get();
 	}
 
 	ADD_ID(NFunctionDeclaration)
@@ -1179,8 +1036,8 @@ using NClassMemberList = NodeList<NClassMember>;
 
 class NMemberInitializer : public NStatement
 {
-	Token* name;
-	NExpressionList *expression;
+	uPtr<Token> name;
+	uPtr<NExpressionList> expression;
 
 public:
 	NMemberInitializer(Token* name, NExpressionList* expression)
@@ -1193,18 +1050,12 @@ public:
 
 	Token* getName() const
 	{
-		return name;
+		return name.get();
 	}
 
 	NExpressionList* getExp() const
 	{
-		return expression;
-	}
-
-	~NMemberInitializer()
-	{
-		delete name;
-		delete expression;
+		return expression.get();
 	}
 
 	ADD_ID(NMemberInitializer)
@@ -1213,7 +1064,7 @@ using NInitializerList = NodeList<NMemberInitializer>;
 
 class NClassDeclaration : public NTemplatedDeclaration
 {
-	NClassMemberList* list;
+	uPtr<NClassMemberList> list;
 
 public:
 	explicit NClassDeclaration(Token* name, NClassMemberList* list = nullptr, NIdentifierList* templateParams = nullptr, NAttributeList* attrs = nullptr)
@@ -1235,19 +1086,12 @@ public:
 
 	NClassMemberList* getMembers() const
 	{
-		return list;
+		return list.get();
 	}
 
 	void setMembers(NClassMemberList* members)
 	{
-		if (list)
-			delete list;
-		list = members;
-	}
-
-	~NClassDeclaration()
-	{
-		delete list;
+		list.reset(members);
 	}
 
 	ADD_ID(NClassDeclaration)
@@ -1255,7 +1099,7 @@ public:
 
 class NClassStructDecl : public NClassMember
 {
-	NVariableDeclGroupList* list;
+	uPtr<NVariableDeclGroupList> list;
 
 public:
 	NClassStructDecl(Token* name, NVariableDeclGroupList* list)
@@ -1273,12 +1117,7 @@ public:
 
 	NVariableDeclGroupList* getVarList() const
 	{
-		return list;
-	}
-
-	~NClassStructDecl()
-	{
-		delete list;
+		return list.get();
 	}
 
 	ADD_ID(NClassStructDecl)
@@ -1287,10 +1126,10 @@ public:
 class NClassFunctionDecl : public NClassMember
 {
 protected:
-	NDataType* rtype;
-	NParameterList* params;
-	NStatementList* body;
-	NAttributeList* attrs;
+	uPtr<NDataType> rtype;
+	uPtr<NParameterList> params;
+	uPtr<NStatementList> body;
+	uPtr<NAttributeList> attrs;
 
 public:
 	NClassFunctionDecl(Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs = nullptr)
@@ -1309,42 +1148,32 @@ public:
 
 	NParameterList* getParams() const
 	{
-		return params;
+		return params.get();
 	}
 
 	NDataType* getRType() const
 	{
-		return rtype;
+		return rtype.get();
 	}
 
 	void setRType(NDataType* type)
 	{
-		delete rtype;
-		rtype = type;
+		rtype.reset(type);
 	}
 
 	NStatementList* getBody() const
 	{
-		return body;
+		return body.get();
 	}
 
 	void setBody(NStatementList* other)
 	{
-		delete body;
-		body = other;
+		body.reset(other);
 	}
 
 	NAttributeList* getAttrs() const
 	{
-		return attrs;
-	}
-
-	~NClassFunctionDecl()
-	{
-		delete rtype;
-		delete params;
-		delete body;
-		delete attrs;
+		return attrs.get();
 	}
 
 	ADD_ID(NClassFunctionDecl)
@@ -1352,7 +1181,7 @@ public:
 
 class NClassConstructor : public NClassFunctionDecl
 {
-	NInitializerList* initList;
+	uPtr<NInitializerList> initList;
 
 public:
 	NClassConstructor(Token* name,  NParameterList* params, NInitializerList* initList, NStatementList* body, NAttributeList* attrs = nullptr)
@@ -1370,12 +1199,7 @@ public:
 
 	NInitializerList* getInitList() const
 	{
-		return initList;
-	}
-
-	~NClassConstructor()
-	{
-		delete initList;
+		return initList.get();
 	}
 
 	ADD_ID(NClassConstructor)
@@ -1403,8 +1227,8 @@ public:
 class NConditionStmt : public NStatement
 {
 protected:
-	NExpression* condition;
-	NStatementList* body;
+	uPtr<NExpression> condition;
+	uPtr<NStatementList> body;
 
 public:
 	NConditionStmt(NExpression* condition, NStatementList* body)
@@ -1422,18 +1246,12 @@ public:
 
 	NExpression* getCond() const
 	{
-		return condition;
+		return condition.get();
 	}
 
 	NStatementList* getBody() const
 	{
-		return body;
-	}
-
-	~NConditionStmt()
-	{
-		delete condition;
-		delete body;
+		return body.get();
 	}
 
 	ADD_ID(NConditionStmt)
@@ -1483,9 +1301,9 @@ public:
 
 class NSwitchCase : public NStatement
 {
-	NExpression* value;
-	NStatementList* body;
-	Token* token;
+	uPtr<NExpression> value;
+	uPtr<NStatementList> body;
+	uPtr<Token> token;
 
 public:
 	NSwitchCase(Token* token, NStatementList* body, NExpression* value = nullptr)
@@ -1499,22 +1317,22 @@ public:
 
 	NExpression* getValue() const
 	{
-		return value;
+		return value.get();
 	}
 
 	NStatementList* getBody() const
 	{
-		return body;
+		return body.get();
 	}
 
 	operator Token*() const
 	{
-		return token;
+		return token.get();
 	}
 
 	bool isValueCase() const
 	{
-		return value != nullptr;
+		return value.get();
 	}
 
 	bool isLastStmBranch() const
@@ -1525,21 +1343,14 @@ public:
 		return last->isTerminator();
 	}
 
-	~NSwitchCase()
-	{
-		delete value;
-		delete body;
-		delete token;
-	}
-
 	ADD_ID(NSwitchCase)
 };
 using NSwitchCaseList = NodeList<NSwitchCase>;
 
 class NSwitchStatement : public NStatement
 {
-	NExpression* value;
-	NSwitchCaseList* cases;
+	uPtr<NExpression> value;
+	uPtr<NSwitchCaseList> cases;
 
 public:
 	NSwitchStatement(NExpression* value, NSwitchCaseList* cases)
@@ -1557,18 +1368,12 @@ public:
 
 	NExpression* getValue() const
 	{
-		return value;
+		return value.get();
 	}
 
 	NSwitchCaseList* getCases() const
 	{
-		return cases;
-	}
-
-	~NSwitchStatement()
-	{
-		delete value;
-		delete cases;
+		return cases.get();
 	}
 
 	ADD_ID(NSwitchStatement)
@@ -1576,8 +1381,8 @@ public:
 
 class NForStatement : public NConditionStmt
 {
-	NStatementList* preStm;
-	NExpressionList* postExp;
+	uPtr<NStatementList> preStm;
+	uPtr<NExpressionList> postExp;
 
 public:
 	NForStatement(NStatementList* preStm, NExpression* condition, NExpressionList* postExp, NStatementList* body)
@@ -1591,18 +1396,12 @@ public:
 
 	NStatementList* getPreStm() const
 	{
-		return preStm;
+		return preStm.get();
 	}
 
 	NExpressionList* getPostExp() const
 	{
-		return postExp;
-	}
-
-	~NForStatement()
-	{
-		delete preStm;
-		delete postExp;
+		return postExp.get();
 	}
 
 	ADD_ID(NForStatement)
@@ -1610,7 +1409,7 @@ public:
 
 class NIfStatement : public NConditionStmt
 {
-	NStatementList* elseBody;
+	uPtr<NStatementList> elseBody;
 
 public:
 	NIfStatement(NExpression* condition, NStatementList* ifBody, NStatementList* elseBody = nullptr)
@@ -1624,12 +1423,7 @@ public:
 
 	NStatementList* getElseBody() const
 	{
-		return elseBody;
-	}
-
-	~NIfStatement()
-	{
-		delete elseBody;
+		return elseBody.get();
 	}
 
 	ADD_ID(NIfStatement)
@@ -1660,8 +1454,8 @@ public:
 
 class NReturnStatement : public NJumpStatement
 {
-	NExpression* value;
-	Token* retToken;
+	uPtr<NExpression> value;
+	uPtr<Token> retToken;
 
 public:
 	NReturnStatement(Token* retToken = nullptr, NExpression* value = nullptr)
@@ -1676,18 +1470,12 @@ public:
 
 	NExpression* getValue() const
 	{
-		return value;
+		return value.get();
 	}
 
 	operator Token*() const
 	{
-		return retToken;
-	}
-
-	~NReturnStatement()
-	{
-		delete value;
-		delete retToken;
+		return retToken.get();
 	}
 
 	ADD_ID(NReturnStatement)
@@ -1695,7 +1483,7 @@ public:
 
 class NGotoStatement : public NJumpStatement
 {
-	Token* name;
+	uPtr<Token> name;
 
 public:
 	explicit NGotoStatement(Token* name)
@@ -1708,12 +1496,7 @@ public:
 
 	Token* getName() const
 	{
-		return name;
-	}
-
-	~NGotoStatement()
-	{
-		delete name;
+		return name.get();
 	}
 
 	ADD_ID(NGotoStatement)
@@ -1721,9 +1504,9 @@ public:
 
 class NLoopBranch : public NJumpStatement
 {
-	Token* token;
+	uPtr<Token> token;
 	int type;
-	NExpression* level;
+	uPtr<NExpression> level;
 
 public:
 	NLoopBranch(Token* token, int type, NExpression* level = nullptr)
@@ -1737,7 +1520,7 @@ public:
 
 	operator Token*() const
 	{
-		return token;
+		return token.get();
 	}
 
 	int getType() const
@@ -1747,13 +1530,7 @@ public:
 
 	NExpression* getLevel() const
 	{
-		return level;
-	}
-
-	~NLoopBranch()
-	{
-		delete token;
-		delete level;
+		return level.get();
 	}
 
 	ADD_ID(NLoopBranch)
@@ -1761,7 +1538,7 @@ public:
 
 class NDeleteStatement : public NStatement
 {
-	NVariable *variable;
+	uPtr<NVariable> variable;
 
 public:
 	explicit NDeleteStatement(NVariable* variable)
@@ -1774,12 +1551,7 @@ public:
 
 	NVariable* getVar() const
 	{
-		return variable;
-	}
-
-	~NDeleteStatement()
-	{
-		delete variable;
+		return variable.get();
 	}
 
 	ADD_ID(NDeleteStatement)
@@ -1787,8 +1559,8 @@ public:
 
 class NDestructorCall : public NStatement
 {
-	NVariable* baseVar;
-	Token* thisToken;
+	uPtr<NVariable> baseVar;
+	uPtr<Token> thisToken;
 
 public:
 	NDestructorCall(NVariable* baseVar, Token* thisToken)
@@ -1801,18 +1573,12 @@ public:
 
 	NVariable* getVar() const
 	{
-		return baseVar;
+		return baseVar.get();
 	}
 
 	Token* getThisToken() const
 	{
-		return thisToken;
-	}
-
-	~NDestructorCall()
-	{
-		delete baseVar;
-		delete thisToken;
+		return thisToken.get();
 	}
 
 	ADD_ID(NDestructorCall)
@@ -1822,7 +1588,7 @@ class NOperatorExpr : public NExpression
 {
 protected:
 	int oper;
-	Token* opTok;
+	uPtr<Token> opTok;
 
 public:
 	NOperatorExpr(int oper, Token* opTok)
@@ -1835,19 +1601,14 @@ public:
 
 	operator Token*() const override
 	{
-		return opTok;
-	}
-
-	~NOperatorExpr()
-	{
-		delete opTok;
+		return opTok.get();
 	}
 };
 
 class NAssignment : public NOperatorExpr
 {
-	NVariable* lhs;
-	NExpression* rhs;
+	uPtr<NVariable> lhs;
+	uPtr<NExpression> rhs;
 
 public:
 	NAssignment(int oper, Token* opToken, NVariable* lhs, NExpression* rhs)
@@ -1860,18 +1621,12 @@ public:
 
 	NVariable* getLhs() const
 	{
-		return lhs;
+		return lhs.get();
 	}
 
 	NExpression* getRhs() const
 	{
-		return rhs;
-	}
-
-	~NAssignment()
-	{
-		delete lhs;
-		delete rhs;
+		return rhs.get();
 	}
 
 	ADD_ID(NAssignment)
@@ -1879,10 +1634,10 @@ public:
 
 class NTernaryOperator : public NExpression
 {
-	NExpression* condition;
-	NExpression* trueVal;
-	NExpression* falseVal;
-	Token* colTok;
+	uPtr<NExpression> condition;
+	uPtr<NExpression> trueVal;
+	uPtr<NExpression> falseVal;
+	uPtr<Token> colTok;
 
 public:
 	NTernaryOperator(NExpression* condition, NExpression* trueVal, Token *colTok, NExpression* falseVal)
@@ -1895,30 +1650,22 @@ public:
 
 	NExpression* getCondition() const
 	{
-		return condition;
+		return condition.get();
 	}
 
 	NExpression* getTrueVal() const
 	{
-		return trueVal;
+		return trueVal.get();
 	}
 
 	NExpression* getFalseVal() const
 	{
-		return falseVal;
+		return falseVal.get();
 	}
 
 	operator Token*() const override
 	{
-		return colTok;
-	}
-
-	~NTernaryOperator()
-	{
-		delete condition;
-		delete trueVal;
-		delete falseVal;
-		delete colTok;
+		return colTok.get();
 	}
 
 	ADD_ID(NTernaryOperator)
@@ -1926,9 +1673,9 @@ public:
 
 class NNewExpression : public NExpression
 {
-	NDataType* type;
-	Token* token;
-	NExpressionList* args;
+	uPtr<NDataType> type;
+	uPtr<Token> token;
+	uPtr<NExpressionList> args;
 
 public:
 	NNewExpression(Token* token, NDataType* type, NExpressionList* args = nullptr)
@@ -1942,24 +1689,17 @@ public:
 
 	NDataType* getType() const
 	{
-		return type;
+		return type.get();
 	}
 
 	NExpressionList* getArgs() const
 	{
-		return args;
+		return args.get();
 	}
 
 	operator Token*() const override
 	{
-		return token;
-	}
-
-	~NNewExpression()
-	{
-		delete type;
-		delete token;
-		delete args;
+		return token.get();
 	}
 
 	ADD_ID(NNewExpression)
@@ -1968,8 +1708,8 @@ public:
 class NBinaryOperator : public NOperatorExpr
 {
 protected:
-	NExpression* lhs;
-	NExpression* rhs;
+	uPtr<NExpression> lhs;
+	uPtr<NExpression> rhs;
 
 public:
 	NBinaryOperator(int oper, Token* opToken, NExpression* lhs, NExpression* rhs)
@@ -1977,18 +1717,12 @@ public:
 
 	NExpression* getLhs() const
 	{
-		return lhs;
+		return lhs.get();
 	}
 
 	NExpression* getRhs() const
 	{
-		return rhs;
-	}
-
-	~NBinaryOperator()
-	{
-		delete lhs;
-		delete rhs;
+		return rhs.get();
 	}
 };
 
@@ -2055,10 +1789,10 @@ public:
 
 private:
 	OfType type;
-	NDataType* dtype;
-	NExpression* exp;
-	Token* name;
-	NDataTypeList* args;
+	uPtr<NDataType> dtype;
+	uPtr<NExpression> exp;
+	uPtr<Token> name;
+	uPtr<NDataTypeList> args;
 
 public:
 	NArrowOperator(NDataType* dtype, Token* name, NDataTypeList* args)
@@ -2068,11 +1802,11 @@ public:
 	: type(EXP), dtype(nullptr), exp(exp), name(name), args(args) {}
 
 	NArrowOperator(const NArrowOperator& other)
-	: type(other.type), name(other.name)
+	: type(other.type), name(other.name.get())
 	{
-		args = other.args ? other.args->copy() : nullptr;
-		dtype = other.dtype ? other.dtype->copy() : nullptr;
-		exp = other.exp ? other.exp->copy() : nullptr;
+		args.reset(other.args ? other.args->copy() : nullptr);
+		dtype.reset(other.dtype ? other.dtype->copy() : nullptr);
+		exp.reset(other.exp ? other.exp->copy() : nullptr);
 	}
 
 	NArrowOperator* copy() const override
@@ -2087,39 +1821,31 @@ public:
 
 	NExpression* getExp() const
 	{
-		return exp;
+		return exp.get();
 	}
 
 	NDataType* getDataType() const
 	{
-		return dtype;
+		return dtype.get();
 	}
 
 	Token* getName() const
 	{
-		return name;
+		return name.get();
 	}
 
 	NDataTypeList* getArgs() const
 	{
-		return args;
+		return args.get();
 	}
 
 	operator Token*() const override
 	{
 		switch (type) {
 		default:
-		case DATA: return *dtype;
-		case EXP: return *exp;
+		case DATA: return *getDataType();
+		case EXP: return *getExp();
 		}
-	}
-
-	~NArrowOperator()
-	{
-		delete dtype;
-		delete exp;
-		delete name;
-		delete args;
 	}
 
 	ADD_ID(NArrowOperator)
@@ -2128,7 +1854,7 @@ public:
 class NUnaryOperator : public NOperatorExpr
 {
 protected:
-	NExpression* unary;
+	uPtr<NExpression> unary;
 
 public:
 	NUnaryOperator(int oper, Token* opToken, NExpression* unary)
@@ -2136,12 +1862,7 @@ public:
 
 	NExpression* getExp() const
 	{
-		return unary;
-	}
-
-	~NUnaryOperator()
-	{
-		delete unary;
+		return unary.get();
 	}
 };
 
@@ -2161,8 +1882,8 @@ public:
 
 class NFunctionCall : public NVariable
 {
-	Token* name;
-	NExpressionList* arguments;
+	uPtr<Token> name;
+	uPtr<NExpressionList> arguments;
 
 public:
 	NFunctionCall(Token* name, NExpressionList* arguments)
@@ -2180,18 +1901,12 @@ public:
 
 	NExpressionList* getArguments() const
 	{
-		return arguments;
+		return arguments.get();
 	}
 
 	Token* getName() const
 	{
-		return name;
-	}
-
-	~NFunctionCall()
-	{
-		delete name;
-		delete arguments;
+		return name.get();
 	}
 
 	ADD_ID(NFunctionCall)
@@ -2199,9 +1914,9 @@ public:
 
 class NMemberFunctionCall : public NVariable
 {
-	NVariable* baseVar;
-	Token* funcName;
-	NExpressionList* arguments;
+	uPtr<NVariable> baseVar;
+	uPtr<Token> funcName;
+	uPtr<NExpressionList> arguments;
 
 public:
 	NMemberFunctionCall(NVariable* baseVar, Token* funcName, NExpressionList* arguments)
@@ -2214,7 +1929,7 @@ public:
 
 	NVariable* getBaseVar() const
 	{
-		return baseVar;
+		return baseVar.get();
 	}
 
 	operator Token*() const override
@@ -2224,19 +1939,12 @@ public:
 
 	Token* getName() const
 	{
-		return funcName;
+		return funcName.get();
 	}
 
 	NExpressionList* getArguments() const
 	{
-		return arguments;
-	}
-
-	~NMemberFunctionCall()
-	{
-		delete baseVar;
-		delete funcName;
-		delete arguments;
+		return arguments.get();
 	}
 
 	ADD_ID(NMemberFunctionCall)
@@ -2244,7 +1952,7 @@ public:
 
 class NIncrement : public NOperatorExpr
 {
-	NVariable* variable;
+	uPtr<NVariable> variable;
 	bool isPostfix;
 
 public:
@@ -2258,17 +1966,12 @@ public:
 
 	NVariable* getVar() const
 	{
-		return variable;
+		return variable.get();
 	}
 
 	bool postfix() const
 	{
 		return isPostfix;
-	}
-
-	~NIncrement()
-	{
-		delete variable;
 	}
 
 	ADD_ID(NIncrement)
