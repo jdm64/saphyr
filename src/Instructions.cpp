@@ -381,9 +381,7 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* condExp, CodeContext& context)
 {
 	auto condValue = condExp? CGNExpression::run(context, condExp) : RValue::getNumVal(context, SType::getBool(context));
-	Token* token = nullptr;
-	if (condExp)
-		token = *condExp;
+	Token* token = condExp ? *condExp : static_cast<Token*>(nullptr);
 	CastTo(context, token, condValue, SType::getBool(context));
 	context.IB().CreateCondBr(condValue, trueBlock, falseBlock);
 	return condValue;

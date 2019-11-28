@@ -90,7 +90,6 @@ public:
 
 class NConstant : public NExpression
 {
-protected:
 	uPtr<Token> value;
 	string strVal;
 
@@ -98,9 +97,14 @@ public:
 	explicit NConstant(Token* token, const string& strVal)
 	: value(token), strVal(strVal) {}
 
-	operator Token*() const override
+	Token* getValueTok() const
 	{
 		return value.get();
+	}
+
+	operator Token*() const override
+	{
+		return getValueTok();
 	}
 
 	bool isComplex() const override
@@ -108,7 +112,12 @@ public:
 		return false;
 	}
 
-	const string& getStrVal() const
+	const string& getConstStr() const
+	{
+		return strVal;
+	}
+
+	string& getStr()
 	{
 		return strVal;
 	}
@@ -131,7 +140,7 @@ public:
 
 	NNullPointer* copy() const override
 	{
-		return new NNullPointer(value->copy());
+		return new NNullPointer(getValueTok()->copy());
 	}
 
 	ADD_ID(NNullPointer)
@@ -143,11 +152,11 @@ public:
 	explicit NStringLiteral(Token* str)
 	: NConstant(str, str->str)
 	{
-		Token::unescape(strVal);
+		Token::unescape(getStr());
 	}
 
 	NStringLiteral(const NStringLiteral& other)
-	: NConstant(other.value->copy(), other.strVal)
+	: NConstant(other.getValueTok()->copy(), other.getConstStr())
 	{
 	}
 
@@ -176,7 +185,7 @@ public:
 
 	NBoolConst* copy() const override
 	{
-		return new NBoolConst(value->copy(), bvalue);
+		return new NBoolConst(getValueTok()->copy(), bvalue);
 	}
 
 	bool getValue() const
@@ -193,13 +202,13 @@ public:
 	explicit NCharConst(Token* charStr)
 	: NIntLikeConst(charStr)
 	{
-		strVal = value->str.substr(1, value->str.length() - 2);
+		getStr() = getValueTok()->str.substr(1, getValueTok()->str.length() - 2);
 	}
 
 	NCharConst(const NCharConst& other)
-	: NIntLikeConst(other.value->copy())
+	: NIntLikeConst(other.getValueTok()->copy())
 	{
-		strVal = other.strVal;
+		getStr() = other.getConstStr();
 	}
 
 	NCharConst* copy() const override
@@ -218,13 +227,13 @@ public:
 	explicit NIntConst(Token* value, int base = 10)
 	: NIntLikeConst(value), base(base)
 	{
-		Token::remove(strVal);
+		Token::remove(getStr());
 	}
 
 	NIntConst(const NIntConst& other)
-	: NIntLikeConst(other.value->copy()), base(other.base)
+	: NIntLikeConst(other.getValueTok()->copy()), base(other.base)
 	{
-		strVal = other.strVal;
+		getStr() = other.getConstStr();
 	}
 
 	NIntConst* copy() const override
@@ -246,11 +255,11 @@ public:
 	explicit NFloatConst(Token* value)
 	: NConstant(value, value->str)
 	{
-		Token::remove(strVal);
+		Token::remove(getStr());
 	}
 
 	NFloatConst(const NFloatConst& other)
-	: NConstant(other.value->copy(), other.strVal)
+	: NConstant(other.getValueTok()->copy(), other.getConstStr())
 	{
 	}
 
@@ -298,7 +307,6 @@ public:
 
 class NDeclaration : public NStatement
 {
-protected:
 	uPtr<Token> name;
 
 public:
@@ -322,7 +330,6 @@ using NDataTypeList = NodeList<NDataType>;
 
 class NNamedType : public NDataType
 {
-protected:
 	uPtr<Token> token;
 
 public:
@@ -350,7 +357,7 @@ public:
 
 	NBaseType* copy() const override
 	{
-		return new NBaseType(token->copy(), type);
+		return new NBaseType(getName()->copy(), type);
 	}
 
 	int getType() const
@@ -396,7 +403,7 @@ public:
 
 	NThisType* copy() const override
 	{
-		return new NThisType(token->copy());
+		return new NThisType(getName()->copy());
 	}
 
 	ADD_ID(NThisType);
@@ -480,7 +487,7 @@ public:
 	NUserType* copy() const override
 	{
 		auto args = templateArgs ? templateArgs->copy() : nullptr;
-		return new NUserType(token->copy(), args);
+		return new NUserType(getName()->copy(), args);
 	}
 
 	NDataTypeList* getTemplateArgs()
@@ -554,7 +561,6 @@ public:
 
 class NVariableDecl : public NDeclaration
 {
-protected:
 	uPtr<NExpression> initExp;
 	uPtr<NExpressionList> initList;
 	NDataType* type;
@@ -567,7 +573,7 @@ public:
 	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr) {}
 
 	NVariableDecl(const NVariableDecl& other)
-	: NDeclaration(other.name->copy())
+	: NDeclaration(other.getName()->copy())
 	{
 		initExp.reset(other.initExp.get() ? other.initExp->copy() : nullptr);
 		initList.reset(other.initList.get() ? other.initList->copy() : nullptr);
@@ -618,8 +624,8 @@ public:
 
 	NGlobalVariableDecl* copy() const override
 	{
-		auto in = initExp ? initExp-> copy() : nullptr;
-		return new NGlobalVariableDecl(name->copy(), in);
+		auto in = getInitExp() ? getInitExp()->copy() : nullptr;
+		return new NGlobalVariableDecl(getName()->copy(), in);
 	}
 
 	ADD_ID(NGlobalVariableDecl)
@@ -817,7 +823,7 @@ public:
 
 	NParameter* copy() const override
 	{
-		return new NParameter(type->copy(), name->copy());
+		return new NParameter(type->copy(), getName()->copy());
 	}
 
 	NDataType* getType() const
@@ -867,7 +873,7 @@ public:
 
 	NAliasDeclaration* copy() const override
 	{
-		return new NAliasDeclaration(name->copy(), type->copy());
+		return new NAliasDeclaration(getName()->copy(), type->copy());
 	}
 
 	NDataType* getType() const
@@ -880,7 +886,6 @@ public:
 
 class NTemplatedDeclaration : public NDeclaration
 {
-protected:
 	uPtr<NIdentifierList> templateParams;
 	uPtr<NAttributeList> attrs;
 
@@ -917,9 +922,9 @@ public:
 	NStructDeclaration* copy() const override
 	{
 		auto ls = list ? list->copy() : nullptr;
-		auto tp = templateParams ? templateParams->copy() : nullptr;
-		auto at = attrs ? attrs->copy() : nullptr;
-		return new NStructDeclaration(name->copy(), ctype, ls, tp, at);
+		auto tp = getTemplateParams() ? getTemplateParams()->copy() : nullptr;
+		auto at = getAttrs() ? getAttrs()->copy() : nullptr;
+		return new NStructDeclaration(getName()->copy(), ctype, ls, tp, at);
 	}
 
 	CreateType getType() const
@@ -947,7 +952,7 @@ public:
 	NEnumDeclaration* copy() const override
 	{
 		auto bt = baseType ? baseType->copy() : nullptr;
-		return new NEnumDeclaration(name->copy(), variables->copy(), bt);
+		return new NEnumDeclaration(getName()->copy(), variables->copy(), bt);
 	}
 
 	NVariableDeclList* getVarList() const
@@ -978,7 +983,7 @@ public:
 	{
 		auto bd = body ? body->copy() : nullptr;
 		auto at = attrs ? attrs->copy() : nullptr;
-		return new NFunctionDeclaration(name->copy(), rtype->copy(), params->copy(), bd, at);
+		return new NFunctionDeclaration(getName()->copy(), rtype->copy(), params->copy(), bd, at);
 	}
 
 	NDataType* getRType() const
@@ -1009,7 +1014,6 @@ class NClassDeclaration;
 
 class NClassMember : public NDeclaration
 {
-protected:
 	NClassDeclaration* theClass;
 
 public:
@@ -1079,9 +1083,9 @@ public:
 	NClassDeclaration* copy() const override
 	{
 		auto ls = list ? list->copy() : nullptr;
-		auto tp = templateParams ? templateParams->copy() : nullptr;
-		auto at = attrs ? attrs->copy() : nullptr;
-		return new NClassDeclaration(name->copy(), ls, tp, at);
+		auto tp = getTemplateParams() ? getTemplateParams()->copy() : nullptr;
+		auto at = getAttrs() ? getAttrs()->copy() : nullptr;
+		return new NClassDeclaration(getName()->copy(), ls, tp, at);
 	}
 
 	NClassMemberList* getMembers() const
@@ -1107,7 +1111,7 @@ public:
 
 	NClassStructDecl* copy() const override
 	{
-		return new NClassStructDecl(name->copy(), list->copy());
+		return new NClassStructDecl(getName()->copy(), list->copy());
 	}
 
 	MemberType memberType() const override
@@ -1125,7 +1129,6 @@ public:
 
 class NClassFunctionDecl : public NClassMember
 {
-protected:
 	uPtr<NDataType> rtype;
 	uPtr<NParameterList> params;
 	uPtr<NStatementList> body;
@@ -1138,7 +1141,7 @@ public:
 	NClassFunctionDecl* copy() const override
 	{
 		auto at = attrs ? attrs->copy() : nullptr;
-		return new NClassFunctionDecl(name->copy(), rtype->copy(), params->copy(), body->copy(), at);
+		return new NClassFunctionDecl(getName()->copy(), rtype->copy(), params->copy(), body->copy(), at);
 	}
 
 	MemberType memberType() const override
@@ -1189,7 +1192,7 @@ public:
 
 	NClassConstructor* copy() const override
 	{
-		return new NClassConstructor(name->copy(), params->copy(), initList->copy(), body->copy(), attrs ? attrs->copy() : nullptr);
+		return new NClassConstructor(getName()->copy(), getParams()->copy(), initList->copy(), getBody()->copy(), getAttrs() ? getAttrs()->copy() : nullptr);
 	}
 
 	MemberType memberType() const override
@@ -1213,7 +1216,7 @@ public:
 
 	NClassDestructor* copy() const override
 	{
-		return new NClassDestructor(name->copy(), body->copy());
+		return new NClassDestructor(getName()->copy(), getBody()->copy());
 	}
 
 	MemberType memberType() const override
@@ -1226,7 +1229,6 @@ public:
 
 class NConditionStmt : public NStatement
 {
-protected:
 	uPtr<NExpression> condition;
 	uPtr<NStatementList> body;
 
@@ -1265,7 +1267,7 @@ public:
 
 	NLoopStatement* copy() const override
 	{
-		return new NLoopStatement(body->copy());
+		return new NLoopStatement(getBody()->copy());
 	}
 
 	ADD_ID(NLoopStatement)
@@ -1282,8 +1284,8 @@ public:
 
 	NWhileStatement* copy() const override
 	{
-		auto cn = condition ? condition->copy() : nullptr;
-		return new NWhileStatement(cn, body->copy(), isDoWhile, isUntil);
+		auto cn = getCond() ? getCond()->copy() : nullptr;
+		return new NWhileStatement(cn, getBody()->copy(), isDoWhile, isUntil);
 	}
 
 	bool doWhile() const
@@ -1390,8 +1392,8 @@ public:
 
 	NForStatement* copy() const override
 	{
-		auto cn = condition ? condition->copy() : nullptr;
-		return new NForStatement(preStm->copy(), cn, postExp->copy(), body->copy());
+		auto cn = getCond() ? getCond()->copy() : nullptr;
+		return new NForStatement(preStm->copy(), cn, postExp->copy(), getBody()->copy());
 	}
 
 	NStatementList* getPreStm() const
@@ -1418,7 +1420,7 @@ public:
 	NIfStatement* copy() const override
 	{
 		auto el = elseBody ? elseBody->copy() : nullptr;
-		return new NIfStatement(condition->copy(), body->copy(), el);
+		return new NIfStatement(getCond()->copy(), getBody()->copy(), el);
 	}
 
 	NStatementList* getElseBody() const
@@ -1437,7 +1439,7 @@ public:
 
 	NLabelStatement* copy() const override
 	{
-		return new NLabelStatement(name->copy());
+		return new NLabelStatement(getName()->copy());
 	}
 
 	ADD_ID(NLabelStatement)
@@ -1450,6 +1452,8 @@ public:
 	{
 		return true;
 	}
+
+	virtual operator Token*() const = 0;
 };
 
 class NReturnStatement : public NJumpStatement
@@ -1473,7 +1477,7 @@ public:
 		return value.get();
 	}
 
-	operator Token*() const
+	operator Token*() const override
 	{
 		return retToken.get();
 	}
@@ -1492,6 +1496,11 @@ public:
 	NGotoStatement* copy() const override
 	{
 		return new NGotoStatement(name->copy());
+	}
+
+	operator Token*() const override
+	{
+		return getName();
 	}
 
 	Token* getName() const
@@ -1518,7 +1527,7 @@ public:
 		return new NLoopBranch(token->copy(), type, lv);
 	}
 
-	operator Token*() const
+	operator Token*() const override
 	{
 		return token.get();
 	}
@@ -1586,7 +1595,6 @@ public:
 
 class NOperatorExpr : public NExpression
 {
-protected:
 	int oper;
 	uPtr<Token> opTok;
 
@@ -1599,9 +1607,14 @@ public:
 		return oper;
 	}
 
-	operator Token*() const override
+	Token* getOpToken() const
 	{
 		return opTok.get();
+	}
+
+	operator Token*() const override
+	{
+		return getOpToken();
 	}
 };
 
@@ -1616,7 +1629,7 @@ public:
 
 	NAssignment* copy() const override
 	{
-		return new NAssignment(oper, opTok->copy(), lhs->copy(), rhs->copy());
+		return new NAssignment(getOp(), getOpToken()->copy(), lhs->copy(), rhs->copy());
 	}
 
 	NVariable* getLhs() const
@@ -1707,7 +1720,6 @@ public:
 
 class NBinaryOperator : public NOperatorExpr
 {
-protected:
 	uPtr<NExpression> lhs;
 	uPtr<NExpression> rhs;
 
@@ -1734,7 +1746,7 @@ public:
 
 	NLogicalOperator* copy() const override
 	{
-		return new NLogicalOperator(oper, opTok->copy(), lhs->copy(), rhs->copy());
+		return new NLogicalOperator(getOp(), getOpToken()->copy(), getLhs()->copy(), getRhs()->copy());
 	}
 
 	ADD_ID(NLogicalOperator)
@@ -1748,7 +1760,7 @@ public:
 
 	NCompareOperator* copy() const override
 	{
-		return new NCompareOperator(oper, opTok->copy(), lhs->copy(), rhs->copy());
+		return new NCompareOperator(getOp(), getOpToken()->copy(), getLhs()->copy(), getRhs()->copy());
 	}
 
 	ADD_ID(NCompareOperator)
@@ -1762,7 +1774,7 @@ public:
 
 	NBinaryMathOperator* copy() const override
 	{
-		return new NBinaryMathOperator(oper, opTok->copy(), lhs->copy(), rhs->copy());
+		return new NBinaryMathOperator(getOp(), getOpToken()->copy(), getLhs()->copy(), getRhs()->copy());
 	}
 
 	ADD_ID(NBinaryMathOperator)
@@ -1776,7 +1788,7 @@ public:
 
 	NNullCoalescing* copy() const override
 	{
-		return new NNullCoalescing(opTok->copy(), lhs->copy(), rhs->copy());
+		return new NNullCoalescing(getOpToken()->copy(), getLhs()->copy(), getRhs()->copy());
 	}
 
 	ADD_ID(NNullCoalescing)
@@ -1853,7 +1865,6 @@ public:
 
 class NUnaryOperator : public NOperatorExpr
 {
-protected:
 	uPtr<NExpression> unary;
 
 public:
@@ -1874,7 +1885,7 @@ public:
 
 	NUnaryMathOperator* copy() const override
 	{
-		return new NUnaryMathOperator(oper, opTok->copy(), unary->copy());
+		return new NUnaryMathOperator(getOp(), getOpToken()->copy(), getExp()->copy());
 	}
 
 	ADD_ID(NUnaryMathOperator)
@@ -1961,7 +1972,7 @@ public:
 
 	NIncrement* copy() const override
 	{
-		return new NIncrement(oper, opTok->copy(), variable->copy(), isPostfix);
+		return new NIncrement(getOp(), getOpToken()->copy(), variable->copy(), isPostfix);
 	}
 
 	NVariable* getVar() const

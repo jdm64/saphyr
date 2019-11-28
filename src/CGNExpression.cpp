@@ -408,7 +408,7 @@ RValue CGNExpression::visitNNullPointer(NNullPointer* exp)
 
 RValue CGNExpression::visitNStringLiteral(NStringLiteral* exp)
 {
-	auto strVal = exp->getStrVal();
+	auto strVal = exp->getStr();
 	auto arrData = ConstantDataArray::getString(context, strVal, true);
 	auto arrTy = SType::getConst(context, SType::getArray(context, SType::getInt(context, 8), strVal.size() + 1));
 	auto arrTyPtr = SType::getPointer(context, arrTy);
@@ -439,7 +439,7 @@ RValue CGNExpression::visitNIntConst(NIntConst* exp)
 		{"u64", SType::getInt(context, 64, true)} };
 	auto type = SType::getInt(context, 32); // default is int32
 
-	auto data = NConstant::getValueAndSuffix(exp->getStrVal());
+	auto data = NConstant::getValueAndSuffix(exp->getStr());
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
@@ -460,7 +460,7 @@ RValue CGNExpression::visitNFloatConst(NFloatConst* exp)
 		{"d", SType::getFloat(context, true)} };
 	auto type = SType::getFloat(context, true);
 
-	auto data = NConstant::getValueAndSuffix(exp->getStrVal());
+	auto data = NConstant::getValueAndSuffix(exp->getStr());
 	if (data.size() > 1) {
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
@@ -474,7 +474,7 @@ RValue CGNExpression::visitNFloatConst(NFloatConst* exp)
 
 RValue CGNExpression::visitNCharConst(NCharConst* exp)
 {
-	auto strVal = exp->getStrVal();
+	auto strVal = exp->getStr();
 	char cVal = strVal.at(0);
 	if (cVal == '\\' && strVal.length() > 1) {
 		switch (strVal.at(1)) {

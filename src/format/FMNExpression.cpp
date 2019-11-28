@@ -287,33 +287,30 @@ string FMNExpression::visitNIncrement(NIncrement* exp)
 
 string FMNExpression::visitNBoolConst(NBoolConst* exp)
 {
-	return exp->getStrVal();
+	return exp->getStr();
 }
 
 string FMNExpression::visitNNullPointer(NNullPointer* exp)
 {
-	return exp->getStrVal();
+	return exp->getStr();
 }
 
 string FMNExpression::visitNStringLiteral(NStringLiteral* exp)
 {
-	Token* token = *exp;
-	return token->str;
+	return exp->getValueTok()->str;
 }
 
 string FMNExpression::visitNIntConst(NIntConst* exp)
 {
-	Token* token = *exp;
-	return token->str;
+	return exp->getValueTok()->str;
 }
 
 string FMNExpression::visitNFloatConst(NFloatConst* exp)
 {
-	Token* token = *exp;
-	return token->str;
+	return exp->getValueTok()->str;
 }
 
 string FMNExpression::visitNCharConst(NCharConst* exp)
 {
-	return "'" + exp->getStrVal() + "'";
+	return "'" + exp->getStr() + "'";
 }

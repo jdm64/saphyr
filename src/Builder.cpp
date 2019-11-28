@@ -598,7 +598,7 @@ void Builder::LoadImport(CodeContext& context, NImportStm* stm)
 	if (context.fileLoaded(filename)) {
 		return;
 	} else if (!exists(filename)) {
-		context.addError("unable to import file: " + stm->getName()->str, *stm);
+		context.addError("unable to import file: " + stm->getName()->str, stm->getName());
 		return;
 	}
 	Parser parser(filename.string());
