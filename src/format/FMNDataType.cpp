@@ -70,7 +70,6 @@ string FMNDataType::visitNBaseType(NBaseType* type)
 	case ParserBase::TT_DOUBLE:
 		return "double";
 	default:
-	case ParserBase::TT_AUTO:
 		return "auto";
 	}
 }

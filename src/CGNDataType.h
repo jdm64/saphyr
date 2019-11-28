@@ -61,8 +61,8 @@ class CGNDataTypeNew : public CGNDataType
 	RValue sizeArr;
 	RValue sizeBytes;
 
-	explicit CGNDataTypeNew(CodeContext& context)
-	: CGNDataType(context) {}
+	explicit CGNDataTypeNew(CodeContext& ctx)
+	: CGNDataType(ctx) {}
 
 	SType* visitNBaseType(NBaseType* type);
 
@@ -90,7 +90,7 @@ class CGNDataTypeNew : public CGNDataType
 
 public:
 
-	static SType* run(CodeContext& context, NDataType* type, RValue& sizeBytes, RValue& sizeArr);
+	static SType* run(CodeContext& ctx, NDataType* type, RValue& sizeBytes, RValue& sizeArr);
 };
 
 #endif

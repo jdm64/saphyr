@@ -217,7 +217,7 @@ RValue Inst::MutCast(CodeContext& context, NArrowOperator* exp)
 	return RValue(expr.value(), SType::getMutable(context, expr.stype()));
 }
 
-void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, CodeContext& context)
+void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* actual, CodeContext& context)
 {
 	CastOps op;
 	switch (from->isFloating() | (to->isFloating() << 1)) {
@@ -228,7 +228,7 @@ void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, Code
 		} else if (to->size() < from->size()) {
 			op = Instruction::Trunc;
 		} else {
-			value = RValue(value, final);
+			value = RValue(value, actual);
 			return;
 		}
 		break;
@@ -248,8 +248,8 @@ void Inst::NumericCast(RValue& value, SType* from, SType* to, SType* final, Code
 		context.addError("Compiler Error: invalid cast op", nullptr);
 		return;
 	}
-	auto val = context.IB().CreateCast(op, value, *final);
-	value = RValue(val, final);
+	auto val = context.IB().CreateCast(op, value, *actual);
+	value = RValue(val, actual);
 }
 
 BinaryOps Inst::getOperator(int oper, Token* optToken, SType* type, CodeContext& context)
@@ -361,12 +361,6 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 		return RValue();
 
 	switch ((lhs.stype()->isPointer() << 1) | rhs.stype()->isPointer()) {
-	default:
-	case 0: // no pointer
-	{
-		auto llvmOp = getOperator(type, optToken, lhs.stype(), context);
-		return RValue(context.IB().CreateBinOp(llvmOp, lhs, rhs), lhs.stype());
-	}
 	case 1: // lhs != ptr, rhs == ptr
 		swap(lhs, rhs);
 		/* no break */
@@ -375,6 +369,9 @@ RValue Inst::BinaryOp(int type, Token* optToken, RValue lhs, RValue rhs, CodeCon
 	case 3: // both ptr
 		context.addError("can't perform operation with two pointers", optToken);
 		return lhs;
+	default: // 0 - no pointer
+		auto llvmOp = getOperator(type, optToken, lhs.stype(), context);
+		return RValue(context.IB().CreateBinOp(llvmOp, lhs, rhs), lhs.stype());
 	}
 }
 
@@ -677,7 +674,8 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, RValue arrSize, Vec
 	if (funcs.empty())
 		return false;
 
-	Value *endPtr, *nextPtr;
+	Value* endPtr;
+	Value* nextPtr;
 	if (isArr) {
 		auto startBlock = context.currBlock();
 		vector<Value*> idxs;

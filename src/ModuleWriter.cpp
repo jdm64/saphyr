@@ -61,7 +61,8 @@ void ModuleWriter::initTarget()
 TargetMachine* ModuleWriter::getMachine()
 {
 	TargetOptions options;
-	string err, features;
+	string err;
+	string features;
 	Triple triple;
 
 	triple.setTriple(sys::getDefaultTargetTriple());

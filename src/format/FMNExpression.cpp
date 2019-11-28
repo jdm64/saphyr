@@ -86,19 +86,16 @@ string FMNExpression::visitNArrowOperator(NArrowOperator* exp)
 	string line;
 	NDataType* type;
 
-	switch (exp->getType()) {
-	case NArrowOperator::DATA:
+	if (exp->getType() == NArrowOperator::DATA) {
 		type = exp->getDataType();
 		if (!type)
 			return line;
 		line += FMNDataType::run(context, type);
-		break;
-	case NArrowOperator::EXP:
+	} else if (exp->getType() == NArrowOperator::EXP) {
 		auto ex = exp->getExp();
 		if (!ex)
 			return line;
 		line += visit(ex);
-		break;
 	}
 	line += "->" + exp->getName()->str;
 	auto args = exp->getArgs();
@@ -158,6 +155,8 @@ string FMNExpression::visitNAssignment(NAssignment* exp)
 	case ParserBase::TT_RSHIFT:
 		line += ">>=";
 		break;
+	default:
+		break;
 	}
 	return line + " " + visit(exp->getRhs());
 }
@@ -180,41 +179,39 @@ string FMNExpression::visitNNewExpression(NNewExpression* exp)
 string FMNExpression::visitNLogicalOperator(NLogicalOperator* exp)
 {
 	string line = visit(exp->getLhs());
-	switch (exp->getOp()) {
-	case ParserBase::TT_LOG_OR:
+	if (exp->getOp() == ParserBase::TT_LOG_OR)
 		line += " || ";
-		break;
-	case ParserBase::TT_LOG_AND:
+	else if (exp->getOp() == ParserBase::TT_LOG_AND)
 		line += " && ";
-		break;
-	}
 	return line + visit(exp->getRhs());
 }
 
 string FMNExpression::visitNCompareOperator(NCompareOperator* exp)
 {
-	string line = visit(exp->getLhs());
+	string line = visit(exp->getLhs()) + " ";
 	switch (exp->getOp()) {
 	case '<':
-		line += " < ";
+		line += "<";
 		break;
 	case '>':
-		line += " > ";
+		line += ">";
 		break;
 	case ParserBase::TT_LEQ:
-		line += " <= ";
+		line += "<=";
 		break;
 	case ParserBase::TT_NEQ:
-		line += " != ";
+		line += "!=";
 		break;
 	case ParserBase::TT_EQ:
-		line += " == ";
+		line += "==";
 		break;
 	case ParserBase::TT_GEQ:
-		line += " >= ";
+		line += ">=";
+		break;
+	default:
 		break;
 	}
-	return line + visit(exp->getRhs());
+	return line + " " + visit(exp->getRhs());
 }
 
 string FMNExpression::visitNBinaryMathOperator(NBinaryMathOperator* exp)

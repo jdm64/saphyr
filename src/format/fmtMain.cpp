@@ -41,17 +41,6 @@ void loadOptions(int argc, char** argv, variables_map &vm)
 	notify(vm);
 }
 
-int format(const path& file, NStatementList* statements, variables_map& vm)
-{
-	FormatContext context;
-
-	FMNStatement::run(context, statements);
-
-	context.print();
-
-	return 0;
-}
-
 int main(int argc, char** argv)
 {
 	variables_map vm;
@@ -79,5 +68,10 @@ int main(int argc, char** argv)
 		cout << err.filename << ":" << err.line << ": " << err.str << endl;
 		return 1;
 	}
-	return format(file, parser.getRoot(), vm);
+
+	FormatContext context;
+	FMNStatement::run(context, parser.getRoot());
+	context.print();
+
+	return 0;
 }

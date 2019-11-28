@@ -41,7 +41,7 @@ private:
 
 	string visitNFuncPointerType(NFuncPointerType* type);
 
-	virtual string visit(NDataType* type);
+	string visit(NDataType* type);
 
 	string getArrayType(NArrayType* type);
 

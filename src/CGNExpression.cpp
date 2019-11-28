@@ -131,7 +131,10 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 	auto condExp = visit(exp->getCondition());
 	Inst::CastTo(context, *exp->getCondition(), condExp, SType::getBool(context));
 
-	RValue trueExp, falseExp, retVal;
+	RValue trueExp;
+	RValue falseExp;
+	RValue retVal;
+
 	if (exp->getTrueVal()->isComplex() || exp->getFalseVal()->isComplex()) {
 		auto trueBlock = context.createBlock();
 		auto falseBlock = context.createBlock();
@@ -262,7 +265,8 @@ RValue CGNExpression::visitNBinaryMathOperator(NBinaryMathOperator* exp)
 
 RValue CGNExpression::visitNNullCoalescing(NNullCoalescing* exp)
 {
-	RValue rhsExp, retVal;
+	RValue rhsExp;
+	RValue retVal;
 	auto lhsExp = visit(exp->getLhs());
 	auto condition = lhsExp;
 

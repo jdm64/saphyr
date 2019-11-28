@@ -37,7 +37,7 @@ path Util::relative(const path& p)
  */
 inline std::pair<path::iterator, path::iterator> mismatch(path::iterator it1, path::iterator it1end, path::iterator it2, path::iterator it2end)
 {
-	for (; it1 != it1end && it2 != it2end && *it1 == *it2;) {
+	while (it1 != it1end && it2 != it2end && *it1 == *it2) {
 		++it1;
 		++it2;
 	}

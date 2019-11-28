@@ -120,10 +120,8 @@ class NodeList
 	using container = vector<T*>;
 	using iterator = typename container::iterator;
 
-	bool doDelete;
-
-protected:
 	container list;
+	bool doDelete;
 
 public:
 	explicit NodeList(bool doDelete = true)
@@ -334,11 +332,11 @@ public:
 class NAttrValueList : public NodeList<NAttrValue>
 {
 public:
-	static NAttrValue* find(NAttrValueList* list, size_t index)
+	static NAttrValue* find(NAttrValueList* aList, size_t index)
 	{
-		if (!list)
+		if (!aList)
 			return nullptr;
-		return index < list->size()? list->at(index) : nullptr;
+		return index < aList->size()? aList->at(index) : nullptr;
 	}
 };
 
@@ -383,11 +381,11 @@ public:
 		return static_cast<NAttributeList*>(NodeList<NAttribute>::copy());
 	}
 
-	static NAttribute* find(NAttributeList* list, const string& name)
+	static NAttribute* find(NAttributeList* aList, const string& name)
 	{
-		if (!list)
+		if (!aList)
 			return nullptr;
-		for (auto attr : *list) {
+		for (auto attr : *aList) {
 			if (name == attr->getName()->str)
 				return attr;
 		}

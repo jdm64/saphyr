@@ -18,13 +18,13 @@
 #include "CodeContext.h"
 #include "CGNStatement.h"
 
-#define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType(tclass, type, size, subtype))
-#define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType(func, rtype, args))
-#define smart_aliasTy(name, type) unique_ptr<SAliasType>(new SAliasType(name, type))
-#define smart_strucTy(name, args) unique_ptr<SUserType>(new SStructType(name, args))
-#define smart_classTy(name, args) unique_ptr<SUserType>(new SClassType(name, args))
-#define smart_unionTy(name, args) unique_ptr<SUserType>(new SUnionType(name, args))
-#define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType(name, type, structure))
+#define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType((tclass), (type), (size), (subtype)))
+#define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType((func), (rtype), (args)))
+#define smart_aliasTy(name, type) unique_ptr<SAliasType>(new SAliasType((name), (type)))
+#define smart_strucTy(name, args) unique_ptr<SUserType>(new SStructType((name), (args)))
+#define smart_classTy(name, args) unique_ptr<SUserType>(new SClassType((name), (args)))
+#define smart_unionTy(name, args) unique_ptr<SUserType>(new SUnionType((name), (args)))
+#define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType((name), (type), (structure)))
 
 void SType::dump() const
 {
@@ -178,22 +178,22 @@ bool SType::isConstEQ(CodeContext& context, SType* lhs, SType* rhs)
 	return getMutable(context, lhs) == getMutable(context, rhs);
 }
 
-void SUserType::innerStr(CodeContext* context, stringstream& os) const
+void SUserType::innerStr(stringstream& os) const
 {
 	if (isConst())
 		os << "const ";
 	os << name;
 }
 
-vector<pair<int, RValue>>* SStructType::getItem(const string& name)
+vector<pair<int, RValue>>* SStructType::getItem(const string& itemName)
 {
-	auto iter = items.find(name);
+	auto iter = items.find(itemName);
 	return iter != items.end()? &iter->second : nullptr;
 }
 
-bool SStructType::hasItem(const string& name, RValue& item)
+bool SStructType::hasItem(const string& itemName, RValue& item)
 {
-	auto list = getItem(name);
+	auto list = getItem(itemName);
 	if (!list)
 		return false;
 	return any_of(list->begin(), list->end(), [&](auto i){ return item.value() == i.second.value() && item.type() == i.second.type(); });
@@ -204,7 +204,7 @@ string SStructType::str(CodeContext* context) const
 	stringstream os;
 
 	if (context) {
-		innerStr(context, os);
+		innerStr(os);
 		if (templateArgs.size()) {
 			os << "<";
 			bool first = true;
@@ -236,9 +236,9 @@ string SStructType::str(CodeContext* context) const
 	return os.str();
 }
 
-void SClassType::addFunction(const string& name, const SFunction& func)
+void SClassType::addFunction(const string& fName, const SFunction& func)
 {
-	items[name].push_back(make_pair(0, func));
+	items[fName].push_back(make_pair(0, func));
 }
 
 VecSFunc SClassType::getConstructor()
@@ -264,7 +264,7 @@ string SUnionType::str(CodeContext* context) const
 	stringstream os;
 
 	if (context) {
-		innerStr(context, os);
+		innerStr(os);
 	} else {
 		os << "U:{|";
 		for (auto i : items) {
@@ -280,7 +280,7 @@ string SEnumType::str(CodeContext* context) const
 	stringstream os;
 
 	if (context) {
-		innerStr(context, os);
+		innerStr(os);
 	} else {
 		os << "E:{|";
 		for (auto i : items) {
@@ -293,7 +293,8 @@ string SEnumType::str(CodeContext* context) const
 
 bool SUserType::isDeclared(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
 {
-	bool inTemplate = context.inTemplate(), hasArgs = !templateArgs.empty();
+	auto inTemplate = context.inTemplate();
+	auto hasArgs = !templateArgs.empty();
 	if (inTemplate && !hasArgs) {
 		auto type = context.getTemplateArg(name);
 		if (type)
@@ -307,7 +308,8 @@ bool SUserType::isDeclared(CodeContext& context, const string& name, const vecto
 SType* SUserType::lookup(CodeContext& context, Token* name, vector<SType*> templateArgs, bool& hasErrors)
 {
 	auto nameStr = name->str;
-	bool inTemplate = context.inTemplate(), noArgs = templateArgs.empty();
+	bool inTemplate = context.inTemplate();
+	auto noArgs = templateArgs.empty();
 	if (inTemplate && noArgs) {
 		auto type = context.getTemplateArg(nameStr);
 		if (type)

@@ -45,7 +45,7 @@ struct LabelBlock
 };
 
 using LabelBlockPtr = unique_ptr<LabelBlock>;
-#define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock(block, token, placeholder))
+#define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock((block), (token), (placeholder)))
 
 class ScopeTable
 {
@@ -88,7 +88,7 @@ public:
 		return !errors.empty();
 	}
 
-	void addError(string error, Token* token)
+	void addError(const string& error, Token* token)
 	{
 		if (token)
 			errors.push_back({*token, error});
@@ -212,7 +212,7 @@ public:
 		return globalCtx.errors.size();
 	}
 
-	void addError(string error, Token* token)
+	void addError(const string& error, Token* token)
 	{
 		globalCtx.addError(error, token);
 	}
@@ -242,7 +242,7 @@ public:
 		return globalCtx.fileLoaded(filename);
 	}
 
-	virtual path currFile() const
+	path currFile() const
 	{
 		return globalCtx.filesStack.back();
 	}

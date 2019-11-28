@@ -112,6 +112,8 @@ void FMNStatement::visitNStructDeclaration(NStructDeclaration* stm)
 	case NStructDeclaration::CreateType::UNION:
 		type = "union";
 		break;
+	default:
+		break;
 	}
 	context.addLine(type + " " + stm->getName()->str);
 	if (!stm->getVars()) {
@@ -187,7 +189,7 @@ void FMNStatement::visitNClassDestructor(NClassDestructor* stm)
 
 void FMNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 {
-	context.addLine("");;
+	context.addLine("");
 	WriterUtil::writeAttr(context, stm->getAttrs());
 	context.addLine("class " + stm->getName()->str);
 	if (stm->getTemplateParams()) {

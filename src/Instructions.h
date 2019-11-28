@@ -32,7 +32,7 @@ class Inst
 
 	static Predicate getPredicate(int oper, Token* token, SType* type, CodeContext& context);
 
-	static void NumericCast(RValue& value, SType* from, SType* to, SType* final, CodeContext& context);
+	static void NumericCast(RValue& value, SType* from, SType* to, SType* actual, CodeContext& context);
 
 	static bool CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast = false);
 

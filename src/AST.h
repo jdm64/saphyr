@@ -1853,11 +1853,7 @@ public:
 
 	operator Token*() const override
 	{
-		switch (type) {
-		default:
-		case DATA: return *getDataType();
-		case EXP: return *getExp();
-		}
+		return type == DATA ? *getDataType() : *getExp();
 	}
 
 	ADD_ID(NArrowOperator)

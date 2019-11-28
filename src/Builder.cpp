@@ -56,11 +56,11 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	set<string> names;
 	for (auto arg = function.arg_begin(); arg != function.arg_end(); arg++, i++) {
 		auto param = params->at(i);
-		auto name = param->getName()->str;
-		if (names.insert(name).second)
-			arg->setName(name);
+		auto paramName = param->getName()->str;
+		if (names.insert(paramName).second)
+			arg->setName(paramName);
 		else
-			context.addError("function parameter " + name + " already declared", param->getName());
+			context.addError("function parameter " + paramName + " already declared", param->getName());
 		CGNStatement visitor(context);
 		visitor.storeValue(RValue(&*arg, function.getParam(i)));
 		visitor.visit(param);
@@ -198,7 +198,7 @@ void Builder::CreateClassDestructor(CodeContext& context, NClassDestructor* stm,
 		CreateClassFunction(context, stm, prototype);
 }
 
-void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function<void(int)> visitor)
+void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, const function<void(int)>& visitor)
 {
 	int structIdx = -1;
 	int constrIdx = -1;
@@ -256,7 +256,8 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, function
 
 SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs, bool allowMangle)
 {
-	string rawName, funcName = name->str;
+	string rawName;
+	string funcName = name->str;
 
 	if (allowMangle) {
 		bool fullMangle = false;
@@ -450,6 +451,8 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 		break;
 	case NStructDeclaration::CreateType::CLASS:
 		userType = SUserType::createClass(context, structName, tArgs);
+		break;
+	default:
 		break;
 	}
 	context.setThis(userType);

@@ -69,7 +69,6 @@ SType* CGNDataType::visitNBaseType(NBaseType* type)
 		return SType::getFloat(context);
 	case ParserBase::TT_DOUBLE:
 		return SType::getFloat(context, true);
-	case ParserBase::TT_AUTO:
 	default:
 		return SType::getAuto(context);
 	}
@@ -223,9 +222,9 @@ SType* CGNDataTypeNew::visit(NDataType* type)
 	}
 }
 
-SType* CGNDataTypeNew::run(CodeContext& context, NDataType* type, RValue& sizeBytes, RValue& sizeArr)
+SType* CGNDataTypeNew::run(CodeContext& ctx, NDataType* type, RValue& sizeBytes, RValue& sizeArr)
 {
-	CGNDataTypeNew runner(context);
+	CGNDataTypeNew runner(ctx);
 	auto ty = runner.visit(type);
 	sizeBytes = runner.sizeBytes;
 	sizeArr = runner.sizeArr;

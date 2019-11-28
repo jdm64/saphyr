@@ -206,7 +206,7 @@ void CGNStatement::visitNClassDeclaration(NClassDeclaration* stm)
 	if (Builder::StoreTemplate(context, stm))
 		return;
 
-	Builder::CreateClass(context, stm, [=](size_t structIdx) {
+	Builder::CreateClass(context, stm, [this, stm](size_t structIdx) {
 		visit(stm->getMembers()->at(structIdx));
 		if (!context.getClass())
 			return;
@@ -301,7 +301,8 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	Inst::CastTo(context, *stm->getValue(), switchValue, SType::getInt(context, 32));
 
 	auto caseBlock = context.createBlock();
-	auto endBlock = context.createBreakBlock(), defaultBlock = endBlock;
+	auto endBlock = context.createBreakBlock();
+	auto defaultBlock = endBlock;
 	auto switchInst = context.IB().CreateSwitch(switchValue, defaultBlock, stm->getCases()->size());
 
 	context.pushLocalTable();

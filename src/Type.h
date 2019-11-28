@@ -395,10 +395,10 @@ class SUserType : public SType
 protected:
 	string name;
 
-	SUserType(const string& name, int typeClass, Type* type, uint64_t size = 0, SType* subtype = nullptr)
-	: SType(typeClass, type, size, subtype), name(name) {}
+	SUserType(const string& name, int typeClass, Type* type, uint64_t size = 0, SType* subType = nullptr)
+	: SType(typeClass, type, size, subType), name(name) {}
 
-	void innerStr(CodeContext* context, stringstream& os) const;
+	void innerStr(stringstream& os) const;
 
 public:
 	string raw() override
@@ -435,8 +435,8 @@ class SAliasType : public SUserType
 {
 	friend class TypeManager;
 
-	explicit SAliasType(const string& name, SType* type)
-	: SUserType(name, ALIAS, type->type(), 0, type) {}
+	explicit SAliasType(const string& aName, SType* type)
+	: SUserType(aName, ALIAS, type->type(), 0, type) {}
 
 protected:
 	void setConst(TypeManager* tmang) override;
@@ -458,8 +458,8 @@ class STemplatedType : public SUserType
 protected:
 	vector<SType*> templateArgs;
 
-	STemplatedType(const string& name, int typeClass, const vector<SType*>& templateArgs)
-	: SUserType(name, typeClass | OPAQUE | (templateArgs.size() ? TEMPLATED : 0), nullptr, 0), templateArgs(templateArgs) {}
+	STemplatedType(const string& tName, int typeClass, const vector<SType*>& templateArgs)
+	: SUserType(tName, typeClass | OPAQUE | (templateArgs.size() ? TEMPLATED : 0), nullptr, 0), templateArgs(templateArgs) {}
 
 public:
 	string raw() override
@@ -487,8 +487,8 @@ class SStructType : public STemplatedType
 protected:
 	container items;
 
-	SStructType(const string& name, const vector<SType*>& templateArgs, int ctype = STRUCT)
-	: STemplatedType(name, ctype, templateArgs) {}
+	SStructType(const string& sName, const vector<SType*>& args, int ctype = STRUCT)
+	: STemplatedType(sName, ctype, args) {}
 
 	SType* copy() override
 	{
@@ -498,9 +498,9 @@ protected:
 	void setConst(TypeManager* tmang) override;
 
 public:
-	vector<pair<int, RValue>>* getItem(const string& name);
+	vector<pair<int, RValue>>* getItem(const string& itemName);
 
-	bool hasItem(const string& name, RValue& item);
+	bool hasItem(const string& itemName, RValue& item);
 
 	string str(CodeContext* context = nullptr) const override;
 
@@ -519,11 +519,11 @@ class SClassType : public SStructType
 {
 	friend class TypeManager;
 
-	SClassType(const string& name, const vector<SType*>& templateArgs)
-	: SStructType(name, templateArgs, STRUCT | CLASS) {}
+	SClassType(const string& cName, const vector<SType*>& args)
+	: SStructType(cName, args, STRUCT | CLASS) {}
 
 public:
-	void addFunction(const string& name, const SFunction& func);
+	void addFunction(const string& fName, const SFunction& func);
 
 	vector<SFunction> getConstructor();
 
@@ -536,8 +536,8 @@ class SUnionType : public STemplatedType
 
 	map<string, SType*> items;
 
-	SUnionType(const string& name, const vector<SType*>& templateArgs)
-	: STemplatedType(name, UNION, templateArgs) {}
+	SUnionType(const string& uName, const vector<SType*>& args)
+	: STemplatedType(uName, UNION, args) {}
 
 	SType* copy() override
 	{
@@ -547,9 +547,9 @@ class SUnionType : public STemplatedType
 	void setConst(TypeManager* tmang) override;
 
 public:
-	SType* getItem(const string& name)
+	SType* getItem(const string& itemName)
 	{
-		auto iter = items.find(name);
+		auto iter = items.find(itemName);
 		return iter != items.end()? iter->second : nullptr;
 	}
 
@@ -562,8 +562,8 @@ class SEnumType : public SUserType
 
 	map<string, APSInt> items;
 
-	SEnumType(const string& name, SType* type, const vector<pair<string,int64_t>>& data)
-	: SUserType(name, ENUM, *type, data.size(), type)
+	SEnumType(const string& eName, SType* type, const vector<pair<string,int64_t>>& data)
+	: SUserType(eName, ENUM, *type, data.size(), type)
 	{
 		auto numbits = type->size();
 		auto isUnsigned = !type->isUnsigned();
@@ -578,9 +578,9 @@ class SEnumType : public SUserType
 	}
 
 public:
-	APSInt* getItem(const string& name)
+	APSInt* getItem(const string& itemName)
 	{
-		auto iter = items.find(name);
+		auto iter = items.find(itemName);
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
@@ -665,8 +665,19 @@ class TypeManager
 	LLVMContext& context;
 
 	// built-in types
-	STypePtr autoTy, voidTy, boolTy, int8Ty, int16Ty, int32Ty, int64Ty, floatTy, doubleTy,
-		uint8Ty, uint16Ty, uint32Ty, uint64Ty;
+	STypePtr autoTy;
+	STypePtr voidTy;
+	STypePtr boolTy;
+	STypePtr int8Ty;
+	STypePtr int16Ty;
+	STypePtr int32Ty;
+	STypePtr int64Ty;
+	STypePtr floatTy;
+	STypePtr doubleTy;
+	STypePtr uint8Ty;
+	STypePtr uint16Ty;
+	STypePtr uint32Ty;
+	STypePtr uint64Ty;
 
 	// const types
 	map<SType*, STypePtr> constMap;

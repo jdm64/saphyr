@@ -45,8 +45,8 @@ class ModuleWriter
 	void outputNative();
 
 public:
-	ModuleWriter(Module &module, string filename, variables_map& config)
-	: module(module), filename(std::move(filename)), config(config) {}
+	ModuleWriter(Module &module, const string& filename, variables_map& config)
+	: module(module), filename(filename), config(config) {}
 
 	int run();
 };
