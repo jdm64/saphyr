@@ -104,10 +104,12 @@ public:
 		if (errors.empty())
 			return false;
 
+		string buff;
 		for (auto& error : errors) {
-			cout << error.first.filename << ":" << error.first.line << ":" << error.first.col << ": " << error.second << endl;
+			buff += error.first.filename + ":" + to_string(error.first.line) + ":" + to_string(error.first.col) + ": " + error.second + "\n";
 		}
-		cout << "found " << errors.size() << " errors" << endl;
+		buff += "found " + to_string(errors.size()) + " errors\n";
+		cout << buff;
 		return true;
 	}
 

@@ -18,6 +18,16 @@
 #include "CGNImportList.h"
 #include <iostream>
 
+using namespace std;
+
+void CGNImportList::run(NStatementList* list)
+{
+	CGNImportList runner;
+	for (auto item : *list)
+		runner.visit(item);
+	cout << runner.buff;
+}
+
 void CGNImportList::visit(NStatement* stm)
 {
 	switch (stm->id()) {
@@ -29,5 +39,5 @@ void CGNImportList::visit(NStatement* stm)
 
 void CGNImportList::visitNImportStm(NImportStm* stm)
 {
-	cout << stm->getName()->str << endl;
+	buff += stm->getName()->str + "\n";
 }

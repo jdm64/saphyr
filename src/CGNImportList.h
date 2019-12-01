@@ -19,17 +19,14 @@
 
 class CGNImportList
 {
+	string buff;
+
 	void visitNImportStm(NImportStm* stm);
 
 public:
 	void visit(NStatement* stm);
 
-	static void run(NStatementList* list)
-	{
-		CGNImportList runner;
-		for (auto item : *list)
-			runner.visit(item);
-	}
+	static void run(NStatementList* list);
 };
 
 #endif

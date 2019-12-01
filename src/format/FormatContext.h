@@ -70,8 +70,10 @@ public:
 
 	void print()
 	{
+		string buff;
 		for (string l : lines)
-			cout << l << endl;
+			buff += l + "\n";
+		cout << buff;
 	}
 };
 
