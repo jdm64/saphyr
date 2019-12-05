@@ -573,11 +573,11 @@ public:
 	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr) {}
 
 	NVariableDecl(const NVariableDecl& other)
-	: NDeclaration(other.getName()->copy())
+	: NDeclaration(other.getName()->copy()),
+	initExp(other.initExp ? other.initExp->copy() : nullptr),
+	initList(other.initList ? other.initList->copy() : nullptr),
+	type(other.type)
 	{
-		initExp.reset(other.initExp.get() ? other.initExp->copy() : nullptr);
-		initList.reset(other.initList.get() ? other.initList->copy() : nullptr);
-		type = other.type;
 	}
 
 	NVariableDecl* copy() const override
@@ -1814,11 +1814,12 @@ public:
 	: type(EXP), dtype(nullptr), exp(exp), name(name), args(args) {}
 
 	NArrowOperator(const NArrowOperator& other)
-	: type(other.type), name(other.name.get())
+	: type(other.type),
+	dtype(other.dtype ? other.dtype->copy() : nullptr),
+	exp(other.exp ? other.exp->copy() : nullptr),
+	name(other.name->copy()),
+	args(other.args ? other.args->copy() : nullptr)
 	{
-		args.reset(other.args ? other.args->copy() : nullptr);
-		dtype.reset(other.dtype ? other.dtype->copy() : nullptr);
-		exp.reset(other.exp ? other.exp->copy() : nullptr);
 	}
 
 	NArrowOperator* copy() const override
