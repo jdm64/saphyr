@@ -11,6 +11,7 @@ sed -i -e '
 /public:/a\	Token getError() { string token = d_scanner->matched().size()? d_scanner->matched() : "<EOF>"; return Token("Syntax error on: " + token, d_scanner->filename(), d_scanner->lineNr(), d_scanner->colNr()); }
 /public:/a\	NStatementList* getRoot() { return root.get(); }
 /public:/a\	Parser(string filename){ d_scanner = unique_ptr<Scanner>(new Scanner(filename, "-")); d_scanner->setSval(&'"$DVAL"'); }
+/public:/a\	void setFilename(string name) { d_scanner->setFilename(name); }
 ' parser.h
 
 sed -i -e '

@@ -605,16 +605,29 @@ void Builder::LoadImport(CodeContext& context, NImportFileStm* stm)
 			filename /= seg->str;
 		filename = filename.string() + ".syp";
 	} else {
-		filename = Util::relative(context.currFile().parent_path() / stm->getName()->str);
+		filename = context.currFile().parent_path() / stm->getName()->str;
 	}
 
-	if (context.fileLoaded(filename)) {
-		return;
-	} else if (!exists(filename)) {
+	if (!exists(filename)) {
 		context.addError("unable to import: " + stm->getName()->str, stm->getName());
 		return;
 	}
+
+	filename = canonical(filename);
+	if (context.fileLoaded(filename)) {
+		return;
+	}
+
 	Parser parser(filename.string());
+	auto path = Util::relative(filename).string();
+	if (path.compare(0, 2, "..") == 0) {
+		string pkgPath = ".local/share/saphyr/pkgs";
+		auto idx = path.find(pkgPath);
+		if (idx != string::npos)
+			path = "<pkg>/" + path.substr(idx + pkgPath.size() + 1);
+	}
+	parser.setFilename(path);
+
 	if (parser.parse()) {
 		auto err = parser.getError();
 		context.addError(err.str, &err);

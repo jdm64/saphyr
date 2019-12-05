@@ -28,4 +28,6 @@ sed -i -e '
 /size_t d_lineNr;/asize_t d_col; size_t col_max;
 /size_t lineNr()/isize_t colNr() const { return d_col; }
 /insert interactiveDecl/isize_t colNr() { return d_input.colNr(); }
+/ setFilename/i\public:
+/ setFilename/a\protected:
 ' scannerbase.h
