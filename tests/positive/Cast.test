@@ -49,6 +49,12 @@ void constCast()
 	b = a->as(@[]int);
 }
 
+void pointerToInt()
+{
+	@Foo p = new Foo;
+	int addr = p->as(int);
+}
+
 ========
 
 %Foo = type { i32 }
@@ -141,6 +147,21 @@ define void @constCast() {
   ret void
 }
 
+define void @pointerToInt() {
+  %1 = call i8* @malloc(i64 4)
+  %2 = bitcast i8* %1 to %Foo*
+  %p = alloca %Foo*
+  store %Foo* %2, %Foo** %p
+  %3 = load %Foo*, %Foo** %p
+  %4 = ptrtoint %Foo* %3 to i32
+  %5 = alloca i32
+  store i32 %4, i32* %5
+  %6 = load i32, i32* %5
+  %addr = alloca i32
+  store i32 %6, i32* %addr
+  ret void
+}
+
 ========
 
 complex T
@@ -149,3 +170,4 @@ func T
 malloc U
 mutCast T
 noOp T
+pointerToInt T

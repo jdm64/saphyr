@@ -185,10 +185,14 @@ RValue Inst::CastAs(CodeContext& context, NArrowOperator* exp)
 		return StoreTemporary(context, expr);
 	}
 
-	// casting @void to real pointer
-	if (stype->isPointer() && stype->subType()->isVoid() && to->isPointer()) {
-		expr =  RValue(context.IB().CreateBitCast(expr, *to), to);
-		return StoreTemporary(context, expr);
+	if (stype->isPointer()) {
+		if (to->isPointer() && stype->subType()->isVoid()) {
+			expr = RValue(context.IB().CreateBitCast(expr, *to), to);
+			return StoreTemporary(context, expr);
+		} else if (to->isInteger()) {
+			expr = RValue(context.IB().CreatePtrToInt(expr, *to), to);
+			return StoreTemporary(context, expr);
+		}
 	}
 
 	CastTo(context, *exp, expr, to);
