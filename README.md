@@ -21,6 +21,7 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 * Make
 * C++14 compiler (either GCC or Clang)
 * Python 3 (for running tests)
+* [Saphyr-libs](https://github.com/jdm64/saphyr-libs) (for tests)
 * [Icmake](https://fbb-git.github.io/icmake/) (required if building FlexC++/BisonC++ from source)
 * [Bobcat](https://fbb-git.github.io/bobcat/) (required if building FlexC++/BisonC++ from source)
 
