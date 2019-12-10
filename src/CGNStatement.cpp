@@ -101,7 +101,7 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 		}
 		varType = initValue.stype();
 	} else if (varType->isUnsized()) {
-		context.addError("can't create variable for an unsized type: " + varType->str(&context), *stm->getType());
+		context.addError("can't create variable for an unsized type: " + varType->str(context), *stm->getType());
 		return;
 	} else if (!SType::validate(context, stm->getName(), varType)) {
 		return;

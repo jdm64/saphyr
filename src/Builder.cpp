@@ -79,7 +79,7 @@ void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm,
 	auto clType = context.getClass();
 	auto item = clType->getItem(name->str);
 	if (item && !item->at(0).second.isFunction()) {
-		context.addError("class " + clType->str(&context) + " already defines symbol " + name->str, name);
+		context.addError("class " + clType->str(context) + " already defines symbol " + name->str, name);
 		return;
 	}
 
@@ -346,7 +346,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, ND
 		if (!param) {
 			valid = false;
 		} else if (param->isUnsized()) {
-			context.addError("parameter can not be " + param->str(&context) + " type", *item);
+			context.addError("parameter can not be " + param->str(context) + " type", *item);
 			valid = false;
 		} else if (SType::validate(context, *item, param)) {
 			args.push_back(param);
@@ -370,7 +370,7 @@ bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> 
 	if (!stype) {
 		return false;
 	} else if (stype->isUnsized()) {
-		context.addError("unsized struct member not allowed: " + stype->str(&context), *group->getType());
+		context.addError("unsized struct member not allowed: " + stype->str(context), *group->getType());
 		return false;
 	}
 	bool valid = true;
@@ -564,7 +564,7 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 		}
 		varType = initValue.stype();
 	} else if (varType->isUnsized()) {
-		context.addError("can't create variable for an unsized type: " + varType->str(&context), *stm->getType());
+		context.addError("can't create variable for an unsized type: " + varType->str(context), *stm->getType());
 		return;
 	} else if (!SType::validate(context, stm->getName(), varType)) {
 		return;

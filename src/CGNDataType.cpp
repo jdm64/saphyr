@@ -96,7 +96,7 @@ SType* CGNDataType::getArrayType(NArrayType* type)
 	if (!btype) {
 		return nullptr;
 	} else if (btype->isUnsized()) {
-		context.addError("can't create array of " + btype->str(&context) + " types", *baseType);
+		context.addError("can't create array of " + btype->str(context) + " types", *baseType);
 		return nullptr;
 	}
 	return btype;
@@ -176,7 +176,7 @@ SType* CGNDataType::visitNUserType(NUserType* type)
 					first = false;
 				else
 					typeName += ",";
-				typeName += item->str(&context);
+				typeName += item->str(context);
 			}
 			typeName += ">";
 		}

@@ -115,21 +115,6 @@ public:
 	{
 		return atrs;
 	}
-
-	void dump(CodeContext* context) const
-	{
-		dbgs() << "Value: ";
-		if (val)
-			val->print(dbgs(), true);
-		else
-			dbgs() << "null";
-		dbgs() << " || Type: ";
-		if (ty)
-			dbgs() << ty->str(context);
-		else
-			dbgs() << "null";
-		dbgs() << "\n";
-	}
 };
 
 class SFunction : public RValue

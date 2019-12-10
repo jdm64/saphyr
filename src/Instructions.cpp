@@ -22,7 +22,7 @@
 
 void Inst::castError(CodeContext& context, const string& msg, SType* from, SType* to, Token* token)
 {
-	context.addError(msg + " ( " + from->str(&context) + " to " + to->str(&context) + " )", token);
+	context.addError(msg + " ( " + from->str(context) + " to " + to->str(context) + " )", token);
 }
 
 bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue& rhs, bool upcast)
@@ -36,7 +36,7 @@ bool Inst::CastMatch(CodeContext& context, Token* optToken, RValue& lhs, RValue&
 	if (ltype == rtype) {
 		return false;
 	} else if (ltype->isComplex() || rtype->isComplex()) {
-		context.addError("can not cast between " + ltype->str(&context) + " and " + rtype->str(&context) + " types", optToken);
+		context.addError("can not cast between " + ltype->str(context) + " and " + rtype->str(context) + " types", optToken);
 		return true;
 	} else if (ltype->isPointer() || rtype->isPointer()) {
 		// different pointer types can't be cast automatically
@@ -433,7 +433,7 @@ RValue Inst::SizeOf(CodeContext& context, SType* type, Token* token)
 	if (!type) {
 		return RValue();
 	} else if (type->isUnsized()) {
-		context.addError("size of " + type->str(&context) + " is invalid", token);
+		context.addError("size of " + type->str(context) + " is invalid", token);
 		return RValue();
 	}
 	return RValue::getNumVal(context, SType::allocSize(context, type), 64, true);
@@ -514,7 +514,7 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 		return RValue::getNumVal(context, dtype->size());
 	}
 
-	context.addError("len operator invalid for " + dtype->str(&context) + " type", op->getName());
+	context.addError("len operator invalid for " + dtype->str(context) + " type", op->getName());
 	return RValue();
 }
 
@@ -560,13 +560,13 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 					argStr += ",";
 				else
 					second = true;
-				argStr += arg.stype()->str(&context);
+				argStr += arg.stype()->str(context);
 			}
 			string msg = "arguments ambigious for overloaded function:\n\t";
 			msg += "args:\n\t\t" + argStr + "\n\t" +
 				"functions:";
 			for (auto mFunc : sizeMatch)
-				msg += "\n\t\t" + mFunc.stype()->str(&context);
+				msg += "\n\t\t" + mFunc.stype()->str(context);
 			context.addError(msg, name);
 			return {};
 		}
@@ -611,7 +611,7 @@ RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token*
 RValue Inst::CallMemberFunctionClass(CodeContext& context, NVariable* baseVar, RValue& baseVal, Token* funcName, NExpressionList* arguments)
 {
 	auto type = baseVal.stype();
-	auto className = type->subType()->str(&context);
+	auto className = type->subType()->str(context);
 	auto clType = static_cast<SClassType*>(type->subType());
 	auto sym = clType->getItem(funcName->str);
 	if (!sym) {
@@ -742,7 +742,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 {
 	auto varType = baseVar.stype();
 	auto member = memberName->str;
-	auto baseName = varType->str(&context);
+	auto baseName = varType->str(context);
 	if (varType->isStruct()) {
 		auto structType = static_cast<SStructType*>(varType);
 		auto item = structType->getItem(member);
@@ -786,7 +786,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 		return RValue(val.value(), enumType);
 	}
 
-	context.addError(varType->str(&context) + " is not a struct/union/enum", baseToken);
+	context.addError(varType->str(context) + " is not a struct/union/enum", baseToken);
 	return RValue();
 }
 

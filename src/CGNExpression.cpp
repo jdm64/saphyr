@@ -202,7 +202,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	if (!nType) {
 		return RValue();
 	} else if (nType->isUnsized()) {
-		context.addError("can't call new on " + nType->str(&context) + " type", *exp->getType());
+		context.addError("can't call new on " + nType->str(context) + " type", *exp->getType());
 		return RValue();
 	}
 
@@ -384,7 +384,7 @@ RValue CGNExpression::visitNIncrement(NIncrement* exp)
 			context.addError("Increment/Decrement invalid for function pointer", *exp);
 			return RValue();
 		} else if (subT->isUnsized()) {
-			context.addError("Increment/Decrement invalid for " + subT->str(&context) + " pointer", *exp);
+			context.addError("Increment/Decrement invalid for " + subT->str(context) + " pointer", *exp);
 			return RValue();
 		}
 	} else if (type->isEnum()) {

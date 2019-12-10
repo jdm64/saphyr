@@ -113,7 +113,7 @@ RValue CGNVariable::visitNArrayVariable(NArrayVariable* nArrVar)
 	var = Inst::Deref(context, var, true);
 
 	if (!var.stype()->isSequence()) {
-		context.addError(var.stype()->str(&context) + " is not an array or vec", *nArrVar->getArrayVar());
+		context.addError(var.stype()->str(context) + " is not an array or vec", *nArrVar->getArrayVar());
 		return RValue();
 	}
 	Inst::CastTo(context, *nArrVar->getIndex(), indexVal, SType::getInt(context, 64));
@@ -157,7 +157,7 @@ RValue CGNVariable::visitNDereference(NDereference* nVar)
 	if (!var) {
 		return var;
 	} else if (!var.stype()->isPointer()) {
-		context.addError("cannot dereference " + var.stype()->str(&context), *nVar);
+		context.addError("cannot dereference " + var.stype()->str(context), *nVar);
 		return RValue();
 	}
 	return Inst::Deref(context, var);

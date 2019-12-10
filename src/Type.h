@@ -285,7 +285,7 @@ public:
 		return isSequence()? subtype->getScalar() : this;
 	}
 
-	virtual string str(CodeContext* context = nullptr) const
+	virtual string str(const CodeContext& context) const
 	{
 		string s;
 		raw_string_ostream os(s);
@@ -320,10 +320,6 @@ public:
 				os << "auto";
 			} else {
 				os << "err:" << tclass;
-				ltype->print(os);
-			}
-			if (!context) {
-				os << ":";
 				ltype->print(os);
 			}
 		}
@@ -372,8 +368,6 @@ public:
 		}
 		return os.str();
 	}
-
-	void dump() const;
 
 	virtual ~SType()
 	{
@@ -442,7 +436,7 @@ protected:
 	void setConst(TypeManager* tmang) override;
 
 public:
-	string str(CodeContext* context = nullptr) const override
+	string str(const CodeContext& context) const override
 	{
 		return subtype->str(context);
 	}
@@ -502,7 +496,7 @@ public:
 
 	bool hasItem(const string& itemName, RValue& item);
 
-	string str(CodeContext* context = nullptr) const override;
+	string str(const CodeContext& context) const override;
 
 	const_iterator begin() const
 	{
@@ -553,7 +547,7 @@ public:
 		return iter != items.end()? iter->second : nullptr;
 	}
 
-	string str(CodeContext* context = nullptr) const override;
+	string str(const CodeContext& context) const override;
 };
 
 class SEnumType : public SUserType
@@ -584,7 +578,7 @@ public:
 		return iter != items.end()? &iter->second : nullptr;
 	}
 
-	string str(CodeContext* context = nullptr) const override;
+	string str(const CodeContext& context) const override;
 };
 
 class SFunctionType : public SType
@@ -629,7 +623,7 @@ public:
 		return params[index];
 	}
 
-	string str(CodeContext* context = nullptr) const override
+	string str(const CodeContext& context) const override
 	{
 		string s;
 		raw_string_ostream os(s);

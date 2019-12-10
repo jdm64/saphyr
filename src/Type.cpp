@@ -26,11 +26,6 @@
 #define smart_unionTy(name, args) unique_ptr<SUserType>(new SUnionType((name), (args)))
 #define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType((name), (type), (structure)))
 
-void SType::dump() const
-{
-	dbgs() << str(nullptr) << '\n';
-}
-
 void SType::setConst(TypeManager* tmang)
 {
 	tclass |= CONST;
@@ -199,39 +194,22 @@ bool SStructType::hasItem(const string& itemName, RValue& item)
 	return any_of(list->begin(), list->end(), [&](auto i){ return item.value() == i.second.value() && item.type() == i.second.type(); });
 }
 
-string SStructType::str(CodeContext* context) const
+string SStructType::str(const CodeContext& context) const
 {
 	stringstream os;
 
-	if (context) {
-		innerStr(os);
-		if (templateArgs.size()) {
-			os << "<";
-			bool first = true;
-			for (auto item : templateArgs) {
-				if (first)
-					first = false;
-				else
-					os << ",";
-				os << item->str(context);
-			}
-			os << ">";
+	innerStr(os);
+	if (templateArgs.size()) {
+		os << "<";
+		bool first = true;
+		for (auto item : templateArgs) {
+			if (first)
+				first = false;
+			else
+				os << ",";
+			os << item->str(context);
 		}
-	} else {
-		os << "S:{|";
-		for (auto i : items) {
-			os << i.first << "=";
-			auto first = true;
-			for (auto p : i.second) {
-				if (first)
-					first = false;
-				else
-					os << ",";
-				os << p.first << ":" << p.second.stype()->str(context);
-			}
-			os << "|";
-		}
-		os << "}";
+		os << ">";
 	}
 	return os.str();
 }
@@ -259,35 +237,17 @@ SFunction SClassType::getDestructor()
 	return static_cast<SFunction&>((*item)[0].second);
 }
 
-string SUnionType::str(CodeContext* context) const
+string SUnionType::str(const CodeContext& context) const
 {
 	stringstream os;
-
-	if (context) {
-		innerStr(os);
-	} else {
-		os << "U:{|";
-		for (auto i : items) {
-			os << i.first << "=" << i.second->str(context) << "|";
-		}
-		os << "}";
-	}
+	innerStr(os);
 	return os.str();
 }
 
-string SEnumType::str(CodeContext* context) const
+string SEnumType::str(const CodeContext& context) const
 {
 	stringstream os;
-
-	if (context) {
-		innerStr(os);
-	} else {
-		os << "E:{|";
-		for (auto i : items) {
-			os << i.first << "=" << i.second.getSExtValue() << "|";
-		}
-		os << "}";
-	}
+	innerStr(os);
 	return os.str();
 }
 
@@ -360,7 +320,7 @@ SType* SUserType::lookup(CodeContext& context, Token* name, vector<SType*> templ
 
 	type = context.getTypeManager().lookupUserType(rawName);
 	if (context.errorCount() > errorCount) {
-		context.addError("errors when creating type: " + type->str(&context), name);
+		context.addError("errors when creating type: " + type->str(context), name);
 	}
 	return type;
 }
