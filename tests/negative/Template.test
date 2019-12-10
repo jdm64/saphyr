@@ -51,6 +51,7 @@ void errMsg()
 {
 	List<HasConstr> a;
 	List<int> b;
+	List<> c;
 }
 
 ========
@@ -63,4 +64,5 @@ negative/Template.syp:25:2: number of template args doesn't match for Foo
 negative/Template.syp:26:2: Bar type is not a template
 negative/Template.syp:33:5: argument count for HasConstr_this function invalid, 1 arguments given, but 2 required.
 negative/Template.syp:52:2: errors when creating type: List<HasConstr>
-found 8 errors
+negative/Template.syp:54:2: List type requires template arguments
+found 9 errors

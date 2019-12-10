@@ -14,6 +14,10 @@ void bar()
 	@()int b;
 
 	a = b;
+	a->as(int, int);
+
+	auto c = new int{5};
+	auto d = c->mut(int);
 }
 
 ========
@@ -22,4 +26,6 @@ negative/Cast.syp:6:2: as operator requires type argument
 negative/Cast.syp:7:2: as operator only operates on expression
 negative/Cast.syp:8:3: as operator only operates on expression
 negative/Cast.syp:16:6: Cannot cast type to pointer ( @()int32 to @(@void,int32)int64 )
-found 4 errors
+negative/Cast.syp:17:2: as operator takes only one type argument
+negative/Cast.syp:20:11: mut operator takes no arguments
+found 6 errors

@@ -55,6 +55,15 @@ void pointerToInt()
 	int addr = p->as(int);
 }
 
+void vecCast()
+{
+	vec<3,float> vFloat;
+	vec<3,bool> vBool;
+
+	vBool = vFloat;
+	auto vA = vFloat->as(vec<3,bool>);
+}
+
 ========
 
 %Foo = type { i32 }
@@ -162,6 +171,19 @@ define void @pointerToInt() {
   ret void
 }
 
+define void @vecCast() {
+  %vFloat = alloca <3 x float>
+  %vBool = alloca <3 x i1>
+  %1 = load <3 x float>, <3 x float>* %vFloat
+  %2 = fcmp one <3 x float> %1, zeroinitializer
+  store <3 x i1> %2, <3 x i1>* %vBool
+  %3 = load <3 x float>, <3 x float>* %vFloat
+  %4 = fcmp one <3 x float> %3, zeroinitializer
+  %vA = alloca <3 x i1>
+  store <3 x i1> %4, <3 x i1>* %vA
+  ret void
+}
+
 ========
 
 complex T
@@ -171,3 +193,4 @@ malloc U
 mutCast T
 noOp T
 pointerToInt T
+vecCast T
