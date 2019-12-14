@@ -84,10 +84,9 @@ string FMNExpression::visitNArrayVariable(NArrayVariable* exp)
 string FMNExpression::visitNArrowOperator(NArrowOperator* exp)
 {
 	string line;
-	NDataType* type;
 
 	if (exp->getType() == NArrowOperator::DATA) {
-		type = exp->getDataType();
+		auto type = exp->getDataType();
 		if (!type)
 			return line;
 		line += FMNDataType::run(context, type);

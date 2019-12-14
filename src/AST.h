@@ -292,7 +292,7 @@ public:
 		return new NImportFileStm(*this);
 	}
 
-	operator Token*() const
+	virtual operator Token*() const
 	{
 		return getName();
 	}
@@ -334,7 +334,7 @@ public:
 		return new NImportPkgStm(*this);
 	}
 
-	operator Token*() const
+	operator Token*() const override
 	{
 		return getSegments()->at(0);
 	}
