@@ -94,6 +94,7 @@ define void @other() {
   %c = alloca %MyClass
   call void @MyClass_this(%MyClass* %c, i32 4)
   call void @MyClass_calc(%MyClass* %c)
+  call void @MyClass_null(%MyClass* %c)
   ret void
 }
 
@@ -111,6 +112,7 @@ define i32 @importList() {
   call void @List_i32_this(%List_i32* %a)
   call void @List_i32_add(%List_i32* %a, i32 5)
   %1 = call i32 @List_i32_size(%List_i32* %a)
+  call void @List_i32_null(%List_i32* %a)
   ret i32 %1
 }
 
@@ -428,6 +430,7 @@ List_i32_this T
 List_i32_top T
 malloc U
 MyClass_calc U
+MyClass_null U
 MyClass_this U
 myFunc U
 MyGlobal U

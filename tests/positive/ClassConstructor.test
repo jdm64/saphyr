@@ -50,9 +50,6 @@ int main()
 	Empty a{1};
 	MyClass b{};
 
-	a.~this();
-	b.~this();
-
 	return 0;
 }
 

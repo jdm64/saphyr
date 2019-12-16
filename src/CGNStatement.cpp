@@ -88,7 +88,7 @@ void CGNStatement::visitNParameter(NParameter* stm)
 	auto stype = CGNDataType::run(context, stm->getType());
 	auto stackAlloc = context.IB().CreateAlloca(*stype);
 	context.IB().CreateStore(storedValue, stackAlloc);
-	context.storeLocalSymbol({stackAlloc, stype}, stm->getName()->str);
+	context.storeLocalSymbol({stackAlloc, stype}, stm->getName()->str, true);
 }
 
 void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
@@ -251,7 +251,15 @@ void CGNStatement::visitNReturnStatement(NReturnStatement* stm)
 	auto returnVal = CGNExpression::run(context, stm->getValue());
 	if (returnVal)
 		Inst::CastTo(context, *stm->getValue(), returnVal, funcReturn);
+
+	auto toDestroy = context.getDestructables();
+	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++) {
+		auto ptr = RValue(*it, SType::getPointer(context, it->stype()));
+		Inst::CallDestructor(context, ptr, *stm);
+	}
+
 	context.IB().CreateRet(returnVal);
+
 	context.pushBlock(context.createBlock());
 }
 

@@ -50,17 +50,29 @@ using LabelBlockPtr = unique_ptr<LabelBlock>;
 class ScopeTable
 {
 	map<string, VecRValue> table;
+	VecRValue destructables;
 
 public:
-	void storeSymbol(const RValue& var, const string& name)
+	void storeSymbol(const RValue& var, const string& name, bool isParam = false)
 	{
 		table[name].push_back(var);
+		if (!isParam && var.stype()->isClass()) {
+			auto clType = static_cast<SClassType*>(var.stype());
+			auto func = clType->getDestructor();
+			if (func)
+				destructables.push_back(var);
+		}
 	}
 
 	VecRValue loadSymbol(const string& name) const
 	{
 		auto varData = table.find(name);
 		return varData != table.end()? varData->second : VecRValue();
+	}
+
+	VecRValue getDestructables()
+	{
+		return destructables;
 	}
 };
 
@@ -302,9 +314,9 @@ public:
 		localTable.pop_back();
 	}
 
-	void storeLocalSymbol(RValue var, const string& name)
+	void storeLocalSymbol(RValue var, const string& name, bool isParam = false)
 	{
-		localTable.back().storeSymbol(var, name);
+		localTable.back().storeSymbol(var, name, isParam);
 	}
 
 	VecRValue loadSymbol(const string& name) const
@@ -326,6 +338,16 @@ public:
 	VecRValue loadSymbolCurr(const string& name) const
 	{
 		return localTable.empty() ? globalCtx.globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
+	}
+
+	VecRValue getDestructables()
+	{
+		VecRValue ret;
+		for (auto tb : localTable) {
+			auto des = tb.getDestructables();
+			ret.insert(ret.end(), des.begin(), des.end());
+		}
+		return ret;
 	}
 
 	SFunction currFunction() const
