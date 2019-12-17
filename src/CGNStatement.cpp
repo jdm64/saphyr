@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <llvm/Support/Casting.h>
 #include "Value.h"
 #include "AST.h"
 #include "CGNStatement.h"
@@ -249,13 +250,19 @@ void CGNStatement::visitNReturnStatement(NReturnStatement* stm)
 		return;
 	}
 	auto returnVal = CGNExpression::run(context, stm->getValue());
-	if (returnVal)
+	Value* retAlloc = nullptr;
+	if (returnVal) {
 		Inst::CastTo(context, *stm->getValue(), returnVal, funcReturn);
+		if (auto v = dyn_cast<LoadInst>(returnVal.value()))
+			retAlloc = v->getPointerOperand();
+	}
 
 	auto toDestroy = context.getDestructables();
 	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++) {
-		auto ptr = RValue(*it, SType::getPointer(context, it->stype()));
-		Inst::CallDestructor(context, ptr, *stm);
+		if (it->value() != retAlloc) {
+			auto ptr = RValue(*it, SType::getPointer(context, it->stype()));
+			Inst::CallDestructor(context, ptr, *stm);
+		}
 	}
 
 	context.IB().CreateRet(returnVal);
