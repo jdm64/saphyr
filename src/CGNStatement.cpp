@@ -257,13 +257,7 @@ void CGNStatement::visitNReturnStatement(NReturnStatement* stm)
 			retAlloc = v->getPointerOperand();
 	}
 
-	auto toDestroy = context.getDestructables();
-	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++) {
-		if (it->value() != retAlloc) {
-			auto ptr = RValue(*it, SType::getPointer(context, it->stype()));
-			Inst::CallDestructor(context, ptr, *stm);
-		}
-	}
+	Inst::CallDestructables(context, retAlloc, *stm);
 
 	context.IB().CreateRet(returnVal);
 

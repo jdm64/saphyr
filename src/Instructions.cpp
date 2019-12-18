@@ -730,6 +730,17 @@ void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
 	CallFunction(context, funcs, valueToken, args);
 }
 
+void Inst::CallDestructables(CodeContext& context, Value* retAlloc, Token* token)
+{
+	auto toDestroy = context.getDestructables();
+	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++) {
+		if (it->value() != retAlloc) {
+			auto ptr = RValue(*it, SType::getPointer(context, it->stype()));
+			CallDestructor(context, ptr, token);
+		}
+	}
+}
+
 RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
 {
 	auto baseVar = new NBaseVariable(new Token("this"));

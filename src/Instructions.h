@@ -81,6 +81,8 @@ public:
 
 	static void CallDestructor(CodeContext& context, RValue value, Token* valueToken);
 
+	static void CallDestructables(CodeContext& context, Value* retAlloc, Token* token);
+
 	static RValue LoadMemberVar(CodeContext& context, const string& name);
 
 	static RValue LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToken, Token* memberName);
