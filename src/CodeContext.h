@@ -56,11 +56,18 @@ public:
 	void storeSymbol(const RValue& var, const string& name, bool isParam = false)
 	{
 		table[name].push_back(var);
-		if (!isParam && var.stype()->isClass()) {
-			auto clType = static_cast<SClassType*>(var.stype());
-			auto func = clType->getDestructor();
-			if (func)
-				destructables.push_back(var);
+		if (!isParam) {
+			SClassType* clType = nullptr;
+			if (var.stype()->isClass())
+				clType = static_cast<SClassType*>(var.stype());
+			else if (var.stype()->isArray() && var.stype()->subType()->isClass())
+				clType = static_cast<SClassType*>(var.stype()->subType());
+
+			if (clType) {
+				auto func = clType->getDestructor();
+				if (func)
+					destructables.push_back(var);
+			}
 		}
 	}
 

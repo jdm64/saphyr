@@ -245,6 +245,18 @@ define void @arrayLocal() {
   br i1 %13, label %14, label %10
 
 ; <label>:14:                                     ; preds = %10
+  %15 = getelementptr [3 x %MyClass], [3 x %MyClass]* %b, i32 0, i32 0
+  %16 = getelementptr %MyClass, %MyClass* %15, i64 3
+  br label %17
+
+; <label>:17:                                     ; preds = %17, %14
+  %18 = phi %MyClass* [ %15, %14 ], [ %19, %17 ]
+  %19 = getelementptr %MyClass, %MyClass* %18, i64 1
+  call void @MyClass_null(%MyClass* %18)
+  %20 = icmp eq %MyClass* %19, %16
+  br i1 %20, label %21, label %17
+
+; <label>:21:                                     ; preds = %17
   ret void
 }
 

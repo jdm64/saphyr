@@ -734,9 +734,43 @@ void Inst::CallDestructables(CodeContext& context, Value* retAlloc, Token* token
 {
 	auto toDestroy = context.getDestructables();
 	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++) {
-		if (it->value() != retAlloc) {
-			auto ptr = RValue(*it, SType::getPointer(context, it->stype()));
-			CallDestructor(context, ptr, token);
+		if (it->value() == retAlloc)
+			continue;
+
+		auto var = *it;
+		auto isArr = var.stype()->isArray();
+
+		Value* endPtr;
+		Value* nextPtr;
+		if (isArr) {
+			auto startBlock = context.currBlock();
+			vector<Value*> idxs;
+			auto zero = RValue::getZero(context, SType::getInt(context, 32));
+			idxs.push_back(zero);
+			idxs.push_back(zero);
+			auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
+			auto arrSize = RValue::getNumVal(context, var.stype()->size(), 64);
+			endPtr = context.IB().CreateGEP(nullptr, startPtr, arrSize);
+
+			auto block = context.createBlock();
+			context.IB().CreateBr(block);
+			context.pushBlock(block);
+
+			auto phi = context.IB().CreatePHI(startPtr->getType(), 2);
+			nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
+			phi->addIncoming(startPtr, startBlock);
+			phi->addIncoming(nextPtr, block);
+			var = RValue(phi, var.stype()->subType());
+		}
+
+		auto ptr = RValue(var.value(), SType::getPointer(context, var.stype()));
+		CallDestructor(context, ptr, token);
+
+		if (isArr) {
+			auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
+			auto block = context.createBlock();
+			context.IB().CreateCondBr(cmp, block, context.currBlock());
+			context.pushBlock(block);
 		}
 	}
 }
