@@ -380,7 +380,11 @@ void FMNStatement::visitNLoopBranch(NLoopBranch* stm)
 
 void FMNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 {
-	context.addLine("delete " + FMNExpression::run(context, stm->getVar()) + ";");
+	auto size = FMNExpression::run(context, stm->getArrSize());
+	if (!size.empty())
+		size = "[" + size + "]";
+	auto var = FMNExpression::run(context, stm->getVar());
+	context.addLine("delete" + size + " " + var + ";");
 }
 
 void FMNStatement::visitNDestructorCall(NDestructorCall* stm)

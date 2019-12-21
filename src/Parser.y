@@ -441,6 +441,10 @@ statement
 	{
 		$$ = new NDeleteStatement($2);
 	}
+	| TT_DELETE '[' expression ']' variable_expression ';'
+	{
+		$$ = new NDeleteStatement($5, $3);
+	}
 	| TT_FOR '(' declaration_or_expression_list ';' expression_or_empty ';' expression_list ')' single_statement
 	{
 		$$ = new NForStatement($3, $5, $7, $9);

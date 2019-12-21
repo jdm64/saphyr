@@ -37,6 +37,21 @@ void manyItems()
 	[5]Destroy arr;
 }
 
+void manyPointerItems()
+{
+	int size = 5;
+	@[]Destroy arr = new [size]Destroy;
+
+	delete[size] arr;
+}
+
+void manyPointerWithSize()
+{
+	@[3]Destroy arr = new [3]Destroy;
+
+	delete arr;
+}
+
 [4]Destroy noDestroy([9]Destroy in)
 {
 	[4]Destroy ret;
@@ -117,6 +132,60 @@ define void @manyItems() {
   ret void
 }
 
+define void @manyPointerItems() {
+  %size = alloca i32
+  store i32 5, i32* %size
+  %1 = load i32, i32* %size
+  %2 = sext i32 %1 to i64
+  %3 = mul i64 8, %2
+  %4 = call i8* @malloc(i64 %3)
+  %5 = bitcast i8* %4 to [0 x %Destroy]*
+  %arr = alloca [0 x %Destroy]*
+  store [0 x %Destroy]* %5, [0 x %Destroy]** %arr
+  %6 = load i32, i32* %size
+  %7 = load [0 x %Destroy]*, [0 x %Destroy]** %arr
+  %8 = getelementptr [0 x %Destroy], [0 x %Destroy]* %7, i32 0, i32 0
+  %9 = getelementptr %Destroy, %Destroy* %8, i32 %6
+  br label %10
+
+; <label>:10:                                     ; preds = %10, %0
+  %11 = phi %Destroy* [ %8, %0 ], [ %12, %10 ]
+  %12 = getelementptr %Destroy, %Destroy* %11, i64 1
+  call void @Destroy_null(%Destroy* %11)
+  %13 = icmp eq %Destroy* %12, %9
+  br i1 %13, label %14, label %10
+
+; <label>:14:                                     ; preds = %10
+  %15 = bitcast [0 x %Destroy]* %7 to i8*
+  call void @free(i8* %15)
+  ret void
+}
+
+declare i8* @malloc(i64)
+
+define void @manyPointerWithSize() {
+  %1 = call i8* @malloc(i64 24)
+  %2 = bitcast i8* %1 to [3 x %Destroy]*
+  %arr = alloca [3 x %Destroy]*
+  store [3 x %Destroy]* %2, [3 x %Destroy]** %arr
+  %3 = load [3 x %Destroy]*, [3 x %Destroy]** %arr
+  %4 = getelementptr [3 x %Destroy], [3 x %Destroy]* %3, i32 0, i32 0
+  %5 = getelementptr %Destroy, %Destroy* %4, i64 3
+  br label %6
+
+; <label>:6:                                      ; preds = %6, %0
+  %7 = phi %Destroy* [ %4, %0 ], [ %8, %6 ]
+  %8 = getelementptr %Destroy, %Destroy* %7, i64 1
+  call void @Destroy_null(%Destroy* %7)
+  %9 = icmp eq %Destroy* %8, %5
+  br i1 %9, label %10, label %6
+
+; <label>:10:                                     ; preds = %6
+  %11 = bitcast [3 x %Destroy]* %3 to i8*
+  call void @free(i8* %11)
+  ret void
+}
+
 define [4 x %Destroy] @noDestroy([9 x %Destroy] %in) {
   %1 = alloca [9 x %Destroy]
   store [9 x %Destroy] %in, [9 x %Destroy]* %1
@@ -131,6 +200,9 @@ branchDestroy T
 Destroy_get T
 Destroy_null T
 free U
+malloc U
 manyItems T
+manyPointerItems T
+manyPointerWithSize T
 noDestroy T
 oneItem T

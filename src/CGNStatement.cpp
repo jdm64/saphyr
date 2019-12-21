@@ -519,6 +519,7 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 		func = static_cast<SFunction&>(syms[0]);
 	}
 
+	auto arrSize = CGNExpression::run(context, stm->getArrSize());
 	auto ptr = CGNExpression::run(context, stm->getVar());
 	if (!ptr) {
 		return;
@@ -527,8 +528,7 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 		return;
 	}
 
-	if (ptr.stype()->subType()->isClass())
-		Inst::CallDestructor(context, ptr, *stm->getVar());
+	Inst::CallDestructor(context, ptr, arrSize, *stm->getVar());
 
 	vector<Value*> exp_list;
 	exp_list.push_back(context.IB().CreateBitCast(ptr, *bytePtr));
@@ -558,5 +558,5 @@ void CGNStatement::visitNDestructorCall(NDestructorCall* stm)
 		}
 	}
 
-	Inst::CallDestructor(context, value, stm->getThisToken());
+	Inst::CallDestructor(context, value, {}, stm->getThisToken());
 }

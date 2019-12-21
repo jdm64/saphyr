@@ -1504,7 +1504,7 @@ class NReturnStatement : public NJumpStatement
 	uPtr<Token> retToken;
 
 public:
-	NReturnStatement(Token* retToken = nullptr, NExpression* value = nullptr)
+	NReturnStatement(Token* retToken, NExpression* value = nullptr)
 	: value(value), retToken(retToken) {}
 
 	NReturnStatement* copy() const override
@@ -1590,19 +1590,25 @@ public:
 class NDeleteStatement : public NStatement
 {
 	uPtr<NVariable> variable;
+	uPtr<NExpression> arrSize;
 
 public:
-	explicit NDeleteStatement(NVariable* variable)
-	: variable(variable) {}
+	explicit NDeleteStatement(NVariable* variable, NExpression* arrSize = nullptr)
+	: variable(variable), arrSize(arrSize) {}
 
 	NDeleteStatement* copy() const override
 	{
-		return new NDeleteStatement(variable->copy());
+		return new NDeleteStatement(variable->copy(), arrSize ? arrSize->copy() : nullptr);
 	}
 
 	NVariable* getVar() const
 	{
 		return variable.get();
+	}
+
+	NExpression* getArrSize() const
+	{
+		return arrSize.get();
 	}
 
 	ADD_ID(NDeleteStatement)

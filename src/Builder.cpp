@@ -45,7 +45,7 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	if (body->empty() || !body->back()->isTerminator()) {
 		auto returnType = function.returnTy();
 		if (returnType->isVoid())
-			body->add(new NReturnStatement);
+			body->add(new NReturnStatement(name->copy()));
 		else
 			context.addError("no return for a non-void function", name);
 	}

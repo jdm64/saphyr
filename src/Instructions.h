@@ -79,7 +79,7 @@ public:
 
 	static bool CallConstructor(CodeContext& context, RValue var, RValue arrSize, VecRValue* initList, Token* token);
 
-	static void CallDestructor(CodeContext& context, RValue value, Token* valueToken);
+	static void CallDestructor(CodeContext& context, RValue value, RValue arrSize, Token* valueToken);
 
 	static void CallDestructables(CodeContext& context, Value* retAlloc, Token* token);
 

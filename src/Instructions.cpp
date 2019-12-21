@@ -716,18 +716,91 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, RValue arrSize, Vec
 	return true;
 }
 
-void Inst::CallDestructor(CodeContext& context, RValue value, Token* valueToken)
+void Inst::CallDestructor(CodeContext& context, RValue value, RValue arrSize, Token* valueToken)
 {
-	auto clType = static_cast<SClassType*>(value.stype()->subType());
+	SClassType* clType;
+	auto type = value.stype();
+	auto isArr = false;
+	int64_t size = 0;
+
+	if (type->isClass()) {
+		clType = static_cast<SClassType*>(type);
+	} else if (type->isArray() && type->subType()->isClass()) {
+		clType = static_cast<SClassType*>(type->subType());
+		isArr = true;
+		size = type->size();
+	} else if (type->isPointer()) {
+		if (type->subType()->isClass()) {
+			clType = static_cast<SClassType*>(type->subType());
+		} else if (type->subType()->isArray() && type->subType()->subType()->isClass()) {
+			clType = static_cast<SClassType*>(type->subType()->subType());
+			isArr = true;
+			size = type->subType()->size();
+		} else {
+			 return;
+		}
+	} else {
+		return;
+	}
+
 	auto func = clType->getDestructor();
 	if (!func)
 		return;
+	auto var = RValue(value.value(), SType::getPointer(context, clType));
+
+	Value* endPtr;
+	Value* nextPtr;
+	if (isArr) {
+		if (arrSize) {
+			if (isa<ConstantInt>(arrSize.value())) {
+				size = static_cast<ConstantInt*>(arrSize.value())->getSExtValue();
+				if (size <= 0) {
+					context.addError("must provide size > 0 to delete array", valueToken);
+					return;
+				}
+			} else if (!arrSize.stype()->isInteger()) {
+				context.addError("delete array size must be integer", valueToken);
+				return;
+			}
+		} else {
+			if (size <= 0) {
+				context.addError("must provide size > 0 to delete array", valueToken);
+				return;
+			}
+			arrSize = RValue::getNumVal(context, size, 64);
+		}
+
+		auto startBlock = context.currBlock();
+		vector<Value*> idxs;
+		auto zero = RValue::getZero(context, SType::getInt(context, 32));
+		idxs.push_back(zero);
+		idxs.push_back(zero);
+		auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
+		endPtr = context.IB().CreateGEP(nullptr, startPtr, arrSize);
+
+		auto block = context.createBlock();
+		context.IB().CreateBr(block);
+		context.pushBlock(block);
+
+		auto phi = context.IB().CreatePHI(startPtr->getType(), 2);
+		nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
+		phi->addIncoming(startPtr, startBlock);
+		phi->addIncoming(nextPtr, block);
+		var = RValue(phi, var.stype());
+	}
 
 	VecSFunc funcs;
 	funcs.push_back(func);
 	VecRValue args;
-	args.push_back(value);
+	args.push_back(var);
 	CallFunction(context, funcs, valueToken, args);
+
+	if (isArr) {
+		auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
+		auto block = context.createBlock();
+		context.IB().CreateCondBr(cmp, block, context.currBlock());
+		context.pushBlock(block);
+	}
 }
 
 void Inst::CallDestructables(CodeContext& context, Value* retAlloc, Token* token)
@@ -736,42 +809,7 @@ void Inst::CallDestructables(CodeContext& context, Value* retAlloc, Token* token
 	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++) {
 		if (it->value() == retAlloc)
 			continue;
-
-		auto var = *it;
-		auto isArr = var.stype()->isArray();
-
-		Value* endPtr;
-		Value* nextPtr;
-		if (isArr) {
-			auto startBlock = context.currBlock();
-			vector<Value*> idxs;
-			auto zero = RValue::getZero(context, SType::getInt(context, 32));
-			idxs.push_back(zero);
-			idxs.push_back(zero);
-			auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
-			auto arrSize = RValue::getNumVal(context, var.stype()->size(), 64);
-			endPtr = context.IB().CreateGEP(nullptr, startPtr, arrSize);
-
-			auto block = context.createBlock();
-			context.IB().CreateBr(block);
-			context.pushBlock(block);
-
-			auto phi = context.IB().CreatePHI(startPtr->getType(), 2);
-			nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
-			phi->addIncoming(startPtr, startBlock);
-			phi->addIncoming(nextPtr, block);
-			var = RValue(phi, var.stype()->subType());
-		}
-
-		auto ptr = RValue(var.value(), SType::getPointer(context, var.stype()));
-		CallDestructor(context, ptr, token);
-
-		if (isArr) {
-			auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
-			auto block = context.createBlock();
-			context.IB().CreateCondBr(cmp, block, context.currBlock());
-			context.pushBlock(block);
-		}
+		CallDestructor(context, *it, {}, token);
 	}
 }
 
