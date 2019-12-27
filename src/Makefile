@@ -47,7 +47,7 @@ endif
 
 objs = parser.o scanner.o Util.o
 
-compiler_objs = $(objs) Type.o Value.o Instructions.o Builder.o CGNDataType.o \
+compiler_objs = $(objs) CodeContext.o Type.o Value.o Instructions.o Builder.o CGNDataType.o \
 	CGNVariable.o CGNExpression.o CGNStatement.o CGNImportStm.o Pass.o ModuleWriter.o \
 	CGNImportList.o main.o
 

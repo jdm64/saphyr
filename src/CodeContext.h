@@ -17,19 +17,11 @@
 #ifndef __CODE_CONTEXT_H__
 #define __CODE_CONTEXT_H__
 
-#include <stack>
-#include <list>
-#include <iostream>
 #include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
-#include <llvm/IR/BasicBlock.h>
-#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
-#include <llvm/IR/LLVMContext.h>
-#include "AST.h"
+#include <llvm/IR/IRBuilder.h>
 #include "Value.h"
 
-using namespace boost::program_options;
 using namespace boost::filesystem;
 
 enum BranchType { BREAK = 1, CONTINUE = 1 << 1, REDO = 1 << 2 };
@@ -45,7 +37,6 @@ struct LabelBlock
 };
 
 using LabelBlockPtr = unique_ptr<LabelBlock>;
-#define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock((block), (token), (placeholder)))
 
 class ScopeTable
 {
@@ -53,34 +44,11 @@ class ScopeTable
 	VecRValue destructables;
 
 public:
-	void storeSymbol(const RValue& var, const string& name, bool isParam = false)
-	{
-		table[name].push_back(var);
-		if (!isParam) {
-			SClassType* clType = nullptr;
-			if (var.stype()->isClass())
-				clType = static_cast<SClassType*>(var.stype());
-			else if (var.stype()->isArray() && var.stype()->subType()->isClass())
-				clType = static_cast<SClassType*>(var.stype()->subType());
+	void storeSymbol(const RValue& var, const string& name, bool isParam = false);
 
-			if (clType) {
-				auto func = clType->getDestructor();
-				if (func)
-					destructables.push_back(var);
-			}
-		}
-	}
+	VecRValue loadSymbol(const string& name) const;
 
-	VecRValue loadSymbol(const string& name) const
-	{
-		auto varData = table.find(name);
-		return varData != table.end()? varData->second : VecRValue();
-	}
-
-	VecRValue getDestructables()
-	{
-		return destructables;
-	}
+	VecRValue getDestructables();
 };
 
 class GlobalContext
@@ -102,55 +70,20 @@ public:
 	explicit GlobalContext(Module* module)
 	: module(module), typeManager(module) {}
 
-	bool hasErrors() const
-	{
-		return !errors.empty();
-	}
+	bool hasErrors() const;
 
-	void addError(const string& error, Token* token)
-	{
-		if (token)
-			errors.push_back({*token, error});
-		else
-			errors.push_back({Token(), error});
-	}
+	void addError(const string& error, Token* token);
 
 	/*
 	 * Returns true on errors
 	 */
-	bool handleErrors() const
-	{
-		if (errors.empty())
-			return false;
+	bool handleErrors() const;
 
-		string buff;
-		for (auto& error : errors) {
-			buff += error.first.filename + ":" + to_string(error.first.line) + ":" + to_string(error.first.col) + ": " + error.second + "\n";
-		}
-		buff += "found " + to_string(errors.size()) + " errors\n";
-		cout << buff;
-		return true;
-	}
+	NAttributeList* storeAttr(NAttributeList* list);
 
-	NAttributeList* storeAttr(NAttributeList* list)
-	{
-		if (list) {
-			list = list->move<NAttributeList>(false);
-			attrs.push_back(unique_ptr<NAttributeList>(list));
-		}
-		return list;
-	}
+	void pushFile(const path& filename);
 
-	void pushFile(const path& filename)
-	{
-		filesStack.push_back(filename);
-		allFiles.insert(filename);
-	}
-
-	bool fileLoaded(const path& filename)
-	{
-		return allFiles.find(filename) != allFiles.end();
-	}
+	bool fileLoaded(const path& filename);
 };
 
 class CodeContext
@@ -173,316 +106,116 @@ class CodeContext
 	BlockVector redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
 
-	void validateFunction()
-	{
-		for (auto& item : labelBlocks) {
-			if (item.second->isPlaceholder)
-				addError("label " + item.first + " not defined", &item.second->token);
-		}
-	}
+	void validateFunction();
 
-	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, int level) const
-	{
-		int blockCount = branchBlocks.size();
-		int idx = level > 0? blockCount - level : -level - 1;
-		return (idx >= 0 && idx < blockCount)? branchBlocks[idx] : nullptr;
-	}
+	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, int level) const;
 
 public:
 	explicit CodeContext(GlobalContext& context)
 	: globalCtx(context), irBuilder(context.module->getContext()), thisType(nullptr), currClass(nullptr) {}
 
-	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings)
-	{
-		CodeContext newCtx(context.globalCtx);
-		newCtx.templateArgs = templateMappings;
-		return newCtx;
-	}
+	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings);
 
 	/**
 	 * global context functions
 	 **/
 
-	operator LLVMContext&()
-	{
-		return globalCtx.module->getContext();
-	}
+	operator LLVMContext&();
 
-	Module* getModule() const
-	{
-		return globalCtx.module;
-	}
+	Module* getModule() const;
 
-	TypeManager& getTypeManager() const
-	{
-		return globalCtx.typeManager;
-	}
+	TypeManager& getTypeManager() const;
 
-	IRBuilder<>& IB()
-	{
-		return irBuilder;
-	}
+	IRBuilder<>& IB();
 
-	bool hasErrors() const
-	{
-		return globalCtx.hasErrors();
-	}
+	bool hasErrors() const;
 
-	size_t errorCount() const
-	{
-		return globalCtx.errors.size();
-	}
+	size_t errorCount() const;
 
-	void addError(const string& error, Token* token)
-	{
-		globalCtx.addError(error, token);
-	}
+	void addError(const string& error, Token* token);
 
-	bool handleErrors() const
-	{
-		return globalCtx.handleErrors();
-	}
+	bool handleErrors() const;
 
-	NAttributeList* storeAttr(NAttributeList* list)
-	{
-		return globalCtx.storeAttr(list);
-	}
+	NAttributeList* storeAttr(NAttributeList* list);
 
-	void popFile()
-	{
-		globalCtx.filesStack.pop_back();
-	}
+	void popFile();
 
-	void pushFile(const path& filename)
-	{
-		globalCtx.pushFile(filename);
-	}
+	void pushFile(const path& filename);
 
-	bool fileLoaded(const path& filename)
-	{
-		return globalCtx.fileLoaded(filename);
-	}
+	bool fileLoaded(const path& filename);
 
-	path currFile() const
-	{
-		return globalCtx.filesStack.back();
-	}
+	path currFile() const;
 
-	void storeGlobalSymbol(RValue var, const string& name)
-	{
-		globalCtx.globalTable.storeSymbol(var, name);
-	}
+	void storeGlobalSymbol(RValue var, const string& name);
 
-	VecRValue loadSymbolGlobal(const string& name) const
-	{
-		return globalCtx.globalTable.loadSymbol(name);
-	}
+	VecRValue loadSymbolGlobal(const string& name) const;
 
 	/**
 	 * local context functions
 	 **/
 
-	NTemplatedDeclaration* getTemplate(const string& name)
-	{
-		return globalCtx.typeManager.getTemplateType(name);
-	}
+	NTemplatedDeclaration* getTemplate(const string& name);
 
-	void storeTemplate(const string& name, NTemplatedDeclaration* decl)
-	{
-		globalCtx.typeManager.storeTemplate(name, decl);
-	}
+	void storeTemplate(const string& name, NTemplatedDeclaration* decl);
 
-	bool inTemplate() const
-	{
-		return !templateArgs.empty();
-	}
+	bool inTemplate() const;
 
-	SType* getTemplateArg(const string& name)
-	{
-		auto it = find_if(templateArgs.begin(), templateArgs.end(),
-			[&name](auto i){ return i.first == name; });
-		return it != templateArgs.end() ? it->second : nullptr;
-	}
+	SType* getTemplateArg(const string& name);
 
-	vector<SType*> getTemplateArgs()
-	{
-		vector<SType*> args;
-		transform(templateArgs.begin(), templateArgs.end(), back_inserter(args), [](auto i){ return i.second; });
-		return args;
-	}
+	vector<SType*> getTemplateArgs();
 
-	void pushLocalTable()
-	{
-		localTable.push_back(ScopeTable());
-	}
+	void pushLocalTable();
 
-	void popLocalTable()
-	{
-		localTable.pop_back();
-	}
+	void popLocalTable();
 
-	void storeLocalSymbol(RValue var, const string& name, bool isParam = false)
-	{
-		localTable.back().storeSymbol(var, name, isParam);
-	}
+	void storeLocalSymbol(RValue var, const string& name, bool isParam = false);
 
-	VecRValue loadSymbol(const string& name) const
-	{
-		auto data = loadSymbolLocal(name);
-		return data.size() ? data : globalCtx.globalTable.loadSymbol(name);
-	}
+	VecRValue loadSymbol(const string& name) const;
 
-	VecRValue loadSymbolLocal(const string& name) const
-	{
-		for (auto it = localTable.rbegin(); it != localTable.rend(); it++) {
-			auto data = it->loadSymbol(name);
-			if (data.size())
-				return data;
-		}
-		return {};
-	}
+	VecRValue loadSymbolLocal(const string& name) const;
 
-	VecRValue loadSymbolCurr(const string& name) const
-	{
-		return localTable.empty() ? globalCtx.globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
-	}
+	VecRValue loadSymbolCurr(const string& name) const;
 
-	VecRValue getDestructables()
-	{
-		VecRValue ret;
-		for (auto tb : localTable) {
-			auto des = tb.getDestructables();
-			ret.insert(ret.end(), des.begin(), des.end());
-		}
-		return ret;
-	}
+	VecRValue getDestructables();
 
-	SFunction currFunction() const
-	{
-		return currFunc;
-	}
+	SFunction currFunction() const;
 
-	STemplatedType* getThis() const
-	{
-		return thisType;
-	}
+	STemplatedType* getThis() const;
 
-	void setThis(STemplatedType* type)
-	{
-		thisType = type;
-	}
+	void setThis(STemplatedType* type);
 
-	SClassType* getClass() const
-	{
-		return currClass;
-	}
+	SClassType* getClass() const;
 
-	void setClass(SClassType* classType)
-	{
-		currClass = classType;
-	}
+	void setClass(SClassType* classType);
 
-	void startFuncBlock(SFunction function)
-	{
-		pushLocalTable();
-		funcBlocks.clear();
-		funcBlocks.push_back(BasicBlock::Create(getModule()->getContext(), "", function));
-		irBuilder.SetInsertPoint(currBlock());
-		currFunc = function;
-	}
+	void startFuncBlock(SFunction function);
 
-	void endFuncBlock()
-	{
-		validateFunction();
+	void endFuncBlock();
 
-		localTable.clear();
-		funcBlocks.clear();
-		continueBlocks.clear();
-		breakBlocks.clear();
-		redoBlocks.clear();
-		labelBlocks.clear();
+	void pushBlock(BasicBlock* block);
 
-		currFunc = SFunction();
-	}
+	void popLoopBranchBlocks(int type);
 
-	void pushBlock(BasicBlock* block)
-	{
-		block->moveAfter(currBlock());
-		funcBlocks.push_back(block);
-		irBuilder.SetInsertPoint(currBlock());
-	}
-
-	void popLoopBranchBlocks(int type)
-	{
-		if (type & BranchType::BREAK)
-			breakBlocks.pop_back();
-		if (type & BranchType::CONTINUE)
-			continueBlocks.pop_back();
-		if (type & BranchType::REDO)
-			redoBlocks.pop_back();
-	}
-
-	BasicBlock* currBlock() const
-	{
-		return funcBlocks.back();
-	}
+	BasicBlock* currBlock() const;
 
 	// NOTE: can only be used inside a function to add a new block
-	BasicBlock* createBlock() const
-	{
-		return BasicBlock::Create(getModule()->getContext(), "", currBlock()->getParent());
-	}
+	BasicBlock* createBlock() const;
 
-	BasicBlock* getBreakBlock(int level = 1) const
-	{
-		return loopBranchLevel(breakBlocks, level);
-	}
+	BasicBlock* getBreakBlock(int level = 1) const;
 
-	BasicBlock* createBreakBlock()
-	{
-		auto block = createBlock();
-		breakBlocks.push_back(block);
-		return block;
-	}
+	BasicBlock* createBreakBlock();
 
-	BasicBlock* getContinueBlock(int level = 1) const
-	{
-		return loopBranchLevel(continueBlocks, level);
-	}
+	BasicBlock* getContinueBlock(int level = 1) const;
 
-	BasicBlock* createContinueBlock()
-	{
-		auto block = createBlock();
-		continueBlocks.push_back(block);
-		return block;
-	}
+	BasicBlock* createContinueBlock();
 
-	BasicBlock* getRedoBlock(int level = 1) const
-	{
-		return loopBranchLevel(redoBlocks, level);
-	}
+	BasicBlock* getRedoBlock(int level = 1) const;
 
-	BasicBlock* createRedoBlock()
-	{
-		auto block = createBlock();
-		redoBlocks.push_back(block);
-		return block;
-	}
+	BasicBlock* createRedoBlock();
 
-	LabelBlock* getLabelBlock(const string& name)
-	{
-		return labelBlocks[name].get();
-	}
+	LabelBlock* getLabelBlock(const string& name);
 
-	LabelBlock* createLabelBlock(Token* name, bool isPlaceholder)
-	{
-		LabelBlockPtr &item = labelBlocks[name->str];
-		if (!item.get()) {
-			item = smart_label(createBlock(), name, isPlaceholder);
-			item.get()->block->setName(name->str);
-		}
-		return item.get();
-	}
+	LabelBlock* createLabelBlock(Token* name, bool isPlaceholder);
 };
 
 #endif
