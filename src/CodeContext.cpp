@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include "CodeContext.h"
+#include "Instructions.h"
 
 #define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock((block), (token), (placeholder)))
 
@@ -229,7 +230,11 @@ void CodeContext::pushLocalTable()
 
 void CodeContext::popLocalTable()
 {
+	auto toDestroy = localTable.back().getDestructables();
 	localTable.pop_back();
+
+	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++)
+		Inst::CallDestructor(*this, *it, {}, nullptr);
 }
 
 void CodeContext::storeLocalSymbol(RValue var, const string& name, bool isParam)

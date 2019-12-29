@@ -269,15 +269,16 @@ void CGNStatement::visitNLoopStatement(NLoopStatement* stm)
 	auto bodyBlock = context.createContinueBlock();
 	auto endBlock = context.createBreakBlock();
 
-	context.pushLocalTable();
-
 	context.IB().CreateBr(bodyBlock);
 	context.pushBlock(bodyBlock);
-	visit(stm->getBody());
-	context.IB().CreateBr(bodyBlock);
 
-	context.pushBlock(endBlock);
+	context.pushLocalTable();
+	visit(stm->getBody());
 	context.popLocalTable();
+
+	context.IB().CreateBr(bodyBlock);
+	context.pushBlock(endBlock);
+
 	context.popLoopBranchBlocks(BranchType::BREAK | BranchType::CONTINUE);
 }
 
@@ -291,19 +292,18 @@ void CGNStatement::visitNWhileStatement(NWhileStatement* stm)
 	auto trueBlock = stm->until()? endBlock : bodyBlock;
 	auto falseBlock = stm->until()? bodyBlock : endBlock;
 
-	context.pushLocalTable();
-
 	context.IB().CreateBr(startBlock);
-
 	context.pushBlock(condBlock);
-	Inst::Branch(trueBlock, falseBlock, stm->getCond(), context);
 
+	context.pushLocalTable();
+	Inst::Branch(trueBlock, falseBlock, stm->getCond(), context);
 	context.pushBlock(bodyBlock);
 	visit(stm->getBody());
-	context.IB().CreateBr(condBlock);
-
-	context.pushBlock(endBlock);
 	context.popLocalTable();
+
+	context.IB().CreateBr(condBlock);
+	context.pushBlock(endBlock);
+
 	context.popLoopBranchBlocks(BranchType::BREAK | BranchType::CONTINUE | BranchType::REDO);
 }
 
@@ -355,10 +355,11 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	}
 	switchInst->setDefaultDest(defaultBlock);
 
+	context.popLocalTable();
+
 	// NOTE: the last case will create a dangling block which needs a terminator.
 	context.IB().CreateBr(endBlock);
 
-	context.popLocalTable();
 	context.popLoopBranchBlocks(BranchType::BREAK);
 	context.pushBlock(endBlock);
 }
@@ -384,10 +385,12 @@ void CGNStatement::visitNForStatement(NForStatement* stm)
 
 	context.pushBlock(postBlock);
 	CGNExpression::run(context, stm->getPostExp());
-	context.IB().CreateBr(condBlock);
 
-	context.pushBlock(endBlock);
 	context.popLocalTable();
+
+	context.IB().CreateBr(condBlock);
+	context.pushBlock(endBlock);
+
 	context.popLoopBranchBlocks(BranchType::BREAK | BranchType::CONTINUE | BranchType::REDO);
 }
 
@@ -403,18 +406,17 @@ void CGNStatement::visitNIfStatement(NIfStatement* stm)
 
 	context.pushBlock(ifBlock);
 	visit(stm->getBody());
-	context.IB().CreateBr(endBlock);
-
 	context.popLocalTable();
-	context.pushLocalTable();
+	context.IB().CreateBr(endBlock);
 
 	context.pushBlock(elseBlock);
 	if (stm->getElseBody()) {
+		context.pushLocalTable();
 		visit(stm->getElseBody());
+		context.popLocalTable();
 		context.IB().CreateBr(endBlock);
 	}
 	context.pushBlock(endBlock);
-	context.popLocalTable();
 }
 
 void CGNStatement::visitNLabelStatement(NLabelStatement* stm)

@@ -59,6 +59,32 @@ void manyPointerWithSize()
 	return ret;
 }
 
+void loopStm(int i)
+{
+	loop
+		Destroy d;
+}
+
+void whileStm(int i)
+{
+	while (i > 5)
+		Destroy d;
+}
+
+void forStm()
+{
+	for (int i = 0; i < 4; i++)
+		Destroy d;
+}
+
+void ifStm(int i)
+{
+	if (i < 8)
+		Destroy d;
+	else
+		Destroy g;
+}
+
 ========
 
 %Destroy = type { [0 x i32]* }
@@ -194,15 +220,95 @@ define [4 x %Destroy] @noDestroy([9 x %Destroy] %in) {
   ret [4 x %Destroy] %2
 }
 
+define void @loopStm(i32 %i) {
+  %1 = alloca i32
+  store i32 %i, i32* %1
+  br label %2
+
+; <label>:2:                                      ; preds = %2, %0
+  %d = alloca %Destroy
+  call void @Destroy_null(%Destroy* %d)
+  br label %2
+}
+
+define void @whileStm(i32 %i) {
+  %1 = alloca i32
+  store i32 %i, i32* %1
+  br label %2
+
+; <label>:2:                                      ; preds = %5, %0
+  %3 = load i32, i32* %1
+  %4 = icmp sgt i32 %3, 5
+  br i1 %4, label %5, label %6
+
+; <label>:5:                                      ; preds = %2
+  %d = alloca %Destroy
+  call void @Destroy_null(%Destroy* %d)
+  br label %2
+
+; <label>:6:                                      ; preds = %2
+  ret void
+}
+
+define void @forStm() {
+  %i = alloca i32
+  store i32 0, i32* %i
+  br label %1
+
+; <label>:1:                                      ; preds = %5, %0
+  %2 = load i32, i32* %i
+  %3 = icmp slt i32 %2, 4
+  br i1 %3, label %4, label %8
+
+; <label>:4:                                      ; preds = %1
+  %d = alloca %Destroy
+  br label %5
+
+; <label>:5:                                      ; preds = %4
+  %6 = load i32, i32* %i
+  %7 = add i32 %6, 1
+  store i32 %7, i32* %i
+  call void @Destroy_null(%Destroy* %d)
+  br label %1
+
+; <label>:8:                                      ; preds = %1
+  ret void
+}
+
+define void @ifStm(i32 %i) {
+  %1 = alloca i32
+  store i32 %i, i32* %1
+  %2 = load i32, i32* %1
+  %3 = icmp slt i32 %2, 8
+  br i1 %3, label %4, label %5
+
+; <label>:4:                                      ; preds = %0
+  %d = alloca %Destroy
+  call void @Destroy_null(%Destroy* %d)
+  br label %6
+
+; <label>:5:                                      ; preds = %0
+  %g = alloca %Destroy
+  call void @Destroy_null(%Destroy* %g)
+  br label %6
+
+; <label>:6:                                      ; preds = %5, %4
+  ret void
+}
+
 ========
 
 branchDestroy T
 Destroy_get T
 Destroy_null T
+forStm T
 free U
+ifStm T
+loopStm T
 malloc U
 manyItems T
 manyPointerItems T
 manyPointerWithSize T
 noDestroy T
 oneItem T
+whileStm T
