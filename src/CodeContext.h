@@ -88,7 +88,9 @@ public:
 
 class CodeContext
 {
-	using BlockVector = vector<llvm::BasicBlock*>;
+	using BlockVector = vector<BasicBlock*>;
+	using BlockCount = pair<BasicBlock*,size_t>;
+	using BlockCountVec = vector<BlockCount>;
 
 	GlobalContext& globalCtx;
 
@@ -101,14 +103,14 @@ class CodeContext
 	vector<ScopeTable> localTable;
 
 	BlockVector funcBlocks;
-	BlockVector continueBlocks;
-	BlockVector breakBlocks;
-	BlockVector redoBlocks;
+	BlockCountVec continueBlocks;
+	BlockCountVec breakBlocks;
+	BlockCountVec redoBlocks;
 	map<string, LabelBlockPtr> labelBlocks;
 
 	void validateFunction();
 
-	BasicBlock* loopBranchLevel(const BlockVector& branchBlocks, int level) const;
+	BlockCount loopBranchLevel(const BlockCountVec& branchBlocks, int level) const;
 
 public:
 	explicit CodeContext(GlobalContext& context)
@@ -176,7 +178,7 @@ public:
 
 	VecRValue loadSymbolCurr(const string& name) const;
 
-	VecRValue getDestructables();
+	VecRValue getDestructables(size_t level);
 
 	SFunction currFunction() const;
 
@@ -201,15 +203,15 @@ public:
 	// NOTE: can only be used inside a function to add a new block
 	BasicBlock* createBlock() const;
 
-	BasicBlock* getBreakBlock(int level = 1) const;
+	BlockCount getBreakBlock(int level = 1) const;
 
 	BasicBlock* createBreakBlock();
 
-	BasicBlock* getContinueBlock(int level = 1) const;
+	BlockCount getContinueBlock(int level = 1) const;
 
 	BasicBlock* createContinueBlock();
 
-	BasicBlock* getRedoBlock(int level = 1) const;
+	BlockCount getRedoBlock(int level = 1) const;
 
 	BasicBlock* createRedoBlock();
 

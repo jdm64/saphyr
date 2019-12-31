@@ -453,7 +453,7 @@ void CGNStatement::visitNGotoStatement(NGotoStatement* stm)
 
 void CGNStatement::visitNLoopBranch(NLoopBranch* stm)
 {
-	BasicBlock* block;
+	pair<BasicBlock*,size_t> block;
 	string typeName;
 	auto brLevel = 1;
 
@@ -471,21 +471,21 @@ void CGNStatement::visitNLoopBranch(NLoopBranch* stm)
 	switch (stm->getType()) {
 	case ParserBase::TT_CONTINUE:
 		block = context.getContinueBlock(brLevel);
-		if (!block) {
+		if (!block.first) {
 			typeName = "continue";
 			goto error;
 		}
 		break;
 	case ParserBase::TT_REDO:
 		block = context.getRedoBlock(brLevel);
-		if (!block) {
+		if (!block.first) {
 			typeName = "redo";
 			goto error;
 		}
 		break;
 	case ParserBase::TT_BREAK:
 		block = context.getBreakBlock(brLevel);
-		if (!block) {
+		if (!block.first) {
 			typeName = "break";
 			goto error;
 		}
@@ -494,7 +494,9 @@ void CGNStatement::visitNLoopBranch(NLoopBranch* stm)
 		context.addError("undefined loop branch type: " + to_string(stm->getType()), *stm);
 		return;
 	}
-	context.IB().CreateBr(block);
+
+	Inst::CallDestructables(context, nullptr, *stm, block.second);
+	context.IB().CreateBr(block.first);
 	context.pushBlock(context.createBlock());
 	return;
 error:

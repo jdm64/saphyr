@@ -803,9 +803,9 @@ void Inst::CallDestructor(CodeContext& context, RValue value, RValue arrSize, To
 	}
 }
 
-void Inst::CallDestructables(CodeContext& context, Value* retAlloc, Token* token)
+void Inst::CallDestructables(CodeContext& context, Value* retAlloc, Token* token, size_t level)
 {
-	auto toDestroy = context.getDestructables();
+	auto toDestroy = context.getDestructables(level);
 	for (auto it = toDestroy.rbegin(); it != toDestroy.rend(); it++) {
 		if (it->value() == retAlloc)
 			continue;

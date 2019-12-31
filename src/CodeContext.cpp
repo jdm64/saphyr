@@ -105,11 +105,11 @@ void CodeContext::validateFunction()
 	}
 }
 
-BasicBlock* CodeContext::loopBranchLevel(const BlockVector& branchBlocks, int level) const
+CodeContext::BlockCount CodeContext::loopBranchLevel(const BlockCountVec& branchBlocks, int level) const
 {
 	int blockCount = branchBlocks.size();
 	int idx = level > 0? blockCount - level : -level - 1;
-	return (idx >= 0 && idx < blockCount)? branchBlocks[idx] : nullptr;
+	return (idx >= 0 && idx < blockCount)? branchBlocks[idx] : make_pair(nullptr, 0);
 }
 
 CodeContext CodeContext::newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings)
@@ -263,11 +263,11 @@ VecRValue CodeContext::loadSymbolCurr(const string& name) const
 	return localTable.empty() ? globalCtx.globalTable.loadSymbol(name) : localTable.back().loadSymbol(name);
 }
 
-VecRValue CodeContext::getDestructables()
+VecRValue CodeContext::getDestructables(size_t level)
 {
 	VecRValue ret;
-	for (auto tb : localTable) {
-		auto des = tb.getDestructables();
+	for (auto i = level; i < localTable.size(); i++) {
+		auto des = localTable[i].getDestructables();
 		ret.insert(ret.end(), des.begin(), des.end());
 	}
 	return ret;
@@ -349,7 +349,7 @@ BasicBlock* CodeContext::createBlock() const
 	return BasicBlock::Create(getModule()->getContext(), "", currBlock()->getParent());
 }
 
-BasicBlock* CodeContext::getBreakBlock(int level) const
+CodeContext::BlockCount CodeContext::getBreakBlock(int level) const
 {
 	return loopBranchLevel(breakBlocks, level);
 }
@@ -357,11 +357,11 @@ BasicBlock* CodeContext::getBreakBlock(int level) const
 BasicBlock* CodeContext::createBreakBlock()
 {
 	auto block = createBlock();
-	breakBlocks.push_back(block);
+	breakBlocks.push_back({block, localTable.size()});
 	return block;
 }
 
-BasicBlock* CodeContext::getContinueBlock(int level) const
+CodeContext::BlockCount CodeContext::getContinueBlock(int level) const
 {
 	return loopBranchLevel(continueBlocks, level);
 }
@@ -369,11 +369,11 @@ BasicBlock* CodeContext::getContinueBlock(int level) const
 BasicBlock* CodeContext::createContinueBlock()
 {
 	auto block = createBlock();
-	continueBlocks.push_back(block);
+	continueBlocks.push_back({block, localTable.size()});
 	return block;
 }
 
-BasicBlock* CodeContext::getRedoBlock(int level) const
+CodeContext::BlockCount CodeContext::getRedoBlock(int level) const
 {
 	return loopBranchLevel(redoBlocks, level);
 }
@@ -381,7 +381,7 @@ BasicBlock* CodeContext::getRedoBlock(int level) const
 BasicBlock* CodeContext::createRedoBlock()
 {
 	auto block = createBlock();
-	redoBlocks.push_back(block);
+	redoBlocks.push_back({block, localTable.size()});
 	return block;
 }
 
