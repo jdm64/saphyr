@@ -21,12 +21,22 @@
 
 #define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock((block), (token), (placeholder)))
 
+void ScopeTable::addDestructable(const RValue& var)
+{
+	destructables.push_back(var);
+}
+
+void ScopeTable::storeDestructable(const RValue& var)
+{
+	if (var.stype()->isDestructable())
+		addDestructable(var);
+}
+
 void ScopeTable::storeSymbol(const RValue& var, const string& name, bool isParam)
 {
 	table[name].push_back(var);
-	if (!isParam && var.stype()->isDestructable()) {
-		destructables.push_back(var);
-	}
+	if (!isParam)
+		storeDestructable(var);
 }
 
 VecRValue ScopeTable::loadSymbol(const string& name) const
@@ -230,6 +240,14 @@ void CodeContext::popLocalTable()
 void CodeContext::storeLocalSymbol(RValue var, const string& name, bool isParam)
 {
 	localTable.back().storeSymbol(var, name, isParam);
+}
+
+void CodeContext::storeDestructable(RValue& value)
+{
+	if (value.stype()->isDestructable()) {
+		value = Inst::StoreTemporary(*this, value);
+		localTable.back().addDestructable(value);
+	}
 }
 
 VecRValue CodeContext::loadSymbol(const string& name) const

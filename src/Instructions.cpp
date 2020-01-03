@@ -580,7 +580,10 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 	vector<Value*> values;
 	copy(args.begin(), args.end(), back_inserter(values));
 	auto call = context.IB().CreateCall(func.value(), values);
-	return RValue(call, func.returnTy());
+	auto ret = RValue(call, func.returnTy());
+	context.storeDestructable(ret);
+
+	return ret;
 }
 
 RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments)
@@ -898,6 +901,9 @@ void Inst::InitVariable(CodeContext& context, RValue var, const RValue& arrSize,
 
 RValue Inst::StoreTemporary(CodeContext& context, RValue value)
 {
+	if (isa<AllocaInst>(value.value()))
+		return value;
+
 	auto stackAlloc = context.IB().CreateAlloca(value.type());
 	context.IB().CreateStore(value, stackAlloc);
 	return RValue(stackAlloc, value.stype());

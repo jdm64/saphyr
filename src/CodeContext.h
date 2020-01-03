@@ -44,6 +44,10 @@ class ScopeTable
 	VecRValue destructables;
 
 public:
+	void addDestructable(const RValue& var);
+
+	void storeDestructable(const RValue& var);
+
 	void storeSymbol(const RValue& var, const string& name, bool isParam = false);
 
 	VecRValue loadSymbol(const string& name) const;
@@ -171,6 +175,8 @@ public:
 	void popLocalTable();
 
 	void storeLocalSymbol(RValue var, const string& name, bool isParam = false);
+
+	void storeDestructable(RValue& value);
 
 	VecRValue loadSymbol(const string& name) const;
 

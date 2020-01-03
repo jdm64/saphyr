@@ -91,6 +91,17 @@ void ifStm(int i)
 		Destroy g;
 }
 
+Destroy getDestroy()
+{
+	Destroy ret;
+	return ret;
+}
+
+void functionChain()
+{
+	getDestroy().get(3);
+}
+
 ========
 
 %Destroy = type { [0 x i32]* }
@@ -322,6 +333,21 @@ define void @ifStm(i32 %i) {
   ret void
 }
 
+define %Destroy @getDestroy() {
+  %ret = alloca %Destroy
+  %1 = load %Destroy, %Destroy* %ret
+  ret %Destroy %1
+}
+
+define void @functionChain() {
+  %1 = call %Destroy @getDestroy()
+  %2 = alloca %Destroy
+  store %Destroy %1, %Destroy* %2
+  %3 = call i32 @Destroy_get(%Destroy* %2, i32 3)
+  call void @Destroy_null(%Destroy* %2)
+  ret void
+}
+
 ========
 
 branchDestroy T
@@ -329,6 +355,8 @@ Destroy_get T
 Destroy_null T
 forStm T
 free U
+functionChain T
+getDestroy T
 ifStm T
 loopStm T
 malloc U
