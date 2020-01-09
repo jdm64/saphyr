@@ -26,6 +26,28 @@
 #define smart_unionTy(name, args) unique_ptr<SUserType>(new SUnionType((name), (args)))
 #define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType((name), (type), (structure)))
 
+bool SType::isConstructable()
+{
+	SClassType* clType = nullptr;
+	if (isClass())
+		clType = static_cast<SClassType*>(this);
+	else if (isArray() && subType()->isClass())
+		clType = static_cast<SClassType*>(subType());
+
+	return clType ? !clType->getConstructor().empty() : false;
+}
+
+bool SType::isDestructable()
+{
+	SClassType* clType = nullptr;
+	if (isClass())
+		clType = static_cast<SClassType*>(this);
+	else if (isArray() && subType()->isClass())
+		clType = static_cast<SClassType*>(subType());
+
+	return clType ? clType->getDestructor() : false;
+}
+
 void SType::setConst(TypeManager* tmang)
 {
 	tclass |= CONST;

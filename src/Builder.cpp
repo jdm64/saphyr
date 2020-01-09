@@ -364,13 +364,16 @@ SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, ND
 	return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
 }
 
-bool Builder::addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
+bool Builder::addMembers(NStructDeclaration::CreateType ctype, NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
 {
 	auto stype = CGNDataType::run(context, group->getType());
 	if (!stype) {
 		return false;
 	} else if (stype->isUnsized()) {
 		context.addError("unsized struct member not allowed: " + stype->str(context), *group->getType());
+		return false;
+	} else if (ctype != NStructDeclaration::CreateType::CLASS && (stype->isConstructable() || stype->isDestructable())) {
+		context.addError("struct/union types can not contain constructable/destructable members", *group->getType());
 		return false;
 	}
 	bool valid = true;
@@ -456,15 +459,17 @@ void Builder::CreateStruct(CodeContext& context, NStructDeclaration::CreateType 
 		break;
 	}
 	context.setThis(userType);
-	if (userType->isClass())
+
+	auto isClass = userType->isClass();
+	if (isClass)
 		context.setClass(static_cast<SClassType*>(userType));
 
 	if (list) {
-		for_each(list->begin(), list->end(), [&](auto i){ return addMembers(i, structVars, memberNames, context); });
+		for_each(list->begin(), list->end(), [&](auto i){ return addMembers(ctype, i, structVars, memberNames, context); });
 		SUserType::setBody(context, userType, structVars);
 	}
 
-	if (!userType->isClass())
+	if (!isClass)
 		context.setThis(nullptr);
 }
 

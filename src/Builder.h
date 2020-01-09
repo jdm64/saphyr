@@ -22,7 +22,7 @@ class Builder
 {
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* rtype, NParameterList* params);
 
-	static bool addMembers(NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
+	static bool addMembers(NStructDeclaration::CreateType ctype, NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
 
 	static bool isDeclared(CodeContext& context, Token* name, vector<SType*> templateArgs);
 

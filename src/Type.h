@@ -275,6 +275,10 @@ public:
 		return tclass & TEMPLATED;
 	}
 
+	bool isConstructable();
+
+	bool isDestructable();
+
 	SType* subType() const
 	{
 		return subtype;

@@ -56,6 +56,25 @@ struct BadRecursive
 	[4]this arr;
 }
 
+class MyClass
+{
+	struct this
+	{
+		int a;
+	}
+
+	this()
+	a{4}
+	{
+	}
+}
+
+struct HasClass
+{
+	MyClass a;
+	[3]MyClass b;
+}
+
 ========
 
 negative/Struct.syp:4:2: unsized struct member not allowed: auto
@@ -71,4 +90,6 @@ negative/Struct.syp:42:2: variable k not declared
 negative/Struct.syp:50:13: can not cast between Good and More types
 negative/Struct.syp:55:2: unsized struct member not allowed: BadRecursive
 negative/Struct.syp:56:5: can't create array of BadRecursive types
-found 13 errors
+negative/Struct.syp:74:2: struct/union types can not contain constructable/destructable members
+negative/Struct.syp:75:2: struct/union types can not contain constructable/destructable members
+found 15 errors
