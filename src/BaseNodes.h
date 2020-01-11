@@ -330,16 +330,7 @@ public:
 	ADD_ID(NAttrValue)
 };
 
-class NAttrValueList : public NodeList<NAttrValue>
-{
-public:
-	static NAttrValue* find(NAttrValueList* aList, size_t index)
-	{
-		if (!aList)
-			return nullptr;
-		return index < aList->size()? aList->at(index) : nullptr;
-	}
-};
+using NAttrValueList = NodeList<NAttrValue>;
 
 class NAttribute : public Node
 {
@@ -349,6 +340,14 @@ class NAttribute : public Node
 public:
 	explicit NAttribute(Token* name, NAttrValueList* values = nullptr)
 	: name(name), values(values) {}
+
+	static NAttrValue* find(NAttribute* attr, size_t index)
+	{
+		auto aList = attr->getValues();
+		if (!aList)
+			return nullptr;
+		return index < aList->size() ? aList->at(index) : nullptr;
+	}
 
 	NAttribute* copy() const override
 	{

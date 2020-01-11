@@ -263,10 +263,10 @@ SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunction
 		bool fullMangle = false;
 		auto mangle = NAttributeList::find(attrs, "mangle");
 		if (mangle) {
-			auto mangleVal = NAttrValueList::find(mangle->getValues(), 0);
+			auto mangleVal = NAttribute::find(mangle, 0);
 			if (mangleVal) {
 				rawName = mangleVal->str();
-				fullMangle = NAttrValueList::find(mangle->getValues(), 1) != nullptr;
+				fullMangle = NAttribute::find(mangle, 1) != nullptr;
 			} else {
 				context.addError("mangle attribute requires value", *mangle);
 			}
