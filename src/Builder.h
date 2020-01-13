@@ -24,6 +24,8 @@ class Builder
 
 	static bool addMembers(NStructDeclaration::CreateType ctype, NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context);
 
+	static void AddOperatorOverload(CodeContext& context, NClassFunctionDecl* stm, SClassType* clType, SFunction func);
+
 	static bool isDeclared(CodeContext& context, Token* name, vector<SType*> templateArgs);
 
 	static void validateAttrList(CodeContext& context, NAttributeList* attrs);

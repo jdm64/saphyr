@@ -1,0 +1,55 @@
+
+class Number
+{
+	struct this
+	{
+		int num;
+	}
+
+	#[oper]
+	@this asg(int a)
+	{
+	}
+
+	#[oper("not-op")]
+	@this asg2(int a)
+	{
+	}
+
+	#[oper("=")]
+	@this asg3()
+	{
+	}
+
+	#[oper("=")]
+	@this asg4(int a, int b)
+	{
+	}
+
+	#[oper("+=")]
+        @this asg5(int a)
+	{
+	}
+
+	#[oper("+=")]
+	@this asg6(int a)
+	{
+	}
+}
+
+void callNotOverloaded()
+{
+	Number num;
+
+	num ^= 3;
+}
+
+========
+
+negative/AssignmentOverload.syp:9:4: operator overload attribute requires value
+negative/AssignmentOverload.syp:14:9: unsupported operator: not-op
+negative/AssignmentOverload.syp:19:9: overloaded operator '=' requires a single parameter function
+negative/AssignmentOverload.syp:24:9: overloaded operator '=' requires a single parameter function
+negative/AssignmentOverload.syp:34:9: overloaded operator functions must be unique
+negative/AssignmentOverload.syp:44:6: can not cast between Number and int32 types
+found 6 errors

@@ -71,6 +71,44 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	return function;
 }
 
+void Builder::AddOperatorOverload(CodeContext& context, NClassFunctionDecl* stm, SClassType* clType, SFunction func)
+{
+	auto oper = NAttributeList::find(stm->getAttrs(), "oper");
+	if (!oper)
+		return;
+
+	auto val = NAttribute::find(oper, 0);
+	if (!val) {
+		context.addError("operator overload attribute requires value", *oper);
+		return;
+	}
+
+	static set<string> asgOps = {"=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "^=", "|=", "\?\?="};
+
+	auto op = val->str();
+	if (asgOps.find(op) == asgOps.end()) {
+		context.addError("unsupported operator: " + op, *val);
+		return;
+	}
+
+	if (func.numParams() != 2) {
+		context.addError("overloaded operator '" + op +"' requires a single parameter function", *val);
+		return;
+	}
+
+	auto existing = clType->getItem(op);
+	if (existing) {
+		for (auto item : *existing) {
+			if (item.second.stype() == func.stype()) {
+				context.addError("overloaded operator functions must be unique", *val);
+				return;
+			}
+		}
+	}
+
+	clType->addFunction(op, func);
+}
+
 void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm, bool prototype)
 {
 	validateAttrList(context, stm->getAttrs());
@@ -96,6 +134,7 @@ void Builder::CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm,
 	auto func = CreateFunction(context, name, stm->getRType(), stm->getParams(), prototype? nullptr : stm->getBody(), stm->getAttrs());
 	if (func && !clType->hasItem(name->str, func)) {
 		clType->addFunction(name->str, func);
+		AddOperatorOverload(context, stm, clType, func);
 	}
 	if (hasThis)
 		delete stm->getParams()->popFront();

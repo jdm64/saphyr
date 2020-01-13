@@ -94,8 +94,29 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 		return RValue();
 	}
 
-	BasicBlock* endBlock = nullptr;
+	if (lhsVar.stype()->isClass()) {
+		auto clTy = static_cast<SClassType*>(lhsVar.stype());
+		auto opTok = exp->getOpToken();
+		auto items = clTy->getItem(opTok->str);
+		if (items) {
+			auto rhsExp = visit(exp->getRhs());
+			if (!rhsExp)
+				return {};
 
+			VecSFunc funcs;
+			for (auto item : *items)
+				funcs.push_back(static_cast<SFunction&>(item.second));
+
+			VecRValue args;
+			args.push_back({lhsVar, SType::getPointer(context, lhsVar.stype())});
+			args.push_back(rhsExp);
+
+			Inst::CallFunction(context, funcs, opTok, args);
+			return rhsExp;
+		}
+	}
+
+	BasicBlock* endBlock = nullptr;
 	if (exp->getOp() == ParserBase::TT_DQ_MARK) {
 		auto condExp = Inst::Load(context, lhsVar);
 		Inst::CastTo(context, *exp, condExp, SType::getBool(context));
@@ -116,7 +137,8 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 		rhsExp = Inst::BinaryOp(exp->getOp(), *exp, lhsLocal, rhsExp, context);
 	}
 	Inst::CastTo(context, *exp->getRhs(), rhsExp, lhsVar.stype());
-	context.IB().CreateStore(rhsExp, lhsVar);
+	if (rhsExp)
+		context.IB().CreateStore(rhsExp, lhsVar);
 
 	if (exp->getOp() == ParserBase::TT_DQ_MARK) {
 		context.IB().CreateBr(endBlock);

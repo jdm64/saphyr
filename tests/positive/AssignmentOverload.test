@@ -1,0 +1,87 @@
+
+class Number
+{
+	struct this
+	{
+		int num;
+	}
+
+	#[oper("=")]
+	void asg(int a)
+	{
+		num = a;
+	}
+
+	#[oper("+=")]
+	void plusAsg(int a)
+	{
+		num += a;
+	}
+}
+
+void useNumber()
+{
+	Number num;
+
+	num = 5;
+	num += 9;
+}
+
+void chainedAssign()
+{
+	Number a, b;
+
+	a = b = 4;
+}
+
+========
+
+%Number = type { i32 }
+
+define void @Number_asg(%Number* %this, i32 %a) {
+  %1 = alloca %Number*
+  store %Number* %this, %Number** %1
+  %2 = alloca i32
+  store i32 %a, i32* %2
+  %3 = load %Number*, %Number** %1
+  %4 = getelementptr %Number, %Number* %3, i32 0, i32 0
+  %5 = load i32, i32* %2
+  store i32 %5, i32* %4
+  ret void
+}
+
+define void @Number_plusAsg(%Number* %this, i32 %a) {
+  %1 = alloca %Number*
+  store %Number* %this, %Number** %1
+  %2 = alloca i32
+  store i32 %a, i32* %2
+  %3 = load %Number*, %Number** %1
+  %4 = getelementptr %Number, %Number* %3, i32 0, i32 0
+  %5 = load i32, i32* %2
+  %6 = load i32, i32* %4
+  %7 = add i32 %6, %5
+  store i32 %7, i32* %4
+  ret void
+}
+
+define void @useNumber() {
+  %num = alloca %Number
+  call void @Number_asg(%Number* %num, i32 5)
+  call void @Number_plusAsg(%Number* %num, i32 9)
+  ret void
+}
+
+define void @chainedAssign() {
+  %a = alloca %Number
+  %b = alloca %Number
+  call void @Number_asg(%Number* %b, i32 4)
+  call void @Number_asg(%Number* %a, i32 4)
+  ret void
+}
+
+========
+
+chainedAssign T
+Number_asg T
+Number_plusAsg T
+useNumber T
