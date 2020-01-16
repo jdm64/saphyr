@@ -403,6 +403,38 @@ SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, ND
 	return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
 }
 
+SFunction Builder::getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType func)
+{
+	VecRValue syms;
+
+	switch (func) {
+	case BuiltinFuncType::Free:
+		syms = context.loadSymbol("free");
+		if (syms.empty()) {
+			auto bytePtr = SType::getPointer(context, SType::getInt(context, 8));
+			auto retType = SType::getVoid(context);
+			auto funcType = SType::getFunction(context, retType, {bytePtr});
+			Token freeName(*source, "free");
+
+			return getFuncPrototype(context, &freeName, funcType, nullptr, false);
+		}
+		return static_cast<SFunction&>(syms[0]);
+	case BuiltinFuncType::Malloc:
+		syms = context.loadSymbol("malloc");
+		if (syms.empty()) {
+			auto i64 = SType::getInt(context, 64);
+			auto retType = SType::getPointer(context, SType::getInt(context, 8));
+			auto funcType = SType::getFunction(context, retType, {i64});
+			Token mallocName(*source, "malloc");
+
+			return getFuncPrototype(context, &mallocName, funcType, nullptr, false);
+		}
+		return static_cast<SFunction&>(syms[0]);
+	default:
+		return {};
+	}
+}
+
 bool Builder::addMembers(NStructDeclaration::CreateType ctype, NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)
 {
 	auto stype = CGNDataType::run(context, group->getType());

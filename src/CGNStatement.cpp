@@ -505,24 +505,6 @@ error:
 
 void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 {
-	SFunction func;
-	auto bytePtr = SType::getPointer(context, SType::getInt(context, 8));
-	auto syms = context.loadSymbol("free");
-	if (syms.empty()) {
-		VecSType args;
-		args.push_back(bytePtr);
-		auto retType = SType::getVoid(context);
-		auto funcType = SType::getFunction(context, retType, args);
-		Token freeName("free");
-
-		func = Builder::getFuncPrototype(context, &freeName, funcType, nullptr, false);
-	} else if (!syms[0].isFunction() || syms.size() > 1) {
-		context.addError("Compiler Error: free not function", *stm->getVar());
-		return;
-	} else {
-		func = static_cast<SFunction&>(syms[0]);
-	}
-
 	auto arrSize = CGNExpression::run(context, stm->getArrSize());
 	auto ptr = CGNExpression::run(context, stm->getVar());
 	if (!ptr) {
@@ -534,10 +516,9 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 
 	Inst::CallDestructor(context, ptr, arrSize, *stm->getVar());
 
-	vector<Value*> exp_list;
-	exp_list.push_back(context.IB().CreateBitCast(ptr, *bytePtr));
-
-	context.IB().CreateCall(func.value(), exp_list);
+	auto func = Builder::getBuiltinFunc(context, *stm->getVar(), BuiltinFuncType::Free);
+	auto bitCast = context.IB().CreateBitCast(ptr, *func.getParam(0));
+	context.IB().CreateCall(func.value(), {bitCast});
 }
 
 void CGNStatement::visitNDestructorCall(NDestructorCall* stm)

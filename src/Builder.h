@@ -18,6 +18,11 @@
 #ifndef __BUILDER_H__
 #define __BUILDER_H__
 
+enum class BuiltinFuncType
+{
+	Free, Malloc
+};
+
 class Builder
 {
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* rtype, NParameterList* params);
@@ -38,6 +43,8 @@ public:
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 
 	static SFunction getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs = nullptr, bool allowMangle = true);
+
+	static SFunction getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType func);
 
 	static SFunction CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs = nullptr);
 

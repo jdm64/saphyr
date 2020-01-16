@@ -201,23 +201,6 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 
 RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 {
-	RValue funcVal;
-	auto syms = context.loadSymbol("malloc");
-	if (syms.empty()) {
-		VecSType args;
-		args.push_back(SType::getInt(context, 64));
-		auto retType = SType::getPointer(context, SType::getInt(context, 8));
-		auto funcType = SType::getFunction(context, retType, args);
-		Token mallocName("malloc");
-
-		funcVal = Builder::getFuncPrototype(context, &mallocName, funcType, nullptr, false);
-	} else if (!syms[0].isFunction() || syms.size() > 1) {
-		context.addError("Compiler Error: malloc not function", *exp);
-		return {};
-	} else {
-		funcVal = syms[0];
-	}
-
 	RValue sizeBytes;
 	RValue sizeArr;
 	auto nType = CGNDataTypeNew::run(context, exp->getType(), sizeBytes, sizeArr);
@@ -228,11 +211,8 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 		return RValue();
 	}
 
-	vector<Value*> exp_list;
-	exp_list.push_back(sizeBytes);
-
-	auto func = static_cast<SFunction&>(funcVal);
-	auto call = context.IB().CreateCall(func.value(), exp_list);
+	auto func = Builder::getBuiltinFunc(context, *exp, BuiltinFuncType::Malloc);
+	auto call = context.IB().CreateCall(func.value(), {sizeBytes});
 	auto ptr = RValue(call, func.returnTy());
 	auto ptrType = SType::getPointer(context, nType);
 	auto rPtr = RValue(context.IB().CreateBitCast(ptr, *ptrType), ptrType);
