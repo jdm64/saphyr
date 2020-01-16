@@ -131,7 +131,7 @@ SType* SType::getPointer(CodeContext& context, SType* ptrType)
 	return context.getTypeManager().getPointer(ptrType);
 }
 
-SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, vector<SType*> params)
+SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, VecSType params)
 {
 	return context.getTypeManager().getFunction(returnTy, params);
 }
@@ -273,7 +273,7 @@ string SEnumType::str(const CodeContext& context) const
 	return os.str();
 }
 
-bool SUserType::isDeclared(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
+bool SUserType::isDeclared(CodeContext& context, const string& name, const VecSType& templateArgs)
 {
 	auto inTemplate = context.inTemplate();
 	auto hasArgs = !templateArgs.empty();
@@ -287,7 +287,7 @@ bool SUserType::isDeclared(CodeContext& context, const string& name, const vecto
 	return context.getTypeManager().lookupUserType(rawName);
 }
 
-SType* SUserType::lookup(CodeContext& context, Token* name, vector<SType*> templateArgs, bool& hasErrors)
+SType* SUserType::lookup(CodeContext& context, Token* name, VecSType templateArgs, bool& hasErrors)
 {
 	auto nameStr = name->str;
 	bool inTemplate = context.inTemplate();
@@ -352,19 +352,19 @@ void SUserType::createAlias(CodeContext& context, const string& name, SType* typ
 	context.getTypeManager().createAlias(name, type);
 }
 
-SStructType* SUserType::createStruct(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
+SStructType* SUserType::createStruct(CodeContext& context, const string& name, const VecSType& templateArgs)
 {
 	auto rawName = SUserType::raw(name, templateArgs);
 	return context.getTypeManager().createStruct(name, rawName, templateArgs);
 }
 
-SClassType* SUserType::createClass(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
+SClassType* SUserType::createClass(CodeContext& context, const string& name, const VecSType& templateArgs)
 {
 	auto rawName = SUserType::raw(name, templateArgs);
 	return context.getTypeManager().createClass(name, rawName, templateArgs);
 }
 
-SUnionType* SUserType::createUnion(CodeContext& context, const string& name, const vector<SType*>& templateArgs)
+SUnionType* SUserType::createUnion(CodeContext& context, const string& name, const VecSType& templateArgs)
 {
 	auto rawName = SUserType::raw(name, templateArgs);
 	return context.getTypeManager().createUnion(name, rawName, templateArgs);
@@ -425,7 +425,7 @@ SType* TypeManager::getPointer(SType* ptrType)
 	return item.get();
 }
 
-SFunctionType* TypeManager::getFunction(SType* returnTy, vector<SType*> args)
+SFunctionType* TypeManager::getFunction(SType* returnTy, VecSType args)
 {
 	SFuncPtr &item = funcMap[make_pair(returnTy, args)];
 	if (!item.get()) {
@@ -476,7 +476,7 @@ void TypeManager::setBody(STemplatedType* type, const vector<pair<string,SType*>
 	static_cast<StructType*>(type->ltype)->setBody(elements);
 }
 
-SStructType* TypeManager::createStruct(const string& name, const string& rawName, const vector<SType*>& templateArgs)
+SStructType* TypeManager::createStruct(const string& name, const string& rawName, const VecSType& templateArgs)
 {
 	SUserPtr& item = usrMap[rawName];
 	if (!item.get()) {
@@ -486,7 +486,7 @@ SStructType* TypeManager::createStruct(const string& name, const string& rawName
 	return static_cast<SStructType*>(item.get());
 }
 
-SClassType* TypeManager::createClass(const string& name, const string& rawName, const vector<SType*>& templateArgs)
+SClassType* TypeManager::createClass(const string& name, const string& rawName, const VecSType& templateArgs)
 {
 	SUserPtr& item = usrMap[rawName];
 	if (!item.get()) {
@@ -496,7 +496,7 @@ SClassType* TypeManager::createClass(const string& name, const string& rawName, 
 	return static_cast<SClassType*>(item.get());
 }
 
-SUnionType* TypeManager::createUnion(const string& name, const string& rawName, const vector<SType*>& templateArgs)
+SUnionType* TypeManager::createUnion(const string& name, const string& rawName, const VecSType& templateArgs)
 {
 	SUserPtr& item = usrMap[rawName];
 	if (!item.get()) {

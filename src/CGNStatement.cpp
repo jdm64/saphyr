@@ -509,7 +509,7 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 	auto bytePtr = SType::getPointer(context, SType::getInt(context, 8));
 	auto syms = context.loadSymbol("free");
 	if (syms.empty()) {
-		vector<SType*> args;
+		VecSType args;
 		args.push_back(bytePtr);
 		auto retType = SType::getVoid(context);
 		auto funcType = SType::getFunction(context, retType, args);

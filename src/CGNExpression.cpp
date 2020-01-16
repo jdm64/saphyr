@@ -204,7 +204,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	RValue funcVal;
 	auto syms = context.loadSymbol("malloc");
 	if (syms.empty()) {
-		vector<SType*> args;
+		VecSType args;
 		args.push_back(SType::getInt(context, 64));
 		auto retType = SType::getPointer(context, SType::getInt(context, 8));
 		auto funcType = SType::getFunction(context, retType, args);

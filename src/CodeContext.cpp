@@ -206,9 +206,9 @@ SType* CodeContext::getTemplateArg(const string& name)
 	return it != templateArgs.end() ? it->second : nullptr;
 }
 
-vector<SType*> CodeContext::getTemplateArgs()
+VecSType CodeContext::getTemplateArgs()
 {
-	vector<SType*> args;
+	VecSType args;
 	transform(templateArgs.begin(), templateArgs.end(), back_inserter(args), [](auto i){ return i.second; });
 	return args;
 }

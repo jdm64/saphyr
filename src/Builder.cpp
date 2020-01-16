@@ -379,7 +379,7 @@ SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* rtype, NPar
 SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params)
 {
 	bool valid = true;
-	vector<SType*> args;
+	VecSType args;
 	for (auto item : *params) {
 		auto param = CGNDataType::run(context, item);
 		if (!param) {
@@ -431,7 +431,7 @@ bool Builder::addMembers(NStructDeclaration::CreateType ctype, NVariableDeclGrou
 	return valid;
 }
 
-bool Builder::isDeclared(CodeContext& context, Token* name, vector<SType*> templateArgs)
+bool Builder::isDeclared(CodeContext& context, Token* name, VecSType templateArgs)
 {
 	if (SUserType::isDeclared(context, name->str, templateArgs)) {
 		context.addError("type with name " + name->str + " already declared", name);

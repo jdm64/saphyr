@@ -26,7 +26,7 @@ class Builder
 
 	static void AddOperatorOverload(CodeContext& context, NClassFunctionDecl* stm, SClassType* clType, SFunction func);
 
-	static bool isDeclared(CodeContext& context, Token* name, vector<SType*> templateArgs);
+	static bool isDeclared(CodeContext& context, Token* name, VecSType templateArgs);
 
 	static void validateAttrList(CodeContext& context, NAttributeList* attrs);
 

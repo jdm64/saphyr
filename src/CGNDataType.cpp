@@ -151,7 +151,7 @@ SType* CGNDataType::visitNVecType(NVecType* type)
 
 SType* CGNDataType::visitNUserType(NUserType* type)
 {
-	vector<SType*> templateArgs;
+	VecSType templateArgs;
 	if (type->getTemplateArgs()) {
 		auto valid = true;
 		for (auto item : *type->getTemplateArgs()) {

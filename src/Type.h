@@ -35,6 +35,10 @@ class TypeManager;
 using namespace std;
 using namespace llvm;
 
+
+class SType;
+using VecSType = vector<SType*>;
+
 class SType
 {
 protected:
@@ -81,7 +85,7 @@ public:
 		TEMPLATED = 1 << 17
 	};
 
-	static vector<Type*> convertArr(vector<SType*> arr)
+	static vector<Type*> convertArr(VecSType arr)
 	{
 		vector<Type*> vec;
 		transform(arr.begin(), arr.end(), back_inserter(vec), [](auto i){ return *i; });
@@ -139,7 +143,7 @@ public:
 
 	static SType* getPointer(CodeContext& context, SType* ptrType);
 
-	static SFunctionType* getFunction(CodeContext& context, SType* returnTy, vector<SType*> params);
+	static SFunctionType* getFunction(CodeContext& context, SType* returnTy, VecSType params);
 
 	operator Type*() const
 	{
@@ -404,7 +408,7 @@ public:
 		return name;
 	}
 
-	static string raw(const string& name, const vector<SType*>& templateArgs)
+	static string raw(const string& name, const VecSType& templateArgs)
 	{
 		auto ret = name;
 		for (auto item : templateArgs)
@@ -412,17 +416,17 @@ public:
 		return ret;
 	}
 
-	static bool isDeclared(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
+	static bool isDeclared(CodeContext& context, const string& name, const VecSType& templateArgs);
 
-	static SType* lookup(CodeContext& context, Token* name, vector<SType*> templateArgs, bool& hasErrors);
+	static SType* lookup(CodeContext& context, Token* name, VecSType templateArgs, bool& hasErrors);
 
 	static void createAlias(CodeContext& context, const string& name, SType* type);
 
-	static SStructType* createStruct(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
+	static SStructType* createStruct(CodeContext& context, const string& name, const VecSType& templateArgs);
 
-	static SClassType* createClass(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
+	static SClassType* createClass(CodeContext& context, const string& name, const VecSType& templateArgs);
 
-	static SUnionType* createUnion(CodeContext& context, const string& name, const vector<SType*>& templateArgs);
+	static SUnionType* createUnion(CodeContext& context, const string& name, const VecSType& templateArgs);
 
 	static void setBody(CodeContext& context, STemplatedType* type, const vector<pair<string, SType*>>& structure);
 
@@ -454,9 +458,9 @@ public:
 class STemplatedType : public SUserType
 {
 protected:
-	vector<SType*> templateArgs;
+	VecSType templateArgs;
 
-	STemplatedType(const string& tName, int typeClass, const vector<SType*>& templateArgs)
+	STemplatedType(const string& tName, int typeClass, const VecSType& templateArgs)
 	: SUserType(tName, typeClass | OPAQUE | (templateArgs.size() ? TEMPLATED : 0), nullptr, 0), templateArgs(templateArgs) {}
 
 public:
@@ -468,7 +472,7 @@ public:
 		return raw;
 	}
 
-	vector<SType*> getTemplateArgs() const
+	VecSType getTemplateArgs() const
 	{
 		return templateArgs;
 	}
@@ -485,7 +489,7 @@ class SStructType : public STemplatedType
 protected:
 	container items;
 
-	SStructType(const string& sName, const vector<SType*>& args, int ctype = STRUCT)
+	SStructType(const string& sName, const VecSType& args, int ctype = STRUCT)
 	: STemplatedType(sName, ctype, args) {}
 
 	SType* copy() override
@@ -517,7 +521,7 @@ class SClassType : public SStructType
 {
 	friend class TypeManager;
 
-	SClassType(const string& cName, const vector<SType*>& args)
+	SClassType(const string& cName, const VecSType& args)
 	: SStructType(cName, args, STRUCT | CLASS) {}
 
 public:
@@ -534,7 +538,7 @@ class SUnionType : public STemplatedType
 
 	map<string, SType*> items;
 
-	SUnionType(const string& uName, const vector<SType*>& args)
+	SUnionType(const string& uName, const VecSType& args)
 	: STemplatedType(uName, UNION, args) {}
 
 	SType* copy() override
@@ -589,9 +593,9 @@ class SFunctionType : public SType
 {
 	friend class TypeManager;
 
-	vector<SType*> params;
+	VecSType params;
 
-	SFunctionType(FunctionType* type, SType* returnTy, const vector<SType*>& params)
+	SFunctionType(FunctionType* type, SType* returnTy, const VecSType& params)
 	: SType(FUNCTION, type, 0, returnTy), params(params) {}
 
 	SType* copy() override
@@ -600,7 +604,7 @@ class SFunctionType : public SType
 	}
 
 public:
-	using ParamIter = vector<SType*>::iterator;
+	using ParamIter = VecSType::iterator;
 
 	operator FunctionType*() const
 	{
@@ -694,7 +698,7 @@ class TypeManager
 	map<string, SUserPtr> usrMap;
 
 	// function types
-	map<pair<SType*, vector<SType*> >, SFuncPtr> funcMap;
+	map<pair<SType*, VecSType >, SFuncPtr> funcMap;
 
 	// template types
 	map<string, STempPtr> templateMap;
@@ -766,7 +770,7 @@ public:
 
 	SType* getPointer(SType* ptrType);
 
-	SFunctionType* getFunction(SType* returnTy, vector<SType*> args);
+	SFunctionType* getFunction(SType* returnTy, VecSType args);
 
 	SUserType* lookupUserType(const string& name)
 	{
@@ -787,11 +791,11 @@ public:
 
 	void setBody(STemplatedType* type, const vector<pair<string, SType*>>& structure);
 
-	SStructType* createStruct(const string& name, const string& rawName, const vector<SType*>& templateArgs);
+	SStructType* createStruct(const string& name, const string& rawName, const VecSType& templateArgs);
 
-	SClassType* createClass(const string& name, const string& rawName, const vector<SType*>& templateArgs);
+	SClassType* createClass(const string& name, const string& rawName, const VecSType& templateArgs);
 
-	SUnionType* createUnion(const string& name, const string& rawName, const vector<SType*>& templateArgs);
+	SUnionType* createUnion(const string& name, const string& rawName, const VecSType& templateArgs);
 
 	void createEnum(const string& name, const vector<pair<string,int64_t>>& structure, SType* type);
 };

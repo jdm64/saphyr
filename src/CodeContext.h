@@ -164,7 +164,7 @@ public:
 
 	SType* getTemplateArg(const string& name);
 
-	vector<SType*> getTemplateArgs();
+	VecSType getTemplateArgs();
 
 	void pushLocalTable();
 
