@@ -18,11 +18,13 @@
 #define __CODE_CONTEXT_H__
 
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/IRBuilder.h>
 #include "Value.h"
 
 using namespace boost::filesystem;
+using namespace boost::program_options;
 
 enum BranchType { BREAK = 1, CONTINUE = 1 << 1, REDO = 1 << 2 };
 
@@ -93,6 +95,7 @@ class CodeContext
 	using BlockCountVec = vector<BlockCount>;
 
 	GlobalContext& globalCtx;
+	variables_map& conf;
 
 	vector<pair<string, SType*>> templateArgs;
 
@@ -113,10 +116,12 @@ class CodeContext
 	BlockCount loopBranchLevel(const BlockCountVec& branchBlocks, int level) const;
 
 public:
-	explicit CodeContext(GlobalContext& context)
-	: globalCtx(context), irBuilder(context.module->getContext()), thisType(nullptr), currClass(nullptr) {}
+	explicit CodeContext(GlobalContext& context, variables_map& config)
+	: globalCtx(context), conf(config), irBuilder(context.module->getContext()), thisType(nullptr), currClass(nullptr) {}
 
 	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings);
+
+	variables_map& config() const;
 
 	/**
 	 * global context functions

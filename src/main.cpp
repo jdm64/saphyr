@@ -33,6 +33,7 @@ void initOptions()
 		("llvmir", "write LLVM IR file")
 		("noverify", "do not verify module; write LLVM IR file")
 		("noclean", "do not run clean/verify on module; write LLVM IR file")
+		("print-debug", "insert debug prints in generated code")
 		("imports", "output imports listed in the file");
 }
 
@@ -50,7 +51,7 @@ int compile(const path& file, NStatementList* statements, variables_map& vm)
 	LLVMContext llvmContext;
 	unique_ptr<Module> module(new Module(file.string(), llvmContext));
 	GlobalContext globalCtx(module.get());
-	CodeContext context(globalCtx);
+	CodeContext context(globalCtx, vm);
 
 	context.pushFile(file);
 	CGNStatement::run(context, COPY_NODES ? statements->copy() : statements);

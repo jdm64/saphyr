@@ -234,6 +234,11 @@ public:
 class Token
 {
 public:
+	string str;
+	string filename;
+	int line;
+	int col;
+
 	Token()
 	: line(0), col(0) {}
 
@@ -248,10 +253,10 @@ public:
 		return new Token(*this);
 	}
 
-	string str;
-	string filename;
-	int line;
-	int col;
+	string getLoc() const
+	{
+		return filename + ":" + to_string(line) + ":" + to_string(col);
+	}
 
 	static void unescape(string &val)
 	{

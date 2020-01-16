@@ -60,7 +60,7 @@ bool GlobalContext::handleErrors() const
 
 	string buff;
 	for (auto& error : errors) {
-		buff += error.first.filename + ":" + to_string(error.first.line) + ":" + to_string(error.first.col) + ": " + error.second + "\n";
+		buff += error.first.getLoc() + ": " + error.second + "\n";
 	}
 	buff += "found " + to_string(errors.size()) + " errors\n";
 	cout << buff;
@@ -95,6 +95,11 @@ void CodeContext::validateFunction()
 	}
 }
 
+variables_map& CodeContext::config() const
+{
+	return conf;
+}
+
 CodeContext::BlockCount CodeContext::loopBranchLevel(const BlockCountVec& branchBlocks, int level) const
 {
 	int blockCount = branchBlocks.size();
@@ -104,7 +109,7 @@ CodeContext::BlockCount CodeContext::loopBranchLevel(const BlockCountVec& branch
 
 CodeContext CodeContext::newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings)
 {
-	CodeContext newCtx(context.globalCtx);
+	CodeContext newCtx(context.globalCtx, context.conf);
 	newCtx.templateArgs = templateMappings;
 	return newCtx;
 }

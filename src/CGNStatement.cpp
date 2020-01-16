@@ -505,19 +505,24 @@ error:
 
 void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 {
+	Token* varTok = *stm->getVar();
 	auto arrSize = CGNExpression::run(context, stm->getArrSize());
 	auto ptr = CGNExpression::run(context, stm->getVar());
 	if (!ptr) {
 		return;
 	} else if (!ptr.stype()->isPointer()) {
-		context.addError("delete requires pointer type", *stm->getVar());
+		context.addError("delete requires pointer type", varTok);
 		return;
 	}
 
-	Inst::CallDestructor(context, ptr, arrSize, *stm->getVar());
+	Inst::CallDestructor(context, ptr, arrSize, varTok);
 
-	auto func = Builder::getBuiltinFunc(context, *stm->getVar(), BuiltinFuncType::Free);
+	auto func = Builder::getBuiltinFunc(context, varTok, BuiltinFuncType::Free);
 	auto bitCast = context.IB().CreateBitCast(ptr, *func.getParam(0));
+
+	if (context.config().count("print-debug"))
+		Builder::AddDebugPrint(context, varTok, "[DEBUG] free(%i) at " + varTok->getLoc(), {bitCast});
+
 	context.IB().CreateCall(func.value(), {bitCast});
 }
 

@@ -430,9 +430,36 @@ SFunction Builder::getBuiltinFunc(CodeContext& context, const Token* source, Bui
 			return getFuncPrototype(context, &mallocName, funcType, nullptr, false);
 		}
 		return static_cast<SFunction&>(syms[0]);
+	case BuiltinFuncType::Printf:
+		syms = context.loadSymbol("printf");
+		if (syms.empty()) {
+			// TODO refactor once SFunction supports varargs
+			auto bytePtr = SType::getPointer(context, SType::getArray(context, SType::getInt(context, 8), 0));
+			auto i32 = SType::getInt(context, 32);
+			auto funcType = FunctionType::get(i32->type(), {bytePtr->type()}, true);
+			auto sFuncType = SType::getFunction(context, i32, {bytePtr});
+
+			auto func = Function::Create(funcType, GlobalValue::ExternalLinkage, "printf", context.getModule());
+			auto function = SFunction::create(context, func, sFuncType, nullptr);
+
+			context.storeGlobalSymbol(function, "printf");
+			return function;
+		}
+		return static_cast<SFunction&>(syms[0]);
 	default:
 		return {};
 	}
+}
+
+void Builder::AddDebugPrint(CodeContext& context, Token* source, const string& msg, vector<Value*> args)
+{
+	auto printf = Builder::getBuiltinFunc(context, source, BuiltinFuncType::Printf);
+
+	NStringLiteral nMsg(new Token("\"" + msg + "\n\""));
+	auto msgVal = CGNExpression::run(context, &nMsg);
+	args.insert(args.begin(), msgVal);
+
+	context.IB().CreateCall(printf.value(), args);
 }
 
 bool Builder::addMembers(NStructDeclaration::CreateType ctype, NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)

@@ -211,8 +211,13 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 		return RValue();
 	}
 
-	auto func = Builder::getBuiltinFunc(context, *exp, BuiltinFuncType::Malloc);
+	Token* expTok = *exp;
+	auto func = Builder::getBuiltinFunc(context, expTok, BuiltinFuncType::Malloc);
 	auto call = context.IB().CreateCall(func.value(), {sizeBytes});
+
+	if (context.config().count("print-debug"))
+		Builder::AddDebugPrint(context, expTok, "[DEBUG] malloc(%i) = %i at " + expTok->getLoc(), {sizeBytes, call});
+
 	auto ptr = RValue(call, func.returnTy());
 	auto ptrType = SType::getPointer(context, nType);
 	auto rPtr = RValue(context.IB().CreateBitCast(ptr, *ptrType), ptrType);

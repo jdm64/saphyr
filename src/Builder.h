@@ -20,7 +20,7 @@
 
 enum class BuiltinFuncType
 {
-	Free, Malloc
+	Free, Malloc, Printf
 };
 
 class Builder
@@ -47,6 +47,8 @@ public:
 	static SFunction getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType func);
 
 	static SFunction CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs = nullptr);
+
+	static void AddDebugPrint(CodeContext& context, Token* source, const string& msg, vector<Value*> args);
 
 	static void CreateClassFunction(CodeContext& context, NClassFunctionDecl* stm, bool prototype);
 
