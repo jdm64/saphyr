@@ -26,17 +26,19 @@
 
 // forward declaration
 class CodeContext;
-class SFunctionType;
+class SType;
+class STemplatedType;
 class SStructType;
-class SFunction;
-class RValue;
+class SUnionType;
+class SClassType;
+class SFunctionType;
 class TypeManager;
+class RValue;
+class SFunction;
 
 using namespace std;
 using namespace llvm;
 
-
-class SType;
 using VecSType = vector<SType*>;
 
 class SType
@@ -382,10 +384,6 @@ public:
 		// nothing to do
 	}
 };
-
-class SClassType;
-class STemplatedType;
-class SUnionType;
 
 class SUserType : public SType
 {

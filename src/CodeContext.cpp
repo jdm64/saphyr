@@ -89,7 +89,7 @@ bool GlobalContext::fileLoaded(const path& filename)
 
 void CodeContext::validateFunction()
 {
-	for (auto& item : labelBlocks) {
+	for (const auto& item : labelBlocks) {
 		if (item.second->isPlaceholder)
 			addError("label " + item.first + " not defined", &item.second->token);
 	}

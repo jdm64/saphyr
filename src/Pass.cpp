@@ -34,8 +34,7 @@ bool SimpleBlockClean::removeBranchBlock(BasicBlock* block)
 		return false;
 
 	auto branchTo = branch->getSuccessor(0);
-	auto& inst = branchTo->front();
-	if (isa<PHINode>(inst)) {
+	if (isa<PHINode>(branchTo->front())) {
 		return false;
 	}
 

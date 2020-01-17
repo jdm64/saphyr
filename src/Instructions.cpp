@@ -494,7 +494,7 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 		return RValue();
 	}
 
-	SType* dtype = nullptr;
+	const SType* dtype = nullptr;
 	switch (op->getType()) {
 	case NArrowOperator::DATA:
 		dtype = CGNDataType::run(context, op->getDataType());

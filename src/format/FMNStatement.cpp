@@ -390,7 +390,7 @@ void FMNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 void FMNStatement::visitNDestructorCall(NDestructorCall* stm)
 {
 	string line;
-	Token* var = *stm->getVar();
+	const Token* var = *stm->getVar();
 	if (var->str != "this")
 		line += FMNExpression::run(context, stm->getVar()) + ".";
 	context.addLine(line + "~this();");

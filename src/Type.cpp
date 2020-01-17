@@ -144,11 +144,10 @@ uint64_t SType::allocSize(CodeContext& context, SType* type)
 SType* SType::numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min)
 {
 	switch (ltype->isVec() | (rtype->isVec() << 1)) {
-	default:
-		// should never happen
-		return ltype;
 	case 0:
 		goto novec;
+	default:
+		// should never happen
 	case 1:
 		return ltype;
 	case 2:
@@ -460,7 +459,7 @@ void TypeManager::setBody(STemplatedType* type, const vector<pair<string,SType*>
 		}
 	} else if (type->isUnion()) {
 		auto uTy = static_cast<SUnionType*>(type);
-		SType* rawType = int8Ty.get(); // structure[0].second;
+		const SType* rawType = int8Ty.get(); // structure[0].second;
 		uint64_t size = 0; // allocSize(rawType);
 		for (auto item : structure) {
 			auto tsize = allocSize(item.second);
