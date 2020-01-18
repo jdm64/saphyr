@@ -1,0 +1,50 @@
+
+// print-debug
+
+@[3]int getPtr()
+{
+	return new [3]int;
+}
+
+void deletePtr()
+{
+	auto ptr = getPtr();
+	delete ptr;
+}
+
+========
+
+@0 = private constant [56 x i8] c"[DEBUG] malloc(%i) = %i at positive/PrintDebug.syp:6:9\0A\00"
+@1 = private constant [50 x i8] c"[DEBUG] free(%i) at positive/PrintDebug.syp:12:9\0A\00"
+
+define [3 x i32]* @getPtr() {
+  %1 = call i8* @malloc(i64 12)
+  %2 = call i32 ([0 x i8]*, ...) @printf([0 x i8]* bitcast ([56 x i8]* @0 to [0 x i8]*), i64 12, i8* %1)
+  %3 = bitcast i8* %1 to [3 x i32]*
+  ret [3 x i32]* %3
+}
+
+declare i8* @malloc(i64)
+
+declare i32 @printf([0 x i8]*, ...)
+
+define void @deletePtr() {
+  %1 = call [3 x i32]* @getPtr()
+  %ptr = alloca [3 x i32]*
+  store [3 x i32]* %1, [3 x i32]** %ptr
+  %2 = load [3 x i32]*, [3 x i32]** %ptr
+  %3 = bitcast [3 x i32]* %2 to i8*
+  %4 = call i32 ([0 x i8]*, ...) @printf([0 x i8]* bitcast ([50 x i8]* @1 to [0 x i8]*), i8* %3)
+  call void @free(i8* %3)
+  ret void
+}
+
+declare void @free(i8*)
+
+========
+
+deletePtr T
+free U
+getPtr T
+malloc U
+printf U

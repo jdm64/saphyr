@@ -117,7 +117,7 @@ class TestCase:
 		data = ""
 		with open(file, "r") as asm:
 			for line in asm:
-				if not self.basename in line:
+				if not "; ModuleID" in line and not "source_filename" in line:
 					data += line
 		data = data.strip() + "\n"
 		with open(file, "w") as asm:
@@ -140,11 +140,14 @@ class TestCase:
 			log.write(p.err)
 			log.write(p.out)
 
-	def runFmt(self):
+	def getHeader(self):
 		with codecs.open(self.srcFile, "r", ENCODING) as file:
-			line = file.readline()
-			line += file.readline()
-		if line.find("nofmt") != -1:
+			line = file.readline() + file.readline()
+		return line
+
+	def runFmt(self):
+		header = self.getHeader()
+		if header.find("nofmt") != -1 or header.find("print-debug") != -1:
 			return False, None
 
 		proc = Cmd([SYFMT_BIN, self.srcFile])
@@ -168,7 +171,12 @@ class TestCase:
 		if ret[0]:
 			return ret
 
-		proc = Cmd([SAPHYR_BIN, "--llvmir", self.srcFile])
+		cmdline = [SAPHYR_BIN]
+		if self.getHeader().find("print-debug") != -1:
+			cmdline.append("--print-debug")
+		cmdline.extend(["--llvmir", self.srcFile])
+
+		proc = Cmd(cmdline)
 		if proc.ext < 0:
 			self.writeLog(proc)
 			return True, "[crash compile]"
