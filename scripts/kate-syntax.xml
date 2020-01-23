@@ -95,6 +95,7 @@
       </context>
       <context name="Import" attribute="Normal" lineEndContext="#stay">
         <DetectChar attribute="Import" context="Import String" char="&quot;" />
+        <RegExpr    attribute="Import" context="#stay" String="[a-zA-Z0-9.]+" />
         <DetectChar attribute="Normal" context="#pop" char=";" />
       </context>
       <context name="Import String" attribute="Import" lineEndContext="#stay">
