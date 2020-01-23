@@ -3,7 +3,7 @@
 <!-- mkdir -p ~/.local/share/katepart5/syntax; cp kate-syntax.xml ~/.local/share/katepart5/syntax/saphyr.xml -->
 <language
     name="Saphyr"
-    version="1.2"
+    version="1.4"
     kateversion="2.4"
     section="Sources"
     indenter="cstyle"
@@ -77,7 +77,7 @@
         <DetectChar       attribute="Normal"       context="#stay"               char="}" endRegion="Brace" />
         <DetectChar       attribute="String"       context="Double Quote String" char="&quot;" />
         <DetectChar       attribute="String"       context="Backtick String"     char="`" />
-        <Detect2Chars     attribute="Normal"       context="Arrow Op"            char="-" char1=">" />
+        <Detect2Chars     attribute="Arrow Op"     context="Arrow Op"            char="-" char1=">" />
         <Detect2Chars     attribute="Attribute"    context="Attribute"           char="#" char1="[" beginRegion="Attribute" />
         <Detect2Chars     attribute="Comment"      context="Line Comment"        char="/" char1="/" />
         <Detect2Chars     attribute="Comment"      context="Block Comment"       char="/" char1="*" beginRegion="Comment" />
@@ -93,7 +93,7 @@
       <context name="Number Suffix" attribute="Normal" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
         <RegExpr attribute="Data Type" context="#pop" String="_[a-zA-Z0-9_]+" />
       </context>
-      <context name="Import" attribute="Normal" lineEndContext="#stay">
+      <context name="Import" attribute="Import" lineEndContext="#stay">
         <DetectChar attribute="Import" context="Import String" char="&quot;" />
         <RegExpr    attribute="Import" context="#stay" String="[a-zA-Z0-9.]+" />
         <DetectChar attribute="Normal" context="#pop" char=";" />
@@ -113,9 +113,9 @@
         <HlCStringChar attribute="Character" context="#stay" />
         <DetectChar    attribute="String"    context="#pop" char="`" />
       </context>
-      <context name="Arrow Op" attribute="Normal" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
+      <context name="Arrow Op" attribute="Arrow Op" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
         <DetectSpaces/>
-        <DetectIdentifier attribute="Arrow Op" context="#pop" />
+        <DetectIdentifier attribute="Arrow Func" context="#pop" />
       </context>
       <context name="Attribute" attribute="Attribute" lineEndContext="#stay">
         <DetectChar char="]" attribute="Attribute" context="#pop" endRegion="Attribute" />
@@ -127,17 +127,19 @@
       </context>
       <context name="Block Comment" attribute="Comment" lineEndContext="#stay">
         <DetectSpaces/>
-        <IncludeRules context="##Alerts" />
         <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment" />
+        <IncludeRules context="##Alerts" />
+        <IncludeRules context="##Modelines" />
       </context>
     </contexts>
     <itemDatas>
       <itemData name="Normal"       defStyleNum="dsNormal"      spellChecking="false" />
       <itemData name="Keyword"      defStyleNum="dsKeyword"     spellChecking="false" />
       <itemData name="Function"     defStyleNum="dsFunction"    spellChecking="false" />
-      <itemData name="Variable"     defStyleNum="dsNormal"      spellChecking="false" />
+      <itemData name="Variable"     defStyleNum="dsVariable"    spellChecking="false" />
       <itemData name="Control Flow" defStyleNum="dsControlFlow" spellChecking="false" />
-      <itemData name="Arrow Op"     defStyleNum="dsBuiltIn"     spellChecking="false" />
+      <itemData name="Arrow Op"     defStyleNum="dsOperator"    spellChecking="false" bold="true" />
+      <itemData name="Arrow Func"   defStyleNum="dsBuiltIn"     spellChecking="false" bold="true" />
       <itemData name="Attribute"    defStyleNum="dsAttribute" />
       <itemData name="Data Type"    defStyleNum="dsDataType"    spellChecking="false" bold="true" />
       <itemData name="Decimal"      defStyleNum="dsDecVal"      spellChecking="false" />
