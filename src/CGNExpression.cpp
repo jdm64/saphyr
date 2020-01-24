@@ -113,6 +113,11 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 
 			Inst::CallFunction(context, funcs, opTok, args);
 			return rhsExp;
+		} else if (clTy->getDestructor()) {
+			auto clName = clTy->str(context);
+			auto msg = "assignment using class (" + clName + ") with destructor not allowed without assignment overload";
+			context.addError(msg, opTok);
+			return {};
 		}
 	}
 

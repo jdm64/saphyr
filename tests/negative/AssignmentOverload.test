@@ -44,6 +44,25 @@ void callNotOverloaded()
 	num ^= 3;
 }
 
+class BadNumber
+{
+	struct this
+	{
+		@int num;
+	}
+
+	~this()
+	{
+		delete num;
+	}
+}
+
+void asgnComplex()
+{
+	BadNumber b;
+	b = 4;
+}
+
 ========
 
 negative/AssignmentOverload.syp:9:4: operator overload attribute requires value
@@ -52,4 +71,5 @@ negative/AssignmentOverload.syp:19:9: overloaded operator '=' requires a single 
 negative/AssignmentOverload.syp:24:9: overloaded operator '=' requires a single parameter function
 negative/AssignmentOverload.syp:34:9: overloaded operator functions must be unique
 negative/AssignmentOverload.syp:44:6: can not cast between Number and int32 types
-found 6 errors
+negative/AssignmentOverload.syp:63:4: assignment using class (BadNumber) with destructor not allowed without assignment overload
+found 7 errors
