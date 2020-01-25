@@ -76,7 +76,7 @@
         <DetectChar       attribute="Normal"       context="#stay"               char="{" beginRegion="Brace" />
         <DetectChar       attribute="Normal"       context="#stay"               char="}" endRegion="Brace" />
         <DetectChar       attribute="String"       context="Double Quote String" char="&quot;" />
-        <DetectChar       attribute="String"       context="Backtick String"     char="`" />
+        <DetectChar       attribute="Backtick Str" context="Backtick String"     char="`" />
         <Detect2Chars     attribute="Arrow Op"     context="Arrow Op"            char="-" char1=">" />
         <Detect2Chars     attribute="Attribute"    context="Attribute"           char="#" char1="[" beginRegion="Attribute" />
         <Detect2Chars     attribute="Comment"      context="Line Comment"        char="/" char1="/" />
@@ -93,10 +93,10 @@
       <context name="Number Suffix" attribute="Normal" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
         <RegExpr attribute="Data Type" context="#pop" String="_[a-zA-Z0-9_]+" />
       </context>
-      <context name="Import" attribute="Import" lineEndContext="#stay">
-        <DetectChar attribute="Import" context="Import String" char="&quot;" />
-        <RegExpr    attribute="Import" context="#stay" String="[a-zA-Z0-9.]+" />
-        <DetectChar attribute="Normal" context="#pop" char=";" />
+      <context name="Import" attribute="Normal" lineEndContext="#stay">
+        <DetectChar    attribute="Import" context="Import String" char="&quot;" />
+        <RegExpr       attribute="Import" context="#stay" String="[a-zA-Z0-9.]+" />
+        <DetectChar    attribute="Normal" context="#pop" char=";" />
       </context>
       <context name="Import String" attribute="Import" lineEndContext="#stay">
         <LineContinue  attribute="Import" context="#stay" />
@@ -104,20 +104,21 @@
         <DetectChar    attribute="Import" context="#pop" char="&quot;" />
       </context>
       <context name="Double Quote String" attribute="String" lineEndContext="#stay">
-        <LineContinue  attribute="String"    context="#stay" />
-        <HlCStringChar attribute="Character" context="#stay" />
-        <DetectChar    attribute="String"    context="#pop" char="&quot;" />
+        <LineContinue  attribute="String"       context="#stay" />
+        <HlCStringChar attribute="Special Char" context="#stay" />
+        <DetectChar    attribute="String"       context="#pop" char="&quot;" />
       </context>
-      <context name="Backtick String" attribute="String" lineEndContext="#stay">
-        <LineContinue  attribute="String"    context="#stay" />
-        <HlCStringChar attribute="Character" context="#stay" />
-        <DetectChar    attribute="String"    context="#pop" char="`" />
+      <context name="Backtick String" attribute="Backtick Str" lineEndContext="#stay">
+        <LineContinue  attribute="Backtick Str" context="#stay" />
+        <HlCStringChar attribute="Special Char" context="#stay" />
+        <DetectChar    attribute="Backtick Str" context="#pop" char="`" />
       </context>
       <context name="Arrow Op" attribute="Arrow Op" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
         <DetectSpaces/>
         <DetectIdentifier attribute="Arrow Func" context="#pop" />
       </context>
       <context name="Attribute" attribute="Attribute" lineEndContext="#stay">
+        <DetectSpaces attribute="Normal"/>
         <DetectChar char="]" attribute="Attribute" context="#pop" endRegion="Attribute" />
       </context>
       <context name="Line Comment" attribute="Comment" lineEndContext="#pop">
@@ -136,20 +137,22 @@
       <itemData name="Normal"       defStyleNum="dsNormal"      spellChecking="false" />
       <itemData name="Keyword"      defStyleNum="dsKeyword"     spellChecking="false" />
       <itemData name="Function"     defStyleNum="dsFunction"    spellChecking="false" />
-      <itemData name="Variable"     defStyleNum="dsVariable"    spellChecking="false" />
+      <itemData name="Variable"     defStyleNum="dsNormal"      spellChecking="false" />
       <itemData name="Control Flow" defStyleNum="dsControlFlow" spellChecking="false" />
       <itemData name="Arrow Op"     defStyleNum="dsOperator"    spellChecking="false" bold="true" />
       <itemData name="Arrow Func"   defStyleNum="dsBuiltIn"     spellChecking="false" bold="true" />
-      <itemData name="Attribute"    defStyleNum="dsAttribute" />
+      <itemData name="Attribute"    defStyleNum="dsAttribute"                         underline="true" />
       <itemData name="Data Type"    defStyleNum="dsDataType"    spellChecking="false" bold="true" />
       <itemData name="Decimal"      defStyleNum="dsDecVal"      spellChecking="false" />
       <itemData name="Float"        defStyleNum="dsFloat"       spellChecking="false" />
       <itemData name="Base-N"       defStyleNum="dsBaseN"       spellChecking="false" />
       <itemData name="Constant"     defStyleNum="dsConstant"    spellChecking="false" bold="true" />
       <itemData name="Character"    defStyleNum="dsChar"        spellChecking="false" />
+      <itemData name="Special Char" defStyleNum="dsSpecialChar" spellChecking="false" />
       <itemData name="String"       defStyleNum="dsString" />
+      <itemData name="Backtick Str" defStyleNum="dsVerbatimString" />
       <itemData name="Import"       defStyleNum="dsImport"      spellChecking="false" />
-      <itemData name="Comment"      defStyleNum="dsComment" />
+      <itemData name="Comment"      defStyleNum="dsComment"                           italic="true" />
     </itemDatas>
   </highlighting>
   <general>
