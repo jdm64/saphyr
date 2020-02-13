@@ -1,0 +1,21 @@
+
+class Number
+{
+	#[oper("<=")]
+	bool leq(int a)
+	{
+		return false;
+	}
+}
+
+void invalidRHS()
+{
+	Number n;
+
+	auto b = n <= notfound;
+}
+
+========
+
+negative/ComparisonOverload.syp:15:16: variable notfound not declared
+found 1 errors

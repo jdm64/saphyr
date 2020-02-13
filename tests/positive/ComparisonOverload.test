@@ -1,0 +1,93 @@
+
+class Number
+{
+	struct this
+	{
+		int val;
+	}
+
+	#[oper("<")]
+	bool lt(int a)
+	{
+		return val < a;
+	}
+
+	#[oper("==")]
+	bool eq(int a)
+	{
+		return val == a;
+	}
+}
+
+void useCmp()
+{
+	Number n;
+
+	if (n < 5)
+		n.val++;
+	else if (n == 6)
+		n.val = 42;
+}
+
+========
+
+%Number = type { i32 }
+
+define i1 @Number_lt(%Number* %this, i32 %a) {
+  %1 = alloca %Number*
+  store %Number* %this, %Number** %1
+  %2 = alloca i32
+  store i32 %a, i32* %2
+  %3 = load %Number*, %Number** %1
+  %4 = getelementptr %Number, %Number* %3, i32 0, i32 0
+  %5 = load i32, i32* %4
+  %6 = load i32, i32* %2
+  %7 = icmp slt i32 %5, %6
+  ret i1 %7
+}
+
+define i1 @Number_eq(%Number* %this, i32 %a) {
+  %1 = alloca %Number*
+  store %Number* %this, %Number** %1
+  %2 = alloca i32
+  store i32 %a, i32* %2
+  %3 = load %Number*, %Number** %1
+  %4 = getelementptr %Number, %Number* %3, i32 0, i32 0
+  %5 = load i32, i32* %4
+  %6 = load i32, i32* %2
+  %7 = icmp eq i32 %5, %6
+  ret i1 %7
+}
+
+define void @useCmp() {
+  %n = alloca %Number
+  %1 = load %Number, %Number* %n
+  %2 = call i1 @Number_lt(%Number* %n, i32 5)
+  br i1 %2, label %3, label %7
+
+; <label>:3:                                      ; preds = %0
+  %4 = getelementptr %Number, %Number* %n, i32 0, i32 0
+  %5 = load i32, i32* %4
+  %6 = add i32 %5, 1
+  store i32 %6, i32* %4
+  br label %12
+
+; <label>:7:                                      ; preds = %0
+  %8 = load %Number, %Number* %n
+  %9 = call i1 @Number_eq(%Number* %n, i32 6)
+  br i1 %9, label %10, label %12
+
+; <label>:10:                                     ; preds = %7
+  %11 = getelementptr %Number, %Number* %n, i32 0, i32 0
+  store i32 42, i32* %11
+  br label %12
+
+; <label>:12:                                     ; preds = %7, %10, %3
+  ret void
+}
+
+========
+
+Number_eq T
+Number_lt T
+useCmp T

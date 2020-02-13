@@ -83,7 +83,9 @@ void Builder::AddOperatorOverload(CodeContext& context, NClassFunctionDecl* stm,
 		return;
 	}
 
-	static set<string> asgOps = {"=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "^=", "|=", "\?\?="};
+	static set<string> asgOps = {"=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "^=", "|=", "\?\?=",
+		"==", "!=", "<", "<=", ">", ">="
+	};
 
 	auto op = val->str();
 	if (asgOps.find(op) == asgOps.end()) {

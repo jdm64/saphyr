@@ -250,14 +250,13 @@ void CGNStatement::visitNReturnStatement(NReturnStatement* stm)
 		return;
 	}
 	auto returnVal = CGNExpression::run(context, stm->getValue());
-	Value* retAlloc = nullptr;
+	RValue retAlloc;
 	if (returnVal) {
 		Inst::CastTo(context, *stm->getValue(), returnVal, funcReturn);
-		if (auto v = dyn_cast<LoadInst>(returnVal.value()))
-			retAlloc = v->getPointerOperand();
+		retAlloc = Inst::PtrOfLoad(context, returnVal);
 	}
 
-	Inst::CallDestructables(context, retAlloc, *stm);
+	Inst::CallDestructables(context, retAlloc.value(), *stm);
 
 	context.IB().CreateRet(returnVal);
 

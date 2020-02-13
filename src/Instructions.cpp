@@ -390,6 +390,25 @@ RValue Inst::Branch(BasicBlock* trueBlock, BasicBlock* falseBlock, NExpression* 
 
 RValue Inst::Cmp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext& context)
 {
+	if (lhs && lhs.stype()->isClass()) {
+		auto clTy = static_cast<SClassType*>(lhs.stype());
+		auto items = clTy->getItem(optToken->str);
+		if (items) {
+			auto lhsPtr = PtrOfLoad(context, lhs);
+			if (lhsPtr) {
+				VecSFunc funcs;
+				for (auto item : *items)
+					funcs.push_back(static_cast<SFunction&>(item.second));
+
+				VecRValue args;
+				args.push_back(lhsPtr);
+				args.push_back(rhs);
+
+				return Inst::CallFunction(context, funcs, optToken, args);
+			}
+		}
+	}
+
 	if (CastMatch(context, optToken, lhs, rhs))
 		return RValue();
 	auto pred = getPredicate(type, optToken, lhs.stype(), context);
@@ -415,6 +434,15 @@ RValue Inst::Load(CodeContext& context, RValue value)
 		return value;
 
 	return RValue(context.IB().CreateLoad(value), value.stype());
+}
+
+RValue Inst::PtrOfLoad(CodeContext &context, const RValue& value)
+{
+	if (auto v = dyn_cast<LoadInst>(value.value())) {
+		auto ptr = v->getPointerOperand();
+		return {ptr, SType::getPointer(context, value.stype())};
+	}
+	return {};
 }
 
 RValue Inst::Deref(CodeContext& context, const RValue& value, bool recursive)

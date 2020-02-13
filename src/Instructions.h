@@ -55,6 +55,8 @@ public:
 
 	static RValue Load(CodeContext& context, RValue value);
 
+	static RValue PtrOfLoad(CodeContext &context, const RValue& value);
+
 	static RValue Deref(CodeContext& context, const RValue& value, bool recursive = false);
 
 	static RValue SizeOf(CodeContext& context, SType* type, Token* token);
