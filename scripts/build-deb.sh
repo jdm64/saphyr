@@ -4,6 +4,7 @@ rm -rf DebPkg/usr
 mkdir -p DebPkg/usr/bin
 
 cp ../saphyr ../syfmt ./DebPkg/usr/bin/
+strip -s DebPkg/usr/bin/*
 
 dpkg-deb --build DebPkg
 
