@@ -405,11 +405,11 @@ SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, ND
 	return (returnType && valid)? SType::getFunction(context, returnType, args) : nullptr;
 }
 
-SFunction Builder::getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType func)
+SFunction Builder::getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType builtin)
 {
 	VecRValue syms;
 
-	switch (func) {
+	switch (builtin) {
 	case BuiltinFuncType::Free:
 		syms = context.loadSymbol("free");
 		if (syms.empty()) {

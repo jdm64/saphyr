@@ -285,7 +285,7 @@ void FMNStatement::visitNForStatement(NForStatement* stm)
 		b.erase(b.begin(), find_if(b.begin(), b.end(), [](int ch) {
 			return !isspace(ch);
 		}));
-		b.pop_back(); // remove ;
+		b.pop_back();
 		return a + (a.length() > 0 ? ", " : "") + b;
 	}));
 	context.add("; " + FMNExpression::run(context, stm->getCond())  + "; ");

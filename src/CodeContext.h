@@ -101,8 +101,8 @@ class CodeContext
 
 	IRBuilder<> irBuilder;
 	SFunction currFunc;
-	STemplatedType* thisType;
-	SClassType* currClass;
+	STemplatedType* thisType = nullptr;
+	SClassType* currClass = nullptr;
 	vector<ScopeTable> localTable;
 
 	BlockVector funcBlocks;
@@ -117,7 +117,7 @@ class CodeContext
 
 public:
 	explicit CodeContext(GlobalContext& context, variables_map& config)
-	: globalCtx(context), conf(config), irBuilder(context.module->getContext()), thisType(nullptr), currClass(nullptr) {}
+	: globalCtx(context), conf(config), irBuilder(context.module->getContext()) {}
 
 	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings);
 

@@ -146,13 +146,13 @@ SType* SType::numericConv(CodeContext& context, Token* optToken, SType* ltype, S
 	switch (ltype->isVec() | (rtype->isVec() << 1)) {
 	case 0:
 		goto novec;
-	default:
-		// should never happen
-	case 1:
-		return ltype;
 	case 2:
 		return rtype;
-	case 3: // both vector
+	default:
+		// case 1
+		return ltype;
+	case 3:
+		// both vector
 		if (ltype->size() != rtype->size()) {
 			context.addError("can not cast vec types of different sizes", optToken);
 			return ltype;
@@ -459,8 +459,8 @@ void TypeManager::setBody(STemplatedType* type, const vector<pair<string,SType*>
 		}
 	} else if (type->isUnion()) {
 		auto uTy = static_cast<SUnionType*>(type);
-		const SType* rawType = int8Ty.get(); // structure[0].second;
-		uint64_t size = 0; // allocSize(rawType);
+		const SType* rawType = int8Ty.get();
+		uint64_t size = 0;
 		for (auto item : structure) {
 			auto tsize = allocSize(item.second);
 			if (tsize > size) {

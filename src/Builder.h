@@ -44,7 +44,7 @@ public:
 
 	static SFunction getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs = nullptr, bool allowMangle = true);
 
-	static SFunction getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType func);
+	static SFunction getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType builtin);
 
 	static SFunction CreateFunction(CodeContext& context, Token* name, NDataType* rtype, NParameterList* params, NStatementList* body, NAttributeList* attrs = nullptr);
 

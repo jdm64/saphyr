@@ -605,14 +605,14 @@ class NVariableDecl : public NDeclaration
 {
 	uPtr<NExpression> initExp;
 	uPtr<NExpressionList> initList;
-	NDataType* type;
+	NDataType* type = nullptr;
 
 public:
 	explicit NVariableDecl(Token* name, NExpression* initExp = nullptr)
-	: NDeclaration(name), initExp(initExp), initList(nullptr), type(nullptr) {}
+	: NDeclaration(name), initExp(initExp), initList(nullptr) {}
 
 	NVariableDecl(Token* name, NExpressionList* initList)
-	: NDeclaration(name), initExp(nullptr), initList(initList), type(nullptr) {}
+	: NDeclaration(name), initExp(nullptr), initList(initList) {}
 
 	NVariableDecl(const NVariableDecl& other)
 	: NDeclaration(other.getName()->copy()),
@@ -1056,13 +1056,13 @@ class NClassDeclaration;
 
 class NClassMember : public NDeclaration
 {
-	NClassDeclaration* theClass;
+	NClassDeclaration* theClass = nullptr;
 
 public:
 	enum class MemberType { CONSTRUCTOR, DESTRUCTOR, STRUCT, FUNCTION };
 
 	explicit NClassMember(Token* name)
-	: NDeclaration(name), theClass(nullptr) {}
+	: NDeclaration(name) {}
 
 	void setClass(NClassDeclaration* cl)
 	{
