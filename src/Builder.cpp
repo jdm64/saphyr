@@ -724,15 +724,7 @@ void Builder::LoadImport(CodeContext& context, NImportFileStm* stm)
 	}
 
 	Parser parser(filename.string());
-	auto path = Util::relative(filename).string();
-	if (path.compare(0, 2, "..") == 0) {
-		string pkgPath = ".local/share/saphyr/pkgs";
-		auto idx = path.find(pkgPath);
-		if (idx != string::npos)
-			path = "<pkg>/" + path.substr(idx + pkgPath.size() + 1);
-	}
-	parser.setFilename(path);
-
+	parser.setFilename(Util::getErrorFilename(filename));
 	if (parser.parse()) {
 		auto err = parser.getError();
 		context.addError(err.str, &err);

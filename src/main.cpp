@@ -86,6 +86,7 @@ int main(int argc, char** argv)
 	}
 
 	Parser parser(file.string());
+	parser.setFilename(Util::getErrorFilename(file));
 	if (parser.parse()) {
 		auto err = parser.getError();
 		cout << err.filename << ":" << err.line << ": " << err.str << endl;

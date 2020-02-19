@@ -156,3 +156,14 @@ path Util::getDataDir()
 		root = path(GetEnv("HOME")) / ".local/share";
 	return root / "saphyr/pkgs";
 }
+
+string Util::getErrorFilename(const path& path)
+{
+	string pkgPath = ".local/share/saphyr/pkgs";
+	auto fileStr = path.string();
+	auto idx = fileStr.find(pkgPath);
+	if (idx != string::npos)
+		return "<pkg>/" + fileStr.substr(idx + pkgPath.size() + 1);
+	else
+		return relative(path).string();
+}

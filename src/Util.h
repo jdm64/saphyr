@@ -58,4 +58,6 @@ public:
 	static string GetEnv(string name);
 
 	static path getDataDir();
+
+	static string getErrorFilename(const path& p);
 };
