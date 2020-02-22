@@ -1,8 +1,8 @@
 language: cpp
 dist: xenial
-sudo: required
+os: linux
 
-matrix:
+jobs:
    include:
     - compiler: clang
       env: LLVM_VER="-4.0"
