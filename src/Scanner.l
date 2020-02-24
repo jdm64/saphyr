@@ -45,6 +45,7 @@ SUFFIX		_{NAME}
 "??="	{ SAVE_TOKEN return ParserBase::TT_ASG_DQ; }
 "#["	{ return ParserBase::TT_ATTR_OPEN; }
 "->"	{ return ParserBase::TT_ARROW; }
+"=>"	{ return ParserBase::TT_DB_ARROW; }
 
 true		{ SAVE_TOKEN return ParserBase::TT_TRUE; }
 false		{ SAVE_TOKEN return ParserBase::TT_FALSE; }

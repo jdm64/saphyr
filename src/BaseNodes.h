@@ -54,6 +54,7 @@ enum class NodeId
 	NFunctionCall,
 	NIncrement,
 	NIntConst,
+	NLambdaFunction,
 	NLogicalOperator,
 	NMemberFunctionCall,
 	NMemberVariable,

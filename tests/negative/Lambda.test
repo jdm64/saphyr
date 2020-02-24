@@ -1,0 +1,35 @@
+
+void badParam()
+{
+	auto call = |invalid a| => void {
+		int a = 4;
+	};
+
+	call(4);
+}
+
+void badReturn()
+{
+	auto call = |int a| => invalid {
+		return 7;
+	};
+
+	call();
+}
+
+
+void badBody()
+{
+	auto call = | | => void {
+		a++;
+	};
+}
+
+========
+
+negative/Lambda.syp:4:15: invalid type not declared
+negative/Lambda.syp:8:2: symbol call not defined
+negative/Lambda.syp:13:25: invalid type not declared
+negative/Lambda.syp:17:2: symbol call not defined
+negative/Lambda.syp:24:3: variable a not declared
+found 5 errors

@@ -42,6 +42,8 @@ class FMNExpression
 
 	string visitNNewExpression(NNewExpression*);
 
+	string visitNLambdaFunction(NLambdaFunction*);
+
 	string visitNExprVariable(NExprVariable*);
 
 	string visitNLogicalOperator(NLogicalOperator*);

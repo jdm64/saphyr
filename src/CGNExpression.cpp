@@ -49,6 +49,7 @@ RValue CGNExpression::visit(NExpression* exp)
 	VISIT_CASE_RETURN(NLogicalOperator, exp)
 	VISIT_CASE_RETURN(NMemberFunctionCall, exp)
 	VISIT_CASE_RETURN(NNewExpression, exp)
+	VISIT_CASE_RETURN(NLambdaFunction, exp)
 	VISIT_CASE_RETURN(NNullCoalescing, exp)
 	VISIT_CASE_RETURN(NNullPointer, exp)
 	VISIT_CASE_RETURN(NStringLiteral, exp)
@@ -233,6 +234,18 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 	Inst::InitVariable(context, ptr2, sizeArr, args.get(), *exp->getType());
 
 	return rPtr;
+}
+
+RValue CGNExpression::visitNLambdaFunction(NLambdaFunction* exp)
+{
+	Token* tok = *exp;
+	auto fname = context.currFunction().name() + "_" + to_string(tok->line) + to_string(tok->col);
+	uPtr<Token> nameTok(new Token(*tok, fname.str()));
+
+	auto newCtx = CodeContext::newForLambda(context);
+	auto lambda = Builder::CreateFunction(newCtx, nameTok.get(), exp->getReturnType(), exp->getParams(), exp->getBody());
+
+	return lambda ? RValue(lambda, SType::getPointer(context, lambda.stype())) : lambda;
 }
 
 RValue CGNExpression::visitNLogicalOperator(NLogicalOperator* exp)

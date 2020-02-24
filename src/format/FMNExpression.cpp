@@ -15,9 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <list>
+#include <numeric>
 #include "../AST.h"
 #include "../parserbase.h"
 #include "FormatContext.h"
+#include "FMNStatement.h"
 #include "FMNExpression.h"
 #include "FMNDataType.h"
 
@@ -45,6 +47,7 @@ string FMNExpression::visit(NExpression* exp)
 	VISIT_CASE_RETURN(NLogicalOperator, exp)
 	VISIT_CASE_RETURN(NMemberFunctionCall, exp)
 	VISIT_CASE_RETURN(NNewExpression, exp)
+	VISIT_CASE_RETURN(NLambdaFunction, exp)
 	VISIT_CASE_RETURN(NNullCoalescing, exp)
 	VISIT_CASE_RETURN(NNullPointer, exp)
 	VISIT_CASE_RETURN(NStringLiteral, exp)
@@ -173,6 +176,33 @@ string FMNExpression::visitNNewExpression(NNewExpression* exp)
 		line += "{" + FMNExpression::run(context, args) + "}";
 	}
 	return line;
+}
+
+string FMNExpression::visitNLambdaFunction(NLambdaFunction* exp)
+{
+	string line = "|";
+
+	bool first = true;
+	for (auto param : *exp->getParams()) {
+		if (!first)
+			line += ", ";
+		first = false;
+		line += FMNDataType::run(context, param->getType());
+		line += " " + param->getName()->str;
+	}
+	line += "| => " + FMNDataType::run(context, exp->getReturnType()) + " {";
+
+	vector<string> lines;
+	context.setBuffer(&lines);
+	context.indent();
+	FMNStatement::run(context, exp->getBody());
+	context.undent();
+	context.addLine("}");
+	context.setBuffer(nullptr);
+
+	return accumulate(lines.begin(), lines.end(), line, [](string& a, string& b) {
+		return a += "\n" + b;
+	});
 }
 
 string FMNExpression::visitNLogicalOperator(NLogicalOperator* exp)

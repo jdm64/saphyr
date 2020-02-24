@@ -121,6 +121,8 @@ public:
 
 	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings);
 
+	static CodeContext newForLambda(CodeContext& context);
+
 	variables_map& config() const;
 
 	/**

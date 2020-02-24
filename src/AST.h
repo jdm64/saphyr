@@ -1766,6 +1766,45 @@ public:
 	ADD_ID(NNewExpression)
 };
 
+class NLambdaFunction : public NExpression
+{
+	uPtr<Token> lBar;
+	uPtr<NParameterList> params;
+	uPtr<NDataType> returnType;
+	uPtr<NStatementList> body;
+
+public:
+	NLambdaFunction(Token* lbar, NParameterList* params, NDataType* rtype, NStatementList* body)
+	: lBar(lbar), params(params), returnType(rtype), body(body) {}
+
+	NLambdaFunction* copy() const override
+	{
+		return new NLambdaFunction(lBar->copy(), params->copy(), returnType->copy(), body->copy());
+	}
+
+	NParameterList* getParams() const
+	{
+		return params.get();
+	}
+
+	NDataType* getReturnType() const
+	{
+		return returnType.get();
+	}
+
+	NStatementList* getBody() const
+	{
+		return body.get();
+	}
+
+	operator Token*() const override
+	{
+		return lBar.get();
+	}
+
+	ADD_ID(NLambdaFunction)
+};
+
 class NBinaryOperator : public NOperatorExpr
 {
 	uPtr<NExpression> lhs;

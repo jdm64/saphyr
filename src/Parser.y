@@ -47,7 +47,7 @@
 %token <t_tok> TT_ASG_RSH TT_ASG_AND TT_ASG_OR TT_ASG_XOR TT_INC TT_DEC TT_DQ_MARK
 %token <t_tok> TT_ASG_DQ
 // other tokens
-%token <t_tok> TT_ATTR_OPEN TT_ARROW
+%token <t_tok> TT_ATTR_OPEN TT_ARROW TT_DB_ARROW
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
 %token TT_GOTO TT_SWITCH TT_CASE TT_DEFAULT TT_STRUCT TT_UNION TT_ENUM
@@ -784,6 +784,10 @@ new_expression
 	| TT_NEW data_type '{' expression_list '}'
 	{
 		$$ = new NNewExpression($1.t_tok, $2, $4);
+	}
+	| '|' parameter_list '|' TT_DB_ARROW data_type '{' statement_list_or_empty '}'
+	{
+		$$ = new NLambdaFunction($1.t_tok, $2, $5, $7);
 	}
 	;
 logical_or_expression

@@ -114,6 +114,11 @@ CodeContext CodeContext::newForTemplate(CodeContext& context, const vector<pair<
 	return newCtx;
 }
 
+CodeContext CodeContext::newForLambda(CodeContext& context)
+{
+	return CodeContext(context.globalCtx, context.conf);
+}
+
 CodeContext::operator LLVMContext&()
 {
 	return globalCtx.module->getContext();

@@ -34,6 +34,8 @@ class CGNExpression
 
 	RValue visitNNewExpression(NNewExpression*);
 
+	RValue visitNLambdaFunction(NLambdaFunction*);
+
 	RValue visitNExprVariable(NExprVariable*);
 
 	RValue visitNLogicalOperator(NLogicalOperator*);
