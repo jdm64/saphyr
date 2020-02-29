@@ -78,6 +78,7 @@
         <DetectChar       attribute="String"       context="Double Quote String" char="&quot;" />
         <DetectChar       attribute="Backtick Str" context="Backtick String"     char="`" />
         <Detect2Chars     attribute="Arrow Op"     context="Arrow Op"            char="-" char1=">" />
+        <Detect2Chars     attribute="Lambda Arrow" context="#stay"               char="=" char1=">" />
         <Detect2Chars     attribute="Attribute"    context="Attribute"           char="#" char1="[" beginRegion="Attribute" />
         <Detect2Chars     attribute="Comment"      context="Line Comment"        char="/" char1="/" />
         <Detect2Chars     attribute="Comment"      context="Block Comment"       char="/" char1="*" beginRegion="Comment" />
@@ -140,6 +141,7 @@
       <itemData name="Variable"     defStyleNum="dsNormal"      spellChecking="false" />
       <itemData name="Control Flow" defStyleNum="dsControlFlow" spellChecking="false" />
       <itemData name="Arrow Op"     defStyleNum="dsOperator"    spellChecking="false" bold="true" />
+      <itemData name="Lambda Arrow" defStyleNum="dsOperator"    spellChecking="false" bold="true" />
       <itemData name="Arrow Func"   defStyleNum="dsBuiltIn"     spellChecking="false" bold="true" />
       <itemData name="Attribute"    defStyleNum="dsAttribute"                         underline="true" />
       <itemData name="Data Type"    defStyleNum="dsDataType"    spellChecking="false" bold="true" />
