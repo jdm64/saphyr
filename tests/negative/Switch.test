@@ -27,10 +27,19 @@ int func()
 	return x;
 }
 
+void badSwitch()
+{
+	switch (badVal) {
+	case 3:
+		return;
+	}
+}
+
 ========
 
 negative/Switch.syp:16:2: switch statement has more than one default
 negative/Switch.syp:18:7: case value must be a constant int
 negative/Switch.syp:21:7: case value must be a constant int
 negative/Switch.syp:23:7: switch case values are not unique
-found 4 errors
+negative/Switch.syp:32:10: variable badVal not declared
+found 5 errors

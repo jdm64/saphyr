@@ -25,11 +25,25 @@ void foo()
 	Foo<@()void, [4]int, vec<3,int> > c;
 }
 
+class EmptyTemplate
+{
+	struct this
+	{
+		int a, b;
+	}
+}
+
+void useEmpty()
+{
+	EmptyTemplate<> t;
+}
+
 ========
 
 %Foo_i32_f_d = type { i32, float, double }
 %Foo_p_v_b_u64 = type { i8*, i1, i64 }
 %Foo_p_m_v_a4_i32_v3_i32 = type { void ()*, [4 x i32], <3 x i32> }
+%EmptyTemplate = type { i32, i32 }
 
 define void @foo() {
   %a = alloca %Foo_i32_f_d
@@ -122,6 +136,11 @@ define void @Foo_p_m_v_a4_i32_v3_i32_add(%Foo_p_m_v_a4_i32_v3_i32* %this, void (
   ret void
 }
 
+define void @useEmpty() {
+  %t = alloca %EmptyTemplate
+  ret void
+}
+
 ========
 
 foo T
@@ -131,3 +150,4 @@ Foo_p_m_v_a4_i32_v3_i32_add T
 Foo_p_m_v_a4_i32_v3_i32_this T
 Foo_p_v_b_u64_add T
 Foo_p_v_b_u64_this T
+useEmpty T
