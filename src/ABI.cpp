@@ -1,15 +1,16 @@
 
-#include "../../llvm-abi/include/llvm-abi/ABI.hpp"
-#include "../../llvm-abi/include/llvm-abi/ArgInfo.hpp"
-#include "../../llvm-abi/include/llvm-abi/Builder.hpp"
-#include "CodeContext.h"
+#include <llvm-abi/ABI.hpp>
+#include <llvm-abi/ArgInfo.hpp>
+#include <llvm-abi/Builder.hpp>
+#include <llvm-abi/TypeBuilder.hpp>
 #include <llvm-abi/FunctionType.hpp>
+#include "CodeContext.h"
 
 using namespace llvm_abi;
 
 class SABI
 {
-
+public:
 
 	RValue CreateCall(CodeContext& context);
 };
@@ -32,6 +33,20 @@ public:
 		return context.IB();
 	}
 };
+
+llvm_abi::Type convert(SType* ty)
+{
+	if (ty->isInteger()) {
+		if (ty->isBool())
+			return llvm_abi::BoolTy;
+		switch (ty->size()) {
+		case 8:
+			return llvm_abi::Int8Ty;
+		}
+	}
+	
+	return llvm_abi::BoolTy;
+}
 
 RValue SABI::CreateCall(CodeContext& context)
 {
