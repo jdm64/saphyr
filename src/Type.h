@@ -534,7 +534,10 @@ class SUnionType : public STemplatedType
 {
 	friend class TypeManager;
 
-	map<string, SType*> items;
+	using container = map<string, SType*>;
+	using const_iterator = container::const_iterator;
+
+	container items;
 
 	SUnionType(const string& uName, const VecSType& args)
 	: STemplatedType(uName, UNION, args) {}
@@ -551,6 +554,16 @@ public:
 	{
 		auto iter = items.find(itemName);
 		return iter != items.end()? iter->second : nullptr;
+	}
+
+	const_iterator begin() const
+	{
+		return items.begin();
+	}
+
+	const_iterator end() const
+	{
+		return items.end();
 	}
 
 	string str(const CodeContext& context) const override;
