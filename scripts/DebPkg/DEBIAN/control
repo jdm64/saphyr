@@ -2,6 +2,6 @@ Package: saphyr
 Version: 0.1
 Section: devel
 Architecture: amd64
-Depends: libllvm6.0
+Depends: libllvm8
 Maintainer: Justin Madru <justin.jdm64@gmail.com>
 Description: compiler for saphyr programming language

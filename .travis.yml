@@ -9,26 +9,21 @@ jobs:
     - compiler: gcc
       env: LLVM_VER="-5.0" COVERAGE=true
     - compiler: clang
-      env: LLVM_VER="-6.0" PACKAGE=true
-#    - compiler: gcc
-#      env: LLVM_VER="-7"
+      env: LLVM_VER="-6.0"
     - compiler: clang
-      env: LLVM_VER="-8"
+      env: LLVM_VER="-8" PACKAGE=true
     - compiler: clang
       env: LLVM_VER="-9"
 
 addons:
    apt:
       sources:
-       - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
-         key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
        - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
          key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
       packages:
        - llvm-4.0-dev
        - llvm-5.0-dev
        - llvm-6.0-dev
-#       - llvm-7-dev
        - llvm-8-dev
        - llvm-9-dev
        - flexc++
