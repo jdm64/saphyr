@@ -461,7 +461,8 @@ void Builder::AddDebugPrint(CodeContext& context, Token* source, const string& m
 	auto msgVal = CGNExpression::run(context, &nMsg);
 	args.insert(args.begin(), msgVal);
 
-	context.IB().CreateCall(printf.value(), args);
+	// TODO use printf.callee() when varargs is supported
+	context.IB().CreateCall(printf.funcValue()->getFunctionType(), printf.value(), args);
 }
 
 bool Builder::addMembers(NStructDeclaration::CreateType ctype, NVariableDeclGroup* group, vector<pair<string, SType*> >& structVector, set<string>& memberNames, CodeContext& context)

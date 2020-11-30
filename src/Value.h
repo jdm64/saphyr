@@ -119,15 +119,6 @@ public:
 
 class SFunction : public RValue
 {
-	Function* funcValue() const
-	{
-		return static_cast<Function*>(value());
-	}
-
-	SFunctionType* funcStype() const
-	{
-		return static_cast<SFunctionType*>(stype());
-	}
 
 	SFunction(Function* function, SFunctionType* type, NAttributeList* attrs)
 	: RValue(function, type, attrs) {}
@@ -141,6 +132,21 @@ public:
 	operator Function*() const
 	{
 		return funcValue();
+	}
+
+	Function* funcValue() const
+	{
+		return static_cast<Function*>(value());
+	}
+
+	SFunctionType* funcSType() const
+	{
+		return static_cast<SFunctionType*>(stype());
+	}
+
+	FunctionType* funcType() const
+	{
+		return funcSType()->funcType();
 	}
 
 	bool isStatic() const
@@ -160,17 +166,17 @@ public:
 
 	SType* returnTy() const
 	{
-		return funcStype()->returnTy();
+		return funcSType()->returnTy();
 	}
 
 	size_t numParams() const
 	{
-		return funcStype()->numParams();
+		return funcSType()->numParams();
 	}
 
 	SType* getParam(int index) const
 	{
-		return funcStype()->getParam(index);
+		return funcSType()->getParam(index);
 	}
 
 	Function::arg_iterator arg_begin() const

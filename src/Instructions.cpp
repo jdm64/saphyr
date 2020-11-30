@@ -607,7 +607,7 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 
 	vector<Value*> values;
 	copy(args.begin(), args.end(), back_inserter(values));
-	auto call = context.IB().CreateCall(func.value(), values);
+	auto call = context.IB().CreateCall(func.funcType(), func.value(), values);
 	return RValue(call, func.returnTy());
 }
 

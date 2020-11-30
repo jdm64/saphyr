@@ -219,7 +219,7 @@ RValue CGNExpression::visitNNewExpression(NNewExpression* exp)
 
 	Token* expTok = *exp;
 	auto func = Builder::getBuiltinFunc(context, expTok, BuiltinFuncType::Malloc);
-	auto call = context.IB().CreateCall(func.value(), {sizeBytes});
+	auto call = context.IB().CreateCall(func.funcType(), func.value(), {sizeBytes});
 
 	if (context.config().count("print-debug"))
 		Builder::AddDebugPrint(context, expTok, "[DEBUG] malloc(%i) = %i at " + expTok->getLoc(), {sizeBytes, call});

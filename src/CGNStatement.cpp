@@ -522,7 +522,7 @@ void CGNStatement::visitNDeleteStatement(NDeleteStatement* stm)
 	if (context.config().count("print-debug"))
 		Builder::AddDebugPrint(context, varTok, "[DEBUG] free(%i) at " + varTok->getLoc(), {bitCast});
 
-	context.IB().CreateCall(func.value(), {bitCast});
+	context.IB().CreateCall(func.funcType(), func.value(), {bitCast});
 }
 
 void CGNStatement::visitNDestructorCall(NDestructorCall* stm)
