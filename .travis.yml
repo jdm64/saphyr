@@ -4,8 +4,6 @@ os: linux
 
 jobs:
    include:
-    - compiler: clang
-      env: LLVM_VER="-4.0"
     - compiler: gcc
       env: LLVM_VER="-5.0" COVERAGE=true
     - compiler: clang
@@ -25,7 +23,6 @@ addons:
        - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
          key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
       packages:
-       - llvm-4.0-dev
        - llvm-5.0-dev
        - llvm-6.0-dev
        - llvm-8-dev
@@ -45,7 +42,6 @@ addons:
 
 before_install:
  - bash <(wget -qO- https://raw.githubusercontent.com/jdm64/saphyr-libs/master/setup.sh)
- - if [[ $LLVM_VER == "-4.0" ]]; then VER=${LLVM_VER:1} ; echo "UNITTEST_ARG = +$VER-5.0" > src/Configfile ; fi
  - if [[ $LLVM_VER == "-9" ]] || [[ $LLVM_VER == "-10" ]]; then VER=${LLVM_VER:1} ; echo "UNITTEST_ARG = +$VER-8" > src/Configfile ; fi
  - if [[ $PACKAGE ]]; then echo -e "STATIC_BOOST=true" >> src/Configfile ; fi
  - if [[ $COVERAGE ]]; then sudo pip install -U cpp-coveralls ; export BUILD_PREFIX="build-wrapper-linux-x86-64 --out-dir bw-output" ; fi
