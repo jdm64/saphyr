@@ -136,7 +136,7 @@ TypeManager& CodeContext::getTypeManager() const
 
 IRBuilder<>& CodeContext::IB()
 {
-	return irBuilder;
+	return *irBuilder.get();
 }
 
 bool CodeContext::hasErrors() const
@@ -303,7 +303,7 @@ void CodeContext::startFuncBlock(SFunction function)
 	pushLocalTable();
 	funcBlocks.clear();
 	funcBlocks.push_back(BasicBlock::Create(getModule()->getContext(), "", function));
-	irBuilder.SetInsertPoint(currBlock());
+	irBuilder->SetInsertPoint(currBlock());
 	currFunc = function;
 }
 
@@ -317,7 +317,7 @@ void CodeContext::endFuncBlock()
 	breakBlocks.clear();
 	redoBlocks.clear();
 	labelBlocks.clear();
-
+	irBuilder->ClearInsertionPoint();
 	currFunc = SFunction();
 }
 
@@ -325,7 +325,7 @@ void CodeContext::pushBlock(BasicBlock* block)
 {
 	block->moveAfter(currBlock());
 	funcBlocks.push_back(block);
-	irBuilder.SetInsertPoint(currBlock());
+	irBuilder->SetInsertPoint(currBlock());
 }
 
 void CodeContext::popLoopBranchBlocks(int type)

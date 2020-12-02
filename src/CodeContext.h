@@ -99,7 +99,7 @@ class CodeContext
 
 	vector<pair<string, SType*>> templateArgs;
 
-	IRBuilder<> irBuilder;
+	shared_ptr<IRBuilder<>> irBuilder;
 	SFunction currFunc;
 	STemplatedType* thisType = nullptr;
 	SClassType* currClass = nullptr;
@@ -117,7 +117,7 @@ class CodeContext
 
 public:
 	explicit CodeContext(GlobalContext& context, variables_map& config)
-	: globalCtx(context), conf(config), irBuilder(context.module->getContext()) {}
+	: globalCtx(context), conf(config), irBuilder(new IRBuilder<>(context.module->getContext())) {}
 
 	static CodeContext newForTemplate(CodeContext& context, const vector<pair<string, SType*>>& templateMappings);
 
