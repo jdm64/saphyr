@@ -17,7 +17,7 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
   * Program_Options
   * Filesystem
   * System
-* [LLVM](http://llvm.org/) 3.8+
+* [LLVM](http://llvm.org/) 8+
 * Make
 * C++14 compiler (either GCC or Clang)
 * Python 3 (for running tests)
@@ -27,7 +27,7 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 
 ### Debian/Ubuntu ###
 
-Debian 9 (Stretch) and Ubuntu 16.04 (Xenial) or newer have all the required packages in their repositories.
+Debian 10 (Buster) and Ubuntu 16.04 (Xenial) or newer have all the required packages in their repositories.
 
 `sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev clang python3`
 
