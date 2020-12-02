@@ -321,6 +321,24 @@ void CodeContext::endFuncBlock()
 	currFunc = SFunction();
 }
 
+void CodeContext::startTmpFunction(Token* prefix)
+{
+	auto name = prefix->str + "_" + to_string(prefix->line) + to_string(prefix->col);
+	auto sFuncType = SType::getFunction(*this, SType::getVoid(*this), {});
+	auto func = Function::Create(*sFuncType, GlobalValue::ExternalLinkage, name, getModule());
+	auto function = SFunction::create(*this, func, sFuncType, nullptr);
+	auto block = BasicBlock::Create(getModule()->getContext(), "", function);
+
+	irBuilder->SetInsertPoint(block);
+	currFunc = function;
+}
+
+void CodeContext::endTmpFunction()
+{
+	currFunc.funcValue()->removeFromParent();
+	irBuilder->ClearInsertionPoint();
+}
+
 void CodeContext::pushBlock(BasicBlock* block)
 {
 	block->moveAfter(currBlock());

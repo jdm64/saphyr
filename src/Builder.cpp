@@ -584,6 +584,8 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 	vector<pair<string,int64_t>> structure;
 	bool valid = true;
 
+	context.startTmpFunction(stm->getName());
+
 	for (auto item : *stm->getVarList()) {
 		auto name = item->getName()->str;
 		auto res = names.insert(name);
@@ -632,6 +634,8 @@ void Builder::CreateEnum(CodeContext& context, NEnumDeclaration* stm)
 
 	if (valid)
 		SUserType::createEnum(context, stm->getName()->str, structure, etype);
+
+	context.endTmpFunction();
 }
 
 void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
@@ -650,7 +654,7 @@ void Builder::CreateAlias(CodeContext& context, NAliasDeclaration* stm)
 	SAliasType::createAlias(context, stm->getName()->str, realType);
 }
 
-void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration)
+void CreateGlobalVar_Internal(CodeContext& context, NGlobalVariableDecl* stm, bool declaration)
 {
 	auto initValue = CGNExpression::run(context, stm->getInitExp());
 	if (initValue && !isa<Constant>(initValue.value())) {
@@ -699,6 +703,13 @@ void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bo
 	auto var = new GlobalVariable(*context.getModule(), *varType, false, GlobalValue::ExternalLinkage, declaration? nullptr : (Constant*) initValue.value(), name);
 	var->setConstant(varType->isConst());
 	context.storeGlobalSymbol({var, varType}, name);
+}
+
+void Builder::CreateGlobalVar(CodeContext& context, NGlobalVariableDecl* stm, bool declaration)
+{
+	context.startTmpFunction(stm->getName());
+	CreateGlobalVar_Internal(context, stm, declaration);
+	context.endTmpFunction();
 }
 
 void Builder::LoadImport(CodeContext& context, NImportFileStm* stm)

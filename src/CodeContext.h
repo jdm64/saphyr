@@ -201,6 +201,10 @@ public:
 
 	void endFuncBlock();
 
+	void startTmpFunction(Token* prefix);
+
+	void endTmpFunction();
+
 	void pushBlock(BasicBlock* block);
 
 	void popLoopBranchBlocks(int type);
