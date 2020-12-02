@@ -38,11 +38,7 @@ bool SimpleBlockClean::removeBranchBlock(BasicBlock* block)
 		return false;
 	}
 
-#if LLVM_VERSION_MAJOR >= 8
 	vector<Instruction*> termVec;
-#else
-	vector<TerminatorInst*> termVec;
-#endif
 	for (auto pred = pred_begin(block), end = pred_end(block); pred != end; ++pred) {
 		termVec.push_back((*pred)->getTerminator());
 	}

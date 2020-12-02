@@ -31,11 +31,7 @@ public:
 	SimpleBlockClean()
 	: FunctionPass(ID) {}
 
-#if LLVM_VERSION_MAJOR >= 4
 	StringRef getPassName() const
-#else
-	const char* getPassName() const
-#endif
 	{
 		return "SimpleBlockClean";
 	}
