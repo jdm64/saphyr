@@ -68,19 +68,19 @@ define void @switchWithDefault(i32 %x) {
     i32 6, label %4
   ]
 
-; <label>:3:                                      ; preds = %0
+3:                                                ; preds = %0
   store i32 3, i32* %1
   br label %4
 
-; <label>:4:                                      ; preds = %0, %3
+4:                                                ; preds = %0, %3
   store i32 1, i32* %1
   br label %6
 
-; <label>:5:                                      ; preds = %0
+5:                                                ; preds = %0
   store i32 7, i32* %1
   br label %6
 
-; <label>:6:                                      ; preds = %5, %4
+6:                                                ; preds = %5, %4
   ret void
 }
 
@@ -94,15 +94,15 @@ define double @switchNoDefault(float %x) {
     i32 3, label %5
   ]
 
-; <label>:4:                                      ; preds = %0
+4:                                                ; preds = %0
   store float 4.000000e+00, float* %1
   br label %5
 
-; <label>:5:                                      ; preds = %0, %4
+5:                                                ; preds = %0, %4
   store float 6.000000e+00, float* %1
   br label %6
 
-; <label>:6:                                      ; preds = %0, %5
+6:                                                ; preds = %0, %5
   %7 = load float, float* %1
   %8 = fpext float %7 to double
   ret double %8
@@ -128,25 +128,25 @@ define void @switchWithExpressions(i32 %val) {
     i32 2, label %9
   ]
 
-; <label>:3:                                      ; preds = %0
+3:                                                ; preds = %0
   %4 = load i32, i32* %1
   %5 = add i32 %4, 1
   store i32 %5, i32* %1
   br label %12
 
-; <label>:6:                                      ; preds = %0
+6:                                                ; preds = %0
   %7 = load i32, i32* %1
   %8 = add i32 %7, 9
   store i32 %8, i32* %1
   br label %12
 
-; <label>:9:                                      ; preds = %0
+9:                                                ; preds = %0
   %10 = load i32, i32* %1
   %11 = mul i32 %10, 2
   store i32 %11, i32* %1
   br label %12
 
-; <label>:12:                                     ; preds = %0, %9, %6, %3
+12:                                               ; preds = %0, %9, %6, %3
   ret void
 }
 

@@ -135,10 +135,10 @@ define i32 @main() {
   %4 = icmp eq i8* null, %3
   br i1 %4, label %5, label %6
 
-; <label>:5:                                      ; preds = %0
+5:                                                ; preds = %0
   ret i32 0
 
-; <label>:6:                                      ; preds = %0
+6:                                                ; preds = %0
   ret i32 1
 }
 

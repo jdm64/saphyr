@@ -43,11 +43,11 @@ define void @one() {
   %2 = icmp slt i32 %1, 8
   br i1 %2, label %3, label %4
 
-; <label>:3:                                      ; preds = %0
+3:                                                ; preds = %0
   store i32 0, i32* %x
   br label %4
 
-; <label>:4:                                      ; preds = %3, %0
+4:                                                ; preds = %3, %0
   ret void
 }
 
@@ -58,15 +58,15 @@ define void @two() {
   %2 = icmp sgt i32 %1, 1
   br i1 %2, label %3, label %4
 
-; <label>:3:                                      ; preds = %0
+3:                                                ; preds = %0
   store i32 3, i32* %x
   br label %5
 
-; <label>:4:                                      ; preds = %0
+4:                                                ; preds = %0
   store i32 7, i32* %x
   br label %5
 
-; <label>:5:                                      ; preds = %4, %3
+5:                                                ; preds = %4, %3
   ret void
 }
 
@@ -78,25 +78,25 @@ define void @three() {
   %3 = icmp ne i32 %2, 0
   br i1 %3, label %4, label %5
 
-; <label>:4:                                      ; preds = %0
+4:                                                ; preds = %0
   store i32 1, i32* %x
   br label %11
 
-; <label>:5:                                      ; preds = %0
+5:                                                ; preds = %0
   %6 = load i32, i32* %x
   %7 = sub i32 %6, 8
   %8 = icmp ne i32 %7, 0
   br i1 %8, label %9, label %10
 
-; <label>:9:                                      ; preds = %5
+9:                                                ; preds = %5
   store i32 2, i32* %x
   br label %11
 
-; <label>:10:                                     ; preds = %5
+10:                                               ; preds = %5
   store i32 3, i32* %x
   br label %11
 
-; <label>:11:                                     ; preds = %9, %10, %4
+11:                                               ; preds = %9, %10, %4
   ret void
 }
 

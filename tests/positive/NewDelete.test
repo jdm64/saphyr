@@ -54,12 +54,12 @@ define [4 x i32]* @newArr(i32 %val) {
   store i32 0, i32* %i
   br label %4
 
-; <label>:4:                                      ; preds = %13, %0
+4:                                                ; preds = %13, %0
   %5 = load i32, i32* %i
   %6 = icmp slt i32 %5, 4
   br i1 %6, label %7, label %16
 
-; <label>:7:                                      ; preds = %4
+7:                                                ; preds = %4
   %8 = load i32, i32* %i
   %9 = load [4 x i32]*, [4 x i32]** %p
   %10 = sext i32 %8 to i64
@@ -68,13 +68,13 @@ define [4 x i32]* @newArr(i32 %val) {
   store i32 %12, i32* %11
   br label %13
 
-; <label>:13:                                     ; preds = %7
+13:                                               ; preds = %7
   %14 = load i32, i32* %i
   %15 = add i32 %14, 1
   store i32 %15, i32* %i
   br label %4
 
-; <label>:16:                                     ; preds = %4
+16:                                               ; preds = %4
   %17 = load [4 x i32]*, [4 x i32]** %p
   ret [4 x i32]* %17
 }

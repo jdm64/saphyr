@@ -50,12 +50,12 @@ define i32 @other(i32 %a) {
   %5 = icmp ne i32 %4, 0
   br i1 %5, label %9, label %6
 
-; <label>:6:                                      ; preds = %0
+6:                                                ; preds = %0
   %7 = load i32, i32* %c
   %8 = mul i32 2, %7
   br label %9
 
-; <label>:9:                                      ; preds = %6, %0
+9:                                                ; preds = %6, %0
   %10 = phi i32 [ %4, %0 ], [ %8, %6 ]
   ret i32 %10
 }
@@ -67,11 +67,11 @@ define i32 @more(i32 %a) {
   %3 = icmp ne i32 %2, 0
   br i1 %3, label %5, label %4
 
-; <label>:4:                                      ; preds = %0
+4:                                                ; preds = %0
   store i32 5, i32* %1
   br label %5
 
-; <label>:5:                                      ; preds = %4, %0
+5:                                                ; preds = %4, %0
   %6 = load i32, i32* %1
   ret i32 %6
 }
@@ -89,12 +89,12 @@ define i32 @main() {
   %6 = icmp ne i32 %5, 0
   br i1 %6, label %10, label %7
 
-; <label>:7:                                      ; preds = %0
+7:                                                ; preds = %0
   %8 = load i32, i32* %a
   %9 = call i32 @other(i32 %8)
   br label %10
 
-; <label>:10:                                     ; preds = %7, %0
+10:                                               ; preds = %7, %0
   %11 = phi i32 [ %5, %0 ], [ %9, %7 ]
   ret i32 %11
 }
