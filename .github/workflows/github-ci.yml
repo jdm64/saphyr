@@ -1,0 +1,33 @@
+name: Github CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download Dependencies
+      run: |
+        echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+        sudo apt-get update
+        sudo apt-get install -y flexc++ bisonc++ llvm-8-dev llvm-10-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev
+    - name: Setup saphyr-libs
+      run: bash <(wget -qO- https://raw.githubusercontent.com/jdm64/saphyr-libs/master/setup.sh)
+    - name: Setup Environment
+      run: |
+        echo "LLVM_VER = -8" >> src/Configfile
+        echo "UNITTEST_ARG = +10-8" >> src/Configfile
+    - name: Build Frontend
+      working-directory: src
+      run: make frontend
+    - name: Compile
+      working-directory: src
+      run: make compiler formatter
+    - name: Run Tests
+      working-directory: src
+      run: make tests
