@@ -9,19 +9,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-16.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - llvm: 8
+        - llvm: 9
+        - llvm: 10
+        - llvm: 11
     steps:
     - uses: actions/checkout@v2
-    - name: Download Dependencies
+    - name: Setup Environment
+      env:
+        LLVM: ${{ matrix.llvm }}
       run: |
-        echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+        echo "LLVM_VER = -$LLVM" >> src/Configfile
+        if [[ $LLVM != "10" ]]; then echo "UNITTEST_ARG = +10-$LLVM" >> src/Configfile; fi
+    - name: Download Dependencies
+      env:
+        LLVM: ${{ matrix.llvm }}
+      run: |
+        echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
+        echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
         sudo apt-get update
-        sudo apt-get install -y flexc++ bisonc++ llvm-8-dev llvm-10-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev
+        sudo apt-get install -y flexc++ bisonc++ llvm-$LLVM-dev llvm-10-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev
     - name: Setup saphyr-libs
       run: bash <(wget -qO- https://raw.githubusercontent.com/jdm64/saphyr-libs/master/setup.sh)
-    - name: Setup Environment
-      run: |
-        echo "LLVM_VER = -8" >> src/Configfile
-        echo "UNITTEST_ARG = +10-8" >> src/Configfile
     - name: Build Frontend
       working-directory: src
       run: make frontend
