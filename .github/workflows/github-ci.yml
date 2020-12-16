@@ -14,6 +14,7 @@ jobs:
       matrix:
         include:
         - llvm: 8
+          package: true
         - llvm: 9
         - llvm: 10
         - llvm: 11
@@ -44,3 +45,22 @@ jobs:
     - name: Run Tests
       working-directory: src
       run: make tests
+    - name: Build Package
+      if: matrix.package
+      working-directory: scripts
+      run: |
+        ./build-AppImage.sh
+        ./build-deb.sh
+    - name: Upload Packages To Release
+      if: matrix.package
+      uses: meeDamian/github-release@2.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: continuous
+        name: Continuous Build
+        prerelease: true
+        gzip: false
+        allow_override: true
+        files: |
+          scripts/saphyr.deb
+          scripts/saphyr-x86_64.AppImage
