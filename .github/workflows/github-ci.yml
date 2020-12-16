@@ -17,15 +17,18 @@ jobs:
           package: true
         - llvm: 9
         - llvm: 10
+          use-gcc: true
         - llvm: 11
     steps:
     - uses: actions/checkout@v2
     - name: Setup Environment
       env:
         LLVM: ${{ matrix.llvm }}
+        USE_GCC: ${{ matrix.use-gcc }}
       run: |
         echo "LLVM_VER = -$LLVM" >> src/Configfile
         if [[ $LLVM != "10" ]]; then echo "UNITTEST_ARG = +10-$LLVM" >> src/Configfile; fi
+        if [[ $USE_GCC == "true" ]]; then echo "CXX = g++" >> src/Configfile; fi
     - name: Download Dependencies
       env:
         LLVM: ${{ matrix.llvm }}
