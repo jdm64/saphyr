@@ -19,6 +19,7 @@ jobs:
         - llvm: 10
           use-gcc: true
           coverage: true
+          run-sa: true
         - llvm: 11
     steps:
     - uses: actions/checkout@v2
@@ -27,11 +28,16 @@ jobs:
         LLVM: ${{ matrix.llvm }}
         USE_GCC: ${{ matrix.use-gcc }}
         COVERAGE: ${{ matrix.coverage }}
+        RUN_SA: ${{ matrix.run-sa }}
       run: |
         echo "LLVM_VER = -$LLVM" >> src/Configfile
         if [[ $LLVM != "10" ]]; then echo "UNITTEST_ARG = +10-$LLVM" >> src/Configfile; fi
         if [[ $USE_GCC == "true" ]]; then echo "CXX = g++" >> src/Configfile; fi
-        if [[ $COVERAGE ]]; then echo "COVERAGE = true" >> src/Configfile; fi
+        if [[ $COVERAGE == "true" ]]; then echo "COVERAGE = true" >> src/Configfile; fi
+        if [[ $RUN_SA == "true" ]]; then
+            wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+            unzip build-wrapper-linux-x86.zip
+        fi
     - name: Download Dependencies
       env:
         LLVM: ${{ matrix.llvm }}
@@ -47,7 +53,13 @@ jobs:
       run: make frontend
     - name: Compile
       working-directory: src
-      run: make compiler formatter
+      env:
+        RUN_SA: ${{ matrix.run-sa }}
+      run: |
+        if [[ $RUN_SA == "true" ]]; then
+            BUILD_PREFIX="../build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output"
+        fi
+        $BUILD_PREFIX make compiler formatter
     - name: Run Tests
       working-directory: src
       run: make tests
@@ -82,3 +94,12 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: ./lcov.info
+    - name: SonarCloud Scan
+      if: matrix.coverage
+      uses: mathrix-education/sonar-scanner@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        version: 4.6.0.2311
+        scan: true
