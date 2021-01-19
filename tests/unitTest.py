@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, fnmatch, re, codecs, difflib
-from subprocess import call, Popen, PIPE
+import os, sys, fnmatch, codecs, difflib
+from subprocess import Popen, PIPE
 
 SAPHYR_BIN = "../saphyr"
 SYFMT_BIN = "../syfmt"
@@ -43,7 +43,7 @@ class Cmd:
 
 def findAllTests():
 	matches = []
-	for root, dirnames, filenames in os.walk('.'):
+	for root, _, filenames in os.walk('.'):
 		root = root.strip("./")
 		for filename in fnmatch.filter(filenames, '*' + TEST_EXT):
 			matches.append(os.path.join(root, filename))
@@ -64,6 +64,16 @@ def getFiles(files):
 		for item in matches:
 			allTests.remove(item)
 	return fileList
+
+def patchAsm(file):
+	data = ""
+	with open(file, "r") as asm:
+		for line in asm:
+			if not "; ModuleID" in line and not "source_filename" in line:
+				data += line
+	data = data.strip() + "\n"
+	with open(file, "w") as asm:
+		asm.write(data)
 
 class TestCase:
 	def __init__(self, file, clean=True, update=False, fromVer=None, toVer=None):
@@ -113,16 +123,6 @@ class TestCase:
 		ext_list = [SYP_EXT, FMT_EXT, LL_EXT, EXP_EXT, ERR_EXT, NEG_EXT, BC_EXT, OBJ_EXT]
 		Cmd(["rm"] + [self.basename + ext for ext in ext_list])
 
-	def patchAsm(self, file):
-		data = ""
-		with open(file, "r") as asm:
-			for line in asm:
-				if not "; ModuleID" in line and not "source_filename" in line:
-					data += line
-		data = data.strip() + "\n"
-		with open(file, "w") as asm:
-			asm.write(data)
-
 	def rewriteIR(self, fileName):
 		bcFile = self.basename + ".bc"
 		Cmd(["llvm-as" + self.fromVer, "-o", bcFile, fileName])
@@ -131,9 +131,9 @@ class TestCase:
 	def fixIR(self):
 		if self.fromVer != None and self.toVer != None:
 			self.rewriteIR(self.expFile)
-			self.patchAsm(self.expFile)
+			patchAsm(self.expFile)
 			self.rewriteIR(self.llFile)
-		self.patchAsm(self.llFile)
+		patchAsm(self.llFile)
 
 	def writeLog(self, p):
 		with open(self.errFile, "w") as log:

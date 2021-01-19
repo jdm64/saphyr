@@ -5,11 +5,11 @@
 
 A C++ Like compiler using LLVM as a backend.
 
-## License ##
+## License
 
 Unless otherwise stated the source code is licensed under the GPLv3 -- see LICENSE.
 
-## Build Dependencies ##
+## Build Dependencies
 
 * [FlexC++](https://fbb-git.github.io/flexcpp/)
 * [BisonC++](https://fbb-git.github.io/bisoncpp/)
@@ -25,25 +25,25 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 * [Icmake](https://fbb-git.github.io/icmake/) (required if building FlexC++/BisonC++ from source)
 * [Bobcat](https://fbb-git.github.io/bobcat/) (required if building FlexC++/BisonC++ from source)
 
-### Debian/Ubuntu ###
+### Debian/Ubuntu
 
 Debian 10 (Buster) and Ubuntu 16.04 (Xenial) or newer have all the required packages in their repositories.
 
 `sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev clang python3`
 
-### Gentoo ###
+### Gentoo
 
 A local portage overlay containing bobcat/flexc++/bisonc++ is provided in `scripts/portage`.
 After adding the overlay run `emerge saphyr` to install all required dependencies.
 
-### Arch ###
+### Arch
 
 FlexC++/BisonC++ can be found in the AUR along with their dependencies icmake and libbobcat.
 The other dependencies can be installed using:
 
 `pacman -S make llvm boost clang`
 
-### Other Linux ###
+### Other Linux
 
 Install: `make, clang, llvm, boost and python3` for your Linux distribution. If your distribution doesn't
 have `flexc++/bisonc++` then you can use the `jdm64/saphyr` docker image to build the frontend by running:
@@ -52,6 +52,6 @@ have `flexc++/bisonc++` then you can use the `jdm64/saphyr` docker image to buil
 
 NOTE: On Fedora you must disable SELinux (`sudo setenforce 0`) or you will get a permission error.
 
-## Build Instructions ##
+## Build Instructions
 
 Run `make` in the src directory and it will build the compiler binary `saphyr`.
