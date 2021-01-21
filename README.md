@@ -1,4 +1,5 @@
 # Saphyr Compiler
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3bca14628f32436dae4827f0df5c7c73)](https://app.codacy.com/gh/jdm64/saphyr?utm_source=github.com&utm_medium=referral&utm_content=jdm64/saphyr&utm_campaign=Badge_Grade_Settings)
 [![Build Status](https://github.com/jdm64/saphyr/workflows/Github%20CI/badge.svg)](https://github.com/jdm64/saphyr/actions)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=jdm64_saphyr&metric=bugs)](https://sonarcloud.io/dashboard?id=jdm64_saphyr)
 [![Coverage Status](https://coveralls.io/repos/github/jdm64/saphyr/badge.svg?branch=master)](https://coveralls.io/github/jdm64/saphyr?branch=master)
