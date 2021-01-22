@@ -744,7 +744,7 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, RValue arrSize, Vec
 	return true;
 }
 
-void Inst::CallDestructor(CodeContext& context, RValue value, RValue arrSize, Token* valueToken)
+void Inst::CallDestructor(CodeContext& context, const RValue& value, RValue arrSize, Token* valueToken)
 {
 	SClassType* clType;
 	auto type = value.stype();
