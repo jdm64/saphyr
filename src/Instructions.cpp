@@ -307,17 +307,17 @@ BinaryOps Inst::getOperator(int oper, Token* optToken, SType* type, CodeContext&
 	}
 }
 
+const static Predicate predArr[] = {
+	Predicate::FCMP_OLT, Predicate::FCMP_OGT, Predicate::FCMP_OLE,
+	Predicate::FCMP_OGE, Predicate::FCMP_ONE, Predicate::FCMP_OEQ,
+	Predicate::ICMP_ULT, Predicate::ICMP_UGT, Predicate::ICMP_ULE,
+	Predicate::ICMP_UGE, Predicate::ICMP_NE,  Predicate::ICMP_EQ,
+	Predicate::ICMP_SLT, Predicate::ICMP_SGT, Predicate::ICMP_SLE,
+	Predicate::ICMP_SGE, Predicate::ICMP_NE,  Predicate::ICMP_EQ
+};
+
 Predicate Inst::getPredicate(int oper, Token* token, SType* type, CodeContext& context)
 {
-	const static Predicate predArr[] = {
-		Predicate::FCMP_OLT, Predicate::FCMP_OGT, Predicate::FCMP_OLE,
-		Predicate::FCMP_OGE, Predicate::FCMP_ONE, Predicate::FCMP_OEQ,
-		Predicate::ICMP_ULT, Predicate::ICMP_UGT, Predicate::ICMP_ULE,
-		Predicate::ICMP_UGE, Predicate::ICMP_NE,  Predicate::ICMP_EQ,
-		Predicate::ICMP_SLT, Predicate::ICMP_SGT, Predicate::ICMP_SLE,
-		Predicate::ICMP_SGE, Predicate::ICMP_NE,  Predicate::ICMP_EQ
-	};
-
 	if (type->isVec()) {
 		type = type->subType();
 	} else if (type->isComplex()) {

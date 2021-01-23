@@ -71,6 +71,12 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	return function;
 }
 
+static const set<string> asgOps = {
+	"=", "*=", "/=", "%=", "+=", "-=",
+	"<<=", ">>=", "&=", "^=", "|=", "\?\?=",
+	"==", "!=", "<", "<=", ">", ">="
+};
+
 void Builder::AddOperatorOverload(CodeContext& context, NClassFunctionDecl* stm, SClassType* clType, SFunction func)
 {
 	auto oper = NAttributeList::find(stm->getAttrs(), "oper");
@@ -82,10 +88,6 @@ void Builder::AddOperatorOverload(CodeContext& context, NClassFunctionDecl* stm,
 		context.addError("operator overload attribute requires value", *oper);
 		return;
 	}
-
-	static set<string> asgOps = {"=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "^=", "|=", "\?\?=",
-		"==", "!=", "<", "<=", ">", ">="
-	};
 
 	auto op = val->str();
 	if (asgOps.find(op) == asgOps.end()) {

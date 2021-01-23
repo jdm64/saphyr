@@ -81,6 +81,11 @@ void SUnionType::setConst(TypeManager* tmang)
 		item.second = tmang->getConst(item.second);
 }
 
+const map<string,SType*>& SType::getSuffix(CodeContext& context)
+{
+	return context.getTypeManager().getSuffix();
+}
+
 SType* SType::getAuto(CodeContext& context)
 {
 	return context.getTypeManager().getAuto();
@@ -395,6 +400,17 @@ TypeManager::TypeManager(Module* module)
 	uint64Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt64Ty(context), 64, nullptr);
 	floatTy = smart_stype(SType::FLOATING, Type::getFloatTy(context), 0, nullptr);
 	doubleTy = smart_stype(SType::FLOATING | SType::DOUBLE, Type::getDoubleTy(context), 0, nullptr);
+
+	suffix = {
+		{"i8", int8Ty.get()},
+		{"u8", uint8Ty.get()},
+		{"i16", int16Ty.get()},
+		{"u16", uint16Ty.get()},
+		{"i32", int32Ty.get()},
+		{"u32", uint32Ty.get()},
+		{"i64", int64Ty.get()},
+		{"u64", uint64Ty.get()}
+	};
 }
 
 SType* TypeManager::getArray(SType* arrType, int64_t size)

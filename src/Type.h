@@ -125,6 +125,8 @@ public:
 
 	static SType* numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min = true);
 
+	static const map<string,SType*>& getSuffix(CodeContext& context);
+
 	static SType* getAuto(CodeContext& context);
 
 	static SType* getConst(CodeContext& context, SType* type);
@@ -679,6 +681,9 @@ class TypeManager
 	STypePtr uint32Ty;
 	STypePtr uint64Ty;
 
+	// suffix for types
+	map<string, SType*> suffix;
+
 	// const types
 	map<SType*, STypePtr> constMap;
 
@@ -707,6 +712,11 @@ public:
 	uint64_t allocSize(SType* stype)
 	{
 		return datalayout.getTypeAllocSize(*stype);
+	}
+
+	const map<string,SType*>& getSuffix()
+	{
+		return suffix;
 	}
 
 	SType* getAuto() const

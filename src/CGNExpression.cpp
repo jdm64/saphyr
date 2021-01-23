@@ -457,19 +457,11 @@ RValue CGNExpression::visitNStringLiteral(NStringLiteral* exp)
 
 RValue CGNExpression::visitNIntConst(NIntConst* exp)
 {
-	static const map<string, SType*> suffix = {
-		{"i8", SType::getInt(context, 8)},
-		{"u8", SType::getInt(context, 8, true)},
-		{"i16", SType::getInt(context, 16)},
-		{"u16", SType::getInt(context, 16, true)},
-		{"i32", SType::getInt(context, 32)},
-		{"u32", SType::getInt(context, 32, true)},
-		{"i64", SType::getInt(context, 64)},
-		{"u64", SType::getInt(context, 64, true)} };
 	auto type = SType::getInt(context, 32); // default is int32
 
 	auto data = NConstant::getValueAndSuffix(exp->getStr());
 	if (data.size() > 1) {
+		auto suffix = SType::getSuffix(context);
 		auto suf = suffix.find(data[1]);
 		if (suf == suffix.end())
 			context.addError("invalid integer suffix: " + data[1], *exp);
