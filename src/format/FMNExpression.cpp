@@ -103,8 +103,9 @@ string FMNExpression::visitNArrowOperator(NArrowOperator* exp)
 	auto args = exp->getArgs();
 	if (args) {
 		line += "(";
-		for (auto arg : *args)
+		for_each(args->begin(), args->end(), [&](auto arg) {
 			line += FMNDataType::run(context, arg);
+		});
 		line += ")";
 	}
 	return line;

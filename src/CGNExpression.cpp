@@ -105,8 +105,9 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 				return {};
 
 			VecSFunc funcs;
-			for (auto item : *items)
-				funcs.push_back(static_cast<SFunction&>(item.second));
+			transform(items->begin(), items->end(), back_inserter(funcs), [](auto i) {
+				return static_cast<SFunction&>(i.second);
+			});
 
 			VecRValue args;
 			args.push_back({lhsVar, SType::getPointer(context, lhsVar.stype())});

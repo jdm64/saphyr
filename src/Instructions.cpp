@@ -397,8 +397,9 @@ RValue Inst::Cmp(int type, Token* optToken, RValue lhs, RValue rhs, CodeContext&
 			auto lhsPtr = PtrOfLoad(context, lhs);
 			if (lhsPtr) {
 				VecSFunc funcs;
-				for (auto item : *items)
-					funcs.push_back(static_cast<SFunction&>(item.second));
+				transform(items->begin(), items->end(), back_inserter(funcs), [](auto i) {
+					return static_cast<SFunction&>(i.second);
+				});
 
 				VecRValue args;
 				args.push_back(lhsPtr);
@@ -591,10 +592,10 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 				argStr += arg.stype()->str(context);
 			}
 			string msg = "arguments ambigious for overloaded function:\n\t";
-			msg += "args:\n\t\t" + argStr + "\n\t" +
-				"functions:";
-			for (auto mFunc : sizeMatch)
+			msg += "args:\n\t\t" + argStr + "\n\t" + "functions:";
+			for_each(sizeMatch.begin(), sizeMatch.end(), [&](auto mFunc) {
 				msg += "\n\t\t" + mFunc.stype()->str(context);
+			});
 			context.addError(msg, name);
 			return {};
 		}
