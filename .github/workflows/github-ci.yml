@@ -20,6 +20,7 @@ jobs:
           use-gcc: true
           coverage: true
         - llvm: 11
+        - llvm: 12
     steps:
     - uses: actions/checkout@v2
     - name: Setup Environment
@@ -38,6 +39,7 @@ jobs:
       run: |
         echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
         echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
+        echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-12 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
         sudo apt-get update
         sudo apt-get install -y flexc++ bisonc++ llvm-$LLVM-dev llvm-10-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev lcov
     - name: Setup saphyr-libs

@@ -425,7 +425,11 @@ SType* TypeManager::getVec(SType* vecType, int64_t size)
 {
 	STypePtr &item = arrMap[make_pair(vecType, size)];
 	if (!item.get())
+#if LLVM_VERSION_MAJOR >= 11
+		item = smart_stype(SType::VEC, FixedVectorType::get(*vecType, size), size, vecType);
+#else
 		item = smart_stype(SType::VEC, VectorType::get(*vecType, size), size, vecType);
+#endif
 	return item.get();
 }
 
