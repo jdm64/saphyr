@@ -1,0 +1,46 @@
+# appimage-builder recipe see https://appimage-builder.readthedocs.io for details
+# https://github.com/AppImageCrafters/appimage-builder/releases
+version: 1
+AppDir:
+  path: BisonC++.AppDir
+  app_info:
+    id: bisonc++
+    name: bisonc++
+    icon: utilities-terminal
+    version: latest
+    exec: usr/bin/bisonc++
+    exec_args: $@
+  apt:
+    arch: ["amd64"]
+    allow_unauthenticated: true
+    sources:
+     - sourceline: deb http://us.archive.ubuntu.com/ubuntu bionic           main restricted universe multiverse
+     - sourceline: deb http://us.archive.ubuntu.com/ubuntu bionic-updates   main restricted universe multiverse
+     - sourceline: deb http://us.archive.ubuntu.com/ubuntu bionic-backports main restricted universe multiverse
+     - sourceline: deb http://us.archive.ubuntu.com/ubuntu bionic-security  main restricted universe multiverse
+    include:
+     - bisonc++
+    exclude:
+     - gcc-8-base
+     - libc6
+     - libgcc1
+     - libssl1.1
+     - libstdc++6
+     - zlib1g
+  files:
+    include: []
+    exclude:
+     - etc
+     - opt
+     - usr/share/bug
+     - usr/share/doc
+     - usr/share/info
+     - usr/share/lintian
+     - usr/share/man
+     - usr/share/readline
+  runtime:
+    path_mappings:
+     - /usr/share:$APPDIR/usr/share
+AppImage:
+  arch: x86_64
+  update-information: guess
