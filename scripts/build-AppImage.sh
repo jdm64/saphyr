@@ -19,7 +19,7 @@ cd AppImage && ln -s usr/bin/saphyr AppRun && cd ..
 patchelf --set-rpath '$ORIGIN/../lib' AppImage/usr/bin/saphyr
 
 AppImageToolBin=$(mktemp)
-AppImageVer=12
+AppImageVer=13
 
 wget "https://github.com/AppImage/AppImageKit/releases/download/$AppImageVer/appimagetool-x86_64.AppImage" -O "$AppImageToolBin"
 chmod +x "$AppImageToolBin"
