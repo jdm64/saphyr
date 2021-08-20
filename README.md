@@ -32,13 +32,6 @@ Debian 10 (Buster) and Ubuntu 16.04 (Xenial) or newer have all the required pack
 
 `sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev clang python3`
 
-### Arch
-
-FlexC++/BisonC++ can be found in the AUR along with their dependencies icmake and libbobcat.
-The other dependencies can be installed using:
-
-`pacman -S make llvm boost clang`
-
 ### Other Linux
 
 Install: `make, clang, llvm, boost and python3` for your Linux distribution. If your distribution doesn't
