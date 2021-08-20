@@ -32,11 +32,6 @@ Debian 10 (Buster) and Ubuntu 16.04 (Xenial) or newer have all the required pack
 
 `sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev clang python3`
 
-### Gentoo
-
-A local portage overlay containing bobcat/flexc++/bisonc++ is provided in `scripts/portage`.
-After adding the overlay run `emerge saphyr` to install all required dependencies.
-
 ### Arch
 
 FlexC++/BisonC++ can be found in the AUR along with their dependencies icmake and libbobcat.
