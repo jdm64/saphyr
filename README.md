@@ -12,8 +12,8 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 
 ## Build Dependencies
 
-* [FlexC++](https://fbb-git.github.io/flexcpp/)
-* [BisonC++](https://fbb-git.github.io/bisoncpp/)
+* [FlexC++](https://fbb-git.gitlab.io/flexcpp/)
+* [BisonC++](https://fbb-git.gitlab.io/bisoncpp/)
 * [Boost](http://www.boost.org/)
   * Program_Options
   * Filesystem
