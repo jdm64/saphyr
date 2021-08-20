@@ -23,8 +23,6 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
 * C++14 compiler (either GCC or Clang)
 * Python 3 (for running tests)
 * [Saphyr-libs](https://github.com/jdm64/saphyr-libs) (for tests)
-* [Icmake](https://fbb-git.github.io/icmake/) (required if building FlexC++/BisonC++ from source)
-* [Bobcat](https://fbb-git.github.io/bobcat/) (required if building FlexC++/BisonC++ from source)
 
 ### Debian/Ubuntu
 
@@ -32,10 +30,14 @@ Debian 10 (Buster) and Ubuntu 16.04 (Xenial) or newer have all the required pack
 
 `sudo apt-get install flexc++ bisonc++ make llvm-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev clang python3`
 
-### Other Linux
+### Other Linux (FlexC++/BisonC++)
 
-Install: `make, clang, llvm, boost and python3` for your Linux distribution. If your distribution doesn't
-have `flexc++/bisonc++` then you can use the `jdm64/saphyr` docker image to build the frontend by running:
+If your Linux distro doesn't have flexc++/bisonc++ then you can download appimages of these programs:
+
+* [flexc++](https://github.com/jdm64/saphyr/releases/download/master/flexc++-latest-x86_64.AppImage)
+* [bisonc++](https://github.com/jdm64/saphyr/releases/download/master/bisonc++-latest-x86_64.AppImage)
+
+You can also use the `jdm64/saphyr` docker image to build the frontend by running:
 
 `sudo make frontend-docker`
 
