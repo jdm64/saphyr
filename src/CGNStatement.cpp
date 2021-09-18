@@ -94,19 +94,28 @@ void CGNStatement::visitNParameter(NParameter* stm)
 
 void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 {
-	auto initValue = CGNExpression::run(context, stm->getInitExp());
-	auto varType = CGNDataType::run(context, stm->getType());
+	auto initList = CGNExpression::collect(context, stm->getInitList());
+	if (!initList) {
+		auto initExp = stm->getInitExp();
+		if (initExp) {
+			auto initValue = CGNExpression::run(context, initExp);
+			initList = std::make_unique<VecRValue>();
+			initList->push_back(initValue);
+		}
+	}
 
+	auto varType = CGNDataType::run(context, stm->getType());
 	if (!varType) {
 		return;
 	} else if (varType->isAuto()) {
-		if (!stm->getInitExp()) { // auto type requires initialization
+		if (!initList || initList->size() != 1) { // auto type requires initialization
 			context.addError("auto variable type requires initialization", *stm->getType());
 			return;
-		} else if (!initValue) {
+		}
+		varType = initList->at(0).stype();
+		if (!varType) {
 			return;
 		}
-		varType = initValue.stype();
 	} else if (varType->isUnsized()) {
 		context.addError("can't create variable for an unsized type: " + varType->str(context), *stm->getType());
 		return;
@@ -123,12 +132,6 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 	auto var = RValue(context.IB().CreateAlloca(*varType, nullptr, name), varType);
 	context.storeLocalSymbol(var, name);
 
-	auto initList = CGNExpression::collect(context, stm->getInitList());
-	if (initValue) {
-		if (!initList)
-			initList = std::make_unique<VecRValue>();
-		initList->push_back(initValue);
-	}
 	Inst::InitVariable(context, var, {}, initList.get(), stm->getName());
 }
 

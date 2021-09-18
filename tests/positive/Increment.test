@@ -28,7 +28,7 @@ void call()
 
 int main()
 {
-	auto a = 5, b = 2.8;
+	auto a = 5, b{2.8};
 
 	a++;
 	++b;

@@ -1,7 +1,7 @@
 
 int main()
 {
-	auto a = false, b = true;
+	auto a = false, b{true};
 
 	return a + b;
 }

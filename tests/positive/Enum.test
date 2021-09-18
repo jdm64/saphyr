@@ -16,7 +16,7 @@ int func(Colors c)
 
 int func2()
 {
-	auto a = Colors.BLUE, b = Dir.S;
+	auto a = Colors.BLUE, b{Dir.S};
 
 	auto c = a + b;
 
