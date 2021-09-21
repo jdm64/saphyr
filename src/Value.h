@@ -115,6 +115,8 @@ public:
 	{
 		return atrs;
 	}
+
+	void dump(CodeContext &context);
 };
 
 class SFunction : public RValue

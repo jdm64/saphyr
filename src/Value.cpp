@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include "Value.h"
 #include "CodeContext.h"
 
@@ -65,6 +66,13 @@ RValue RValue::getValue(CodeContext &context, const APSInt& intVal)
 RValue RValue::getUndef(SType* type)
 {
 	return RValue(UndefValue::get(*type), type);
+}
+
+void RValue::dump(CodeContext &context)
+{
+	cout << ty->str(context) << endl;
+	val->print(llvm::dbgs());
+	cout << endl;
 }
 
 SFunction SFunction::create(CodeContext& context, Function* function, SFunctionType* type, NAttributeList* attrs)
