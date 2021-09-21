@@ -1,0 +1,128 @@
+
+void refInit()
+{
+	int b;
+	$int a = b;
+	$int c = a;
+}
+
+void refAssign()
+{
+	int i = 3;
+	$int a = i;
+	int b = 5;
+
+	a = 7;
+	a = b;
+}
+
+int refUse()
+{
+	int i = 2;
+	$int a = i;
+
+	return a + 9;
+}
+
+void refInc()
+{
+	int i = 6;
+	$int ref = i;
+
+	ref--;
+}
+
+void refAuto()
+{
+	int i;
+	$auto ref = i;
+}
+
+void refLikePtr()
+{
+	int i;
+	$int ref = i;
+
+	auto val = ref@;
+	auto ptr = ref$;
+}
+
+========
+
+define void @refInit() {
+  %b = alloca i32
+  %a = alloca i32*
+  store i32* %b, i32** %a
+  %1 = load i32*, i32** %a
+  %c = alloca i32*
+  store i32* %1, i32** %c
+  ret void
+}
+
+define void @refAssign() {
+  %i = alloca i32
+  store i32 3, i32* %i
+  %a = alloca i32*
+  store i32* %i, i32** %a
+  %b = alloca i32
+  store i32 5, i32* %b
+  %1 = load i32*, i32** %a
+  store i32 7, i32* %1
+  %2 = load i32*, i32** %a
+  %3 = load i32, i32* %b
+  store i32 %3, i32* %2
+  ret void
+}
+
+define i32 @refUse() {
+  %i = alloca i32
+  store i32 2, i32* %i
+  %a = alloca i32*
+  store i32* %i, i32** %a
+  %1 = load i32*, i32** %a
+  %2 = load i32, i32* %1
+  %3 = add i32 %2, 9
+  ret i32 %3
+}
+
+define void @refInc() {
+  %i = alloca i32
+  store i32 6, i32* %i
+  %ref = alloca i32*
+  store i32* %i, i32** %ref
+  %1 = load i32*, i32** %ref
+  %2 = load i32, i32* %1
+  %3 = add i32 %2, -1
+  store i32 %3, i32* %1
+  ret void
+}
+
+define void @refAuto() {
+  %i = alloca i32
+  %ref = alloca i32*
+  store i32* %i, i32** %ref
+  ret void
+}
+
+define void @refLikePtr() {
+  %i = alloca i32
+  %ref = alloca i32*
+  store i32* %i, i32** %ref
+  %1 = load i32*, i32** %ref
+  %2 = load i32, i32* %1
+  %val = alloca i32
+  store i32 %2, i32* %val
+  %3 = load i32*, i32** %ref
+  %ptr = alloca i32*
+  store i32* %3, i32** %ptr
+  ret void
+}
+
+========
+
+refAssign T
+refAuto T
+refInc T
+refInit T
+refLikePtr T
+refUse T

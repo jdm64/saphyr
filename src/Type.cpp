@@ -136,6 +136,11 @@ SType* SType::getPointer(CodeContext& context, SType* ptrType)
 	return context.getTypeManager().getPointer(ptrType);
 }
 
+SType * SType::getReference(CodeContext& context, SType* type)
+{
+	return context.getTypeManager().getReference(type);
+}
+
 SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, VecSType params)
 {
 	return context.getTypeManager().getFunction(returnTy, params);
@@ -440,6 +445,16 @@ SType* TypeManager::getPointer(SType* ptrType)
 		// pointer to void must be i8*
 		auto llptr = PointerType::getUnqual(*(ptrType->isVoid()? int8Ty.get() : ptrType));
 		item = smart_stype(SType::POINTER | SType::UNSIGNED, llptr, 0, ptrType);
+	}
+	return item.get();
+}
+
+SType* TypeManager::getReference(SType* type)
+{
+	STypePtr &item = refMap[type];
+	if (!item.get()) {
+		auto llptr = PointerType::getUnqual(*type);
+		item = smart_stype(SType::REFERENCE | SType::UNSIGNED, llptr, 0, type);
 	}
 	return item.get();
 }

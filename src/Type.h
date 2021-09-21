@@ -84,7 +84,8 @@ public:
 		CLASS    = 1 << 14,
 		OPAQUE   = 1 << 15,
 		CONST    = 1 << 16,
-		TEMPLATED = 1 << 17
+		TEMPLATED = 1 << 17,
+		REFERENCE = 1 << 18
 	};
 
 	static vector<Type*> convertArr(VecSType arr)
@@ -146,6 +147,8 @@ public:
 	static SType* getVec(CodeContext& context, SType* vecType, uint64_t size);
 
 	static SType* getPointer(CodeContext& context, SType* ptrType);
+
+	static SType* getReference(CodeContext& context, SType* type);
 
 	static SFunctionType* getFunction(CodeContext& context, SType* returnTy, VecSType params);
 
@@ -268,6 +271,11 @@ public:
 		return tclass & POINTER;
 	}
 
+	bool isReference() const
+	{
+		return tclass & REFERENCE;
+	}
+
 	bool isEnum() const
 	{
 		return tclass & ENUM;
@@ -313,6 +321,8 @@ public:
 			os << "]" << subtype->str(context);
 		} else if (isPointer()) {
 			os << "@" << subtype->str(context);
+		} else if (isReference()) {
+			os << "$" << subtype->str(context);
 		} else if (isVec()) {
 			os << "vec<" << size() << "," << subtype->str(context) << ">";
 		} else {
@@ -354,6 +364,8 @@ public:
 			os << "_" << subtype->raw();
 		} else if (isPointer()) {
 			os << "p_" << subtype->raw();
+		} else if (isReference()) {
+			os << "r_" << subtype->raw();
 		} else if (isVec()) {
 			os << "v" << size() << "_" << subtype->raw();
 		} else {
@@ -697,6 +709,9 @@ class TypeManager
 	// pointer types
 	map<SType*, STypePtr> ptrMap;
 
+	// reference types
+	map<SType*, STypePtr> refMap;
+
 	// user types
 	map<string, SUserPtr> usrMap;
 
@@ -777,6 +792,8 @@ public:
 	SType* getVec(SType* vecType, int64_t size);
 
 	SType* getPointer(SType* ptrType);
+
+	SType* getReference(SType* type);
 
 	SFunctionType* getFunction(SType* returnTy, VecSType args);
 

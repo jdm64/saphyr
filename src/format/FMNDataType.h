@@ -39,6 +39,8 @@ private:
 
 	string visitNPointerType(NPointerType* type);
 
+	string visitNReferenceType(NReferenceType* type);
+
 	string visitNFuncPointerType(NFuncPointerType* type);
 
 	string visit(NDataType* type);

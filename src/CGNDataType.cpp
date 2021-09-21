@@ -31,6 +31,7 @@ SType* CGNDataType::visit(NDataType* type)
 	VISIT_CASE_RETURN(NConstType, type)
 	VISIT_CASE_RETURN(NFuncPointerType, type)
 	VISIT_CASE_RETURN(NPointerType, type)
+	VISIT_CASE_RETURN(NReferenceType, type)
 	VISIT_CASE_RETURN(NThisType, type)
 	VISIT_CASE_RETURN(NUserType, type)
 	VISIT_CASE_RETURN(NVecType, type)
@@ -199,6 +200,19 @@ SType* CGNDataType::visitNPointerType(NPointerType* type)
 	return SType::getPointer(context, btype);
 }
 
+SType* CGNDataType::visitNReferenceType(NReferenceType* type)
+{
+	auto baseType = type->getBaseType();
+	auto btype = visit(baseType);
+	if (!btype) {
+		return nullptr;
+	} else if (btype->isVoid()) {
+		context.addError("can't create reference to void", *baseType);
+		return nullptr;
+	}
+	return SType::getReference(context, btype);
+}
+
 SType* CGNDataType::visitNFuncPointerType(NFuncPointerType* type)
 {
 	auto ptr = Builder::getFuncType(context, type->getReturnType(), type->getParams());
@@ -213,6 +227,7 @@ SType* CGNDataTypeNew::visit(NDataType* type)
 	VISIT_CASE_RETURN(NConstType, type)
 	VISIT_CASE_RETURN(NFuncPointerType, type)
 	VISIT_CASE_RETURN(NPointerType, type)
+	VISIT_CASE_RETURN(NReferenceType, type)
 	VISIT_CASE_RETURN(NThisType, type)
 	VISIT_CASE_RETURN(NUserType, type)
 	VISIT_CASE_RETURN(NVecType, type)
@@ -318,6 +333,12 @@ SType* CGNDataTypeNew::visitNPointerType(NPointerType* type)
 	if (ty)
 		setSize(ty);
 	return ty;
+}
+
+SType* CGNDataTypeNew::visitNReferenceType(NReferenceType* type)
+{
+	context.addError("can't call new on reference type", *type);
+	return nullptr;
 }
 
 SType* CGNDataTypeNew::visitNFuncPointerType(NFuncPointerType* type)

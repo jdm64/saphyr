@@ -676,6 +676,10 @@ explicit_data_type
 	{
 		$$ = new NFuncPointerType($1.t_tok, $5, $3);
 	}
+	| '$' data_type
+	{
+		$$ = new NReferenceType($2, $1.t_tok);
+	}
 	;
 data_type_list
 	:

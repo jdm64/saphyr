@@ -41,6 +41,8 @@ protected:
 
 	SType* visitNPointerType(NPointerType* type);
 
+	SType* visitNReferenceType(NReferenceType* type);
+
 	SType* visitNFuncPointerType(NFuncPointerType* type);
 
 	virtual SType* visit(NDataType* type);
@@ -77,6 +79,8 @@ class CGNDataTypeNew : public CGNDataType
 	SType* visitNUserType(NUserType* type);
 
 	SType* visitNPointerType(NPointerType* type);
+
+	SType* visitNReferenceType(NReferenceType* type);
 
 	SType* visitNFuncPointerType(NFuncPointerType* type);
 

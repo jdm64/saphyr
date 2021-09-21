@@ -61,7 +61,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		if (upcast && valueType->isEnum())
 			value.castToSubtype();
 		return false;
-	} else if (type->isComplex() || valueType->isComplex()) {
+	} else if (type->isComplex()) {
 		castError(context, "Cannot cast complex types", valueType, type, token);
 		return true;
 	} else if (type->isPointer()) {
@@ -89,6 +89,20 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		}
 		castError(context, "Cannot cast type to pointer", valueType, type, token);
 		return true;
+	} else if (type->isReference()) {
+		if (type->subType() != valueType) {
+			castError(context, "Reference to type doesn't match", valueType, type, token);
+			return true;
+		}
+		auto loadValue = PtrOfLoad(context, value);
+		if (loadValue) {
+			// remove duplicate load
+			dyn_cast<Instruction>(value.value())->eraseFromParent();
+			value = loadValue;
+			return false;
+		}
+		context.addError("Cannot cast literal value to reference", token);
+		return false;
 	} else if (type->isVec()) {
 		// unwrap enum type
 		if (valueType->isEnum())
@@ -144,7 +158,10 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		return false;
 	}
 
-	if (valueType->isPointer()) {
+	if (valueType->isComplex()) {
+		castError(context, "Cannot cast complex types", valueType, type, token);
+		return true;
+	} else if (valueType->isPointer()) {
 		castError(context, "Cannot cast pointer", valueType, type, token);
 		return true;
 	}
@@ -449,7 +466,7 @@ RValue Inst::PtrOfLoad(CodeContext &context, const RValue& value)
 RValue Inst::Deref(CodeContext& context, const RValue& value, bool recursive)
 {
 	auto retVal = RValue(value.value(), value.stype());
-	while (retVal.stype()->isPointer()) {
+	while (retVal.stype()->isPointer() || retVal.stype()->isReference()) {
 		retVal = RValue(context.IB().CreateLoad(retVal), retVal.stype()->subType());
 		if (!recursive)
 			break;

@@ -568,6 +568,35 @@ public:
 	ADD_ID(NPointerType)
 };
 
+
+class NReferenceType : public NDataType
+{
+	uPtr<NDataType> baseType;
+	uPtr<Token> tok;
+
+public:
+	explicit NReferenceType(NDataType* baseType, Token* tok = nullptr)
+	: baseType(baseType), tok(tok) {}
+
+	NReferenceType* copy() const override
+	{
+		auto t = tok ? tok->copy() : nullptr;
+		return new NReferenceType(baseType->copy(), t);
+	}
+
+	operator Token*() const override
+	{
+		return tok.get();
+	}
+
+	NDataType* getBaseType() const
+	{
+		return baseType.get();
+	}
+
+	ADD_ID(NReferenceType)
+};
+
 class NFuncPointerType : public NDataType
 {
 	uPtr<NDataType> returnType;

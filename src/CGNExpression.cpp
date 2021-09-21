@@ -70,7 +70,10 @@ void CGNExpression::visit(NExpressionList* list)
 RValue CGNExpression::visitNVariable(NVariable* nVar)
 {
 	auto var = CGNVariable::run(context, nVar);
-	return Inst::Load(context, var);
+	var = Inst::Load(context, var);
+	if (var && var.stype()->isReference())
+		var = Inst::Deref(context, var);
+	return var;
 }
 
 RValue CGNExpression::visitNAddressOf(NAddressOf* nVar)
@@ -87,16 +90,23 @@ RValue CGNExpression::visitNExprVariable(NExprVariable* exp)
 RValue CGNExpression::visitNAssignment(NAssignment* exp)
 {
 	auto lhsVar = CGNVariable::run(context, exp->getLhs());
-
 	if (!lhsVar) {
 		return RValue();
-	} else if (lhsVar.stype()->isConst()) {
+	}
+
+	auto lhsType = lhsVar.stype();
+	if (lhsType->isConst()) {
 		context.addError("assignment not allowed for constant variable", *exp->getLhs());
 		return RValue();
 	}
 
-	if (lhsVar.stype()->isClass()) {
-		auto clTy = static_cast<SClassType*>(lhsVar.stype());
+	if (lhsType->isReference()) {
+		lhsVar = Inst::Deref(context, lhsVar);
+		lhsType = lhsVar.stype();
+	}
+
+	if (lhsType->isClass()) {
+		auto clTy = static_cast<SClassType*>(lhsType);
 		auto opTok = exp->getOpToken();
 		auto items = clTy->getItem(opTok->str);
 		if (items) {
@@ -110,7 +120,7 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 			});
 
 			VecRValue args;
-			args.push_back({lhsVar, SType::getPointer(context, lhsVar.stype())});
+			args.push_back({lhsVar, SType::getPointer(context, lhsType)});
 			args.push_back(rhsExp);
 
 			Inst::CallFunction(context, funcs, opTok, args);
@@ -143,7 +153,7 @@ RValue CGNExpression::visitNAssignment(NAssignment* exp)
 		auto lhsLocal = Inst::Load(context, lhsVar);
 		rhsExp = Inst::BinaryOp(exp->getOp(), *exp, lhsLocal, rhsExp, context);
 	}
-	Inst::CastTo(context, *exp->getRhs(), rhsExp, lhsVar.stype());
+	Inst::CastTo(context, *exp->getRhs(), rhsExp, lhsType);
 	if (rhsExp)
 		context.IB().CreateStore(rhsExp, lhsVar);
 
@@ -402,6 +412,11 @@ RValue CGNExpression::visitNIncrement(NIncrement* exp)
 	auto varVal = Inst::Load(context, varPtr);
 	if (!varVal)
 		return RValue();
+
+	if (varPtr.stype()->isReference()) {
+		varPtr = varVal;
+		varVal = Inst::Deref(context, varVal);
+	}
 
 	auto type = varVal.stype();
 	if (type->isPointer()) {

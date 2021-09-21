@@ -156,8 +156,11 @@ RValue CGNVariable::visitNDereference(NDereference* nVar)
 	auto var = visit(nVar->getVar());
 	if (!var) {
 		return var;
-	} else if (!var.stype()->isPointer()) {
-		context.addError("cannot dereference " + var.stype()->str(context), *nVar);
+	}
+
+	auto type = var.stype();
+	if (!type->isPointer() && !type->isReference()) {
+		context.addError("cannot dereference " + type->str(context), *nVar);
 		return RValue();
 	}
 	return Inst::Deref(context, var);
@@ -165,7 +168,11 @@ RValue CGNVariable::visitNDereference(NDereference* nVar)
 
 RValue CGNVariable::visitNAddressOf(NAddressOf* var)
 {
-	return visit(var->getVar());
+	auto val = visit(var->getVar());
+	if (val && val.stype()->isReference()) {
+		val = Inst::Deref(context, val);
+	}
+	return val;
 }
 
 RValue CGNVariable::visitNFunctionCall(NFunctionCall* var)

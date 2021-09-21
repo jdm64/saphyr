@@ -1,0 +1,65 @@
+
+struct Data
+{
+	int id;
+	float val;
+}
+
+class Foo
+{
+	struct this
+	{
+		$int val;
+		$Data data;
+	}
+
+	this($int a, $Data b)
+	val{a}, data{b}
+	{
+	}
+}
+
+int main()
+{
+	int val;
+	Data d;
+	Foo f{val, d};
+
+	return 0;
+}
+
+========
+
+%Foo = type { i32*, %Data* }
+%Data = type { i32, float }
+
+define void @Foo_this(%Foo* %this, i32* %a, %Data* %b) {
+  %1 = alloca %Foo*
+  store %Foo* %this, %Foo** %1
+  %2 = alloca i32*
+  store i32* %a, i32** %2
+  %3 = alloca %Data*
+  store %Data* %b, %Data** %3
+  %4 = load %Foo*, %Foo** %1
+  %5 = getelementptr %Foo, %Foo* %4, i32 0, i32 1
+  %6 = load %Data*, %Data** %3
+  store %Data* %6, %Data** %5
+  %7 = load %Foo*, %Foo** %1
+  %8 = getelementptr %Foo, %Foo* %7, i32 0, i32 0
+  %9 = load i32*, i32** %2
+  store i32* %9, i32** %8
+  ret void
+}
+
+define i32 @main() {
+  %val = alloca i32
+  %d = alloca %Data
+  %f = alloca %Foo
+  call void @Foo_this(%Foo* %f, i32* %val, %Data* %d)
+  ret i32 0
+}
+
+========
+
+Foo_this T
+main T

@@ -116,6 +116,17 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 		if (!varType) {
 			return;
 		}
+	} else if (varType->isReference()) {
+		if (!initList || initList->size() != 1) { // reference type requires initialization
+			context.addError("reference variable type requires initialization", *stm->getType());
+			return;
+		} else if (varType->subType()->isAuto()) {
+			varType = initList->at(0).stype();
+			if (!varType) {
+				return;
+			}
+			varType = SType::getReference(context, varType);
+		}
 	} else if (varType->isUnsized()) {
 		context.addError("can't create variable for an unsized type: " + varType->str(context), *stm->getType());
 		return;
