@@ -98,7 +98,7 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 	if (!initList) {
 		auto initExp = stm->getInitExp();
 		if (initExp) {
-			auto initValue = CGNExpression::run(context, initExp);
+			auto initValue = CGNExpression::run(context, initExp, false);
 			initList = std::make_unique<VecRValue>();
 			initList->push_back(initValue);
 		}
@@ -132,6 +132,10 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 		return;
 	} else if (!SType::validate(context, stm->getName(), varType)) {
 		return;
+	}
+
+	if (initList && initList->size() == 1 && initList->at(0) && initList->at(0).stype()->isReference() && !varType->isPointer()) {
+		initList->at(0) = Inst::Deref(context, initList->at(0));
 	}
 
 	auto name = stm->getName()->str;

@@ -47,6 +47,13 @@ void refLikePtr()
 	auto ptr = ref$;
 }
 
+void pointerFromRef()
+{
+	int val;
+	$int ref = val;
+	@int ptr = ref;
+}
+
 ========
 
 define void @refInit() {
@@ -118,8 +125,19 @@ define void @refLikePtr() {
   ret void
 }
 
+define void @pointerFromRef() {
+  %val = alloca i32
+  %ref = alloca i32*
+  store i32* %val, i32** %ref
+  %1 = load i32*, i32** %ref
+  %ptr = alloca i32*
+  store i32* %1, i32** %ptr
+  ret void
+}
+
 ========
 
+pointerFromRef T
 refAssign T
 refAuto T
 refInc T

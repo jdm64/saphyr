@@ -65,7 +65,10 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		castError(context, "Cannot cast complex types", valueType, type, token);
 		return true;
 	} else if (type->isPointer()) {
-		if (!valueType->isPointer()) {
+		if (valueType->isReference() && type->subType() == valueType->subType()) {
+			value = {value.value(), type};
+			return false;
+		} else if (!valueType->isPointer()) {
 			context.addError("Cannot cast non-pointer to pointer", token);
 			return true;
 		} else if (type->subType()->isArray() && valueType->subType()->isArray()) {

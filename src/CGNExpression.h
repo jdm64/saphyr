@@ -20,9 +20,10 @@
 class CGNExpression
 {
 	CodeContext& context;
+	bool derefRef;
 
-	explicit CGNExpression(CodeContext& context)
-	: context(context) {}
+	explicit CGNExpression(CodeContext& context, bool derefRef = true)
+	: context(context), derefRef(derefRef) {}
 
 	RValue visitNVariable(NVariable*);
 
@@ -72,9 +73,9 @@ class CGNExpression
 
 public:
 
-	static RValue run(CodeContext& context, NExpression* exp)
+	static RValue run(CodeContext& context, NExpression* exp, bool derefRef = true)
 	{
-		CGNExpression runner(context);
+		CGNExpression runner(context, derefRef);
 		return runner.visit(exp);
 	}
 

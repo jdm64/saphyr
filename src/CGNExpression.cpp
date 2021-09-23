@@ -71,7 +71,7 @@ RValue CGNExpression::visitNVariable(NVariable* nVar)
 {
 	auto var = CGNVariable::run(context, nVar);
 	var = Inst::Load(context, var);
-	if (var && var.stype()->isReference())
+	if (var && var.stype()->isReference() && derefRef)
 		var = Inst::Deref(context, var);
 	return var;
 }
