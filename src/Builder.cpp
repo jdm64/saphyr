@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <numeric>
 #include "AST.h"
 #include "parser.h"
 #include "Value.h"
@@ -719,10 +720,10 @@ void Builder::LoadImport(CodeContext& context, NImportFileStm* stm)
 	path filename;
 	if (stm->id() == NodeId::NImportPkgStm) {
 		auto imp = static_cast<NImportPkgStm*>(stm);
+		auto segs = imp->getSegments();
 		filename = Util::getDataDir();
-		for (auto seg : *imp->getSegments())
-			filename /= seg->str;
-		filename = filename.string() + ".syp";
+		filename = accumulate(segs->begin(), segs->end(), filename, [](auto& l, auto& r) { return l / r->str; });
+		filename += ".syp";
 	} else {
 		filename = context.currFile().parent_path() / stm->getName()->str;
 	}
