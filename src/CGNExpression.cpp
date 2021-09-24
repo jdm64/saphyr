@@ -477,12 +477,11 @@ RValue CGNExpression::visitNIntConst(NIntConst* exp)
 
 	auto data = NConstant::getValueAndSuffix(exp->getStr());
 	if (data.size() > 1) {
-		auto suffix = SType::getSuffix(context);
-		auto suf = suffix.find(data[1]);
-		if (suf == suffix.end())
+		auto ty = SType::getSuffixType(context, data[1]);
+		if (!ty)
 			context.addError("invalid integer suffix: " + data[1], *exp);
 		else
-			type = suf->second;
+			type = ty;
 	}
 	auto base = exp->getBase();
 	string intVal(data[0], base == 10? 0:2);
@@ -492,18 +491,15 @@ RValue CGNExpression::visitNIntConst(NIntConst* exp)
 
 RValue CGNExpression::visitNFloatConst(NFloatConst* exp)
 {
-	static const map<string, SType*> suffix = {
-		{"f", SType::getFloat(context)},
-		{"d", SType::getFloat(context, true)} };
 	auto type = SType::getFloat(context, true);
 
 	auto data = NConstant::getValueAndSuffix(exp->getStr());
 	if (data.size() > 1) {
-		auto suf = suffix.find(data[1]);
-		if (suf == suffix.end())
+		auto ty = SType::getSuffixType(context, data[1]);
+		if (!ty)
 			context.addError("invalid float suffix: " + data[1], *exp);
 		else
-			type = suf->second;
+			type = ty;
 	}
 	auto fp = ConstantFP::get(*type, data[0]);
 	return RValue(fp, type);

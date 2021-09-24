@@ -81,9 +81,9 @@ void SUnionType::setConst(TypeManager* tmang)
 		item.second = tmang->getConst(item.second);
 }
 
-const map<string,SType*>& SType::getSuffix(CodeContext& context)
+SType* SType::getSuffixType(CodeContext& context, const string& name)
 {
-	return context.getTypeManager().getSuffix();
+	return context.getTypeManager().getSuffixType(name);
 }
 
 SType* SType::getAuto(CodeContext& context)
@@ -407,6 +407,8 @@ TypeManager::TypeManager(Module* module)
 	doubleTy = smart_stype(SType::FLOATING | SType::DOUBLE, Type::getDoubleTy(context), 0, nullptr);
 
 	suffix = {
+		{"f", floatTy.get()},
+		{"d", doubleTy.get()},
 		{"i8", int8Ty.get()},
 		{"u8", uint8Ty.get()},
 		{"i16", int16Ty.get()},

@@ -126,7 +126,7 @@ public:
 
 	static SType* numericConv(CodeContext& context, Token* optToken, SType* ltype, SType* rtype, bool int32min = true);
 
-	static const map<string,SType*>& getSuffix(CodeContext& context);
+	static SType* getSuffixType(CodeContext& context, const string& name);
 
 	static SType* getAuto(CodeContext& context);
 
@@ -729,9 +729,10 @@ public:
 		return datalayout.getTypeAllocSize(*stype);
 	}
 
-	const map<string,SType*>& getSuffix()
+	SType* getSuffixType(const string& name)
 	{
-		return suffix;
+		auto suf = suffix.find(name);
+		return suf != suffix.end() ? suf->second : nullptr;
 	}
 
 	SType* getAuto() const
