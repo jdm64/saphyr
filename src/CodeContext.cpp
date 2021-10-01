@@ -19,8 +19,6 @@
 #include "CodeContext.h"
 #include "Instructions.h"
 
-#define smart_label(block, token, placeholder) unique_ptr<LabelBlock>(new LabelBlock((block), (token), (placeholder)))
-
 void ScopeTable::storeSymbol(const RValue& var, const string& name, bool isParam)
 {
 	table[name].push_back(var);
@@ -71,7 +69,7 @@ NAttributeList* GlobalContext::storeAttr(NAttributeList* list)
 {
 	if (list) {
 		list = list->move<NAttributeList>(false);
-		attrs.push_back(unique_ptr<NAttributeList>(list));
+		attrs.push_back(uPtr<NAttributeList>(list));
 	}
 	return list;
 }
@@ -412,7 +410,7 @@ LabelBlock* CodeContext::createLabelBlock(Token* name, bool isPlaceholder)
 {
 	LabelBlockPtr &item = labelBlocks[name->str];
 	if (!item.get()) {
-		item = smart_label(createBlock(), name, isPlaceholder);
+		item = std::make_unique<LabelBlock>(createBlock(), name, isPlaceholder);
 		item.get()->block->setName(name->str);
 	}
 	return item.get();

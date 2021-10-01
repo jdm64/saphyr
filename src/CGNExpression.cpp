@@ -376,7 +376,7 @@ RValue CGNExpression::visitNFunctionCall(NFunctionCall* exp)
 					auto classVal = RValue::getUndef(SType::getPointer(context, cl));
 					return Inst::CallMemberFunctionClass(context, nullptr, classVal, exp->getName(), exp->getArguments());
 				} else {
-					unique_ptr<NBaseVariable> thisVar(new NBaseVariable(new Token("this")));
+					uPtr<NBaseVariable> thisVar(new NBaseVariable(new Token("this")));
 					return Inst::CallMemberFunction(context, thisVar.get(), exp->getName(), exp->getArguments());
 				}
 			}

@@ -49,7 +49,7 @@ void loadOptions(int argc, char** argv, variables_map &vm)
 int compile(const path& file, NStatementList* statements, variables_map& vm)
 {
 	LLVMContext llvmContext;
-	unique_ptr<Module> module(new Module(file.string(), llvmContext));
+	uPtr<Module> module(new Module(file.string(), llvmContext));
 	GlobalContext globalCtx(module.get());
 	CodeContext context(globalCtx, vm);
 

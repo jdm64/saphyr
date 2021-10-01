@@ -670,10 +670,10 @@ public:
 
 class TypeManager
 {
-	using STypePtr = unique_ptr<SType>;
-	using SFuncPtr = unique_ptr<SFunctionType>;
-	using SUserPtr = unique_ptr<SUserType>;
-	using STempPtr = unique_ptr<NTemplatedDeclaration>;
+	using STypePtr = uPtr<SType>;
+	using SFuncPtr = uPtr<SFunctionType>;
+	using SUserPtr = uPtr<SUserType>;
+	using STempPtr = uPtr<NTemplatedDeclaration>;
 
 	DataLayout datalayout;
 	LLVMContext& context;
@@ -773,7 +773,7 @@ public:
 			return type;
 		STypePtr &item = constMap[type];
 		if (!item.get()) {
-			item = unique_ptr<SType>(type->copy());
+			item = uPtr<SType>(type->copy());
 			auto ctype = item.get();
 			ctype->setConst(this);
 			mutMap[ctype] = type;

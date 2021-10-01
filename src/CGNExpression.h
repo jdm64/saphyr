@@ -85,11 +85,11 @@ public:
 		return runner.visit(list);
 	}
 
-	static unique_ptr<VecRValue> collect(CodeContext& context, NExpressionList* list)
+	static uPtr<VecRValue> collect(CodeContext& context, NExpressionList* list)
 	{
-		unique_ptr<VecRValue> ret;
+		uPtr<VecRValue> ret;
 		if (list) {
-			ret = unique_ptr<VecRValue>(new VecRValue());
+			ret = uPtr<VecRValue>(new VecRValue());
 			CGNExpression runner(context);
 			transform(list->begin(), list->end(), back_inserter(*ret), [&](auto i){ return runner.visit(i); });
 		}

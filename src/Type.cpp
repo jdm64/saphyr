@@ -18,13 +18,13 @@
 #include "CodeContext.h"
 #include "CGNStatement.h"
 
-#define smart_stype(tclass, type, size, subtype) unique_ptr<SType>(new SType((tclass), (type), (size), (subtype)))
-#define smart_sfuncTy(func, rtype, args) unique_ptr<SFunctionType>(new SFunctionType((func), (rtype), (args)))
-#define smart_aliasTy(name, type) unique_ptr<SAliasType>(new SAliasType((name), (type)))
-#define smart_strucTy(name, args) unique_ptr<SUserType>(new SStructType((name), (args)))
-#define smart_classTy(name, args) unique_ptr<SUserType>(new SClassType((name), (args)))
-#define smart_unionTy(name, args) unique_ptr<SUserType>(new SUnionType((name), (args)))
-#define smart_enumTy(name, type, structure) unique_ptr<SUserType>(new SEnumType((name), (type), (structure)))
+#define uPtrSType(tclass, type, size, subtype) uPtr<SType>(new SType((tclass), (type), (size), (subtype)))
+#define uPtrSFunc(func, rtype, args) uPtr<SFunctionType>(new SFunctionType((func), (rtype), (args)))
+#define uPtrSAlias(name, type) uPtr<SAliasType>(new SAliasType((name), (type)))
+#define uPtrSStruct(name, args) uPtr<SUserType>(new SStructType((name), (args)))
+#define uPtrSClass(name, args) uPtr<SUserType>(new SClassType((name), (args)))
+#define uPtrSUnion(name, args) uPtr<SUserType>(new SUnionType((name), (args)))
+#define uPtrSEnum(name, type, structure) uPtr<SUserType>(new SEnumType((name), (type), (structure)))
 
 bool SType::isConstructable()
 {
@@ -346,7 +346,7 @@ SType* SUserType::lookup(CodeContext& context, Token* name, VecSType templateArg
 
 	auto errorCount = context.errorCount();
 	auto templateCtx = CodeContext::newForTemplate(context, templateMappings);
-	auto templatePtr = unique_ptr<NTemplatedDeclaration>(templateType->copy());
+	auto templatePtr = uPtr<NTemplatedDeclaration>(templateType->copy());
 	CGNStatement::run(templateCtx, templatePtr.get());
 
 	type = context.getTypeManager().lookupUserType(rawName);
@@ -392,19 +392,19 @@ void SUserType::createEnum(CodeContext& context, const string& name, const vecto
 TypeManager::TypeManager(Module* module)
 : datalayout(module), context(module->getContext())
 {
-	autoTy = smart_stype(SType::AUTO, Type::getInt32Ty(context), 0, nullptr);
-	voidTy = smart_stype(SType::VOID, Type::getVoidTy(context), 0, nullptr);
-	boolTy = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt1Ty(context), 1, nullptr);
-	int8Ty = smart_stype(SType::INTEGER, Type::getInt8Ty(context), 8, nullptr);
-	int16Ty = smart_stype(SType::INTEGER, Type::getInt16Ty(context), 16, nullptr);
-	int32Ty = smart_stype(SType::INTEGER, Type::getInt32Ty(context), 32, nullptr);
-	int64Ty = smart_stype(SType::INTEGER, Type::getInt64Ty(context), 64, nullptr);
-	uint8Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt8Ty(context), 8, nullptr);
-	uint16Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt16Ty(context), 16, nullptr);
-	uint32Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt32Ty(context), 32, nullptr);
-	uint64Ty = smart_stype(SType::INTEGER | SType::UNSIGNED, Type::getInt64Ty(context), 64, nullptr);
-	floatTy = smart_stype(SType::FLOATING, Type::getFloatTy(context), 0, nullptr);
-	doubleTy = smart_stype(SType::FLOATING | SType::DOUBLE, Type::getDoubleTy(context), 0, nullptr);
+	autoTy = uPtrSType(SType::AUTO, Type::getInt32Ty(context), 0, nullptr);
+	voidTy = uPtrSType(SType::VOID, Type::getVoidTy(context), 0, nullptr);
+	boolTy = uPtrSType(SType::INTEGER | SType::UNSIGNED, Type::getInt1Ty(context), 1, nullptr);
+	int8Ty = uPtrSType(SType::INTEGER, Type::getInt8Ty(context), 8, nullptr);
+	int16Ty = uPtrSType(SType::INTEGER, Type::getInt16Ty(context), 16, nullptr);
+	int32Ty = uPtrSType(SType::INTEGER, Type::getInt32Ty(context), 32, nullptr);
+	int64Ty = uPtrSType(SType::INTEGER, Type::getInt64Ty(context), 64, nullptr);
+	uint8Ty = uPtrSType(SType::INTEGER | SType::UNSIGNED, Type::getInt8Ty(context), 8, nullptr);
+	uint16Ty = uPtrSType(SType::INTEGER | SType::UNSIGNED, Type::getInt16Ty(context), 16, nullptr);
+	uint32Ty = uPtrSType(SType::INTEGER | SType::UNSIGNED, Type::getInt32Ty(context), 32, nullptr);
+	uint64Ty = uPtrSType(SType::INTEGER | SType::UNSIGNED, Type::getInt64Ty(context), 64, nullptr);
+	floatTy = uPtrSType(SType::FLOATING, Type::getFloatTy(context), 0, nullptr);
+	doubleTy = uPtrSType(SType::FLOATING | SType::DOUBLE, Type::getDoubleTy(context), 0, nullptr);
 
 	suffix = {
 		{"f", floatTy.get()},
@@ -424,7 +424,7 @@ SType* TypeManager::getArray(SType* arrType, int64_t size)
 {
 	STypePtr &item = arrMap[make_pair(arrType, size)];
 	if (!item.get())
-		item = smart_stype(SType::ARRAY, ArrayType::get(*arrType, size), size, arrType);
+		item = uPtrSType(SType::ARRAY, ArrayType::get(*arrType, size), size, arrType);
 	return item.get();
 }
 
@@ -433,9 +433,9 @@ SType* TypeManager::getVec(SType* vecType, int64_t size)
 	STypePtr &item = arrMap[make_pair(vecType, size)];
 	if (!item.get())
 #if LLVM_VERSION_MAJOR >= 11
-		item = smart_stype(SType::VEC, FixedVectorType::get(*vecType, size), size, vecType);
+		item = uPtrSType(SType::VEC, FixedVectorType::get(*vecType, size), size, vecType);
 #else
-		item = smart_stype(SType::VEC, VectorType::get(*vecType, size), size, vecType);
+		item = uPtrSType(SType::VEC, VectorType::get(*vecType, size), size, vecType);
 #endif
 	return item.get();
 }
@@ -446,7 +446,7 @@ SType* TypeManager::getPointer(SType* ptrType)
 	if (!item.get()) {
 		// pointer to void must be i8*
 		auto llptr = PointerType::getUnqual(*(ptrType->isVoid()? int8Ty.get() : ptrType));
-		item = smart_stype(SType::POINTER | SType::UNSIGNED, llptr, 0, ptrType);
+		item = uPtrSType(SType::POINTER | SType::UNSIGNED, llptr, 0, ptrType);
 	}
 	return item.get();
 }
@@ -456,7 +456,7 @@ SType* TypeManager::getReference(SType* type)
 	STypePtr &item = refMap[type];
 	if (!item.get()) {
 		auto llptr = PointerType::getUnqual(*type);
-		item = smart_stype(SType::REFERENCE | SType::UNSIGNED, llptr, 0, type);
+		item = uPtrSType(SType::REFERENCE | SType::UNSIGNED, llptr, 0, type);
 	}
 	return item.get();
 }
@@ -466,7 +466,7 @@ SFunctionType* TypeManager::getFunction(SType* returnTy, VecSType args)
 	SFuncPtr &item = funcMap[make_pair(returnTy, args)];
 	if (!item.get()) {
 		auto func = FunctionType::get(*returnTy, SType::convertArr(args), false);
-		item = smart_sfuncTy(func, returnTy, args);
+		item = uPtrSFunc(func, returnTy, args);
 	}
 	return item.get();
 }
@@ -476,7 +476,7 @@ void TypeManager::createAlias(const string& name, SType* type)
 	SUserPtr& item = usrMap[name];
 	if (item.get())
 		return;
-	item = smart_aliasTy(name, type);
+	item = uPtrSAlias(name, type);
 }
 
 void TypeManager::setBody(STemplatedType* type, const vector<pair<string,SType*>>& structure)
@@ -516,7 +516,7 @@ SStructType* TypeManager::createStruct(const string& name, const string& rawName
 {
 	SUserPtr& item = usrMap[rawName];
 	if (!item.get()) {
-		item = smart_strucTy(name, templateArgs);
+		item = uPtrSStruct(name, templateArgs);
 		item.get()->ltype = StructType::create(context, rawName);
 	}
 	return static_cast<SStructType*>(item.get());
@@ -526,7 +526,7 @@ SClassType* TypeManager::createClass(const string& name, const string& rawName, 
 {
 	SUserPtr& item = usrMap[rawName];
 	if (!item.get()) {
-		item = smart_classTy(name, templateArgs);
+		item = uPtrSClass(name, templateArgs);
 		item.get()->ltype = StructType::create(context, rawName);
 	}
 	return static_cast<SClassType*>(item.get());
@@ -536,7 +536,7 @@ SUnionType* TypeManager::createUnion(const string& name, const string& rawName, 
 {
 	SUserPtr& item = usrMap[rawName];
 	if (!item.get()) {
-		item = smart_unionTy(name, templateArgs);
+		item = uPtrSUnion(name, templateArgs);
 		item.get()->ltype = StructType::create(context, rawName);
 	}
 	return static_cast<SUnionType*>(item.get());
@@ -547,5 +547,5 @@ void TypeManager::createEnum(const string& name, const vector<pair<string, int64
 	SUserPtr& item = usrMap[name];
 	if (item.get() || !structure.size())
 		return;
-	item = smart_enumTy(name, type, structure);
+	item = uPtrSEnum(name, type, structure);
 }

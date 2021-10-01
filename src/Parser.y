@@ -109,7 +109,7 @@
 file
 	: declaration_list
 	{
-		root = unique_ptr<NStatementList>($1);
+		root = uPtr<NStatementList>($1);
 	}
 	;
 declaration_list

@@ -492,7 +492,7 @@ RValue Inst::SizeOf(CodeContext& context, Token* name)
 {
 	auto nameStr = name->str;
 	if (nameStr == "this") {
-		unique_ptr<NThisType> thisType(new NThisType(new Token(*name)));
+		uPtr<NThisType> thisType(new NThisType(new Token(*name)));
 		return SizeOf(context, CGNDataType::run(context, thisType.get()), name);
 	}
 	bool hasErrors = false;
@@ -866,7 +866,7 @@ RValue Inst::LoadMemberVar(CodeContext& context, const string& name)
 {
 	auto baseVar = new NBaseVariable(new Token("this"));
 	auto memName = new Token(name);
-	unique_ptr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName));
+	uPtr<NMemberVariable> classVar(new NMemberVariable(baseVar, memName));
 	return CGNVariable::run(context, &*classVar);
 }
 

@@ -38,7 +38,7 @@ struct LabelBlock
 	: block(block), token(*token), isPlaceholder(isPlaceholder) {}
 };
 
-using LabelBlockPtr = unique_ptr<LabelBlock>;
+using LabelBlockPtr = uPtr<LabelBlock>;
 
 class ScopeTable
 {
@@ -61,7 +61,7 @@ class GlobalContext
 	TypeManager typeManager;
 
 	vector<pair<Token,string>> errors;
-	list<unique_ptr<NAttributeList>> attrs;
+	list<uPtr<NAttributeList>> attrs;
 
 	set<path> allFiles;
 	vector<path> filesStack;
