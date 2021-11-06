@@ -927,21 +927,22 @@ void Inst::InitVariable(CodeContext& context, RValue var, const RValue& arrSize,
 	if (CallConstructor(context, var, arrSize, initList, token))
 		return;
 
-	if (initList) {
-		auto varType = var.stype();
-		if (initList->empty()) {
-			// no constructor and empty initializer; do zero initialization
-			context.IB().CreateStore(RValue::getZero(context, varType), var);
-			return;
-		} else if (initList->size() > 1) {
-			context.addError("invalid variable initializer", token);
-			return;
-		}
-		auto initVal = initList->at(0);
-		if (initVal) {
-			CastTo(context, token, initVal, varType);
-			context.IB().CreateStore(initVal, var);
-		}
+	if (!initList)
+		return;
+
+	auto varType = var.stype();
+	if (initList->empty()) {
+		// no constructor and empty initializer; do zero initialization
+		context.IB().CreateStore(RValue::getZero(context, varType), var);
+		return;
+	} else if (initList->size() > 1) {
+		context.addError("invalid variable initializer", token);
+		return;
+	}
+	auto initVal = initList->at(0);
+	if (initVal) {
+		CastTo(context, token, initVal, varType);
+		context.IB().CreateStore(initVal, var);
 	}
 }
 
