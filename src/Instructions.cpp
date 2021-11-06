@@ -93,18 +93,30 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		castError(context, "Cannot cast type to pointer", valueType, type, token);
 		return true;
 	} else if (type->isReference()) {
-		if (type->subType() != valueType) {
+		if (!valueType->isReference() && type->subType() != valueType) {
 			castError(context, "Reference to type doesn't match", valueType, type, token);
 			return true;
 		}
-		auto loadValue = PtrOfLoad(context, value);
-		if (loadValue) {
+
+		if (type->isCopyRef()) {
+			auto sub = type->subType();
+			Token name(*token, "tmp_" + to_string(token->line) + to_string(token->col));
+			auto var = RValue(context.IB().CreateAlloca(*sub, nullptr, name.str), sub);
+			context.storeLocalSymbol(var, name.str);
+			VecRValue t{value};
+			Inst::InitVariable(context, var, {}, &t, &name);
+			value = var;
+		} else {
+			auto loadValue = PtrOfLoad(context, value);
+			if (!loadValue) {
+				context.addError("Cannot cast literal value to reference", token);
+				return true;
+			}
+
 			// remove duplicate load
 			dyn_cast<Instruction>(value.value())->eraseFromParent();
 			value = loadValue;
-			return false;
 		}
-		context.addError("Cannot cast literal value to reference", token);
 		return false;
 	} else if (type->isVec()) {
 		// unwrap enum type

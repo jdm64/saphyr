@@ -41,6 +41,8 @@ private:
 
 	string visitNReferenceType(NReferenceType* type);
 
+	string visitNCopyReferenceType(NCopyReferenceType* type);
+
 	string visitNFuncPointerType(NFuncPointerType* type);
 
 	string visit(NDataType* type);

@@ -584,6 +584,11 @@ public:
 		return new NReferenceType(baseType->copy(), t);
 	}
 
+	Token* getTok() const
+	{
+		return tok.get();
+	}
+
 	operator Token*() const override
 	{
 		return tok.get();
@@ -595,6 +600,21 @@ public:
 	}
 
 	ADD_ID(NReferenceType)
+};
+
+class NCopyReferenceType : public NReferenceType
+{
+public:
+	explicit NCopyReferenceType(NDataType* baseType, Token* tok = nullptr)
+	: NReferenceType(baseType, tok) {}
+
+	NCopyReferenceType* copy() const override
+	{
+		auto t = getTok() ? getTok()->copy() : nullptr;
+		return new NCopyReferenceType(getBaseType()->copy(), t);
+	}
+
+	ADD_ID(NCopyReferenceType)
 };
 
 class NFuncPointerType : public NDataType

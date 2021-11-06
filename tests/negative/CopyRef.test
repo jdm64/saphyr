@@ -1,0 +1,10 @@
+
+void badRef()
+{
+	auto p = new &int;
+}
+
+========
+
+negative/CopyRef.syp:4:15: can't call new on copy reference type
+found 1 errors

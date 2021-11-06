@@ -1,0 +1,159 @@
+
+class Foo
+{
+	struct this
+	{
+		int val;
+	}
+
+	this()
+	val{1}
+	{
+	}
+
+	#[mangle("this2")]
+	this($Foo other)
+	val{other.val}
+	{
+	}
+
+	~this()
+	{
+		val = 0;
+	}
+}
+
+void assign()
+{
+	Foo f;
+	&auto cRef = f;
+}
+
+void pass_foo(&Foo f)
+{
+	f.val = 8;
+}
+
+void call()
+{
+	Foo f;
+	pass_foo(f);
+}
+
+void copyOfRef()
+{
+	Foo f;
+	$Foo ref = f;
+	&Foo cref = ref;
+}
+
+void copyRefOfSimple()
+{
+	int v = 5;
+	&int cref = v;
+}
+
+========
+
+%Foo = type { i32 }
+
+define void @Foo_this(%Foo* %this) {
+  %1 = alloca %Foo*
+  store %Foo* %this, %Foo** %1
+  %2 = load %Foo*, %Foo** %1
+  %3 = getelementptr %Foo, %Foo* %2, i32 0, i32 0
+  store i32 1, i32* %3
+  ret void
+}
+
+define void @Foo_this2(%Foo* %this, %Foo* %other) {
+  %1 = alloca %Foo*
+  store %Foo* %this, %Foo** %1
+  %2 = alloca %Foo*
+  store %Foo* %other, %Foo** %2
+  %3 = load %Foo*, %Foo** %1
+  %4 = getelementptr %Foo, %Foo* %3, i32 0, i32 0
+  %5 = load %Foo*, %Foo** %2
+  %6 = getelementptr %Foo, %Foo* %5, i32 0, i32 0
+  %7 = load i32, i32* %6
+  store i32 %7, i32* %4
+  ret void
+}
+
+define void @Foo_null(%Foo* %this) {
+  %1 = alloca %Foo*
+  store %Foo* %this, %Foo** %1
+  %2 = load %Foo*, %Foo** %1
+  %3 = getelementptr %Foo, %Foo* %2, i32 0, i32 0
+  store i32 0, i32* %3
+  ret void
+}
+
+define void @assign() {
+  %f = alloca %Foo
+  call void @Foo_this(%Foo* %f)
+  %cRef = alloca %Foo*
+  %tmp_298 = alloca %Foo
+  call void @Foo_this2(%Foo* %tmp_298, %Foo* %f)
+  store %Foo* %tmp_298, %Foo** %cRef
+  call void @Foo_null(%Foo* %tmp_298)
+  call void @Foo_null(%Foo* %f)
+  ret void
+}
+
+define void @pass_foo(%Foo* %f) {
+  %1 = alloca %Foo*
+  store %Foo* %f, %Foo** %1
+  %2 = load %Foo*, %Foo** %1
+  %3 = getelementptr %Foo, %Foo* %2, i32 0, i32 0
+  store i32 8, i32* %3
+  ret void
+}
+
+define void @call() {
+  %f = alloca %Foo
+  call void @Foo_this(%Foo* %f)
+  %tmp_402 = alloca %Foo
+  call void @Foo_this2(%Foo* %tmp_402, %Foo* %f)
+  call void @pass_foo(%Foo* %tmp_402)
+  call void @Foo_null(%Foo* %tmp_402)
+  call void @Foo_null(%Foo* %f)
+  ret void
+}
+
+define void @copyOfRef() {
+  %f = alloca %Foo
+  call void @Foo_this(%Foo* %f)
+  %ref = alloca %Foo*
+  store %Foo* %f, %Foo** %ref
+  %1 = load %Foo*, %Foo** %ref
+  %cref = alloca %Foo*
+  %tmp_477 = alloca %Foo
+  call void @Foo_this2(%Foo* %tmp_477, %Foo* %1)
+  store %Foo* %tmp_477, %Foo** %cref
+  call void @Foo_null(%Foo* %tmp_477)
+  call void @Foo_null(%Foo* %f)
+  ret void
+}
+
+define void @copyRefOfSimple() {
+  %v = alloca i32
+  store i32 5, i32* %v
+  %1 = load i32, i32* %v
+  %cref = alloca i32*
+  %tmp_537 = alloca i32
+  store i32 %1, i32* %tmp_537
+  store i32* %tmp_537, i32** %cref
+  ret void
+}
+
+========
+
+assign T
+call T
+copyOfRef T
+copyRefOfSimple T
+Foo_null T
+Foo_this T
+Foo_this2 T
+pass_foo T

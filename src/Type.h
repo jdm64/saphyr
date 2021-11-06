@@ -85,7 +85,8 @@ public:
 		OPAQUE   = 1 << 15,
 		CONST    = 1 << 16,
 		TEMPLATED = 1 << 17,
-		REFERENCE = 1 << 18
+		REFERENCE = 1 << 18,
+		COPY_REF  = 1 << 19
 	};
 
 	static vector<Type*> convertArr(VecSType arr)
@@ -149,6 +150,8 @@ public:
 	static SType* getPointer(CodeContext& context, SType* ptrType);
 
 	static SType* getReference(CodeContext& context, SType* type);
+
+	static SType* getCopyRef(CodeContext& context, SType* type);
 
 	static SFunctionType* getFunction(CodeContext& context, SType* returnTy, VecSType params);
 
@@ -276,6 +279,11 @@ public:
 		return tclass & REFERENCE;
 	}
 
+	bool isCopyRef() const
+	{
+		return tclass & COPY_REF;
+	}
+
 	bool isEnum() const
 	{
 		return tclass & ENUM;
@@ -321,6 +329,8 @@ public:
 			os << "]" << subtype->str(context);
 		} else if (isPointer()) {
 			os << "@" << subtype->str(context);
+		} else if (isCopyRef()) {
+			os << "&" << subtype->str(context);
 		} else if (isReference()) {
 			os << "$" << subtype->str(context);
 		} else if (isVec()) {
@@ -712,6 +722,9 @@ class TypeManager
 	// reference types
 	map<SType*, STypePtr> refMap;
 
+	// copy reference types
+	map<SType*, STypePtr> cpyRefMap;
+
 	// user types
 	map<string, SUserPtr> usrMap;
 
@@ -795,6 +808,8 @@ public:
 	SType* getPointer(SType* ptrType);
 
 	SType* getReference(SType* type);
+
+	SType* getCopyRef(SType* type);
 
 	SFunctionType* getFunction(SType* returnTy, VecSType args);
 

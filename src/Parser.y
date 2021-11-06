@@ -680,6 +680,10 @@ explicit_data_type
 	{
 		$$ = new NReferenceType($2, $1.t_tok);
 	}
+	| '&' data_type
+	{
+		$$ = new NCopyReferenceType($2, $1.t_tok);
+	}
 	;
 data_type_list
 	:

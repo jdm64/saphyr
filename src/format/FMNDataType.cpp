@@ -30,6 +30,7 @@ string FMNDataType::visit(NDataType* type)
 	VISIT_CASE_RETURN(NFuncPointerType, type)
 	VISIT_CASE_RETURN(NPointerType, type)
 	VISIT_CASE_RETURN(NReferenceType, type)
+	VISIT_CASE_RETURN(NCopyReferenceType, type)
 	VISIT_CASE_RETURN(NThisType, type)
 	VISIT_CASE_RETURN(NUserType, type)
 	VISIT_CASE_RETURN(NVecType, type)
@@ -123,6 +124,11 @@ string FMNDataType::visitNPointerType(NPointerType* type)
 string FMNDataType::visitNReferenceType(NReferenceType* type)
 {
 	return "$" + visit(type->getBaseType());
+}
+
+string FMNDataType::visitNCopyReferenceType(NCopyReferenceType* type)
+{
+	return "&" + visit(type->getBaseType());
 }
 
 string FMNDataType::visitNFuncPointerType(NFuncPointerType* type)

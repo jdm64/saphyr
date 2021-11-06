@@ -141,6 +141,11 @@ SType * SType::getReference(CodeContext& context, SType* type)
 	return context.getTypeManager().getReference(type);
 }
 
+SType * SType::getCopyRef(CodeContext& context, SType* type)
+{
+	return context.getTypeManager().getCopyRef(type);
+}
+
 SFunctionType* SType::getFunction(CodeContext& context, SType* returnTy, VecSType params)
 {
 	return context.getTypeManager().getFunction(returnTy, params);
@@ -457,6 +462,16 @@ SType* TypeManager::getReference(SType* type)
 	if (!item.get()) {
 		auto llptr = PointerType::getUnqual(*type);
 		item = uPtrSType(SType::REFERENCE | SType::UNSIGNED, llptr, 0, type);
+	}
+	return item.get();
+}
+
+SType* TypeManager::getCopyRef(SType* type)
+{
+	STypePtr &item = cpyRefMap[type];
+	if (!item.get()) {
+		auto llptr = PointerType::getUnqual(*type);
+		item = uPtrSType(SType::REFERENCE | SType::COPY_REF | SType::UNSIGNED, llptr, 0, type);
 	}
 	return item.get();
 }

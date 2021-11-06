@@ -35,6 +35,7 @@ enum class NodeId
 	NFuncPointerType,
 	NPointerType,
 	NReferenceType,
+	NCopyReferenceType,
 	NThisType,
 	NUserType,
 	NVecType,

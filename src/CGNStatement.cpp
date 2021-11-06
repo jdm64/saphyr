@@ -121,11 +121,12 @@ void CGNStatement::visitNVariableDecl(NVariableDecl* stm)
 			context.addError("reference variable type requires initialization", *stm->getType());
 			return;
 		} else if (varType->subType()->isAuto()) {
+			auto isCRef = varType->isCopyRef();
 			varType = initList->at(0).stype();
 			if (!varType) {
 				return;
 			}
-			varType = SType::getReference(context, varType);
+			varType = isCRef ? SType::getCopyRef(context, varType) : SType::getReference(context, varType);
 		}
 	} else if (varType->isUnsized()) {
 		context.addError("can't create variable for an unsized type: " + varType->str(context), *stm->getType());
