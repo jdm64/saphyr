@@ -303,6 +303,17 @@ SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunction
 	string rawName;
 	string funcName = name->str;
 
+	auto clType = context.getClass();
+	if (clType && funcName == "this") {
+		for (size_t i = 0; i < funcType->numParams(); i++) {
+			auto param = funcType->getParam(i);
+			if (param->isCopyRef() && param->subType() == clType) {
+				context.addError("constructor cannot have copy-ref parameter matching class", name);
+				break;
+			}
+		}
+	}
+
 	if (allowMangle) {
 		bool fullMangle = false;
 		auto mangle = NAttributeList::find(attrs, "mangle");
@@ -315,12 +326,12 @@ SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunction
 				context.addError("mangle attribute requires value", *mangle);
 			}
 		}
-		if (context.getClass()) {
-			auto clName = context.getClass()->raw();
+		if (clType) {
+			auto clName = clType->raw();
 			if (!rawName.empty()) {
 				if (!fullMangle) {
 					rawName = clName + "_" + rawName;
-				} else if (context.getClass()->isTemplated()) {
+				} else if (clType->isTemplated()) {
 					context.addError("cannot use fullname mangling with templated class functions", *mangle);
 				}
 			}

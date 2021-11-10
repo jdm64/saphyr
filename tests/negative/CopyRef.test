@@ -4,7 +4,21 @@ void badRef()
 	auto p = new &int;
 }
 
+class Foo
+{
+	struct this
+	{
+		int a;
+	}
+
+	this(&Foo f)
+	{
+		a = 3;
+	}
+}
+
 ========
 
 negative/CopyRef.syp:4:15: can't call new on copy reference type
-found 1 errors
+negative/CopyRef.syp:14:2: constructor cannot have copy-ref parameter matching class
+found 2 errors
