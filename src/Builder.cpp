@@ -403,7 +403,12 @@ SFunctionType* Builder::getFuncType(CodeContext& context, NDataType* retType, ND
 		} else if (param->isUnsized()) {
 			context.addError("parameter can not be " + param->str(context) + " type", *item);
 			valid = false;
-		} else if (SType::validate(context, *item, param)) {
+		} else if (param->isDestructable()) {
+			context.addError("destructable type must be passed by pointer or reference", *item);
+			valid = false;
+		}
+
+		if (valid && SType::validate(context, *item, param)) {
 			args.push_back(param);
 		}
 	}

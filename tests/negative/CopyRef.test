@@ -17,8 +17,21 @@ class Foo
 	}
 }
 
+class Destroy
+{
+	~this()
+	{
+		int i = 0;
+	}
+}
+
+void badPass(Destroy d)
+{
+}
+
 ========
 
 negative/CopyRef.syp:4:15: can't call new on copy reference type
 negative/CopyRef.syp:14:2: constructor cannot have copy-ref parameter matching class
-found 2 errors
+negative/CopyRef.syp:28:14: destructable type must be passed by pointer or reference
+found 3 errors

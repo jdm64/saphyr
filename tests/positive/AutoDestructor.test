@@ -52,7 +52,7 @@ void manyPointerWithSize()
 	delete arr;
 }
 
-[4]Destroy noDestroy([9]Destroy in)
+[4]Destroy noDestroy(&[9]Destroy in)
 {
 	[4]Destroy ret;
 
@@ -218,9 +218,9 @@ define void @manyPointerWithSize() {
   ret void
 }
 
-define [4 x %Destroy] @noDestroy([9 x %Destroy] %in) {
-  %1 = alloca [9 x %Destroy]
-  store [9 x %Destroy] %in, [9 x %Destroy]* %1
+define [4 x %Destroy] @noDestroy([9 x %Destroy]* %in) {
+  %1 = alloca [9 x %Destroy]*
+  store [9 x %Destroy]* %in, [9 x %Destroy]** %1
   %ret = alloca [4 x %Destroy]
   %2 = load [4 x %Destroy], [4 x %Destroy]* %ret
   ret [4 x %Destroy] %2
