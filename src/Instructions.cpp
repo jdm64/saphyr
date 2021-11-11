@@ -626,7 +626,7 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 			string msg = "arguments ambigious for overloaded function:\n\t";
 			msg += "args:\n\t\t" + argStr + "\n\t" + "functions:";
 			for_each(sizeMatch.begin(), sizeMatch.end(), [&](auto mFunc) {
-				msg += "\n\t\t" + mFunc.stype()->str(context);
+				msg += "\n\t\t" + string(mFunc.name()) + " " + mFunc.stype()->str(context);
 			});
 			context.addError(msg, name);
 			return {};

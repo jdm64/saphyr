@@ -25,6 +25,6 @@ negative/Function.syp:18:2: arguments ambigious for overloaded function:
 	args:
 		bool,double
 	functions:
-		(int32,double)void
-		(bool,@int32)void
+		over (int32,double)void
+		over2 (bool,@int32)void
 found 2 errors
