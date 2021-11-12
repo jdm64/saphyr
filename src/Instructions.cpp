@@ -659,7 +659,7 @@ RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token*
 			return CallMemberFunctionClass(context, baseVar, baseVal, funcName, arguments);
 		} else if (sub->isStruct() | sub->isUnion()) {
 			return CallMemberFunctionNonClass(context, baseVar, baseVal, funcName, arguments);
-		} else if (sub->isPointer()) {
+		} else if (sub->isPointer() || sub->isReference()) {
 			baseVal = Deref(context, baseVal);
 			type = baseVal.stype();
 		} else {
