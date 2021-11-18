@@ -579,6 +579,33 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 	return RValue();
 }
 
+void matchCount(VecSFunc& funcs, VecSFunc& matches, VecRValue& args, bool matchRef)
+{
+	auto argCount = args.size();
+	int best = 1;
+	for (auto mFunc : funcs) {
+		int count = 0;
+		for (size_t i = 0; i < argCount; i++) {
+			auto param = mFunc.getParam(i);
+			if (param == args[i].stype()) {
+				count++;
+			} else if (matchRef) {
+				if ((param->isPointer() || param->isReference()) && param->subType() == args[i].stype()) {
+					count++;
+				}
+			}
+		}
+
+		if (count == best) {
+			matches.push_back(mFunc);
+		} else if (count > best) {
+			best = count;
+			matches.clear();
+			matches.push_back(mFunc);
+		}
+	}
+}
+
 RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, VecRValue& args)
 {
 	auto argCount = args.size();
@@ -597,39 +624,29 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 		func = sizeMatch[0];
 	} else {
 		VecSFunc paramMatch;
-		int bestCount = 1;
-		for (auto mFunc : sizeMatch) {
-			int matchCount = 0;
-			for (size_t i = 0; i < argCount; i++) {
-				if (mFunc.getParam(i) == args[i].stype()) {
-					matchCount++;
-				}
-			}
-			if (matchCount == bestCount) {
-				paramMatch.push_back(mFunc);
-			} else if (matchCount > bestCount) {
-				bestCount = matchCount;
-				paramMatch.clear();
-				paramMatch.push_back(mFunc);
-			}
-		}
+		matchCount(sizeMatch, paramMatch, args, false);
+
 		if (paramMatch.size() != 1) {
-			string argStr;
-			bool second = false;
-			for (auto arg : args) {
-				if (second)
-					argStr += ",";
-				else
-					second = true;
-				argStr += arg.stype()->str(context);
+			paramMatch.clear();
+			matchCount(sizeMatch, paramMatch, args, true);
+			if (paramMatch.size() != 1) {
+				string argStr;
+				bool second = false;
+				for (auto arg : args) {
+					if (second)
+						argStr += ",";
+					else
+						second = true;
+					argStr += arg.stype()->str(context);
+				}
+				string msg = "arguments ambigious for overloaded function:\n\t";
+				msg += "args:\n\t\t" + argStr + "\n\t" + "functions:";
+				for_each(sizeMatch.begin(), sizeMatch.end(), [&](auto mFunc) {
+					msg += "\n\t\t" + string(mFunc.name()) + " " + mFunc.stype()->str(context);
+				});
+				context.addError(msg, name);
+				return {};
 			}
-			string msg = "arguments ambigious for overloaded function:\n\t";
-			msg += "args:\n\t\t" + argStr + "\n\t" + "functions:";
-			for_each(sizeMatch.begin(), sizeMatch.end(), [&](auto mFunc) {
-				msg += "\n\t\t" + string(mFunc.name()) + " " + mFunc.stype()->str(context);
-			});
-			context.addError(msg, name);
-			return {};
 		}
 		func = paramMatch[0];
 	}
