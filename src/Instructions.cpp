@@ -109,8 +109,8 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		} else {
 			auto loadValue = PtrOfLoad(context, value);
 			if (!loadValue) {
-				context.addError("Cannot cast literal value to reference", token);
-				return true;
+				value = Inst::StoreTemporary(context, value);
+				return false;
 			}
 
 			// remove duplicate load

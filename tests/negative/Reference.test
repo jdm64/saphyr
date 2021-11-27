@@ -14,7 +14,6 @@ void badRefs()
 negative/Reference.syp:4:2: reference variable type requires initialization
 negative/Reference.syp:5:3: can't create reference to void
 negative/Reference.syp:6:15: can't call new on reference type
-negative/Reference.syp:7:7: Cannot cast literal value to reference
 negative/Reference.syp:8:9: Reference to type doesn't match ( int32 to $float )
 negative/Reference.syp:9:7: Reference to type doesn't match ( @int32 to $int32 )
-found 6 errors
+found 5 errors

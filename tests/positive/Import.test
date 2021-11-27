@@ -110,10 +110,12 @@ define void @cycle() {
 define i32 @importList() {
   %a = alloca %List_i32
   call void @List_i32_this(%List_i32* %a)
-  call void @List_i32_add(%List_i32* %a, i32 5)
-  %1 = call i32 @List_i32_size(%List_i32* %a)
+  %1 = alloca i32
+  store i32 5, i32* %1
+  call void @List_i32_add(%List_i32* %a, i32* %1)
+  %2 = call i32 @List_i32_size(%List_i32* %a)
   call void @List_i32_null(%List_i32* %a)
-  ret i32 %1
+  ret i32 %2
 }
 
 define weak void @List_i32_this(%List_i32* %this) {
@@ -228,8 +230,8 @@ define weak void @List_i32_shuffle(%List_i32* %this) {
 define weak void @List_i32_add(%List_i32* %this, i32* %item) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
-  %2 = alloca i32
-  store i32 %item, i32* %2
+  %2 = alloca i32*
+  store i32* %item, i32** %2
   %3 = load %List_i32*, %List_i32** %1
   %4 = getelementptr %List_i32, %List_i32* %3, i32 0, i32 0
   %5 = load [0 x i32]*, [0 x i32]** %4
@@ -333,8 +335,9 @@ define weak void @List_i32_add(%List_i32* %this, i32* %item) {
   %75 = load [0 x i32]*, [0 x i32]** %74
   %76 = sext i32 %71 to i64
   %77 = getelementptr [0 x i32], [0 x i32]* %75, i32 0, i64 %76
-  %78 = load i32, i32* %2
-  store i32 %78, i32* %77
+  %78 = load i32*, i32** %2
+  %79 = load i32, i32* %78
+  store i32 %79, i32* %77
   ret void
 }
 
