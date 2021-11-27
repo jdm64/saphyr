@@ -55,7 +55,7 @@ define void @foo() {
   ret void
 }
 
-define void @Foo_i32_f_d_this(%Foo_i32_f_d* %this) {
+define weak void @Foo_i32_f_d_this(%Foo_i32_f_d* %this) {
   %1 = alloca %Foo_i32_f_d*
   store %Foo_i32_f_d* %this, %Foo_i32_f_d** %1
   %2 = load %Foo_i32_f_d*, %Foo_i32_f_d** %1
@@ -70,7 +70,7 @@ define void @Foo_i32_f_d_this(%Foo_i32_f_d* %this) {
   ret void
 }
 
-define void @Foo_i32_f_d_add(%Foo_i32_f_d* %this, i32 %item, float %other, double %more) {
+define weak void @Foo_i32_f_d_add(%Foo_i32_f_d* %this, i32 %item, float %other, double %more) {
   %1 = alloca %Foo_i32_f_d*
   store %Foo_i32_f_d* %this, %Foo_i32_f_d** %1
   %2 = alloca i32
@@ -82,7 +82,7 @@ define void @Foo_i32_f_d_add(%Foo_i32_f_d* %this, i32 %item, float %other, doubl
   ret void
 }
 
-define void @Foo_p_v_b_u64_this(%Foo_p_v_b_u64* %this) {
+define weak void @Foo_p_v_b_u64_this(%Foo_p_v_b_u64* %this) {
   %1 = alloca %Foo_p_v_b_u64*
   store %Foo_p_v_b_u64* %this, %Foo_p_v_b_u64** %1
   %2 = load %Foo_p_v_b_u64*, %Foo_p_v_b_u64** %1
@@ -97,7 +97,7 @@ define void @Foo_p_v_b_u64_this(%Foo_p_v_b_u64* %this) {
   ret void
 }
 
-define void @Foo_p_v_b_u64_add(%Foo_p_v_b_u64* %this, i8* %item, i1 %other, i64 %more) {
+define weak void @Foo_p_v_b_u64_add(%Foo_p_v_b_u64* %this, i8* %item, i1 %other, i64 %more) {
   %1 = alloca %Foo_p_v_b_u64*
   store %Foo_p_v_b_u64* %this, %Foo_p_v_b_u64** %1
   %2 = alloca i8*
@@ -109,7 +109,7 @@ define void @Foo_p_v_b_u64_add(%Foo_p_v_b_u64* %this, i8* %item, i1 %other, i64 
   ret void
 }
 
-define void @Foo_p_m_v_a4_i32_v3_i32_this(%Foo_p_m_v_a4_i32_v3_i32* %this) {
+define weak void @Foo_p_m_v_a4_i32_v3_i32_this(%Foo_p_m_v_a4_i32_v3_i32* %this) {
   %1 = alloca %Foo_p_m_v_a4_i32_v3_i32*
   store %Foo_p_m_v_a4_i32_v3_i32* %this, %Foo_p_m_v_a4_i32_v3_i32** %1
   %2 = load %Foo_p_m_v_a4_i32_v3_i32*, %Foo_p_m_v_a4_i32_v3_i32** %1
@@ -124,7 +124,7 @@ define void @Foo_p_m_v_a4_i32_v3_i32_this(%Foo_p_m_v_a4_i32_v3_i32* %this) {
   ret void
 }
 
-define void @Foo_p_m_v_a4_i32_v3_i32_add(%Foo_p_m_v_a4_i32_v3_i32* %this, void ()* %item, [4 x i32] %other, <3 x i32> %more) {
+define weak void @Foo_p_m_v_a4_i32_v3_i32_add(%Foo_p_m_v_a4_i32_v3_i32* %this, void ()* %item, [4 x i32] %other, <3 x i32> %more) {
   %1 = alloca %Foo_p_m_v_a4_i32_v3_i32*
   store %Foo_p_m_v_a4_i32_v3_i32* %this, %Foo_p_m_v_a4_i32_v3_i32** %1
   %2 = alloca void ()*
@@ -144,10 +144,10 @@ define void @useEmpty() {
 ========
 
 foo T
-Foo_i32_f_d_add T
-Foo_i32_f_d_this T
-Foo_p_m_v_a4_i32_v3_i32_add T
-Foo_p_m_v_a4_i32_v3_i32_this T
-Foo_p_v_b_u64_add T
-Foo_p_v_b_u64_this T
+Foo_i32_f_d_add W
+Foo_i32_f_d_this W
+Foo_p_m_v_a4_i32_v3_i32_add W
+Foo_p_m_v_a4_i32_v3_i32_this W
+Foo_p_v_b_u64_add W
+Foo_p_v_b_u64_this W
 useEmpty T

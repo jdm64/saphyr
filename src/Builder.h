@@ -42,7 +42,7 @@ class Builder
 public:
 	static SFunctionType* getFuncType(CodeContext& context, NDataType* retType, NDataTypeList* params);
 
-	static SFunction getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs = nullptr, bool allowMangle = true);
+	static SFunction getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, GlobalValue::LinkageTypes linkage, NAttributeList* attrs = nullptr, bool allowMangle = true);
 
 	static SFunction getBuiltinFunc(CodeContext& context, const Token* source, BuiltinFuncType builtin);
 

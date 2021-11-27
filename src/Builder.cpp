@@ -34,9 +34,9 @@ SFunction Builder::CreateFunction(CodeContext& context, Token* name, NDataType* 
 	auto funcType = getFuncType(context, rtype, params);
 	if (!funcType)
 		return SFunction();
-	auto function = getFuncPrototype(context, name, funcType, attrs);
+	auto linkage = context.inTemplate() ? GlobalValue::LinkageTypes::WeakAnyLinkage : GlobalValue::LinkageTypes::ExternalLinkage;
+	auto function = getFuncPrototype(context, name, funcType, linkage, attrs);
 	if (!function || !body) {
-		// no body means only function prototype
 		return function;
 	} else if (function.size()) {
 		context.addError("function " + name->str + " already declared", name);
@@ -298,7 +298,7 @@ void Builder::CreateClass(CodeContext& context, NClassDeclaration* stm, const fu
 	context.setThis(nullptr);
 }
 
-SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, NAttributeList* attrs, bool allowMangle)
+SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunctionType* funcType, GlobalValue::LinkageTypes linkage, NAttributeList* attrs, bool allowMangle)
 {
 	string rawName;
 	string funcName = name->str;
@@ -375,7 +375,7 @@ SFunction Builder::getFuncPrototype(CodeContext& context, Token* name, SFunction
 		return {};
 	}
 
-	auto func = Function::Create(*funcType, GlobalValue::ExternalLinkage, rawName, context.getModule());
+	auto func = Function::Create(*funcType, linkage, rawName, context.getModule());
 	auto function = SFunction::create(context, func, funcType, attrs);
 	context.storeGlobalSymbol(function, rawName);
 	if (isOverride)
@@ -436,8 +436,8 @@ SFunction Builder::getBuiltinFunc(CodeContext& context, const Token* source, Bui
 			auto retType = SType::getVoid(context);
 			auto funcType = SType::getFunction(context, retType, {bytePtr});
 			Token freeName(*source, "free");
-
-			return getFuncPrototype(context, &freeName, funcType, nullptr, false);
+			auto linkage = GlobalValue::LinkageTypes::ExternalLinkage;
+			return getFuncPrototype(context, &freeName, funcType, linkage, nullptr, false);
 		}
 		return static_cast<SFunction&>(syms[0]);
 	case BuiltinFuncType::Malloc:
@@ -447,8 +447,8 @@ SFunction Builder::getBuiltinFunc(CodeContext& context, const Token* source, Bui
 			auto retType = SType::getPointer(context, SType::getInt(context, 8));
 			auto funcType = SType::getFunction(context, retType, {i64});
 			Token mallocName(*source, "malloc");
-
-			return getFuncPrototype(context, &mallocName, funcType, nullptr, false);
+			auto linkage = GlobalValue::LinkageTypes::ExternalLinkage;
+			return getFuncPrototype(context, &mallocName, funcType, linkage, nullptr, false);
 		}
 		return static_cast<SFunction&>(syms[0]);
 	case BuiltinFuncType::Printf:

@@ -116,7 +116,7 @@ define i32 @importList() {
   ret i32 %1
 }
 
-define void @List_i32_this(%List_i32* %this) {
+define weak void @List_i32_this(%List_i32* %this) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = load %List_i32*, %List_i32** %1
@@ -131,7 +131,7 @@ define void @List_i32_this(%List_i32* %this) {
   ret void
 }
 
-define void @List_i32_null(%List_i32* %this) {
+define weak void @List_i32_null(%List_i32* %this) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = load %List_i32*, %List_i32** %1
@@ -154,7 +154,7 @@ define void @List_i32_null(%List_i32* %this) {
   ret void
 }
 
-define void @List_i32_shuffle(%List_i32* %this) {
+define weak void @List_i32_shuffle(%List_i32* %this) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = load %List_i32*, %List_i32** %1
@@ -225,7 +225,7 @@ define void @List_i32_shuffle(%List_i32* %this) {
   ret void
 }
 
-define void @List_i32_add(%List_i32* %this, i32 %item) {
+define weak void @List_i32_add(%List_i32* %this, i32* %item) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = alloca i32
@@ -338,7 +338,7 @@ define void @List_i32_add(%List_i32* %this, i32 %item) {
   ret void
 }
 
-define i32 @List_i32_pop(%List_i32* %this) {
+define weak i32 @List_i32_pop(%List_i32* %this) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = load %List_i32*, %List_i32** %1
@@ -355,7 +355,7 @@ define i32 @List_i32_pop(%List_i32* %this) {
   ret i32 %11
 }
 
-define i32 @List_i32_top(%List_i32* %this) {
+define weak i32 @List_i32_top(%List_i32* %this) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = load %List_i32*, %List_i32** %1
@@ -371,7 +371,7 @@ define i32 @List_i32_top(%List_i32* %this) {
   ret i32 %11
 }
 
-define i32 @List_i32_at(%List_i32* %this, i32 %idx) {
+define weak i32 @List_i32_at(%List_i32* %this, i32 %idx) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = alloca i32
@@ -386,7 +386,7 @@ define i32 @List_i32_at(%List_i32* %this, i32 %idx) {
   ret i32 %9
 }
 
-define i32* @List_i32_ref(%List_i32* %this, i32 %idx) {
+define weak i32* @List_i32_ref(%List_i32* %this, i32 %idx) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = alloca i32
@@ -400,7 +400,7 @@ define i32* @List_i32_ref(%List_i32* %this, i32 %idx) {
   ret i32* %8
 }
 
-define i32 @List_i32_size(%List_i32* %this) {
+define weak i32 @List_i32_size(%List_i32* %this) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = load %List_i32*, %List_i32** %1
@@ -409,7 +409,7 @@ define i32 @List_i32_size(%List_i32* %this) {
   ret i32 %4
 }
 
-define void @List_i32_clear(%List_i32* %this) {
+define weak void @List_i32_clear(%List_i32* %this) {
   %1 = alloca %List_i32*
   store %List_i32* %this, %List_i32** %1
   %2 = load %List_i32*, %List_i32** %1
@@ -429,16 +429,16 @@ cycle T
 foo T
 free U
 importList T
-List_i32_add T
-List_i32_at T
-List_i32_clear T
-List_i32_null T
-List_i32_pop T
-List_i32_ref T
-List_i32_shuffle T
-List_i32_size T
-List_i32_this T
-List_i32_top T
+List_i32_add W
+List_i32_at W
+List_i32_clear W
+List_i32_null W
+List_i32_pop W
+List_i32_ref W
+List_i32_shuffle W
+List_i32_size W
+List_i32_this W
+List_i32_top W
 malloc U
 MyClass_calc U
 MyClass_null U
