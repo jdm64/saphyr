@@ -129,11 +129,14 @@ class TestCase:
 		Cmd(["llvm-dis" + self.toVer, "-o", fileName, bcFile])
 
 	def fixIR(self):
+		if not os.path.exists(self.llFile):
+			return True, "[no .ll file]"
 		if self.fromVer != None and self.toVer != None:
 			self.rewriteIR(self.expFile)
 			patchAsm(self.expFile)
 			self.rewriteIR(self.llFile)
 		patchAsm(self.llFile)
+		return False, None
 
 	def writeLog(self, p):
 		with open(self.errFile, "w") as log:
@@ -181,8 +184,10 @@ class TestCase:
 			self.writeLog(proc)
 			return True, "[crash compile]"
 		elif proc.ext == 0:
+			err, msg = self.fixIR()
+			if err:
+				return True, msg
 			actual = self.llFile
-			self.fixIR()
 			isPos = True
 		else:
 			actual = self.negFile
