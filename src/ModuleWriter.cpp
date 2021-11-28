@@ -109,9 +109,10 @@ void ModuleWriter::outputNative()
 	initTarget();
 
 	error_code error;
-	raw_fd_ostream objStream(filename.substr(0, filename.rfind('.')) + ".o", error, sys::fs::F_None);
+	auto oFile = filename.substr(0, filename.rfind('.')) + ".o";
+	raw_fd_ostream objStream(oFile, error, sys::fs::F_None);
 	if (error) {
-		cout << "compiler error: error opening file" << endl << error << endl;
+		cout << "file error: " << error.message() << ": " << oFile << endl;
 		return;
 	}
 
