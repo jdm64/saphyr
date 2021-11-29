@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 	}
 
 	SParser parser(file.string());
-	if (parser.parse()) {
+	if (parser.doParse()) {
 		auto err = parser.getError();
 		cout << err.filename << ":" << err.line << ": " << err.str << endl;
 		return 1;

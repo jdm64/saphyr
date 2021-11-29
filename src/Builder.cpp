@@ -755,8 +755,7 @@ void Builder::LoadImport(CodeContext& context, NImportFileStm* stm)
 	}
 
 	SParser parser(filename.string());
-	parser.setFilename(Util::getErrorFilename(filename));
-	if (parser.parse()) {
+	if (parser.doParse()) {
 		auto err = parser.getError();
 		context.addError(err.str, &err);
 		return;

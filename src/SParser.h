@@ -21,18 +21,29 @@
 
 #include "parser.h"
 #include "BaseNodes.h"
+#include <filesystem>
 
+namespace fsys = std::filesystem;
 
 class SParser : public Parser
 {
 	uPtr<Scanner> lexer;
 	uPtr<NStatementList> root;
+	fsys::path cwd;
 
 public:
 	SParser(const string& filename)
 	{
+		cwd = fsys::current_path();
 		lexer = uPtr<Scanner>(new Scanner(filename, "-"));
 		lexer->setSval(getSval());
+	}
+
+	int doParse()
+	{
+		auto ret = parse();
+		fsys::current_path(cwd);
+		return ret;
 	}
 
 	void setRoot(NStatementList* ptr)
@@ -49,11 +60,6 @@ public:
 	NStatementList* getRoot()
 	{
 		return root.get();
-	}
-
-	void setFilename(string name)
-	{
-		lexer->setFilename(name);
 	}
 
 	int lex()
