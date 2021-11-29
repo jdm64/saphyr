@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <boost/program_options.hpp>
-#include "../parser.h"
+#include "../SParser.h"
 #include "../AST.h"
 #include "../Util.h"
 #include "FormatContext.h"
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	Parser parser(file.string());
+	SParser parser(file.string());
 	if (parser.parse()) {
 		auto err = parser.getError();
 		cout << err.filename << ":" << err.line << ": " << err.str << endl;

@@ -3,22 +3,26 @@
 rm -f parser*
 bisonc++ -V Parser.y
 
-DVAL=$(grep d_val_ parserbase.h | tr -s ' ;' ' ' | cut -f3 -d' ')
+rm parser.ih
 
 sed -i -e '
-/Scanner d_scanner;/c\	uPtr<Scanner> d_scanner;
-/scannerobject/a\	uPtr<NStatementList> root;
-/public:/a\	Token getError() { string token = d_scanner->matched().size()? d_scanner->matched() : "<EOF>"; return Token("Syntax error on: " + token, d_scanner->filename(), d_scanner->lineNr(), d_scanner->colNr()); }
-/public:/a\	NStatementList* getRoot() { return root.get(); }
-/public:/a\	Parser(string filename){ d_scanner = uPtr<Scanner>(new Scanner(filename, "-")); d_scanner->setSval(&'"$DVAL"'); }
-/public:/a\	void setFilename(string name) { d_scanner->setFilename(name); }
+/d_scanner;/d
+/public:/a\	virtual void setRoot(NStatementList* ptr) = 0;
+/void error();/c\	void error() {}
+/int lex();/c\	virtual int lex() = 0;
+/void print();/c\	void print() {}
+/void exceptionHandler(std::exception const &exc);/c\	void exceptionHandler(std::exception const &exc) { throw exc; }
 ' parser.h
 
 sed -i -e '
-/return d_scanner.lex();/c\	return d_scanner->lex();
 /Syntax error/d
-' parser.ih
+/$insert class.ih/a\#include "BaseNodes.h"
+/#include "parser.ih"/c\#include "parser.h"
+' parser.cpp
+
+DVAL=$(grep d_val_ parserbase.h | tr -s ' ;' ' ' | cut -f3 -d' ')
+SVAL=$(grep d_val_ parserbase.h | tr -s ' ;' ' ' | cut -f2 -d' ')
 
 sed -i -e '
-/Syntax error/d
-' parser.cpp
+/'$DVAL';/a\	'$SVAL'* getSval() { return &'$DVAL'; }
+' parserbase.h

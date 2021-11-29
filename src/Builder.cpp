@@ -17,7 +17,7 @@
 
 #include <numeric>
 #include "AST.h"
-#include "parser.h"
+#include "SParser.h"
 #include "Value.h"
 #include "CodeContext.h"
 #include "Instructions.h"
@@ -754,7 +754,7 @@ void Builder::LoadImport(CodeContext& context, NImportFileStm* stm)
 		return;
 	}
 
-	Parser parser(filename.string());
+	SParser parser(filename.string());
 	parser.setFilename(Util::getErrorFilename(filename));
 	if (parser.parse()) {
 		auto err = parser.getError();

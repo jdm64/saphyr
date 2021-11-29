@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "parser.h"
+#include "SParser.h"
 #include "AST.h"
 #include "CodeContext.h"
 #include "CGNStatement.h"
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	Parser parser(file.string());
+	SParser parser(file.string());
 	parser.setFilename(Util::getErrorFilename(file));
 	if (parser.parse()) {
 		auto err = parser.getError();

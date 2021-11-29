@@ -109,7 +109,7 @@
 file
 	: declaration_list
 	{
-		root = uPtr<NStatementList>($1);
+		setRoot($1);
 	}
 	;
 declaration_list
