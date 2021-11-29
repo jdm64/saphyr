@@ -20,7 +20,7 @@ Unless otherwise stated the source code is licensed under the GPLv3 -- see LICEN
   * System
 * [LLVM](http://llvm.org/) 8+
 * Make
-* C++14 compiler (either GCC or Clang)
+* C++17 compiler (either GCC or Clang)
 * Python 3 (for running tests)
 * [Saphyr-libs](https://github.com/jdm64/saphyr-libs) (for tests)
 
