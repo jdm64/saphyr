@@ -5,8 +5,16 @@ flexc++ Scanner.l
 
 STYPE=$(grep "union STYPE" parserbase.h | cut -f2 -d' ')
 
+PTR=$(grep "d_input->" scannerbase.h | wc -l)
+if [ $PTR == "0" ]; then
+	PTR="."
+else
+	PTR="->"
+fi
+
+
 sed -i -e '
-/insert lexFunctionDecl/a\void setSval(ParserBase::'"$STYPE"' *dval){ sval = dval; } ParserBase::'"$STYPE"'* sval;
+/insert lexFunctionDecl/a\void setSval(ParserBase::'$STYPE'* dval){ sval = dval; } ParserBase::'$STYPE'* sval;
 /nsert baseclass_h/a\#include "parserbase.h"
 ' scanner.h
 
@@ -27,7 +35,7 @@ sed -i -e '
 sed -i -e '
 /size_t d_lineNr;/asize_t d_col; size_t col_max;
 /size_t lineNr()/isize_t colNr() const { return d_col; }
-/insert interactiveDecl/isize_t colNr() { return d_input.colNr(); }
+/insert interactiveDecl/isize_t colNr() { return d_input'$PTR'colNr(); }
 / setFilename/i\public:
 / setFilename/a\protected:
 ' scannerbase.h
