@@ -18,6 +18,7 @@ fi
 sed -i -e '
 /insert lexFunctionDecl/a\void setSval(ParserBase::'$STYPE'* dval){ sval = dval; } ParserBase::'$STYPE'* sval;
 /nsert baseclass_h/a\#include "parserbase.h"
+/insert lexFunctionDecl/a\virtual string getDisplayFName() = 0;
 ' scanner.h
 
 sed -i -e '
@@ -28,7 +29,7 @@ sed -i -e '
 /ch < 0x100/i--d_col;
 /--d_lineNr;/c{ --d_lineNr; d_col = col_max; }
 /$insert class_ih/a#include "scanner.h"
-/#include "Scanner.ih"/c\#define SAVE_TOKEN sval->t_tok = new Token(matched(), filename(), lineNr(), colNr() - matched().length());
+/#include "Scanner.ih"/c\#define SAVE_TOKEN sval->t_tok = new Token(matched(), getDisplayFName(), lineNr(), colNr() - matched().length());
 ' scanner.cpp
 
 sed -i -e '

@@ -19,15 +19,17 @@
 #ifndef __SPARSER_H__
 #define __SPARSER_H__
 
-#include "parser.h"
-#include "BaseNodes.h"
 #include <filesystem>
+#include "parser.h"
+#include "SScanner.h"
+#include "BaseNodes.h"
+#include "Util.h"
 
 namespace fsys = std::filesystem;
 
 class SParser : public Parser
 {
-	uPtr<Scanner> lexer;
+	uPtr<SScanner> lexer;
 	uPtr<NStatementList> root;
 	fsys::path cwd;
 
@@ -35,7 +37,8 @@ public:
 	SParser(const string& filename)
 	{
 		cwd = fsys::current_path();
-		lexer = uPtr<Scanner>(new Scanner(filename, "-"));
+		auto displayName = Util::getErrorFilename(filename);
+		lexer = uPtr<SScanner>(new SScanner(filename, displayName));
 		lexer->setSval(getSval());
 	}
 
@@ -54,7 +57,7 @@ public:
 	Token getError()
 	{
 		string token = lexer->matched().size()? lexer->matched() : "<EOF>";
-		return Token("Syntax error on: " + token, lexer->filename(), lexer->lineNr(), lexer->colNr());
+		return Token("Syntax error on: " + token, lexer->getDisplayFName(), lexer->lineNr(), lexer->colNr());
 	}
 
 	NStatementList* getRoot()
