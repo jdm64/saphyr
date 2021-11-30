@@ -3,6 +3,8 @@
 rm -f scanner*
 flexc++ Scanner.l
 
+rm Scanner.ih
+
 STYPE=$(grep "union STYPE" parserbase.h | cut -f2 -d' ')
 
 PTR=$(grep "d_input->" scannerbase.h | wc -l)
@@ -19,17 +21,14 @@ sed -i -e '
 ' scanner.h
 
 sed -i -e '
-/insert class_h/a\#include "parserbase.h"
-/insert class_h/a\#define SAVE_TOKEN sval->t_tok = new Token(matched(), filename(), lineNr(), colNr() - matched().length());
-' scanner.ih
-
-sed -i -e '
 /d_lineNr(1)/a ,d_col(1)
 /d_lineNr(lineNr)/a ,d_col(1)
 /++d_lineNr/acol_max = d_col; d_col = 0;
 /default:/ad_col++;
 /ch < 0x100/i--d_col;
 /--d_lineNr;/c{ --d_lineNr; d_col = col_max; }
+/$insert class_ih/a#include "scanner.h"
+/#include "Scanner.ih"/c\#define SAVE_TOKEN sval->t_tok = new Token(matched(), filename(), lineNr(), colNr() - matched().length());
 ' scanner.cpp
 
 sed -i -e '

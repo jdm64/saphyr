@@ -1,6 +1,5 @@
 %baseclass-header "scannerbase.h"
 %class-header "scanner.h"
-%implementation-header "scanner.ih"
 %lex-source "scanner.cpp"
 
 SPACE		[ \t\n\r]
