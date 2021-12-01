@@ -125,16 +125,25 @@ class TestCase:
 
 	def rewriteIR(self, fileName):
 		bcFile = self.basename + ".bc"
-		Cmd(["llvm-as" + self.fromVer, "-o", bcFile, fileName])
-		Cmd(["llvm-dis" + self.toVer, "-o", fileName, bcFile])
+		proc = Cmd(["llvm-as" + self.fromVer, "-o", bcFile, fileName])
+		if proc.ext != 0:
+			return True, "[llvm-as error]"
+		proc = Cmd(["llvm-dis" + self.toVer, "-o", fileName, bcFile])
+		if proc.ext != 0:
+			return True, "[llvm-dis error]"
+		return False, None
 
 	def fixIR(self):
 		if not os.path.exists(self.llFile):
 			return True, "[no .ll file]"
 		if self.fromVer != None and self.toVer != None:
-			self.rewriteIR(self.expFile)
+			err, msg = self.rewriteIR(self.expFile)
+			if err:
+				return err, msg
 			patchAsm(self.expFile)
-			self.rewriteIR(self.llFile)
+			err, msg = self.rewriteIR(self.llFile)
+			if err:
+				return err, msg
 		patchAsm(self.llFile)
 		return False, None
 
