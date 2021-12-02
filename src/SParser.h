@@ -19,24 +19,24 @@
 #ifndef __SPARSER_H__
 #define __SPARSER_H__
 
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include "parser.h"
 #include "SScanner.h"
 #include "BaseNodes.h"
 #include "Util.h"
 
-namespace fsys = std::filesystem;
+using namespace boost::filesystem;
 
 class SParser : public Parser
 {
 	uPtr<SScanner> lexer;
 	uPtr<NStatementList> root;
-	fsys::path cwd;
+	path cwd;
 
 public:
 	SParser(const string& filename)
 	{
-		cwd = fsys::current_path();
+		cwd = current_path();
 		auto displayName = Util::getErrorFilename(filename);
 		lexer = uPtr<SScanner>(new SScanner(filename, displayName));
 		lexer->setSval(getSval());
@@ -45,7 +45,7 @@ public:
 	int doParse()
 	{
 		auto ret = parse();
-		fsys::current_path(cwd);
+		current_path(cwd);
 		return ret;
 	}
 
