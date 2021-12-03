@@ -826,8 +826,12 @@ void Inst::CallDestructor(CodeContext& context, const RValue& value, RValue arrS
 		return;
 	auto var = RValue(value.value(), SType::getPointer(context, clType));
 
-	Value* endPtr;
 	Value* nextPtr;
+	Value* endPtr;
+	BasicBlock* loopBlock;
+	BasicBlock* endBlock;
+	PHINode* phi;
+
 	if (isArr) {
 		if (arrSize) {
 			if (isa<ConstantInt>(arrSize.value())) {
@@ -849,6 +853,9 @@ void Inst::CallDestructor(CodeContext& context, const RValue& value, RValue arrS
 		}
 
 		auto startBlock = context.currBlock();
+		loopBlock = context.createBlock();
+		endBlock = context.createBlock();
+
 		vector<Value*> idxs;
 		auto zero = RValue::getZero(context, SType::getInt(context, 32));
 		idxs.push_back(zero);
@@ -856,14 +863,12 @@ void Inst::CallDestructor(CodeContext& context, const RValue& value, RValue arrS
 		auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
 		endPtr = context.IB().CreateGEP(nullptr, startPtr, arrSize);
 
-		auto block = context.createBlock();
-		context.IB().CreateBr(block);
-		context.pushBlock(block);
+		auto cmp = context.IB().CreateICmpEQ(startPtr, endPtr);
+		context.IB().CreateCondBr(cmp, endBlock, loopBlock);
+		context.pushBlock(loopBlock);
 
-		auto phi = context.IB().CreatePHI(startPtr->getType(), 2);
-		nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
+		phi = context.IB().CreatePHI(startPtr->getType(), 2);
 		phi->addIncoming(startPtr, startBlock);
-		phi->addIncoming(nextPtr, block);
 		var = RValue(phi, var.stype());
 	}
 
@@ -874,10 +879,11 @@ void Inst::CallDestructor(CodeContext& context, const RValue& value, RValue arrS
 	CallFunction(context, funcs, valueToken, args);
 
 	if (isArr) {
+		nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
+		phi->addIncoming(nextPtr, loopBlock);
 		auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
-		auto block = context.createBlock();
-		context.IB().CreateCondBr(cmp, block, context.currBlock());
-		context.pushBlock(block);
+		context.IB().CreateCondBr(cmp, endBlock, loopBlock);
+		context.pushBlock(endBlock);
 	}
 }
 

@@ -247,16 +247,17 @@ define void @arrayLocal() {
 14:                                               ; preds = %10
   %15 = getelementptr [3 x %MyClass], [3 x %MyClass]* %b, i32 0, i32 0
   %16 = getelementptr %MyClass, %MyClass* %15, i64 3
-  br label %17
+  %17 = icmp eq %MyClass* %15, %16
+  br i1 %17, label %22, label %18
 
-17:                                               ; preds = %17, %14
-  %18 = phi %MyClass* [ %15, %14 ], [ %19, %17 ]
-  %19 = getelementptr %MyClass, %MyClass* %18, i64 1
-  call void @MyClass_null(%MyClass* %18)
-  %20 = icmp eq %MyClass* %19, %16
-  br i1 %20, label %21, label %17
+18:                                               ; preds = %18, %14
+  %19 = phi %MyClass* [ %15, %14 ], [ %20, %18 ]
+  call void @MyClass_null(%MyClass* %19)
+  %20 = getelementptr %MyClass, %MyClass* %19, i64 1
+  %21 = icmp eq %MyClass* %20, %16
+  br i1 %21, label %22, label %18
 
-21:                                               ; preds = %17
+22:                                               ; preds = %18, %14
   ret void
 }
 
