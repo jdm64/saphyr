@@ -16,6 +16,27 @@ void over(bool a, @int b)
 void callOver()
 {
 	over(true, 2.0);
+	over(bad);
+}
+
+class OverLoad
+{
+	int call(int a)
+	{
+		return 0;
+	}
+
+	#[mangle("call2")]
+	int call(@int p)
+	{
+		return 1;
+	}
+}
+
+void callClassOver()
+{
+	OverLoad i;
+	i.call(bad);
 }
 
 ========
@@ -27,4 +48,13 @@ negative/Function.syp:18:2: arguments ambigious for overloaded function:
 	functions:
 		over (int32,double)void
 		over2 (bool,@int32)void
-found 2 errors
+negative/Function.syp:19:7: variable bad not declared
+negative/Function.syp:19:2: argument count for over function invalid, 1 arguments given, but 2 required.
+negative/Function.syp:39:9: variable bad not declared
+negative/Function.syp:39:4: arguments ambigious for overloaded function:
+	args:
+		@OverLoad,<error>
+	functions:
+		OverLoad_call (@OverLoad,int32)int32
+		OverLoad_call2 (@OverLoad,@int32)int32
+found 6 errors
