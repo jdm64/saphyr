@@ -24,6 +24,12 @@ void exprBranch()
 		break a;
 }
 
+void ifWithVoid()
+{
+	if (exprBranch())
+		return;
+}
+
 ========
 
 negative/Branch.syp:6:3: break invalid outside a loop/switch block
@@ -31,4 +37,5 @@ negative/Branch.syp:8:3: continue invalid outside a loop/switch block
 negative/Branch.syp:16:1: label lb already defined
 negative/Branch.syp:15:7: label notfound not defined
 negative/Branch.syp:24:9: branch level must be constant int
-found 5 errors
+negative/Branch.syp:29:6: Cannot cast void type ( void to bool )
+found 6 errors

@@ -61,6 +61,9 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		if (upcast && valueType->isEnum())
 			value.castToSubtype();
 		return false;
+	} else if (valueType->isVoid()) {
+		castError(context, "Cannot cast void type", valueType, type, token);
+		return true;
 	} else if (type->isComplex()) {
 		castError(context, "Cannot cast complex types", valueType, type, token);
 		return true;
