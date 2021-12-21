@@ -26,6 +26,16 @@ int main()
 	return z;
 }
 
+@int getPtr()
+{
+	return null;
+}
+
+void callPtr(bool b)
+{
+	auto ptr = b ? getPtr() : null;
+}
+
 ========
 
 %S = type { i32, i32 }
@@ -99,8 +109,34 @@ define i32 @main() {
   ret i32 %16
 }
 
+define i32* @getPtr() {
+  ret i32* null
+}
+
+define void @callPtr(i1 %b) {
+  %1 = alloca i1
+  store i1 %b, i1* %1
+  %2 = load i1, i1* %1
+  br i1 %2, label %3, label %5
+
+3:                                                ; preds = %0
+  %4 = call i32* @getPtr()
+  br label %6
+
+5:                                                ; preds = %0
+  br label %6
+
+6:                                                ; preds = %5, %3
+  %7 = phi i32* [ %4, %3 ], [ null, %5 ]
+  %ptr = alloca i32*
+  store i32* %7, i32** %ptr
+  ret void
+}
+
 ========
 
+callPtr T
 four T
 func T
+getPtr T
 main T

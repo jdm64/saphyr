@@ -194,13 +194,22 @@ RValue CGNExpression::visitNTernaryOperator(NTernaryOperator* exp)
 		context.pushBlock(endBlock);
 		if (!trueExp || !falseExp)
 			return {};
+
+		if (trueExp.stype() != falseExp.stype()) {
+			if (trueExp.isNullPtr()) {
+				trueExp = RValue::getNullPtr(context, falseExp.stype());
+			} else if (falseExp.isNullPtr()) {
+				falseExp = RValue::getNullPtr(context, trueExp.stype());
+			} else {
+				context.addError("return types of ternary must match", *exp);
+				return {};
+			}
+		}
+
 		auto result = context.IB().CreatePHI(trueExp.type(), 2);
 		result->addIncoming(trueExp, tBlk);
 		result->addIncoming(falseExp, fBlk);
 		retVal = RValue(result, trueExp.stype());
-
-		if (trueExp.stype() != falseExp.stype())
-			context.addError("return types of ternary must match", *exp);
 	} else {
 		trueExp = visit(exp->getTrueVal());
 		falseExp = visit(exp->getFalseVal());
