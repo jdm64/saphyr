@@ -331,7 +331,10 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	if (!switchValue)
 		return;
 
-	Inst::CastTo(context, *stm->getValue(), switchValue, SType::getInt(context, 32));
+	if (!switchValue.stype()->isInteger()) {
+		context.addError("switch requires int type", *stm->getValue());
+		return;
+	}
 
 	auto caseBlock = context.createBlock();
 	auto endBlock = context.createBreakBlock();
@@ -344,11 +347,12 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	bool hasDefault = false;
 	for (auto caseItem : *stm->getCases()) {
 		if (caseItem->isValueCase()) {
-			auto caseVal = CGNExpression::run(context, caseItem->getValue()).value();
-			if (!caseVal || !isa<ConstantInt>(caseVal)) {
+			auto caseVal = CGNExpression::run(context, caseItem->getValue());
+			if (!caseVal || !isa<ConstantInt>(caseVal.value())) {
 				context.addError("case value must be a constant int", *caseItem->getValue());
 			} else {
-				auto val = static_cast<ConstantInt*>(caseVal);
+				Inst::CastTo(context, *caseItem->getValue(), caseVal, switchValue.stype());
+				auto val = static_cast<ConstantInt*>(caseVal.value());
 				if (!unique.insert(val->getSExtValue()).second)
 					context.addError("switch case values are not unique", *caseItem->getValue());
 				switchInst->addCase(val, caseBlock);

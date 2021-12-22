@@ -22,7 +22,7 @@ void switchWithDefault(int x)
 
 double switchNoDefault(float x)
 {
-	switch (x) {
+	switch (x->as(int)) {
 	case 1:
 		x = 4;
 	case 3:
@@ -53,6 +53,19 @@ void switchWithExpressions(int val)
 		val *= Color.BLUE;
 		break;
 	}
+}
+
+int usingChar(int8 c)
+{
+	switch (c) {
+	case 'y':
+		return 1;
+	case 'n':
+		return 0;
+	default:
+		return 100;
+	}
+	return -200;
 }
 
 ========
@@ -150,6 +163,25 @@ define void @switchWithExpressions(i32 %val) {
   ret void
 }
 
+define i32 @usingChar(i8 %c) {
+  %1 = alloca i8
+  store i8 %c, i8* %1
+  %2 = load i8, i8* %1
+  switch i8 %2, label %5 [
+    i8 121, label %3
+    i8 110, label %4
+  ]
+
+3:                                                ; preds = %0
+  ret i32 1
+
+4:                                                ; preds = %0
+  ret i32 0
+
+5:                                                ; preds = %0
+  ret i32 100
+}
+
 ========
 
 GLOB R
@@ -157,3 +189,4 @@ main T
 switchNoDefault T
 switchWithDefault T
 switchWithExpressions T
+usingChar T
