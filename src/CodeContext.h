@@ -177,6 +177,8 @@ public:
 
 	void popLocalTable();
 
+	void popLocalTableRaw();
+
 	void storeLocalSymbol(RValue var, const string& name, bool isParam = false);
 
 	VecRValue loadSymbol(const string& name) const;

@@ -341,8 +341,6 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 	auto defaultBlock = endBlock;
 	auto switchInst = context.IB().CreateSwitch(switchValue, defaultBlock, stm->getCases()->size());
 
-	context.pushLocalTable();
-
 	set<int64_t> unique;
 	bool hasDefault = false;
 	for (auto caseItem : *stm->getCases()) {
@@ -364,20 +362,21 @@ void CGNStatement::visitNSwitchStatement(NSwitchStatement* stm)
 			defaultBlock = caseBlock;
 		}
 
+		context.pushLocalTable();
 		context.pushBlock(caseBlock);
 		visit(caseItem->getBody());
 
 		if (caseItem->isLastStmBranch()) {
+			context.popLocalTableRaw();
 			caseBlock = context.currBlock();
 		} else {
+			context.popLocalTable();
 			caseBlock = context.createBlock();
 			context.IB().CreateBr(caseBlock);
 			context.pushBlock(caseBlock);
 		}
 	}
 	switchInst->setDefaultDest(defaultBlock);
-
-	context.popLocalTable();
 
 	// NOTE: the last case will create a dangling block which needs a terminator.
 	context.IB().CreateBr(endBlock);

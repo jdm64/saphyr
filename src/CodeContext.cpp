@@ -235,6 +235,11 @@ void CodeContext::popLocalTable()
 		Inst::CallDestructor(*this, *it, {}, nullptr);
 }
 
+void CodeContext::popLocalTableRaw()
+{
+	localTable.pop_back();
+}
+
 void CodeContext::storeLocalSymbol(RValue var, const string& name, bool isParam)
 {
 	localTable.back().storeSymbol(var, name, isParam);
