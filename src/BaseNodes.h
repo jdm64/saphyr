@@ -92,6 +92,8 @@ enum class NodeId
 	NLoopBranch,
 	NLoopStatement,
 	NMemberInitializer,
+	NPackageBlock,
+	NPackageItem,
 	NParameter,
 	NReturnStatement,
 	NStructDeclaration,

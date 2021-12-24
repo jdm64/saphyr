@@ -33,6 +33,7 @@ void CGNImportStm::visit(NStatement* stm)
 	VISIT_CASE(NGlobalVariableDecl, stm)
 	VISIT_CASE(NImportFileStm, stm)
 	VISIT_CASE(NImportPkgStm, stm)
+	VISIT_CASE(NPackageBlock, stm)
 	VISIT_CASE(NStructDeclaration, stm)
 	VISIT_CASE(NVariableDeclGroup, stm)
 	default:
@@ -44,6 +45,11 @@ void CGNImportStm::visit(NStatementList* list)
 {
 	for (auto item : *list)
 		visit(item);
+}
+
+void CGNImportStm::visitNPackageBlock(NPackageBlock* stm)
+{
+	// do nothing
 }
 
 void CGNImportStm::visitNImportFileStm(NImportFileStm* stm)

@@ -33,17 +33,34 @@ void CGNImportList::visit(NStatement* stm)
 	switch (stm->id()) {
 	VISIT_CASE(NImportFileStm, stm)
 	VISIT_CASE(NImportPkgStm, stm)
+	VISIT_CASE(NPackageBlock, stm)
+	VISIT_CASE(NPackageItem, stm)
 	default:
 		; // skip
 	}
 }
 
+void CGNImportList::visitNPackageBlock(NPackageBlock* stm)
+{
+	for (auto item : *stm->getItems())
+		visit(item);
+}
+
+void CGNImportList::visitNPackageItem(NPackageItem* stm)
+{
+	buff += "P:" + stm->getName()->str;
+	auto val = stm->getValue();
+	if (val)
+		buff += "=" + val->str;
+	buff += "\n";
+}
+
 void CGNImportList::visitNImportFileStm(NImportFileStm* stm)
 {
-	buff += stm->getName()->str + "\n";
+	buff += "i:" + stm->getName()->str + "\n";
 }
 
 void CGNImportList::visitNImportPkgStm(NImportPkgStm* stm)
 {
-	buff += stm->getName()->str + "\n";
+	buff += "I:" + stm->getName()->str + "\n";
 }

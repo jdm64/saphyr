@@ -1,0 +1,21 @@
+
+package {
+	header
+	cfile("foo.c")
+	linker("glib2")
+}
+
+int foo()
+{
+	return 4;
+}
+
+========
+
+define i32 @foo() {
+  ret i32 4
+}
+
+========
+
+foo T

@@ -47,6 +47,8 @@ void FMNStatement::visit(NStatement* stm)
 	VISIT_CASE(NLabelStatement, stm)
 	VISIT_CASE(NLoopBranch, stm)
 	VISIT_CASE(NLoopStatement, stm)
+	VISIT_CASE(NPackageBlock, stm)
+	VISIT_CASE(NPackageItem, stm)
 	VISIT_CASE(NReturnStatement, stm)
 	VISIT_CASE(NStructDeclaration, stm)
 	VISIT_CASE(NSwitchStatement, stm)
@@ -61,6 +63,27 @@ void FMNStatement::visit(NStatementList* list)
 {
 	for (auto item : *list)
 		visit(item);
+}
+
+void FMNStatement::visitNPackageBlock(NPackageBlock* stm)
+{
+	context.addLine("package {");
+	context.indent();
+	for (auto item : *stm->getItems()) {
+		visit(item);
+	}
+	context.undent();
+	context.addLine("}");
+	context.addLine("");
+}
+
+void FMNStatement::visitNPackageItem(NPackageItem* stm)
+{
+	auto line = stm->getName()->str;
+	auto val = stm->getValue();
+	if (val)
+		line += "(\"" + val->str + "\")";
+	context.addLine(line);
 }
 
 void FMNStatement::visitNImportFileStm(NImportFileStm* stm)

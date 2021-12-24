@@ -25,6 +25,10 @@ class CGNImportList
 
 	void visitNImportPkgStm(NImportPkgStm* stm);
 
+	void visitNPackageBlock(NPackageBlock* stm);
+
+	void visitNPackageItem(NPackageItem* stm);
+
 public:
 	void visit(NStatement* stm);
 

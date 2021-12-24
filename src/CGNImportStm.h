@@ -24,6 +24,8 @@ class CGNImportStm
 	explicit CGNImportStm(CodeContext& context)
 	: context(context) {}
 
+	void visitNPackageBlock(NPackageBlock* stm);
+
 	void visitNImportFileStm(NImportFileStm* stm);
 
 	void visitNImportPkgStm(NImportPkgStm* stm);

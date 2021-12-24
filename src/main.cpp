@@ -34,7 +34,7 @@ void initOptions()
 		("noverify", "do not verify module; write LLVM IR file")
 		("noclean", "do not run clean/verify on module; write LLVM IR file")
 		("print-debug", "insert debug prints in generated code")
-		("imports", "output imports listed in the file");
+		("stat", "output package and import data");
 }
 
 void loadOptions(int argc, char** argv, variables_map &vm)
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 		auto err = parser.getError();
 		cout << err.filename << ":" << err.line << ": " << err.str << endl;
 		return 1;
-	} else if (vm.count("imports")) {
+	} else if (vm.count("stat")) {
 		CGNImportList::run(parser.getRoot());
 		return 0;
 	}

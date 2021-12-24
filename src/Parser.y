@@ -22,6 +22,7 @@
 	NExpression* t_exp;
 	NSwitchCase* t_case;
 	NClassMember* t_memb;
+	NPackageItem* t_pkg_item;
 	NMemberInitializer* t_init;
 	NIdentifierList* t_idlist;
 	NDataTypeList* t_typelist;
@@ -34,6 +35,7 @@
 	NSwitchCaseList* t_caslist;
 	NVariableDeclGroupList* t_var_dec_list;
 	NInitializerList* t_initlist;
+	NPackageItemList* t_pkg_item_list;
 }
 
 // predefined constants
@@ -51,7 +53,7 @@
 // keywords
 %token TT_RETURN TT_WHILE TT_DO TT_UNTIL TT_CONTINUE TT_REDO TT_BREAK TT_FOR TT_IF
 %token TT_GOTO TT_SWITCH TT_CASE TT_DEFAULT TT_STRUCT TT_UNION TT_ENUM
-%token TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS TT_IMPORT
+%token TT_DELETE TT_NEW TT_LOOP TT_ALIAS TT_VEC TT_CLASS TT_IMPORT TT_PACKAGE
 %left TT_ELSE
 // constants and names
 %token <t_tok> TT_INTEGER TT_FLOATING TT_IDENTIFIER TT_INT_BIN TT_INT_OCT TT_INT_HEX TT_CHAR_LIT TT_STR_LIT TT_THIS
@@ -77,7 +79,7 @@
 %type <t_stm> statement declaration function_declaration while_loop branch_statement
 %type <t_stm> variable_declarations condition_statement global_variable_declaration
 %type <t_stm> struct_declaration enum_declaration alias_declaration
-%type <t_stm> class_declaration import_declaration
+%type <t_stm> class_declaration import_declaration package_declaration
 %type <t_memb> class_member
 %type <t_case> switch_case
 %type <t_init> member_initializer
@@ -90,6 +92,7 @@
 // other nodes
 %type <t_attr> attribute
 %type <t_attr_vals> attribute_value_list
+%type <t_pkg_item> package_item
 // lists
 %type <t_idlist> template_parameters identifier_list package_name_list
 %type <t_stmlist> statement_list declaration_list compound_statement statement_list_or_empty single_statement
@@ -103,6 +106,7 @@
 %type <t_var_dec_list> variable_declarations_list variable_declarations_list_or_empty struct_body
 %type <t_initlist> class_initializer_list
 %type <t_attrlist> attribute_list attribute_declaration optional_attribute_declaration
+%type <t_pkg_item_list> package_item_list
 
 %%
 
@@ -132,6 +136,35 @@ declaration
 	| struct_declaration
 	| enum_declaration
 	| import_declaration
+	| package_declaration
+	;
+package_declaration
+	: TT_PACKAGE '{' package_item_list '}'
+	{
+		$$ = new NPackageBlock($3);
+	}
+	;
+package_item_list
+	: package_item
+	{
+		$$ = new NPackageItemList;
+		$$->add($1);
+	}
+	| package_item_list package_item
+	{
+		$1->add($2);
+		$$ = $1;
+	}
+	;
+package_item
+	: TT_IDENTIFIER
+	{
+		$$ = new NPackageItem($1);
+	}
+	| TT_IDENTIFIER '(' TT_STR_LIT ')'
+	{
+		$$ = new NPackageItem($1, $3);
+	}
 	;
 import_declaration
 	: TT_IMPORT TT_STR_LIT ';'

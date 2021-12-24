@@ -271,6 +271,71 @@ public:
 	ADD_ID(NFloatConst)
 };
 
+class NPackageItem : public NStatement
+{
+	uPtr<Token> name;
+	uPtr<Token> value;
+
+public:
+	explicit NPackageItem(Token* name, Token* value = nullptr)
+	: name(name), value(value)
+	{
+		if (value)
+			Token::unescape(value->str);
+	}
+
+	NPackageItem(const NPackageItem& other)
+	: name(other.name->copy()), value(other.value ? other.value->copy() : nullptr)
+	{
+	}
+
+	Token* getName() const
+	{
+		return name.get();
+	}
+
+	Token* getValue() const
+	{
+		return value.get();
+	}
+
+	NPackageItem* copy() const override
+	{
+		return new NPackageItem(*this);
+	}
+
+	ADD_ID(NPackageItem)
+};
+using NPackageItemList = NodeList<NPackageItem>;
+
+class NPackageBlock : public NStatement
+{
+	uPtr<NPackageItemList> list;
+
+public:
+	explicit NPackageBlock(NPackageItemList* list)
+	: list(list)
+	{
+	}
+
+	NPackageBlock(const NPackageBlock& other)
+	: list(other.list->copy())
+	{
+	}
+
+	NPackageBlock* copy() const override
+	{
+		return new NPackageBlock(*this);
+	}
+
+	NPackageItemList* getItems() const
+	{
+		return list.get();
+	}
+
+	ADD_ID(NPackageBlock)
+};
+
 class NImportFileStm : public NStatement
 {
 	uPtr<Token> filename;

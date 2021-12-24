@@ -83,6 +83,7 @@ if		{ return ParserBase::TT_IF; }
 import		{ return ParserBase::TT_IMPORT; }
 loop		{ return ParserBase::TT_LOOP; }
 new		{ SAVE_TOKEN return ParserBase::TT_NEW; }
+package 	{ return ParserBase::TT_PACKAGE; }
 redo		{ SAVE_TOKEN return ParserBase::TT_REDO; }
 return		{ SAVE_TOKEN return ParserBase::TT_RETURN; }
 struct		{ return ParserBase::TT_STRUCT; }

@@ -51,6 +51,7 @@ void CGNStatement::visit(NStatement* stm)
 	VISIT_CASE(NLoopBranch, stm)
 	VISIT_CASE(NLoopStatement, stm)
 	VISIT_CASE(NMemberInitializer, stm)
+	VISIT_CASE(NPackageBlock, stm)
 	VISIT_CASE(NParameter, stm)
 	VISIT_CASE(NReturnStatement, stm)
 	VISIT_CASE(NStructDeclaration, stm)
@@ -67,6 +68,11 @@ void CGNStatement::visit(NStatementList* list)
 {
 	for (auto item : *list)
 		visit(item);
+}
+
+void CGNStatement::visitNPackageBlock(NPackageBlock* stm)
+{
+	// do nothing
 }
 
 void CGNStatement::visitNImportFileStm(NImportFileStm* stm)

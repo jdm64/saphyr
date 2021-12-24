@@ -26,6 +26,8 @@ class CGNStatement
 
 	void visitNImportPkgStm(NImportPkgStm* stm);
 
+	void visitNPackageBlock(NPackageBlock* stm);
+
 	void visitNExpressionStm(NExpressionStm* stm);
 
 	void visitNParameter(NParameter* stm);
