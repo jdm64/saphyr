@@ -110,7 +110,7 @@ void ModuleWriter::outputNative()
 
 	error_code error;
 	auto oFile = filename.substr(0, filename.rfind('.')) + ".o";
-	raw_fd_ostream objStream(oFile, error, sys::fs::F_None);
+	raw_fd_ostream objStream(oFile, error);
 	if (error) {
 		cout << "file error: " << error.message() << ": " << oFile << endl;
 		return;
