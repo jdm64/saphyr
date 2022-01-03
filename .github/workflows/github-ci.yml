@@ -21,6 +21,7 @@ jobs:
           coverage: true
         - llvm: 11
         - llvm: 12
+        - llvm: 13
     steps:
     - uses: actions/checkout@v2
     - name: Setup Environment
@@ -40,6 +41,7 @@ jobs:
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
         echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
+        echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-13 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list
         sudo apt-get update
         sudo apt-get install -y flexc++ bisonc++ llvm-$LLVM-dev llvm-10-dev libboost-program-options-dev libboost-filesystem-dev libboost-system-dev lcov
     - name: Setup saphyr-libs
