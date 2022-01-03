@@ -1,0 +1,24 @@
+
+class Foo
+{
+	struct this
+	{
+		int i;
+	}
+
+	~this()
+	{
+		i = 0;
+	}
+}
+
+Foo getFoo()
+{
+	Foo f;
+	return f;
+}
+
+========
+
+negative/CopyMove.syp:18:2: destructable return value must be moved/copied
+found 1 errors

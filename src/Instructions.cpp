@@ -102,13 +102,7 @@ bool Inst::CastTo(CodeContext& context, Token* token, RValue& value, SType* type
 		}
 
 		if (type->isCopyRef()) {
-			auto sub = type->subType();
-			Token name(*token, "tmp_" + to_string(token->line) + to_string(token->col));
-			auto var = RValue(context.IB().CreateAlloca(*sub, nullptr, name.str), sub);
-			context.storeLocalSymbol(var, name.str);
-			VecRValue t{value};
-			Inst::InitVariable(context, var, {}, &t, &name);
-			value = var;
+			value = Copy(context, value, token);
 		} else {
 			auto loadValue = PtrOfLoad(context, value);
 			if (!loadValue) {
@@ -587,6 +581,49 @@ RValue Inst::LenOp(CodeContext& context, NArrowOperator* op)
 
 	context.addError("len operator invalid for " + dtype->str(context) + " type", op->getName());
 	return RValue();
+}
+
+RValue Inst::Move(CodeContext& context, NArrowOperator* op)
+{
+	if (op->getArgs() && op->getArgs()->size() != 0) {
+		context.addError("move operator takes no arguments", *op);
+		return {};
+	} else if (op->getType() == NArrowOperator::DATA) {
+		context.addError("move operator only valid for expressions", *op);
+		return {};
+	}
+
+	auto value = CGNExpression::run(context, op->getExp());
+	value.setMove(true);
+	return value;
+}
+
+RValue Inst::Copy(CodeContext& context, NArrowOperator* op)
+{
+	if (op->getArgs() && op->getArgs()->size() != 0) {
+		context.addError("copy operator takes no arguments", *op);
+		return {};
+	} else if (op->getType() == NArrowOperator::DATA) {
+		context.addError("copy operator only valid for expressions", *op);
+		return {};
+	}
+
+	auto exp = op->getExp();
+	auto value = CGNExpression::run(context, exp);
+	return Copy(context, value, *exp);
+}
+
+RValue Inst::Copy(CodeContext& context, RValue value, Token* token)
+{
+	Token name(*token, "tmp_" + to_string(token->line) + to_string(token->col));
+	auto copy = RValue(context.IB().CreateAlloca(value.type(), nullptr, name.str), value.stype());
+	copy.setMove(true);
+	context.storeLocalSymbol(copy, name.str);
+
+	VecRValue t{Inst::Load(context, value)};
+	Inst::InitVariable(context, copy, {}, &t, &name);
+
+	return copy;
 }
 
 void matchCount(VecSFunc& funcs, VecSFunc& matches, VecRValue& args, bool matchRef)

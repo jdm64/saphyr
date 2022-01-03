@@ -27,6 +27,7 @@ class RValue
 	Value* val;
 	SType* ty;
 	NAttributeList* atrs;
+	bool moved;
 
 protected:
 	RValue(Value* value, SType* type, NAttributeList* attrs)
@@ -101,6 +102,16 @@ public:
 	bool isUndef() const
 	{
 		return val? isa<UndefValue>(val) : false;
+	}
+
+	void setMove(bool val)
+	{
+		moved = val;
+	}
+
+	bool isMove() const
+	{
+		return moved;
 	}
 
 	SType* castToSubtype()

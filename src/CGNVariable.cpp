@@ -136,6 +136,10 @@ RValue CGNVariable::visitNArrowOperator(NArrowOperator* exp)
 		return Inst::MutCast(context, exp);
 	} else if (name == "len") {
 		return Inst::LenOp(context, exp);
+	} else if (name == "move") {
+		return Inst::Move(context, exp);
+	} else if (name == "copy") {
+		return Inst::Copy(context, exp);
 	}
 	context.addError("invalid arrow op name: " + name, *exp);
 	return RValue();

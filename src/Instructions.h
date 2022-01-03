@@ -69,6 +69,12 @@ public:
 
 	static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type);
 
+	static RValue Move(CodeContext& context, NArrowOperator* op);
+
+	static RValue Copy(CodeContext& context, NArrowOperator* op);
+
+	static RValue Copy(CodeContext& context, RValue value, Token* token);
+
 	static RValue CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, VecRValue& args);
 
 	static RValue CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments);

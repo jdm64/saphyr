@@ -274,11 +274,17 @@ void CGNStatement::visitNReturnStatement(NReturnStatement* stm)
 		context.addError("function " + func.name().str() + " declared non-void, but void return found", *stm);
 		return;
 	}
+
 	auto returnVal = CGNExpression::run(context, stm->getValue());
 	RValue retAlloc;
 	if (returnVal) {
 		Inst::CastTo(context, *stm->getValue(), returnVal, funcReturn);
 		retAlloc = Inst::PtrOfLoad(context, returnVal);
+
+		if (returnVal.stype()->isDestructable() && !returnVal.isMove()) {
+			context.addError("destructable return value must be moved/copied", *stm);
+			return;
+		}
 	}
 
 	Inst::CallDestructables(context, retAlloc.value(), *stm);

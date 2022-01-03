@@ -56,7 +56,7 @@ void manyPointerWithSize()
 {
 	[4]Destroy ret;
 
-	return ret;
+	return ret->move;
 }
 
 void loopStm(int i)

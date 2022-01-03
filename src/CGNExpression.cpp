@@ -70,9 +70,11 @@ void CGNExpression::visit(NExpressionList* list)
 RValue CGNExpression::visitNVariable(NVariable* nVar)
 {
 	auto var = CGNVariable::run(context, nVar);
+	auto isMove = var.isMove();
 	var = Inst::Load(context, var);
 	if (var && var.stype()->isReference() && derefRef)
 		var = Inst::Deref(context, var);
+	var.setMove(isMove);
 	return var;
 }
 
