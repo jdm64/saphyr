@@ -67,11 +67,7 @@ public:
 
 	static RValue LenOp(CodeContext& context, NArrowOperator* op);
 
-	inline static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
-	{
-		auto ptrVal = context.IB().CreateGEP(nullptr, ptr, idxs);
-		return RValue(ptrVal, type);
-	}
+	static RValue GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type);
 
 	static RValue CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, VecRValue& args);
 

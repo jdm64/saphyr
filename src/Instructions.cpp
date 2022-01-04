@@ -385,6 +385,13 @@ Predicate Inst::getPredicate(int oper, Token* token, SType* type, CodeContext& c
 	return predArr[offset];
 }
 
+RValue Inst::GetElementPtr(CodeContext& context, const RValue& ptr, ArrayRef<Value*> idxs, SType* type)
+{
+	auto ty = ptr.stype()->isPointer() ? ptr.stype()->subType() : ptr.stype();
+	auto ptrVal = context.IB().CreateGEP(*ty, ptr, idxs);
+	return RValue(ptrVal, type);
+}
+
 RValue Inst::PointerMath(int type, Token* optToken, RValue ptr, const RValue& val, CodeContext& context)
 {
 	if (type != ParserBase::TT_INC && type != ParserBase::TT_DEC) {
@@ -767,16 +774,16 @@ bool Inst::CallConstructor(CodeContext& context, RValue var, RValue arrSize, Vec
 		auto zero = RValue::getZero(context, SType::getInt(context, 32));
 		idxs.push_back(zero);
 		idxs.push_back(zero);
-		auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
+		auto startPtr = context.IB().CreateGEP(*varType, var, idxs);
 		arrSize = arrSize ? arrSize : RValue::getNumVal(context, varType->size(), 64);
-		endPtr = context.IB().CreateGEP(nullptr, startPtr, arrSize);
+		endPtr = context.IB().CreateGEP(*clType, startPtr, arrSize);
 
 		auto block = context.createBlock();
 		context.IB().CreateBr(block);
 		context.pushBlock(block);
 
 		auto phi = context.IB().CreatePHI(startPtr->getType(), 2);
-		nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
+		nextPtr = context.IB().CreateGEP(*clType, phi, RValue::getNumVal(context, 1, 64));
 		phi->addIncoming(startPtr, startBlock);
 		phi->addIncoming(nextPtr, block);
 		var = RValue(phi, clType);
@@ -863,8 +870,9 @@ void Inst::CallDestructor(CodeContext& context, const RValue& value, RValue arrS
 		auto zero = RValue::getZero(context, SType::getInt(context, 32));
 		idxs.push_back(zero);
 		idxs.push_back(zero);
-		auto startPtr = context.IB().CreateGEP(nullptr, var, idxs);
-		endPtr = context.IB().CreateGEP(nullptr, startPtr, arrSize);
+		auto gepTy = type->isPointer() ? type->subType() : type;
+		auto startPtr = context.IB().CreateGEP(*gepTy, var, idxs);
+		endPtr = context.IB().CreateGEP(*clType, startPtr, arrSize);
 
 		auto cmp = context.IB().CreateICmpEQ(startPtr, endPtr);
 		context.IB().CreateCondBr(cmp, endBlock, loopBlock);
@@ -882,7 +890,7 @@ void Inst::CallDestructor(CodeContext& context, const RValue& value, RValue arrS
 	CallFunction(context, funcs, valueToken, args);
 
 	if (isArr) {
-		nextPtr = context.IB().CreateGEP(nullptr, phi, RValue::getNumVal(context, 1, 64));
+		nextPtr = context.IB().CreateGEP(*clType, phi, RValue::getNumVal(context, 1, 64));
 		phi->addIncoming(nextPtr, loopBlock);
 		auto cmp = context.IB().CreateICmpEQ(nextPtr, endPtr);
 		context.IB().CreateCondBr(cmp, endBlock, loopBlock);
