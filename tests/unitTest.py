@@ -50,10 +50,10 @@ def findAllTests():
 	return sorted(matches)
 
 def getFiles(files):
-	if not files:
-		return findAllTests()
-
 	allTests = findAllTests()
+	if not files:
+		return allTests
+
 	fileList = []
 	for f in files:
 		dot = f.rfind('.')
@@ -65,21 +65,19 @@ def getFiles(files):
 			allTests.remove(item)
 	return fileList
 
-def patchAsm(file):
+def patchAsm(filename):
 	data = ""
-	with open(file, "r") as asm:
+	with open(filename, "r") as asm:
 		for line in asm:
 			if not "; ModuleID" in line and not "source_filename" in line:
 				data += line
 	data = data.strip() + "\n"
-	with open(file, "w") as asm:
+	with open(filename, "w") as asm:
 		asm.write(data)
 
 class TestCase:
-	def __init__(self, file, clean=True, update=False, fromVer=None, toVer=None):
+	def __init__(self, file, fromVer=None, toVer=None):
 		self.tstFile = file
-		self.doClean = clean
-		self.doUpdate = update
 		self.fromVer = fromVer
 		if self.fromVer != None and len(self.fromVer) > 0:
 			self.fromVer = "-" + self.fromVer
@@ -179,7 +177,7 @@ class TestCase:
 			return True, "[fail format]"
 		return False, None
 
-	def runExe(self):
+	def runExe(self, doUpdate):
 		ret = self.runFmt()
 		if ret[0]:
 			return ret
@@ -209,16 +207,16 @@ class TestCase:
 		if proc.ext == 0:
 			if not isPos:
 				return False, "[ok]"
-		elif self.doUpdate:
+		elif doUpdate:
 			self.update(isPos)
 			return False, "[updated compile]"
 		else:
 			self.writeLog(proc)
 			return True, "[fail compile]"
 
-		return self.runSym()
+		return self.runSym(doUpdate)
 
-	def runSym(self):
+	def runSym(self, doUpdate):
 		proc = Cmd(["nm", "-fp", self.objFile])
 		if proc.ext != 0:
 			self.writeLog(proc)
@@ -231,7 +229,7 @@ class TestCase:
 
 		if not len(diff):
 			return False, "[ok]"
-		elif self.doUpdate:
+		elif doUpdate:
 			self.actSyms = "".join(actual)
 			self.update(True)
 			return False, "[updated symbols]"
@@ -240,31 +238,22 @@ class TestCase:
 			log.write(diff)
 		return True, "[diff symbols]"
 
-	def run(self):
-		err, msg = createFiles(self)
+	def run(self, doUpdate):
+		err, msg = self.createFiles()
 		if err:
 			return True, msg
 
-		res = self.runExe()
-		if not res[0] and self.doClean:
+		err, msg = self.runExe(doUpdate)
+		if not err:
 			self.clean()
-		return res
+		return err, msg
 
 def cleanTests(files):
-	files = getFiles(files)
-	if not files:
-		print("No tests found")
-		return 1
 	for file in files:
 		TestCase(file).clean()
 	return 0
 
 def dumpFiles(files):
-	files = getFiles(files)
-	if not files:
-		print("No tests found")
-		return 1
-
 	padding = len(max(files, key=len))
 	failed = 0
 	total = len(files)
@@ -273,26 +262,15 @@ def dumpFiles(files):
 		print(file.ljust(padding) + " = " + msg)
 		failed += error
 	passed = total - failed
-	print(str(passed) + " / " + str(total) + " tests passed")
+	print(str(passed) + " / " + str(total) + " tests dumped")
 	return 1 if failed else 0
 
-def runTests(files, clean=True, update=False):
-	fromVer = None
-	toVer = None
-	# if the first "file" starts with a '+' then we want to upgrade the
-	# expected llvmIR. Example: +3.6-3.7
-	if len(files) > 0 and files[0][0] == "+":
-		fromVer, toVer = files[0][1:].split("-")
-		files = files[1:]
-	files = getFiles(files)
-	if not files:
-		print("No tests found")
-		return 1
+def runTests(files, doUpdate=False, fromVer=None, toVer=None):
 	padding = len(max(files, key=len))
 	failed = 0
 	total = len(files)
 	for file in files:
-		error, msg = TestCase(file, clean, update, fromVer, toVer).run()
+		error, msg = TestCase(file, fromVer, toVer).run(doUpdate)
 		print(file.ljust(padding) + " = " + msg)
 		failed += error
 	passed = total - failed
@@ -302,16 +280,37 @@ def runTests(files, clean=True, update=False):
 def main():
 	args = sys.argv[1:]
 	if not args:
-		return runTests(args)
+		files = getFiles(None)
+		return runTests(files)
+
+	if args[0].startswith("-"):
+		cmd = args[0]
+		files = args[1:]
+	else:
+		cmd = "-r"
+		files = args
+
+	# if the first "file" starts with a '+' then we want to upgrade the
+	# expected llvmIR. Example: +3.6-3.7
+	if len(files) > 0 and files[0][0] == "+":
+		fromVer, toVer = files[0][1:].split("-")
+		files = files[1:]
+	else:
+		fromVer, toVer = None, None
+
+	files = getFiles(files)
+	if not files:
+		print("No tests found")
+		return 1
 
 	return {
-	"--clean": lambda: cleanTests(args[1:]),
-	      "-c": lambda: cleanTests(args[1:]),
-	"--update": lambda: runTests(args[1:], True, True),
-	      "-u": lambda: runTests(args[1:], True, True),
-	  "--dump": lambda: dumpFiles(args[1:]),
-	      "-d": lambda: dumpFiles(args[1:])
-	}.get(args[0], lambda: runTests(args))()
+	"--clean": lambda: cleanTests(files),
+	      "-c": lambda: cleanTests(files),
+	"--update": lambda: runTests(files, True, fromVer, toVer),
+	      "-u": lambda: runTests(files, True, fromVer, toVer),
+	  "--dump": lambda: dumpFiles(files),
+	      "-d": lambda: dumpFiles(files)
+	}.get(cmd, lambda: runTests(files, False, fromVer, toVer))()
 
 if __name__ == "__main__":
 	sys.exit(main())
