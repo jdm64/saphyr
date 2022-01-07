@@ -127,9 +127,11 @@ class TestCase:
 		bcFile = self.basename + ".bc"
 		proc = Cmd(["llvm-as" + self.fromVer, "-o", bcFile, fileName])
 		if proc.ext != 0:
+			self.writeLog(proc)
 			return True, "[llvm-as error]"
 		proc = Cmd(["llvm-dis" + self.toVer, "-o", fileName, bcFile])
 		if proc.ext != 0:
+			self.writeLog(proc)
 			return True, "[llvm-dis error]"
 		return False, None
 
