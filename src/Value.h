@@ -31,7 +31,7 @@ class RValue
 
 protected:
 	RValue(Value* value, SType* type, NAttributeList* attrs)
-	: val(value), ty(type), atrs(attrs) {}
+	: val(value), ty(type), atrs(attrs), moved(false) {}
 
 public:
 	RValue()
