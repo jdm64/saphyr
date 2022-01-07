@@ -76,7 +76,7 @@ def patchAsm(filename):
 		asm.write(data)
 
 class TestCase:
-	def __init__(self, file, fromVer=None, toVer=None):
+	def __init__(self, file, fromVer=None, toVer=None, printErr=False):
 		self.tstFile = file
 		self.fromVer = fromVer
 		if self.fromVer != None and len(self.fromVer) > 0:
@@ -84,6 +84,7 @@ class TestCase:
 		self.toVer = toVer
 		if self.toVer != None and len(self.toVer) > 0:
 			self.toVer = "-" + self.toVer
+		self.printErr = printErr
 		self.basename = file[0 : file.rfind(".")]
 		self.srcFile = self.basename + SYP_EXT
 		self.expFile = self.basename + EXP_EXT
@@ -148,6 +149,9 @@ class TestCase:
 
 	def writeLog(self, p):
 		with open(self.errFile, "w") as log:
+			if self.printErr:
+				print(p.err)
+				print(p.out)
 			log.write(p.err)
 			log.write(p.out)
 
@@ -265,12 +269,12 @@ def dumpFiles(files):
 	print(str(passed) + " / " + str(total) + " tests dumped")
 	return 1 if failed else 0
 
-def runTests(files, doUpdate=False, fromVer=None, toVer=None):
+def runTests(files, doUpdate=False, fromVer=None, toVer=None, printErr=False):
 	padding = len(max(files, key=len))
 	failed = 0
 	total = len(files)
 	for file in files:
-		error, msg = TestCase(file, fromVer, toVer).run(doUpdate)
+		error, msg = TestCase(file, fromVer, toVer, printErr).run(doUpdate)
 		print(file.ljust(padding) + " = " + msg)
 		failed += error
 	passed = total - failed
@@ -306,6 +310,7 @@ def main():
 	return {
 	"--clean": lambda: cleanTests(files),
 	      "-c": lambda: cleanTests(files),
+	      "-p": lambda: runTests(files, False, fromVer, toVer, True),
 	"--update": lambda: runTests(files, True, fromVer, toVer),
 	      "-u": lambda: runTests(files, True, fromVer, toVer),
 	  "--dump": lambda: dumpFiles(files),

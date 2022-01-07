@@ -31,7 +31,8 @@ jobs:
         COVERAGE: ${{ matrix.coverage }}
       run: |
         echo "LLVM_VER = -$LLVM" >> src/Configfile
-        if [[ $LLVM != "10" ]]; then echo "UNITTEST_ARG = +10-$LLVM" >> src/Configfile; fi
+        if [[ $LLVM != "10" ]]; then echo "UNITTEST_ARG = -p +10-$LLVM" >> src/Configfile; fi
+        if [[ $LLVM == "10" ]]; then echo "UNITTEST_ARG = -p" >> src/Configfile; fi
         if [[ $USE_GCC == "true" ]]; then echo "CXX = g++" >> src/Configfile; fi
         if [[ $COVERAGE ]]; then echo "COVERAGE = true" >> src/Configfile; fi
     - name: Download Dependencies
