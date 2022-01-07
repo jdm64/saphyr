@@ -98,7 +98,8 @@ class TestCase:
 		with codecs.open(self.tstFile, "r", ENCODING) as testFile:
 			data = testFile.read().split("========")
 			if len(data) < 2:
-				return True
+				return True, "[missing section]"
+
 			with codecs.open(self.srcFile, "w", ENCODING) as sourceFile:
 				sourceFile.write(data[0])
 			with codecs.open(self.expFile, "w", ENCODING) as asmFile:
@@ -107,7 +108,7 @@ class TestCase:
 			self.expSyms = data[2].lstrip() if len(data) >= 3 else "\n"
 			self.actSyms = None
 
-		return False
+		return False, "[dump]"
 
 	def update(self, isPos):
 		expected = self.llFile if isPos else self.negFile
@@ -240,8 +241,10 @@ class TestCase:
 		return True, "[diff symbols]"
 
 	def run(self):
-		if self.createFiles():
-			return True, "[missing section]"
+		err, msg = createFiles(self)
+		if err:
+			return True, msg
+
 		res = self.runExe()
 		if not res[0] and self.doClean:
 			self.clean()
@@ -255,6 +258,23 @@ def cleanTests(files):
 	for file in files:
 		TestCase(file).clean()
 	return 0
+
+def dumpFiles(files):
+	files = getFiles(files)
+	if not files:
+		print("No tests found")
+		return 1
+
+	padding = len(max(files, key=len))
+	failed = 0
+	total = len(files)
+	for file in files:
+		error, msg = TestCase(file).createFiles()
+		print(file.ljust(padding) + " = " + msg)
+		failed += error
+	passed = total - failed
+	print(str(passed) + " / " + str(total) + " tests passed")
+	return 1 if failed else 0
 
 def runTests(files, clean=True, update=False):
 	fromVer = None
@@ -289,8 +309,8 @@ def main():
 	      "-c": lambda: cleanTests(args[1:]),
 	"--update": lambda: runTests(args[1:], True, True),
 	      "-u": lambda: runTests(args[1:], True, True),
-	  "--dump": lambda: runTests(args[1:], False, False),
-	      "-d": lambda: runTests(args[1:], False, False)
+	  "--dump": lambda: dumpFiles(args[1:]),
+	      "-d": lambda: dumpFiles(args[1:])
 	}.get(args[0], lambda: runTests(args))()
 
 if __name__ == "__main__":
