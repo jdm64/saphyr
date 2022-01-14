@@ -335,7 +335,7 @@ define %String @retString() {
 define void @initStr() {
   %1 = call %String @retString()
   %s = alloca %String
-  call void @String_this2(%String* %s, %String %1)
+  store %String %1, %String* %s
   ret void
 }
 

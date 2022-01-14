@@ -705,7 +705,9 @@ RValue Inst::CallFunction(CodeContext& context, VecSFunc& funcs, Token* name, Ve
 	vector<Value*> values;
 	copy(args.begin(), args.end(), back_inserter(values));
 	auto call = context.IB().CreateCall(func.funcType(), func.value(), values);
-	return RValue(call, func.returnTy());
+	auto rval = RValue(call, func.returnTy());
+	rval.setMove(true);
+	return rval;
 }
 
 RValue Inst::CallMemberFunction(CodeContext& context, NVariable* baseVar, Token* funcName, NExpressionList* arguments)
@@ -1007,8 +1009,13 @@ RValue Inst::LoadMemberVar(CodeContext& context, RValue baseVar, Token* baseToke
 
 void Inst::InitVariable(CodeContext& context, RValue var, const RValue& arrSize, VecRValue* initList, Token* token)
 {
-	if (CallConstructor(context, var, arrSize, initList, token))
+	auto first = (initList && initList->size() == 1) ? initList->at(0) : RValue();
+	if (first.isMove() && var.stype() == first.stype()) {
+		context.IB().CreateStore(first, var);
 		return;
+	} else if (CallConstructor(context, var, arrSize, initList, token)) {
+		return;
+	}
 
 	if (!initList)
 		return;

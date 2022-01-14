@@ -41,6 +41,12 @@ Copy doMove()
 	return b->move;
 }
 
+void callFunc()
+{
+	auto a = doCopy();
+	auto b = doMove();
+}
+
 ========
 
 %Copy = type { [0 x i32]*, i32 }
@@ -157,8 +163,21 @@ define %Copy @doMove() {
   ret %Copy %1
 }
 
+define void @callFunc() {
+  %1 = call %Copy @doCopy()
+  %a = alloca %Copy
+  store %Copy %1, %Copy* %a
+  %2 = call %Copy @doMove()
+  %b = alloca %Copy
+  store %Copy %2, %Copy* %b
+  call void @Copy_null(%Copy* %b)
+  call void @Copy_null(%Copy* %a)
+  ret void
+}
+
 ========
 
+callFunc T
 Copy_null T
 Copy_this T
 Copy_this2 T
